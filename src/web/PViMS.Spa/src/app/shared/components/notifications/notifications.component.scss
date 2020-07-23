@@ -1,0 +1,48 @@
+#app-notification {
+  position: fixed;
+  bottom: 0px;
+  top: 0;
+  right: 0;
+  width: 480px;
+  height: calc(100vh - 80px);
+  z-index: 999;
+  .title {
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0 0 1rem;
+  }
+}
+.pos-rel {
+  position: relative;
+  z-index: 99;
+  .olay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, .5);
+    z-index: 100;
+  }
+}
+
+.navigation-top {
+  .nofication-panel {
+    padding-top: 48px;
+  }
+}
+
+.notification-list {
+  min-width: 240px;
+}
+.notification-list .notific-item a {
+  outline: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.notification-list .notific-item .message {
+  font-size: .875rem !important;
+}
+.notification-list .notific-item .time {
+  font-size: .75rem !important;
+}

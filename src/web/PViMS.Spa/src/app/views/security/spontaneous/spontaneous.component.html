@@ -1,0 +1,541 @@
+<div style="height: 5px;">
+  <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isBusy()"></mat-progress-bar>
+</div>
+
+<div class="form-wrap">
+  <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.1%" fxLayoutAlign="center center">
+    <div fxFlex.gt-sm="70" fxFlex.lt-md="100">
+
+      <div class="card-title-text">
+        {{'Spontaneous Reports' | translate}}
+      </div>
+      <small>{{'Please enter details of the reaction below' | translate}}</small>
+
+      <mat-horizontal-stepper [linear]="this.linear">
+        <mat-step [stepControl]="viewPatientModelForm">
+          <form [formGroup]="viewPatientModelForm">
+            <ng-template matStepLabel>{{'Patient Information' | translate}}</ng-template>
+  
+            <div class="card-title-text mat-bg-accent p-24">
+              Please enter some information about the person who had the adverse reaction.
+            </div>
+  
+            <div fxLayout="column" fxLayoutWrap fxLayoutGap="0.1%" fxLayoutAlign="start">
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="initials" placeholder="{{'Initials of patient' | translate}}" required>
+                  <mat-hint>{{'Enter patients initials here OR their ID number and type below' | translate}}</mat-hint>
+                  <mat-error *ngIf="viewPatientModelForm.get('initials').hasError('required')">
+                    {{'This is a required field' | translate}}
+                  </mat-error>
+                </mat-form-field>
+              </div>
+    
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="identification" placeholder="{{'Identification number' | translate}}">
+                  <mat-hint>{{'Enter patients ID number OR enter their initials above' | translate}}</mat-hint>
+                </mat-form-field>
+              </div>
+    
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <mat-select formControlName="identificationType" placeholder="{{'Identification type' | translate}}">
+                      <mat-option value=""></mat-option>
+                      <mat-option value="National Identity">National Identity</mat-option>
+                      <mat-option value="Other">Other</mat-option>
+                  </mat-select>
+                  <mat-hint>{{'If you entered a patient ID number, specify the ID type here' | translate}}</mat-hint>
+                </mat-form-field>
+              </div>
+    
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="birthDate" placeholder="{{'Patient date of birth' | translate}}" [matDatepicker]="birthDateDatepicker">
+                  <mat-datepicker-toggle matSuffix [for]="birthDateDatepicker"></mat-datepicker-toggle>
+                  <mat-hint>{{'Enter the patients date of birth here OR enter their age below.' | translate}}</mat-hint>
+                </mat-form-field>
+                <mat-datepicker #birthDateDatepicker startView="multi-year"></mat-datepicker>
+              </div>
+  
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="age" placeholder="{{'Age' | translate}}" type="number">
+                  <mat-hint>{{'Enter the patients age here OR enter their date of birth above.' | translate}}</mat-hint>
+                </mat-form-field>
+              </div>
+  
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <mat-select formControlName="ageUnitOfMeasure" placeholder="{{'Age unit of measure' | translate}}">
+                      <mat-option value=""></mat-option>
+                      <mat-option value="Years">Years</mat-option>
+                      <mat-option value="Months">Months</mat-option>
+                      <mat-option value="Weeks">Weeks</mat-option>
+                      <mat-option value="Days">Days</mat-option>
+                  </mat-select>
+                  <mat-hint>{{'Enter weeks, months, or years for the patients age here.' | translate}}</mat-hint>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.1%" fxLayoutAlign="start">            
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="weight" placeholder="{{'Patients weight (kg)' | translate}}" type="number">
+                  <mat-error>
+                    {{'Value out of range' | translate}}
+                  </mat-error>            
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">            
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <mat-select formControlName="sex" placeholder="{{'Sex' | translate}}">
+                      <mat-option value=""></mat-option>
+                      <mat-option value="Male">Male</mat-option>
+                      <mat-option value="Female">Female</mat-option>
+                      <mat-option value="Unknown">Unknown</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">  
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <mat-select formControlName="ethnic" placeholder="{{'Ethnic group of patient' | translate}}">
+                      <mat-option value=""></mat-option>
+                      <mat-option value="Asian">Asian</mat-option>
+                      <mat-option value="East Asian">East Asian</mat-option>
+                      <mat-option value="South Asian">South Asian</mat-option>
+                      <mat-option value="Southeast Asian">Southeast Asian</mat-option>
+                      <mat-option value="Black">Black</mat-option>
+                      <mat-option value="White">White</mat-option>
+                      <mat-option value="Middle Eastern">Middle Eastern</mat-option>
+                      <mat-option value="Other">Other</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">            
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <mat-select formControlName="additional" placeholder="{{'Additional document' | translate}}">
+                      <mat-option value=""></mat-option>
+                      <mat-option value="Yes">Yes</mat-option>
+                      <mat-option value="No">No</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row">
+              <button mat-raised-button color="warn" (click)="goBack()" matStepperNext class="mr-12">{{'Cancel' | translate}}</button>
+              <span fxFlex></span>
+              <button mat-raised-button matStepperNext class="mr-12">{{'Next' | translate}}</button>
+            </div>
+          </form>
+        </mat-step>
+  
+        <mat-step [stepControl]="viewMedicationModelForm">
+          <form [formGroup]="viewMedicationModelForm">
+            <ng-template matStepLabel>{{'Product Information' | translate}}</ng-template>
+  
+            <div class="card-title-text mat-bg-accent p-24">
+              Please enter information about the product you suspect caused the reaction and about other products taken.
+            </div>
+  
+            <div class="ml-05 mr-05 mt-05 pb-1">
+              <div class="p-12 table-container">
+                  <div class="p-12" fxLayoutAlign="end">
+                    <button mat-mini-fab (click)="openMedicationPopup({}, true)"><mat-icon>add</mat-icon></button>
+                  </div>
+                  <mat-table [dataSource]="viewModel?.medicationGrid?.records"
+                          [@animate]="{value:'50'}">
+      
+                  <ng-container matColumnDef="medication">
+                      <mat-header-cell *matHeaderCellDef>{{'Product' | translate}}</mat-header-cell>
+                      <mat-cell *matCellDef="let record">
+                          {{record.product}}
+                      </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="suspected">
+                    <mat-header-cell *matHeaderCellDef>{{'Suspected' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                        {{record.suspected}}
+                    </mat-cell>
+                  </ng-container>
+                  
+                  <ng-container matColumnDef="start-date">
+                    <mat-header-cell *matHeaderCellDef>{{'Start date' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                        {{record.startDate | date:'yyyy-MM-dd'}}
+                    </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="actions">
+                    <mat-header-cell *matHeaderCellDef>{{'Actions' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                      <button mat-icon-button color="primary" matTooltip="{{'Update Medication' | translate }}"
+                              (click)="openMedicationPopup(record, false)">
+                          <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" matTooltip="{{'Delete Medication' | translate}}"
+                          (click)="removeMedication(record.index)">
+                          <mat-icon>delete</mat-icon>
+                      </button>
+                  </mat-cell>                    
+                  </ng-container>                        
+                
+                  <mat-header-row *matHeaderRowDef="viewModel?.medicationGrid?.displayedColumns; sticky:true"></mat-header-row>
+                  <mat-row *matRowDef="let record; columns: viewModel?.medicationGrid?.displayedColumns;" matRipple></mat-row>
+                </mat-table>
+              </div>
+  
+            </div>              
+  
+            <div fxLayout="row">
+              <button mat-raised-button color="warn" (click)="goBack()" matStepperNext class="mr-12">{{'Cancel' | translate}}</button>
+              <span fxFlex></span>
+              <button mat-raised-button matStepperPrevious class="mr-12">{{'Previous' | translate}}</button>
+              <button mat-raised-button matStepperNext class="mr-12">{{'Next' | translate}}</button>
+            </div>
+          </form>
+        </mat-step>
+  
+        <mat-step [stepControl]="viewLabTestModelForm">
+          <form [formGroup]="viewLabTestModelForm">
+            <ng-template matStepLabel>{{'Test Results' | translate}}</ng-template>
+  
+            <div class="card-title-text mat-bg-accent p-24">
+              Enter information about any tests done for the reaction, along with the results.
+            </div>
+  
+            <div class="ml-05 mr-05 mt-05 pb-1">
+              <div class="p-12 table-container">
+                <div class="p-12" fxLayoutAlign="end">
+                  <button mat-mini-fab (click)="openLabPopup({}, true)"><mat-icon>add</mat-icon></button>
+                </div>
+                <mat-table [dataSource]="viewModel?.labTestGrid?.records"
+                          [@animate]="{value:'50'}">
+      
+                  <ng-container matColumnDef="lab test">
+                      <mat-header-cell *matHeaderCellDef>{{'Lab Test' | translate}}</mat-header-cell>
+                      <mat-cell *matCellDef="let record">
+                          {{record.labTest}}
+                      </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="test date">
+                    <mat-header-cell *matHeaderCellDef>{{'Test date' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                        {{record.testResultDate | date:'yyyy-MM-dd'}}
+                    </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="test result">
+                    <mat-header-cell *matHeaderCellDef>{{'Test result' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                        {{record.testResultValue}}
+                    </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="actions">
+                    <mat-header-cell *matHeaderCellDef>{{'Actions' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                      <button mat-icon-button color="primary" matTooltip="{{'Update Test Result' | translate }}"
+                              (click)="openLabPopup(record, false)">
+                          <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" matTooltip="{{'Delete Test Result' | translate}}"
+                          (click)="removeLabTest(record.index)">
+                          <mat-icon>delete</mat-icon>
+                      </button>
+                  </mat-cell>                    
+                  </ng-container>                        
+                
+                  <mat-header-row *matHeaderRowDef="viewModel?.labTestGrid?.displayedColumns; sticky:true"></mat-header-row>
+                  <mat-row *matRowDef="let record; columns: viewModel?.labTestGrid?.displayedColumns;" matRipple></mat-row>
+                </mat-table>
+              </div>
+  
+            </div>              
+  
+            <div fxLayout="row">
+              <button mat-raised-button color="warn" (click)="goBack()" matStepperNext class="mr-12">{{'Cancel' | translate}}</button>
+              <span fxFlex></span>
+              <button mat-raised-button matStepperPrevious class="mr-12">{{'Previous' | translate}}</button>
+              <button mat-raised-button matStepperNext class="mr-12">{{'Next' | translate}}</button>
+            </div>
+          </form>
+        </mat-step>
+  
+        <mat-step [stepControl]="viewReactionModelForm">
+          <form [formGroup]="viewReactionModelForm">
+            <ng-template matStepLabel>{{'Reaction and Treatment' | translate}}</ng-template>
+  
+            <div class="card-title-text mat-bg-accent p-24">
+              Enter information about what happened and how it was treated.
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="reaction" placeholder="{{'Description of reaction' | translate}}" required>
+                  <mat-error *ngIf="viewReactionModelForm.get('reaction').hasError('required')">
+                    {{'This is a required field' | translate}}
+                  </mat-error>
+                </mat-form-field>              
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">              
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="startDate" placeholder="{{'Start date of reaction' | translate}}" [matDatepicker]="startDatepicker">
+                  <mat-datepicker-toggle matSuffix [for]="startDatepicker"></mat-datepicker-toggle>
+                  <mat-hint>{{'Enter the start date of the reaction OR enter the estimated start date in the next field.' | translate}}</mat-hint>
+                </mat-form-field>
+                <mat-datepicker #startDatepicker></mat-datepicker>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">              
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="estimatedStartDate" placeholder="{{'Estimated start date of reaction' | translate}}" [matDatepicker]="estStartDatepicker">
+                  <mat-datepicker-toggle matSuffix [for]="estStartDatepicker"></mat-datepicker-toggle>
+                  <mat-hint>{{'If you dont know the exact start date of the reaction, enter the estimated start date here.' | translate}}</mat-hint>
+                </mat-form-field>
+                <mat-datepicker #estStartDatepicker></mat-datepicker>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">              
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <mat-select formControlName="reactionHappen" placeholder="{{'Did any of these reactions happen?' | translate}}">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="Resulted in death">  
+                      {{'Resulted in death' | translate}}
+                    </mat-option>
+                    <mat-option value="Is life-threatening">
+                      {{'Is life-threatening' | translate}}
+                    </mat-option>
+                    <mat-option value="Requires inpatient hospitalization or prolongation of existing hospitalization">
+                      {{'Requires inpatient hospitalization or prolongation of existing hospitalization' | translate}}
+                    </mat-option>
+                    <mat-option value="Results in persistent or significant disability/incapacity (as per reporters opinion)">
+                      {{'Results in persistent or significant disability/incapacity (as per reporters opinion)' | translate}}
+                    </mat-option>
+                    <mat-option value="Is a congenital anomaly/birth defect">
+                      {{'Is a congenital anomaly/birth defect' | translate}}
+                    </mat-option>
+                    <mat-option value="Other medically important condition">
+                      {{'Other medically important condition' | translate}}
+                    </mat-option>
+                  </mat-select>                        
+                </mat-form-field>             
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">              
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <mat-select formControlName="treatmentGiven" placeholder="{{'Was treatment given for the reaction?' | translate}}">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="No">  
+                      {{'No' | translate}}
+                    </mat-option>
+                    <mat-option value="Yes">
+                      {{'Yes' | translate}}
+                    </mat-option>
+                  </mat-select>                        
+                </mat-form-field>             
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">              
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="whatTreatment" placeholder="{{'What treatment was given for the reaction?' | translate}}">
+                </mat-form-field>              
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">              
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <mat-select formControlName="treatmentOutcome" placeholder="{{'What was the outcome of the reaction?' | translate}}">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="Recovered/resolved">  
+                      {{'Recovered/resolved' | translate}}
+                    </mat-option>
+                    <mat-option value="Recovering/resolving">
+                      {{'Recovering/resolving' | translate}}
+                    </mat-option>
+                    <mat-option value="Not recovered/not resolved">
+                      {{'Not recovered/not resolved' | translate}}
+                    </mat-option>
+                    <mat-option value="Recovered/resolved with permanent complications">
+                      {{'Recovered/resolved with permanent complications' | translate}}
+                    </mat-option>
+                    <mat-option value="Fatal">
+                      {{'Fatal' | translate}}
+                    </mat-option>
+                    <mat-option value="Unknown">
+                      {{'Unknown' | translate}}
+                    </mat-option>
+                  </mat-select>                        
+                </mat-form-field>             
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">              
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="recoveryDate" placeholder="{{'What was the date of recovery from the reaction?' | translate}}" [matDatepicker]="recoveryDatepicker">
+                  <mat-datepicker-toggle matSuffix [for]="recoveryDatepicker"></mat-datepicker-toggle>
+                </mat-form-field>
+                <mat-datepicker #recoveryDatepicker></mat-datepicker>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">              
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="deceasedDate" placeholder="{{'Enter date if patient died from the reaction' | translate}}" [matDatepicker]="deceasedDatepicker">
+                  <mat-datepicker-toggle matSuffix [for]="deceasedDatepicker"></mat-datepicker-toggle>
+                </mat-form-field>
+                <mat-datepicker #deceasedDatepicker></mat-datepicker>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">              
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="otherInfo" placeholder="{{'Other relevant information' | translate}}">
+                  <mat-hint>{{'For example, does the patient have other medical problems?' | translate}}</mat-hint>
+                </mat-form-field>              
+              </div>
+            </div>
+  
+            <div fxLayout="row">
+              <button mat-raised-button color="warn" (click)="goBack()" matStepperNext class="mr-12">{{'Cancel' | translate}}</button>
+              <span fxFlex></span>
+              <button mat-raised-button matStepperPrevious class="mr-12">{{'Previous' | translate}}</button>
+              <button mat-raised-button matStepperNext class="mr-12">{{'Next' | translate}}</button>            
+            </div>
+          </form>
+        </mat-step>        
+  
+        <mat-step [stepControl]="viewReporterModelForm">
+          <form [formGroup]="viewReporterModelForm">
+            <ng-template matStepLabel>{{'Reporter Information' | translate}}</ng-template>
+  
+            <div class="card-title-text mat-bg-accent p-24">
+              Enter information about the person reporting the reaction.
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="reporter" placeholder="{{'Name or initials of person reporting information' | translate}}" required>
+                  <mat-error *ngIf="viewReporterModelForm.get('reporter').hasError('required')">
+                    {{'This is a required field' | translate}}
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="telephoneNumber" placeholder="{{'Telephone number for reporter' | translate}}">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="email" placeholder="{{'Reporter E-mail Address' | translate}}">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <mat-select formControlName="profession" placeholder="{{'Profession of reporter' | translate}}">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="Physician">  
+                      {{'Physician' | translate}}
+                    </mat-option>
+                    <mat-option value="Pharmacist">
+                      {{'Pharmacist' | translate}}
+                    </mat-option>
+                    <mat-option value="Consumer or other non-health professional">
+                      {{'Consumer or other non-health professional' | translate}}
+                    </mat-option>
+                    <mat-option value="Other Health Professional">
+                      {{'Other Health Professional' | translate}}
+                    </mat-option>
+                    <mat-option value="Lawyer">
+                      {{'Lawyer' | translate}}
+                    </mat-option>
+                  </mat-select>                        
+                </mat-form-field>             
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="reference" placeholder="{{'Report reference number (if any)' | translate}}">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <input matInput formControlName="place" placeholder="{{'Reporter place of practise' | translate}}">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.5%" fxLayoutAlign="start">
+              <div fxFlex="100" class="pr-1">
+                <mat-form-field class="p-2 full-width">
+                  <mat-select formControlName="confidential" placeholder="{{'Keep reporter confidential?' | translate}}">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="No">  
+                      {{'No' | translate}}
+                    </mat-option>
+                    <mat-option value="Yes">
+                      {{'Yes' | translate}}
+                    </mat-option>
+                  </mat-select>
+                  <mat-hint>{{'Do you want your identity kept confidential except to be contacted by the national medical regulatory authority or the World Health Organization if they need additional information?' | translate}}</mat-hint>                
+                </mat-form-field>             
+              </div>
+            </div>
+  
+            <div fxLayout="row" class="mt-12">
+              <button mat-raised-button color="warn" (click)="goBack()" matStepperNext class="mr-12">{{'Cancel' | translate}}</button>
+              <span fxFlex></span>
+              <button mat-raised-button matStepperPrevious class="mr-12">{{'Previous' | translate}}</button>
+              <button mat-raised-button color="accent" (click)="saveForm()" class="mr-12" [disabled]="viewPatientModelForm.invalid || viewReactionModelForm.invalid || viewReporterModelForm.invalid"><mat-icon class="mr-4">save</mat-icon>{{'Save Report' | translate}}</button>
+            </div>
+          </form>
+        </mat-step>        
+      </mat-horizontal-stepper>
+
+    </div>
+  </div>
+</div>
