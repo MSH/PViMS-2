@@ -132,7 +132,7 @@ namespace PVIMS.API.Controllers
 
             var model = id == new Guid("4096D0A3-45F7-4702-BDA1-76AEDE41B986") 
                 ? _artefactService.CreateSpontaneousDatasetForDownload() 
-                : _artefactService.CreateActiveDatasetForDownload(new long[] { 0 }, analyserDatasetResourceParameters?.CohortGroupId ?? 0);
+                : _artefactService.CreateActiveDatasetForDownload(new long[] { }, analyserDatasetResourceParameters?.CohortGroupId ?? 0);
 
             return PhysicalFile(model.FullPath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         }

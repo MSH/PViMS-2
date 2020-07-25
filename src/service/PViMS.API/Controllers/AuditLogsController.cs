@@ -322,8 +322,12 @@ namespace PVIMS.API.Controllers
                     // Locate patient
                     if(!string.IsNullOrWhiteSpace(formIdentifier))
                     {
-                        var patient = _attachmentRepository.Get(a => a.Patient != null && a.Description == formIdentifier)?.Patient;
-                        if(patient != null) { returnIds.Add(patient.Id); }
+                        var attachments = _attachmentRepository.List(a => a.Patient != null && a.Description == formIdentifier);
+                        if(attachments.Count > 0)
+                        {
+                            var patient = attachments.First()?.Patient;
+                            if (patient != null) { returnIds.Add(patient.Id); }
+                        }
                     }
                 }
 

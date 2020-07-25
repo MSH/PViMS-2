@@ -60,7 +60,7 @@
           </div>
         </div>
         <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="end" class="p-8">
-          <button mat-raised-button color="accent" (click)="downloadDataset()" *ngIf="accountService.allowDatasetDownload && viewModelForm.get('auditType').value == 'SynchronisationSuccessful'" class="mr-12">{{'Download Dataset' | translate}}</button>
+          <button mat-raised-button color="accent" (click)="downloadDataset()" *ngIf="accountService.allowDatasetDownload && viewModelForm.get('auditType').value == 'SynchronisationSuccessful' && viewModelForm.get('facilityId').value != '0'" class="mr-12">{{'Download Dataset' | translate}}</button>
           <button mat-raised-button color="accent" (click)="generateExcelForGrid()" class="mr-12">{{'Export' | translate }}</button>
           <button mat-raised-button color="primary" (click)="loadGrid()" [disabled]="viewModelForm.invalid">{{'Search' | translate }}</button>
         </div>
