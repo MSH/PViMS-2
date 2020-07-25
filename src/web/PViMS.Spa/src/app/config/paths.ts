@@ -10,6 +10,7 @@ export const _paths = {
   },
   security: `security`,
   securityPath: {
+      landing: `landing`,
       login: `login`,
       forgotPassword: `forgot-password`,
       lockscreen: `lockscreen`,

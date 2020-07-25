@@ -210,7 +210,7 @@ export class SpontaneousComponent extends BaseComponent implements OnInit, OnDes
     self.datasetService.saveSpontaneousInstance(32, allModels)
         .subscribe(result => {
             self.notify("Report created successfully", "Spontaneous Report");
-            self._router.navigate([_routes.security.login]);
+            self._router.navigate([_routes.security.landing]);
         }, error => {
             self.handleError(error, "Error saving spontaneous report");
         });

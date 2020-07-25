@@ -10,6 +10,7 @@ export const _routes = {
     general: `${_paths.error}/${_paths.errorPath.general}`,
   },
   security: {
+      landing: `${_paths.security}/${_paths.securityPath.landing}`,
       login: `${_paths.security}/${_paths.securityPath.login}`,
       forgotPassword: `${_paths.security}/${_paths.securityPath.forgotPassword}`,
       lockscreen: `${_paths.security}/${_paths.securityPath.lockscreen}`,

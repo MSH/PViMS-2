@@ -30,12 +30,11 @@
 
 .branding {
   display: flex;
-  align-items: baseline;
   position: fixed;
   padding: 0 16px;
   width: $sidebar-width;
   height: 64px;
-  line-height: 64px;
+  line-height: 24px;
   top: 0;
   left: 0;
   z-index: 999;
