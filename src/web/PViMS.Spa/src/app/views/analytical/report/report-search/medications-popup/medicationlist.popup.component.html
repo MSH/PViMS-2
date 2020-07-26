@@ -1,0 +1,33 @@
+<h1 matDialogTitle>{{data.title | translate}}</h1>
+
+<div fxLayout="row" fxLayoutGap="5px" class="float-right">
+  <div class="tag-red">
+    <div>Naranjo</div>
+  </div>
+  <div class="tag-black">
+    <div>WHO</div>
+  </div>
+</div> 
+
+<div class="meds-list">
+  <div class="meds-box" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="20px" *ngFor="let medication of data.medications">
+    <div fxLayout="row" fxLayoutAlign="space-between center" fxFlex="1 1 0%">
+      <div style="cursor: pointer;" fxLayout="column" fxLayoutGap="8px" fxFlex="1 1 0%">
+        <span>{{ medication?.medicationIdentifier }}</span>
+
+
+        <div fxLayout="row" fxLayoutGap="5px">
+          <div class="tag-red" *ngIf="medication?.naranjoCausality != null">
+            <div>{{medication?.naranjoCausality}}</div>
+          </div>
+          <div class="tag-black" *ngIf="medication?.whoCausality != null">
+            <div>{{medication?.whoCausality}}</div>
+          </div>
+        </div>        
+      </div>
+    </div>
+  </div>
+  <div class="mt-1 float-right">
+    <button mat-raised-button color="primary" (click)="dialogRef.close(false)">{{"Close" | translate }}</button>
+  </div>      
+</div>

@@ -1,0 +1,204 @@
+<h1 matDialogTitle>{{data.title | translate}}</h1>
+
+  <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isBusy()"></mat-progress-bar>
+
+  <form [formGroup]="itemForm" (ngSubmit)="submit()">
+    <div fxLayout="row wrap" fxLayout.lt-sm="column">
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="p-8 full-width">
+          <input matInput formControlName="product" placeholder="{{'This is the product field' | translate}}" required>
+          <mat-hint>{{'Product' | translate}}</mat-hint> 
+          <mat-error *ngIf="itemForm.get('product').hasError('required')">
+            {{'This is a required field' | translate}}
+          </mat-error>            
+        </mat-form-field>
+      </div>
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="p-8 full-width">
+          <mat-select formControlName="suspected" placeholder="{{'Product suspected' | translate}}" required>
+            <mat-option value=""></mat-option>
+            <mat-option value="Yes">  
+              {{'Yes' | translate}}
+            </mat-option>
+            <mat-option value="No">
+              {{'No' | translate}}
+            </mat-option>
+          </mat-select>                        
+          <mat-error *ngIf="itemForm.get('suspected').hasError('required')">
+            {{'This is a required field' | translate}}
+          </mat-error>            
+        </mat-form-field>
+      </div>
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="p-8 full-width">
+          <input matInput formControlName="strength" placeholder="{{'Drug strength' | translate}}" type="number">
+        </mat-form-field>
+      </div>
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="p-8 full-width">
+          <mat-select formControlName="strengthUnit" placeholder="{{'Drug strength unit' | translate}}">
+            <mat-option value=""></mat-option>
+            <mat-option value="milligrams (mg)">  
+              {{'milligrams (mg)' | translate}}
+            </mat-option>
+            <mat-option value="milligrams/milliliters (mg/ml)">
+              {{'milligrams/milliliters (mg/ml)' | translate}}
+            </mat-option>
+            <mat-option value="grams (gm)">
+              {{'grams (gm)' | translate}}
+            </mat-option>
+            <mat-option value="kilograms (kg)">
+              {{'kilograms (kg)' | translate}}
+            </mat-option>
+            <mat-option value="micrograms (mcg)">
+              {{'micrograms (mcg)' | translate}}
+            </mat-option>
+            <mat-option value="milliliters (ml)">
+              {{'milliliters (ml)' | translate}}
+            </mat-option>
+            <mat-option value="liters (l)">
+              {{'liters (l)' | translate}}
+            </mat-option>
+            <mat-option value="milliequivalents (meq)">
+              {{'milliequivalents (meq)' | translate}}
+            </mat-option>
+            <mat-option value="percent (%)">
+              {{'percent (%)' | translate}}
+            </mat-option>
+            <mat-option value="drops (gtt)">
+              {{'drops (gtt)' | translate}}
+            </mat-option>
+            <mat-option value="Other">
+              {{'Other' | translate}}
+            </mat-option>
+          </mat-select>                        
+        </mat-form-field>
+      </div>
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="p-8 full-width">
+          <input matInput formControlName="dose" placeholder="{{'Dose number' | translate}}" type="number">
+        </mat-form-field>
+      </div>
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="p-8 full-width">
+          <mat-select formControlName="doseUnit" placeholder="{{'Dose unit' | translate}}">
+            <mat-option value=""></mat-option>
+            <mat-option value="tablet(s)">  
+              {{'tablet(s)' | translate}}
+            </mat-option>
+            <mat-option value="capsule(s)">
+              {{'capsule(s)' | translate}}
+            </mat-option>
+            <mat-option value="drop(s)">
+              {{'drop(s)' | translate}}
+            </mat-option>
+            <mat-option value="teaspoon(s)">
+              {{'teaspoon(s)' | translate}}
+            </mat-option>
+            <mat-option value="tablespoon(s)">
+              {{'tablespoon(s)' | translate}}
+            </mat-option>
+            <mat-option value="milliliter(s)">
+              {{'milliliter(s)' | translate}}
+            </mat-option>
+            <mat-option value="suppository(ies)">
+              {{'suppository(ies)' | translate}}
+            </mat-option>
+            <mat-option value="injection(s)">
+              {{'injection(s)' | translate}}
+            </mat-option>
+            <mat-option value="puff(s)">
+              {{'puff(s)' | translate}}
+            </mat-option>
+            <mat-option value="inhalation(s)">
+              {{'inhalation(s)' | translate}}
+            </mat-option>
+            <mat-option value="patch(es)">
+              {{'patch(es)' | translate}}
+            </mat-option>
+            <mat-option value="Other">
+              {{'Other' | translate}}
+            </mat-option>
+          </mat-select>                        
+        </mat-form-field>
+      </div>      
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="p-8 full-width">
+          <mat-select formControlName="route" placeholder="{{'Drug route of administration' | translate}}">
+            <mat-option value=""></mat-option>
+            <mat-option value="By mouth">  
+              {{'By mouth' | translate}}
+            </mat-option>
+            <mat-option value="Taken under the tongue">
+              {{'Taken under the tongue' | translate}}
+            </mat-option>
+            <mat-option value="Applied to a surface, usually skin">
+              {{'Applied to a surface, usually skin' | translate}}
+            </mat-option>
+            <mat-option value="Inhalation">
+              {{'Inhalation' | translate}}
+            </mat-option>
+            <mat-option value="Applied as a medicated patch to skin">
+              {{'Applied as a medicated patch to skin' | translate}}
+            </mat-option>
+            <mat-option value="Given into/under the skin">
+              {{'Given into/under the skin' | translate}}
+            </mat-option>
+            <mat-option value="Into a vein">
+              {{'Into a vein' | translate}}
+            </mat-option>
+            <mat-option value="Into a muscle">
+              {{'Into a muscle' | translate}}
+            </mat-option>
+            <mat-option value="Into the ear">
+              {{'Into the ear' | translate}}
+            </mat-option>
+            <mat-option value="Into the eye">
+              {{'Into the eye' | translate}}
+            </mat-option>
+            <mat-option value="Rectal">
+              {{'Rectal' | translate}}
+            </mat-option>
+            <mat-option value="Vaginal">
+              {{'Vaginal' | translate}}
+            </mat-option>
+            <mat-option value="Other">
+              {{'Other' | translate}}
+            </mat-option>
+          </mat-select>                        
+        </mat-form-field>
+      </div>      
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="p-8 full-width">
+          <input matInput formControlName="medicationStartDate" placeholder="{{'Drug start date' | translate}}" [matDatepicker]="medStDatepicker" required>
+          <mat-datepicker-toggle matSuffix [for]="medStDatepicker"></mat-datepicker-toggle>
+          <mat-error>
+            {{'This is a required field' | translate}}
+          </mat-error>            
+        </mat-form-field>
+        <mat-datepicker #medStDatepicker></mat-datepicker>            
+      </div>
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="p-8 full-width">
+          <input matInput formControlName="medicationEndDate" placeholder="{{'Drug end date' | translate}}" [matDatepicker]="medEdDatepicker">
+          <mat-datepicker-toggle matSuffix [for]="medEdDatepicker"></mat-datepicker-toggle>
+        </mat-form-field>
+        <mat-datepicker #medEdDatepicker></mat-datepicker>            
+      </div>
+
+      <div fxFlex="100" class="mt-1">
+        <button mat-raised-button color="primary" [disabled]="itemForm.invalid">{{"Save" | translate }}</button>
+        <span fxFlex></span>
+        <button mat-raised-button color="warn" type="button" (click)="dialogRef.close(false)">{{"Cancel" | translate }}</button>
+      </div>
+    </div>
+  </form>

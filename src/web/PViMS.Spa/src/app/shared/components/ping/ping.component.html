@@ -1,0 +1,3 @@
+<div class="handle">
+  <button mat-icon-button (click)="pingAPI()" matTooltip="{{'Online status' | translate }}" [ngClass]="{'error-status': !this.accountService.isConnected(), 'connected-status': this.accountService.isConnected(), 'spin' : checking} "><mat-icon>gps_fixed</mat-icon></button>
+</div>

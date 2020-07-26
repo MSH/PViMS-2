@@ -1,0 +1,426 @@
+import { Injectable } from "@angular/core";
+import { BehaviorSubject } from "rxjs";
+import { AccountService } from "./account.service";
+import { Router } from "@angular/router";
+import { _routes } from "app/config/routes";
+import { RoutePartsService } from "./route-parts.service";
+import { MetaService } from "./meta.service";
+import { MetaPageDetailModel } from "../models/meta/meta-page.detail.model";
+
+interface IMenuItem {
+  type: string; // Possible values: link/dropDown/icon/separator/extLink
+  name?: string; // Used as display text for item and title for separator type
+  state?: string; // Router state
+  parameter?: string; // Router state parameter
+  icon?: string; // Material icon name
+  tooltip?: string; // Tooltip text
+  disabled?: boolean; // If true, item will not be appeared in sidenav.
+  sub?: IChildItem[]; // Dropdown items
+  badges?: IBadge[];
+}
+
+interface IChildItem {
+  type?: string;
+  name: string; // Display text
+  state?: string; // Router state
+  parameter?: string; // Router state parameter
+  icon?: string;
+  sub?: IChildItem[];
+}
+
+interface IBadge {
+  color: string; // primary/accent/warn/hex color codes(#fff000)
+  value: string; // Display text
+}
+
+@Injectable({ providedIn: 'root' })
+export class NavigationService {
+  constructor(
+    protected _router: Router,
+    protected accountService: AccountService,
+    protected metaService: MetaService,
+    protected routePartsService: RoutePartsService
+  ) 
+  {
+    this.prepareClinicalMenus();
+    this.prepareInfoMenus();
+  }
+
+  currentPortal: string;
+
+  clinicalMenu: IMenuItem[] = [];
+
+  analyticalMenu: IMenuItem[] = [
+    {
+      type: "separator",
+      name: "Main Actions"
+    },
+    {
+      name: "Spontaneous",
+      type: "dropDown",
+      tooltip: "Spontaneous Actions",
+      icon: "dashboard",
+      state: "analytical",
+      sub: [
+        { name: "Reports", state: "reportsearch", parameter: "4096D0A3-45F7-4702-BDA1-76AEDE41B986" },
+        { name: "Analyser", state: "spontaneousanalyser" }
+      ]
+    },
+    {
+      name: "Active",
+      type: "dropDown",
+      tooltip: "Active Actions",
+      icon: "dashboard",
+      state: "analytical",
+      sub: [
+        { name: "Reports", state: "reportsearch", parameter: "892F3305-7819-4F18-8A87-11CBA3AEE219" },
+        { name: "Analyser", state: "activeanalyser" }
+      ]
+    }
+  ];
+
+  reportMenu: IMenuItem[] = [
+    {
+      type: "separator",
+      name: "Main Actions"
+    },
+    {
+      name: "Standard Reports",
+      type: "dropDown",
+      tooltip: "Standard Reports",
+      icon: "data_usage",
+      state: "reports",
+      sub: [
+        { name: "Patients on Treatment", state: "system/patienttreatment" },
+        { name: "Adverse Events", state: "system/adverseevent" },
+        { name: "Quarterly Adverse Events", state: "system/adverseeventfrequency", parameter: "Quarterly" },
+        { name: "Annual Adverse Events", state: "system/adverseeventfrequency", parameter: "Annual" },
+        { name: "Causality", state: "system/causality" },
+        { name: "Patients by Drug", state: "system/patientsdrugreport" },
+        { name: "Outstanding Visits", state: "system/outstandingvisit" }
+      ]
+    }
+  ];
+
+  infoMenu: IMenuItem[] = [];
+
+  adminMenu: IMenuItem[] = [
+    {
+      type: "separator",
+      name: "Main Actions"
+    },
+    {
+      name: "Audit Trail",
+      type: "link",
+      tooltip: "",
+      icon: "event_note",
+      state: "administration/auditlog"
+    },
+    {
+      name: "Reference Data",
+      type: "dropDown",
+      tooltip: "",
+      icon: "extension",
+      state: "administration/reference",
+      sub: [
+        { name: "Condition Groups", state: "condition" },
+        { name: "MedDra Terms", state: "meddra" },
+        { name: "Medications", state: "medicine" },
+        { name: "Tests and Procedures", state: "labtest" },
+        { name: "Test Results", state: "labresult" }
+      ]
+    },
+    {
+      name: "System Configuration",
+      type: "dropDown",
+      tooltip: "",
+      icon: "settings",
+      state: "administration/system",
+      sub: [
+        { name: "Configuration", state: "config" },
+        { name: "Contact Details", state: "contactdetail" },
+        { name: "Facilities", state: "facility" },
+        { name: "Public Holidays", state: "holiday" },
+        { name: "Report Meta Data", state: "reportmeta" }
+      ]
+    },
+    {
+      name: "User Configuration",
+      type: "dropDown",
+      tooltip: "",
+      icon: "account_circle",
+      state: "administration/user",
+      sub: [
+        { name: "Users", state: "user" },
+        { name: "Roles", state: "role" }
+      ]
+    },
+    {
+      name: "Work Configuration",
+      type: "dropDown",
+      tooltip: "",
+      icon: "folder",
+      state: "administration/work",
+      sub: [
+        { name: "Care Events", state: "careevent" },
+        { name: "Datasets", state: "dataset" },
+        { name: "Dataset Elements", state: "datasetelement" },
+        { name: "Encounter Types", state: "encountertype" },
+        { name: "Forms", state: "form" },
+        { name: "Work Plans", state: "workplan" }
+      ]
+    }
+  ];
+
+  // {
+  //   name: "INFORMATION",
+  //   type: "icon",
+  //   tooltip: "Information Portal",
+  //   icon: "content_copy",
+  //   state: "information"
+  // },
+
+  // Icon menu TITLE at the very top of navigation.
+  // This title will appear if any icon type item is present in menu.
+  iconTypeMenuTitle: string = "Portals";
+  // sets iconMenu as default;
+  menuItems = new BehaviorSubject<IMenuItem[]>(this.clinicalMenu);
+  // navigation component has subscribed to this Observable
+  menuItems$ = this.menuItems.asObservable();
+
+  // Supply different menu for different user type.
+  publishNavigationChange(menuType: string) 
+  {
+    switch (menuType) {
+      case "clinical-menu":
+        this.prepareClinicalMenus();
+        this.menuItems.next(this.clinicalMenu);
+        break;
+        
+      case "analytical-menu":
+        this.menuItems.next(this.analyticalMenu);
+        break;
+
+      case "reports-menu":
+        this.menuItems.next(this.reportMenu);
+        break;
+
+      case "information-menu":
+        this.menuItems.next(this.infoMenu);
+        break;
+  
+      case "administration-menu":
+        this.menuItems.next(this.adminMenu);
+        break;
+  
+      default:
+        this.menuItems.next(this.clinicalMenu);
+        break;
+    }
+  }
+
+  // called when route changes through subscription
+  setCurrentPortal(portal: string) {
+    this.currentPortal = portal; 
+  }
+
+  isPortalCurrent(portal:string) {
+    return portal == this.currentPortal;
+  }
+
+  determineRouteToLanding(): void {
+    if(!this.accountService.hasRole('Clinician') && !this.accountService.hasRole('RegClerk')) {
+      if(!this.accountService.hasRole('Analyst')) {
+        if(!this.accountService.hasRole('Reporter')) {
+          if(!this.accountService.hasRole('Publisher')) {
+            if(!this.accountService.hasRole('Admin')) {
+              if(!this.accountService.hasRole('DataCap')) {
+              // user has no roles, do nothing
+              }
+              else {
+                // route to formns list
+                this.routeToFormsList();
+              }
+            }
+            else {
+              // route to admin landing page
+              this.routeToAdminLanding();
+            }
+          }
+          else {
+            // route to information home page
+            this.routeToPublisherHome();
+          }
+        }
+        else {
+          // route to patient treatment report
+          this.routeToPatientTreatmentReport();
+        }
+      }
+      else {
+        // route to analyser landing
+        this.routeToAnalyticalLanding();
+      }
+    }
+    else {
+      // route to patient search
+      this.routeToClinicalLanding();
+    }
+  }
+
+  routeToClinicalLanding() : void {
+    this._router.navigate([_routes.clinical.patients.search]);
+  }
+
+  routeToFormsList() : void {
+    this._router.navigate([_routes.clinical.forms.list]);
+  }
+
+  routeToAnalyticalLanding() : void {
+    this._router.navigate([_routes.analytical.landing]);
+  }
+
+  routeToPatientTreatmentReport() : void {
+    this._router.navigate([_routes.reports.patienttreatment]);
+  }
+
+  routeToPublisherHome() : void {
+    this._router.navigate([_routes.information.home(1)]);
+  }
+
+  routeToAdminLanding() : void {
+    this._router.navigate([_routes.administration.landing]);
+  }
+
+  private prepareClinicalMenus(): void {
+    this.clinicalMenu = [];
+
+    let newMenu: IMenuItem = {
+      type: "separator",
+      name: "Main Actions"
+    };      
+    this.clinicalMenu.push(newMenu);
+
+    // Manually construct clinical menu based on permissions
+    if(this.accountService.hasRole('RegClerk') || this.accountService.hasRole('Clinician'))
+    {
+      let newMenu: IMenuItem = {
+        name: "Patients",
+        type: "link",
+        tooltip: "Search for Patient",
+        icon: "people",
+        state: "clinical/patientsearch"
+      };      
+      this.clinicalMenu.push(newMenu);
+    }
+
+    if(this.accountService.hasRole('Clinician'))
+    {
+      let newMenu: IMenuItem = {
+        name: "Encounters",
+        type: "link",
+        tooltip: "Search for encounter",
+        icon: "description",
+        state: "clinical/encountersearch"
+      };      
+      this.clinicalMenu.push(newMenu);
+
+      newMenu = {
+        name: "Cohorts",
+        type: "link",
+        tooltip: "View cohorts",
+        icon: "add_to_photos",
+        state: "clinical/cohortsearch"
+      };      
+      this.clinicalMenu.push(newMenu);
+
+      newMenu = {
+        name: "PV Feedback",
+        type: "link",
+        tooltip: "View specialist feedback",
+        icon: "info_outline",
+        state: "clinical/feedbacksearch"
+      };      
+      this.clinicalMenu.push(newMenu);
+    }
+
+    if(this.accountService.hasRole('RegClerk'))
+    {
+      let newMenu: IMenuItem = {
+        name: "Appointments",
+        type: "link",
+        tooltip: "View Appointments",
+        icon: "date_range",
+        state: "clinical/appointmentsearch"
+      };      
+      this.clinicalMenu.push(newMenu);
+    }
+
+    if(this.accountService.hasRole('DataCap'))
+    {
+      let newMenu: IMenuItem = {
+        name: "Forms",
+        type: "link",
+        tooltip: "View Forms for Capture",
+        icon: "content_copy",
+        state: "clinical/formlist"
+      };      
+      this.clinicalMenu.push(newMenu);
+
+      newMenu = {
+        name: "Synchronise",
+        type: "link",
+        tooltip: "Synchronise",
+        icon: "sync",
+        state: "clinical/synchronise"
+      };      
+      this.clinicalMenu.push(newMenu);
+
+      this.menuItems.next(this.clinicalMenu);
+    }
+  }
+
+  private prepareInfoMenus(): void {
+    this.infoMenu = [];
+    
+    let metaPageList: MetaPageDetailModel[] = [];
+
+    let newMenu: IMenuItem = {
+      type: "separator",
+      name: "Main Actions"
+    };      
+    this.infoMenu.push(newMenu);
+
+    this.metaService.getAllMetaPages()
+        .subscribe(result => {
+          metaPageList = result;
+          let infoMenu: IMenuItem[] = [];
+
+          metaPageList.filter(mp => mp.visible == 'Yes').forEach(function (page) {
+            let newMenu: IMenuItem = {
+              name: page.pageName,
+              type: "link",
+              tooltip: page.pageName,
+              icon: "content_copy",
+              state: "information/pageviewer",
+              parameter: page.id.toString()
+            };      
+            infoMenu.push(newMenu);
+          });
+          this.infoMenu = infoMenu;
+          if(this.accountService.hasRole('PublisherAdmin'))
+          {
+            let newMenu: IMenuItem = {
+              name: 'List pages',
+              type: "link",
+              tooltip: 'List all pages',
+              icon: "content_copy",
+              state: "information/pagelist"
+            };      
+            this.infoMenu.push(newMenu);
+          }
+        }, error => {
+            console.log(error + ' ' + error.statusText);
+        });
+  }
+}

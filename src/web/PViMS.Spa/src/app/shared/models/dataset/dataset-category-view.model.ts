@@ -1,0 +1,8 @@
+import { DatasetElementViewModel } from "./dataset-element-view.model";
+
+export interface DatasetCategoryViewModel {
+  datasetCategoryId: number;
+  datasetCategoryName: string;
+  datasetCategoryDisplayed: boolean;
+  datasetElements: DatasetElementViewModel[];
+}

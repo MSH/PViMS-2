@@ -1,0 +1,125 @@
+<div style="height: 5px;">
+  <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isBusy()"></mat-progress-bar>
+</div>
+
+<mat-card class="p-0">
+  <mat-card-title class="">
+    <div class="card-title-text">{{'PV Feedback' | translate}}</div>
+  </mat-card-title>
+
+  <mat-card-content>
+    <form [formGroup]="viewModelForm">
+      <div class="p-0 default-light-bg rounded">
+        <mat-tab-group [(selectedIndex)]="selectedTab">
+          <mat-tab label="{{'New Feedback' | translate}}">
+            <mat-card-content class="m-1 p-5" style="height: 100px;">
+              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="5.5%" fxLayoutAlign="start">
+                <div fxFlex="100" class="pr-1" *ngIf="workFlow?.newFeedbackInstanceCount > 0">
+                  <mat-chip-list #chipList>
+                    <div>
+                      <mat-chip color="primary" selected> 
+                        {{'New feedback' | translate}}
+                      </mat-chip>
+                      <span class="mr-24" matBadge="{{workFlow?.newFeedbackInstanceCount}}" matBadgePosition="above after" matBadgeColor="warn" matBadgeOverlap="true"></span>
+                    </div>
+                  </mat-chip-list>
+                </div>
+                <div fxFlex="100" class="pr-1" *ngIf="workFlow?.newFeedbackInstanceCount == 0">
+                  <div class="card-title-text mat-bg-accent p-24">
+                    {{ 'There is currently no new feedack' | translate }}
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-tab>
+
+          <mat-tab label="{{'Search by term' | translate}}">
+            <mat-card-content class="m-1 p-5" style="height: 100px;">
+              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start">
+                <div fxFlex="100" class="pr-1 p-12">
+                  <mat-label>{{'Please enter a term below to search by patient name, MedDra term as set by the clinician, the MedDra term as set by the PV specialist, the report identifier or medications used in the analysis' | translate}}...</mat-label>
+                </div>
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width">
+                    <input matInput formControlName="searchTerm" placeholder="{{'Term' | translate}}">
+                  </mat-form-field>
+                </div>
+              </div>
+              <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="end" class="p-8">
+                <button mat-raised-button color="primary" (click)="searchByTerm()" [disabled]="viewModelForm.invalid">{{'Search' | translate}}</button>
+              </div>
+            </mat-card-content>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+    </form>
+
+    <div class="ml-05 mr-05 mt-05 pb-1">
+      <div class="table-container">
+        <mat-table [dataSource]="viewModel?.mainGrid?.records"
+                    [@animate]="{value:'50'}">
+
+            <ng-container matColumnDef="Id">
+                <mat-header-cell *matHeaderCellDef>Id</mat-header-cell>
+                <mat-cell *matCellDef="let record">
+                    <p>{{record.id}}</p>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="created">
+                <mat-header-cell *matHeaderCellDef>{{ 'Created' | translate }}</mat-header-cell>
+                <mat-cell *matCellDef="let record">
+                    <p>{{record.createdDetail}}</p>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="identifier">
+                <mat-header-cell *matHeaderCellDef>{{ 'Identifier' | translate }}</mat-header-cell>
+                <mat-cell *matCellDef="let record">
+                    <p>{{record.identifier}}</p>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="patient">
+                <mat-header-cell *matHeaderCellDef>{{ 'Patient' | translate }}</mat-header-cell>
+                <mat-cell *matCellDef="let record">
+                    <p>{{record.patientIdentifier}}</p>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="adverse-event">
+                <mat-header-cell *matHeaderCellDef>{{ 'Adverse event' | translate }}</mat-header-cell>
+                <mat-cell *matCellDef="let record">
+                    <p>{{record.sourceIdentifier}}</p>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="meddra-term">
+              <mat-header-cell *matHeaderCellDef>{{ 'MedDra term' | translate }}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <p>{{record.terminologyMedDra?.medDraTerm}}</p>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <mat-header-cell *matHeaderCellDef>{{'Actions' | translate}}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                <button mat-icon-button color="primary" matTooltip="{{'View Adverse Event' | translate}}"
+                        (click)="openClinicalEventViewPopUp(record)">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="viewModel?.mainGrid?.displayedColumns; sticky:true"></mat-header-row>
+            <mat-row *matRowDef="let record; columns: viewModel?.mainGrid?.displayedColumns;"></mat-row>
+        </mat-table>
+      </div>
+
+      <mat-paginator #mainGridPaginator="matPaginator" [length]="viewModel?.mainGrid?.count"
+                    [pageIndex]="0" [pageSize]="10"
+                    [pageSizeOptions]="[5, 10, 25, 50]">
+      </mat-paginator>
+    </div>
+  </mat-card-content>
+</mat-card>

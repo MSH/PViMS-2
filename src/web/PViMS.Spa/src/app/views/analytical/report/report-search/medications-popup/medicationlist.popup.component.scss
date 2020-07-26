@@ -1,0 +1,53 @@
+.meds-list {
+    max-width: 100%;
+    min-height: 50px;
+    display: block;
+    border-radius: 4px;
+    overflow: hidden;
+}
+  
+.meds-box {
+    padding: 10px 8px;
+    box-sizing: border-box;
+    font-size: 14px;
+  
+    display: flex;
+  
+    &:hover {
+      background: rgba(119, 68, 68, 0.05);
+    }
+}
+  
+.move-handler {
+    cursor: move;
+}
+  
+.tag-red {
+  padding-right: 8px;
+  padding-left: 8px;
+  border-radius: 12px;
+  line-height: 24px;
+  box-sizing: content-box;
+  background: red;
+  color: white;
+
+  & > div {
+    display: inline-block;
+  }
+
+}
+
+.tag-black {
+  padding-right: 8px;
+  padding-left: 8px;
+  border-radius: 12px;
+  line-height: 24px;
+  box-sizing: content-box;
+  background: black;
+  color: white;
+
+  & > div {
+    display: inline-block;
+  }
+
+}

@@ -1,0 +1,89 @@
+<mat-progress-bar mode="indeterminate" color="primary" *ngIf="isBusy()"></mat-progress-bar>
+
+<mat-card class="p-0">
+  
+  <mat-card-title class="">
+      <div class="card-title-text">{{'Synchronise' | translate}}</div>
+  </mat-card-title>
+
+  <mat-card-content>      
+
+    <div class="card-title-text mat-bg-accent p-24" *ngIf="viewModel?.mainGrid?.records.data.length == 0 && this.accountService.isConnected()">
+      {{'No records' | translate}}
+    </div>
+    <div class="card-title-text mat-bg-warn p-24" *ngIf="!this.accountService.isConnected()">
+      {{'Unable to synchronise when offline. Please check your connection' | translate}}
+    </div>
+
+    <mat-toolbar *ngIf="viewModel?.mainGrid?.records.data.length > 0 && this.accountService.isConnected()">
+      <mat-checkbox (change)="selectToggleAll()" class="inbox-toggle-all mr-1"><small>All</small></mat-checkbox>
+      <button mat-mini-fab matTooltip="{{'Synchronise' | translate}}" (click)="synchForms()">
+        <mat-icon>cloud_upload</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <div class="ml-05 mr-05 mt-05 pb-1">
+      <div class="table-container" >
+        <mat-table [dataSource]="viewModel?.mainGrid?.records"
+                  [@animate]="{value:'50'}">
+
+          <ng-container matColumnDef="selected">
+              <mat-header-cell *matHeaderCellDef></mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                <mat-checkbox [(ngModel)]="record.selected"></mat-checkbox>
+              </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="identifier">
+            <mat-header-cell *matHeaderCellDef>{{'Identifier' | translate}}</mat-header-cell>
+            <mat-cell *matCellDef="let record">
+                {{record.formIdentifier}}
+            </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="patient identifier">
+              <mat-header-cell *matHeaderCellDef>{{'Patient Identifier' | translate}}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  {{record.patientIdentifier}}
+              </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="synch status">
+            <mat-header-cell *matHeaderCellDef>{{'Status' | translate}}</mat-header-cell>
+            <mat-cell *matCellDef="let record">
+              <span class="no-wrap">
+                <mat-icon *ngIf="record.synchStatus === 'Error'" color="warn">error</mat-icon>
+                <div *ngIf="record.synchStatus === 'Successful'">
+                  {{'Completed successfully' | translate}}
+                </div>
+                <span *ngIf="record.synchStatus === 'InProgress'">{{record.synchStatus}}</span>
+                <mat-progress-bar mode="indeterminate" color="accent" *ngIf="record.synchStatus == 'InProgress'"></mat-progress-bar>
+              </span>
+            </mat-cell>
+          </ng-container>
+          
+          <ng-container matColumnDef="actions">
+            <mat-header-cell *matHeaderCellDef>
+              {{'Actions' | translate}}
+            </mat-header-cell>
+            <mat-cell *matCellDef="let record">
+                <button mat-icon-button color="primary" matTooltip="{{'View Form' | translate}}"
+                        (click)="detail(record)">
+                    <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="primary" matTooltip="{{'Synchronisation messages' | translate}}"  
+                        (click)="viewMessagesPopUp(record.synchMessages)"
+                        *ngIf="record.synchStatus === 'Error'">
+                  <mat-icon>view_list</mat-icon>
+              </button>
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="viewModel?.mainGrid?.displayedColumns; sticky:true"></mat-header-row>
+          <mat-row *matRowDef="let record; columns: viewModel?.mainGrid?.displayedColumns;"></mat-row>
+        </mat-table>
+      </div>
+    </div>
+
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,31 @@
+<h1 matDialogTitle>{{data.title | translate}}</h1>
+
+  <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isBusy()"></mat-progress-bar>
+
+  <div fxLayout="row wrap" fxLayout.lt-sm="column">
+    <div fxFlex="100" class="pr-1">
+
+      <mat-card class="p-0">
+        <mat-card-content class="m-1 p-2" style="overflow-y: auto">
+
+          <div class="card-title-text default-light-bg rounded p-8">{{'Facilities' | translate}}</div>
+          <div class="icon-menu-item pl-8" *ngFor="let item of accountService.facilities">
+            {{item}}
+          </div>
+
+          <div class="card-title-text default-light-bg rounded p-8">{{'Roles' | translate}}</div>
+          <div class="icon-menu-item pl-8" *ngFor="let item of accountService.roles">
+            {{item | translate}}
+          </div>
+
+        </mat-card-content>
+      </mat-card>
+    
+    </div>
+
+    <div fxFlex="100" class="mt-1">
+      <span fxFlex></span>
+      <button mat-raised-button color="warn" type="button" (click)="dialogRef.close(false)">{{"Close" | translate }}</button>
+    </div>
+  </div>
+  
