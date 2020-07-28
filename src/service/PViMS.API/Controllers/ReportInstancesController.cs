@@ -427,14 +427,14 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
         /// <param name="id">The unique identifier of the reporting instance</param>
-        /// <param name="activityForUpdate">The payload for setting the new status</param>
+        /// <param name="activityChange">The payload for setting the new status</param>
         /// <returns></returns>
         [HttpPut("workflow/{workFlowGuid}/reportinstances/{id}/status", Name = "UpdateReportInstanceStatus")]
         [Consumes("application/json")]
         public async Task<IActionResult> UpdateReportInstanceStatus(Guid workFlowGuid, int id,
-            [FromBody] ActivityForUpdateDto activityForUpdate)
+            [FromBody] ActivityChangeDto activityChange)
         {
-            if (activityForUpdate == null)
+            if (activityChange == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
@@ -445,19 +445,27 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            if (Regex.Matches(activityForUpdate.Comments, @"[-a-zA-Z0-9 .,()']").Count < activityForUpdate.Comments.Length)
+            if (Regex.Matches(activityChange.Comments, @"[-a-zA-Z0-9 .,()']").Count < activityChange.Comments.Length)
             {
                 ModelState.AddModelError("Message", "Comments contains invalid characters (Enter A-Z, a-z, 0-9, period, comma, parentheses, space, apostrophe)");
             }
 
-            if(!_workFlowService.ValidateExecutionStatusForCurrentActivity(reportInstanceFromRepo.ContextGuid, activityForUpdate.NewExecutionStatus))
+            if(!String.IsNullOrWhiteSpace(activityChange.ContextCode))
+            {
+                if (Regex.Matches(activityChange.ContextCode, @"[-a-zA-Z0-9']").Count < activityChange.ContextCode.Length)
+                {
+                    ModelState.AddModelError("Message", "Comments contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
+                }
+            }
+
+            if (!_workFlowService.ValidateExecutionStatusForCurrentActivity(reportInstanceFromRepo.ContextGuid, activityChange.NewExecutionStatus))
             {
                 ModelState.AddModelError("Message", "Invalid status for activity");
             }
 
             if (ModelState.IsValid)
             {
-                _workFlowService.ExecuteActivity(reportInstanceFromRepo.ContextGuid, activityForUpdate.NewExecutionStatus, activityForUpdate.Comments, null, string.Empty);
+                _workFlowService.ExecuteActivity(reportInstanceFromRepo.ContextGuid, activityChange.NewExecutionStatus, activityChange.Comments, activityChange.ContextDate, activityChange.ContextCode);
 
                 return Ok();
             }
