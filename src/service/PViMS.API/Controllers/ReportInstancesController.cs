@@ -134,6 +134,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<ReportInstanceDetailDto>> GetReportInstanceByDetail(Guid workFlowGuid, int id)
         {
             var mappedReportInstance = await GetReportInstanceAsync<ReportInstanceDetailDto>(workFlowGuid, id);
@@ -218,6 +219,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.newreports.v1+json", "application/vnd.pvims.newreports.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.newreports.v1+json", "application/vnd.pvims.newreports.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetNewReportInstancesByDetail(Guid workFlowGuid,
             [FromQuery] ReportInstanceNewResourceParameters reportInstanceResourceParameters)
         {
@@ -252,6 +254,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.feedback.v1+json", "application/vnd.pvims.feedback.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.feedback.v1+json", "application/vnd.pvims.feedback.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetFeedbackReportInstancesByDetail(Guid workFlowGuid,
             [FromQuery] ReportInstanceNewResourceParameters reportInstanceResourceParameters)
         {

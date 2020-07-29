@@ -65,7 +65,6 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<AnalyserTermIdentifierDto>> GetAnalyserTermsByIdentifier(Guid workFlowGuid,
                         [FromQuery] AnalyserTermSetResourceParameters analyserTermSetResourceParameters)
         {
@@ -132,7 +131,6 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.analyserpatientset.v1+json", "application/vnd.pvims.analyserpatientset.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.analyserpatientset.v1+json", "application/vnd.pvims.analyserpatientset.v1+xml")]
-        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<AnalyserPatientDto>> GetAnalyserTermPatients(Guid workFlowGuid, int id, 
                         [FromQuery] AnalyserTermSetResourceParameters analyserTermSetResourceParameters)
         {
