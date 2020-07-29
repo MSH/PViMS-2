@@ -204,10 +204,21 @@ export class ActiveAnalyserComponent extends BaseComponent implements OnInit, Af
         });
   }
 
+  resetCriteria(): void {
+    let self = this;
+    self.viewModel.resultCount = 0;
+    self.selectedTermId = 0;
+    self.selectedOption = 1;
+    self.viewModel.patientContributionGrid.clearDataSource();
+    self.viewModel.exposedGrid.clearDataSource();
+    self.viewModel.unexposedGrid.clearDataSource();
+    self.viewModel.riskGrid.clearDataSource();
+  }
+
   runAnalysisTerm(): void {
     let self = this;
     self.setBusy(true);
-    self.analysisService.getAllAnalysisTermSets(self.viewModelForm.value)
+    self.analysisService.getAllAnalysisTermSets(self.viewModelForm.value, self.riskFactors)
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
@@ -225,8 +236,9 @@ export class ActiveAnalyserComponent extends BaseComponent implements OnInit, Af
     let self = this;
     self.selectedTermId = termId;
     self.setBusy(true);
-    self.analysisService.getAnalysisTermSetByDetail(self.viewModelForm.value, termId)
+    self.analysisService.getAnalysisTermSetByDetail(self.viewModelForm.value, termId, self.riskFactors)
         .pipe(takeUntil(self._unsubscribeAll))
+        .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
           console.log(result);
           self.viewModel.exposedGrid.updateBasic(result.results);
@@ -244,8 +256,8 @@ export class ActiveAnalyserComponent extends BaseComponent implements OnInit, Af
 
   loadPatientGrid(): void {
     let self = this;
-    console.log('in load');
-    self.analysisService.getAnalysisPatientSet(self.viewModel.patientContributionGrid.customFilterModel(self.viewModelForm.value), self.selectedTermId)
+    self.setBusy(true);
+    self.analysisService.getAnalysisPatientSet(self.viewModel.patientContributionGrid.customFilterModel(self.viewModelForm.value), self.selectedTermId, self.riskFactors)
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
@@ -321,7 +333,8 @@ export class ActiveAnalyserComponent extends BaseComponent implements OnInit, Af
 
   removeRiskFactor(index: number): void {
     let self = this;
-    self.riskFactors.splice(index, 1)
+    let newIndex = self.riskFactors.findIndex(rf => rf.index === index);
+    self.riskFactors.splice(newIndex, 1)
     this.viewModel.riskFactorGrid.updateBasic(this.riskFactors);
   }
 
@@ -400,7 +413,7 @@ class ViewModel {
 
   riskGrid: GridModel<RelativeRiskGridRecordModel> =
     new GridModel<RelativeRiskGridRecordModel>
-        (['medication', 'unadjusted relative risk', 'CI 95%']);
+        (['medication', 'unadjusted relative risk', 'adjusted relative risk', 'CI 95%']);
 
   patientContributionGrid: GridModel<PatientContributionGridRecordModel> =
     new GridModel<PatientContributionGridRecordModel>

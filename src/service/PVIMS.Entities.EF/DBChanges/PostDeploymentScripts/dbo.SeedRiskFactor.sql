@@ -16,9 +16,9 @@ SET IDENTITY_INSERT [dbo].[RiskFactor] OFF
 -- ***************** RISK FACTOR CRITERIA
 SET IDENTITY_INSERT [dbo].[RiskFactorOption] ON 
 INSERT [dbo].[RiskFactorOption] ([Id], [OptionName], [Criteria], [Display], [RiskFactor_Id]) VALUES (1, N'Adolescent <= 16 years', N'between 133 and 192', N'Adolescent (11 to 16 years)', 1)
-INSERT [dbo].[RiskFactorOption] ([Id], [OptionName], [Criteria], [Display], [RiskFactor_Id]) VALUES (2, N'Adult <= 69 years', N'between 193 and 828', N'Adult <= (16 to 69 years)', 1)
+INSERT [dbo].[RiskFactorOption] ([Id], [OptionName], [Criteria], [Display], [RiskFactor_Id]) VALUES (2, N'Adult <= 69 years', N'between 193 and 828', N'Adult (16 to 69 years)', 1)
 INSERT [dbo].[RiskFactorOption] ([Id], [OptionName], [Criteria], [Display], [RiskFactor_Id]) VALUES (3, N'Child <=11 years', N'between 49 and 132', N'Child (4 to 11 years)', 1)
-INSERT [dbo].[RiskFactorOption] ([Id], [OptionName], [Criteria], [Display], [RiskFactor_Id]) VALUES (4, N'Elderly > 69 years', N'> 828', N'Elderly > (over 69 years)', 1)
+INSERT [dbo].[RiskFactorOption] ([Id], [OptionName], [Criteria], [Display], [RiskFactor_Id]) VALUES (4, N'Elderly > 69 years', N'> 828', N'Elderly (over 69 years)', 1)
 INSERT [dbo].[RiskFactorOption] ([Id], [OptionName], [Criteria], [Display], [RiskFactor_Id]) VALUES (5, N'Infant <=4 years', N'between 2 and 48', N'Infant (1 month to 4 years)', 1)
 INSERT [dbo].[RiskFactorOption] ([Id], [OptionName], [Criteria], [Display], [RiskFactor_Id]) VALUES (6, N'Neonate <= 1 month', N'between 0 and 1', N'Neonate (0 to 1 month)', 1)
 INSERT [dbo].[RiskFactorOption] ([Id], [OptionName], [Criteria], [Display], [RiskFactor_Id]) VALUES (7, N'HIV', N'HIV', N'Has HIV', 2)

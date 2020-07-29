@@ -201,7 +201,7 @@ BEGIN
 						INNER JOIN #DruglistDeduped dld ON pl.Id = dld.Patient_Id
 						INNER JOIN Concept C ON dld.Medication_Id = c.Id
 						INNER JOIN [Patient] P ON pl.Id = p.Id
-					ORDER BY p.Surname, p.FirstName, dld.StartDate 
+					ORDER BY p.Surname, p.FirstName, dld.Drug, dld.StartDate 
 			END
 		ELSE
 			SELECT E.*, NE.[NonExposedCases], NE.[NonExposedNonCases], NE.[NonExposedPopulation], NE.[NonExposedIncidenceRate], ISNULL(R.[UnAdjustedRelativeRisk], 0) AS 'UnAdjustedRelativeRisk', ISNULL(R.[ConfidenceIntervalLow], 0) AS 'ConfidenceIntervalLow', ISNULL(R.[ConfidenceIntervalHigh], 0) AS 'ConfidenceIntervalHigh'
@@ -209,7 +209,7 @@ BEGIN
 					INNER JOIN #ContingencyNonExposed NE ON E.Medication_Id = NE.Medication_Id
 					LEFT JOIN #ContingencyRiskRatio R ON E.Medication_Id = R.Medication_Id 
 				WHERE E.ExposedPopulation IS NOT NULL
-				ORDER BY E.Medication_Id ASC
+				ORDER BY E.Drug ASC
 		RETURN -- EXIT STORED PROC
 	END
 
@@ -262,7 +262,7 @@ BEGIN
 					INNER JOIN Concept C ON dld.Medication_Id = c.Id
 					INNER JOIN [Patient] P ON pl.Id = p.Id
 					INNER JOIN #PatientListRiskFactors prf ON pl.Id = prf.PatientID 
-				ORDER BY p.Surname, p.FirstName, dld.StartDate 
+				ORDER BY p.Surname, p.FirstName, dld.Drug, dld.StartDate 
 		END
 	ELSE
 		SELECT E.*, NE.[NonExposedCases], NE.[NonExposedNonCases], NE.[NonExposedPopulation], NE.[NonExposedIncidenceRate], ISNULL(R.[UnAdjustedRelativeRisk], 0) AS 'UnAdjustedRelativeRisk', ISNULL(AR.[AdjustedRelativeRisk], 0) AS 'AdjustedRelativeRisk', ISNULL(AR.[ConfidenceIntervalLow], 0) AS 'ConfidenceIntervalLow', ISNULL(AR.[ConfidenceIntervalHigh], 0) AS 'ConfidenceIntervalHigh'
@@ -271,7 +271,7 @@ BEGIN
 				LEFT JOIN #ContingencyRiskRatio R ON E.Medication_Id = R.Medication_Id 
 				LEFT JOIN #ContingencyAdjustedRiskRatio AR ON E.Medication_Id = AR.Medication_Id 
 			WHERE E.ExposedPopulation IS NOT NULL
-			ORDER BY E.Medication_Id ASC
+			ORDER BY E.Drug ASC
 	RETURN -- EXIT STORED PROC
 
 	/***********************************************************************************

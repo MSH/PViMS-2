@@ -14,7 +14,7 @@ namespace PVIMS.API.Helpers
             switch (type)
             {
                 case ResourceUriType.PreviousPage:
-                    return urlHelper.Link("GetAnalyserTermSet",
+                    return urlHelper.Link("GetAnalyserTermsByIdentifier",
                       new
                       {
                           workFlowGuid,
@@ -22,11 +22,12 @@ namespace PVIMS.API.Helpers
                           cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                           searchFrom = analyserTermSetResourceParameters.SearchFrom,
                           searchTo = analyserTermSetResourceParameters.SearchTo,
+                          riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                           pageNumber = analyserTermSetResourceParameters.PageNumber - 1,
                           pageSize = analyserTermSetResourceParameters.PageSize
                       });
                 case ResourceUriType.NextPage:
-                    return urlHelper.Link("GetAnalyserTermSet",
+                    return urlHelper.Link("GetAnalyserTermsByIdentifier",
                       new
                       {
                           workFlowGuid,
@@ -34,12 +35,13 @@ namespace PVIMS.API.Helpers
                           cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                           searchFrom = analyserTermSetResourceParameters.SearchFrom,
                           searchTo = analyserTermSetResourceParameters.SearchTo,
+                          riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                           pageNumber = analyserTermSetResourceParameters.PageNumber + 1,
                           pageSize = analyserTermSetResourceParameters.PageSize
                       });
                 case ResourceUriType.Current:
                 default:
-                    return urlHelper.Link("GetAnalyserTermSet",
+                    return urlHelper.Link("GetAnalyserTermsByIdentifier",
                     new
                     {
                         workFlowGuid,
@@ -47,6 +49,7 @@ namespace PVIMS.API.Helpers
                         cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                         searchFrom = analyserTermSetResourceParameters.SearchFrom,
                         searchTo = analyserTermSetResourceParameters.SearchTo,
+                        riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                         pageNumber = analyserTermSetResourceParameters.PageNumber,
                         pageSize = analyserTermSetResourceParameters.PageSize
                     });
@@ -71,6 +74,7 @@ namespace PVIMS.API.Helpers
                           cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                           searchFrom = analyserTermSetResourceParameters.SearchFrom,
                           searchTo = analyserTermSetResourceParameters.SearchTo,
+                          riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                           pageNumber = analyserTermSetResourceParameters.PageNumber - 1,
                           pageSize = analyserTermSetResourceParameters.PageSize
                       });
@@ -84,6 +88,7 @@ namespace PVIMS.API.Helpers
                           cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                           searchFrom = analyserTermSetResourceParameters.SearchFrom,
                           searchTo = analyserTermSetResourceParameters.SearchTo,
+                          riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                           pageNumber = analyserTermSetResourceParameters.PageNumber + 1,
                           pageSize = analyserTermSetResourceParameters.PageSize
                       });
@@ -98,6 +103,7 @@ namespace PVIMS.API.Helpers
                         cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                         searchFrom = analyserTermSetResourceParameters.SearchFrom,
                         searchTo = analyserTermSetResourceParameters.SearchTo,
+                        riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                         pageNumber = analyserTermSetResourceParameters.PageNumber,
                         pageSize = analyserTermSetResourceParameters.PageSize
                     });
