@@ -57,7 +57,7 @@
             </ng-container>
 
             <mat-header-row *matHeaderRowDef="viewModel?.mainGrid?.displayedColumns; sticky:true"></mat-header-row>
-            <mat-row *matRowDef="let record; columns: viewModel?.mainGrid?.displayedColumns;" matRipple></mat-row>
+            <mat-row *matRowDef="let record; columns: viewModel?.mainGrid?.displayedColumns;"></mat-row>
         </mat-table>
       </div>
 

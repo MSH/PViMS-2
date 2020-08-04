@@ -53,6 +53,38 @@ export class ConceptService extends BaseService {
       return this.Get<ProductIdentifierWrapperModel>('/products', 'application/vnd.pvims.identifier.v1+json', parameters);
   }
 
+  getAllConcepts(): any {
+    let filter = new FilterModel();
+    filter.recordsPerPage = 50;
+    filter.currentPage = 1;
+
+    return this.getConcepts(filter)
+      .pipe( 
+        expand(response => {
+          let typedResponse = response as ConceptIdentifierWrapperModel;
+          let next = typedResponse.links.find(l => l.rel == 'nextPage');
+          return next ? this.GetByAddress<ConceptIdentifierWrapperModel>(next.href, 'application/vnd.pvims.identifier.v1+json') : EMPTY;
+        }),
+        map(response => {
+          let typedResponse = response as ConceptIdentifierWrapperModel;
+          return typedResponse.value;
+        }),
+        reduce((accData, data) => accData.concat(data), [])
+      );
+  }
+
+  getConcepts(filterModel: any): any {
+      let parameters: ParameterKeyValueModel[] = [];
+
+      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
+      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
+      if(filterModel.active != undefined) {
+        parameters.push(<ParameterKeyValueModel> { key: 'active', value: filterModel.active});
+      }
+  
+      return this.Get<ConceptIdentifierWrapperModel>('/concepts', 'application/vnd.pvims.identifier.v1+json', parameters);
+  }
+    
   searchConcepts(filterModel: any): any {
     let parameters: ParameterKeyValueModel[] = [];
 
@@ -134,23 +166,29 @@ export class ConceptService extends BaseService {
       return this.Get<MedicationFormIdentifierWrapperModel>('/medicationforms', 'application/vnd.pvims.identifier.v1+json', parameters);
   }
 
-  // getProductDetail(id: number): any {
-  //     let parameters: ParameterKeyValueModel[] = [];
-  //     parameters.push(<ParameterKeyValueModel> { key: 'id', value: id.toString() });
-
-  //     return this.Get<MedicationDetailModel>('/medications', 'application/vnd.pvims.detail.v1+json', parameters);
-  // }     
-
-  // saveMedication(id: number, model: any): any {
-  //   if(id == 0) {
-  //     return this.Post(`medications`, model);
-  //   }
-  //   else {
-  //     return this.Put(`medications/${id}`, model);
-  //   }
-  // }
+  saveProduct(id: number, model: any): any {
+    if(id == 0) {
+      return this.Post(`products`, model);
+    }
+    else {
+      return this.Put(`products/${id}`, model);
+    }
+  }
 
   deleteProduct(id: number): any {
     return this.Delete(`products/${id}`);
+  }
+
+  saveConcept(id: number, model: any): any {
+    if(id == 0) {
+      return this.Post(`concepts`, model);
+    }
+    else {
+      return this.Put(`concepts/${id}`, model);
+    }
+  }
+
+  deleteConcept(id: number): any {
+    return this.Delete(`concepts/${id}`);
   }
 }

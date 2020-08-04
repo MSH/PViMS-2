@@ -6,9 +6,9 @@
   
   <mat-card-title class="">
       <div class="card-title-text">
-        {{'Medications' | translate}}
+        {{'Active Ingredients' | translate}}
         <div class="addButton">
-          <button mat-raised-button class="mb-05" color="accent" (click)="openPopUp({}, true)">{{'Add Medication' | translate }}</button>
+          <button mat-raised-button class="mb-05" color="accent" (click)="openPopUp({}, true)">{{'Add Active Ingredient' | translate }}</button>
         </div>
       </div>
   </mat-card-title>
@@ -34,13 +34,6 @@
                 </mat-cell>
             </ng-container>
 
-            <ng-container matColumnDef="product">
-                <mat-header-cell *matHeaderCellDef>{{'Product' | translate }}</mat-header-cell>
-                <mat-cell *matCellDef="let record">
-                    <p>{{record.productName}}</p>
-                </mat-cell>
-            </ng-container>
-
             <ng-container matColumnDef="active-ingredient">
               <mat-header-cell *matHeaderCellDef>{{'Active ingredient' | translate }}</mat-header-cell>
               <mat-cell *matCellDef="let record">
@@ -52,13 +45,6 @@
               <mat-header-cell *matHeaderCellDef>{{'Medication form' | translate }}</mat-header-cell>
               <mat-cell *matCellDef="let record">
                   <p>{{record.formName}}</p>
-              </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="manufacturer">
-              <mat-header-cell *matHeaderCellDef>{{'Manufacturer' | translate }}</mat-header-cell>
-              <mat-cell *matCellDef="let record">
-                  <p>{{record.manufacturer}}</p>
               </mat-cell>
             </ng-container>
 
@@ -74,12 +60,12 @@
                     {{"Actions" | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let record">
-                    <button mat-icon-button color="primary" matTooltip="{{'Update Medication' | translate }}"
+                    <button mat-icon-button color="primary" matTooltip="{{'Update Active Ingredient' | translate }}"
                             (click)="openPopUp(record, false)">
                         <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" matTooltip="{{'Delete Medication' | translate }}"
-                            (click)="openDeletePopUp(record)">
+                    <button mat-icon-button color="warn" matTooltip="{{'Delete Active Ingredient' | translate }}"
+                            (click)="openDeletePopUp('Concept', record.id, record.conceptName)">
                         <mat-icon>delete</mat-icon>
                     </button>
                 </mat-cell>
@@ -94,8 +80,6 @@
                     [pageIndex]="0" [pageSize]="10"
                     [pageSizeOptions]="[5, 10, 25, 50]">
       </mat-paginator>
-
     </div>
-      
   </mat-card-content>
 </mat-card>

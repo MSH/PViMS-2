@@ -1,28 +1,28 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewEncapsulation, AfterViewInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
+import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
+import { ConceptService } from 'app/shared/services/concept.service';
+import { MatDialog, MatPaginator, MatDialogRef } from '@angular/material';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
-import { GridModel } from 'app/shared/models/grid.model';
-import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
-import { egretAnimations } from 'app/shared/animations/egret-animations';
-import { MedicationPopupComponent } from './medication-popup/medication.popup.component';
-import { ConceptService } from 'app/shared/services/concept.service';
-import { MedicationDeletePopupComponent } from './medication-delete-popup/medication-delete.popup.component';
+import { GridModel } from 'app/shared/models/grid.model';
+import { ConceptPopupComponent } from './concept-popup/concept.popup.component';
+import { GenericDeletePopupComponent } from '../../shared/generic-delete-popup/generic-delete.popup.component';
 
 @Component({
-  templateUrl: './medicine-list.component.html',
-  styleUrls: ['./medicine-list.component.scss'],
+  templateUrl: './concept-list.component.html',
+  styleUrls: ['./concept-list.component.scss'],
   encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
-export class MedicineListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ConceptListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     protected _activatedRoute: ActivatedRoute,
@@ -83,23 +83,23 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
     let self = this;
     self.setBusy(true);
 
-    self.conceptService.searchProductsByDetail(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
+    self.conceptService.searchConceptsByDetail(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
             self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-            self.handleError(error, "Error searching for products");
+            self.handleError(error, "Error searching for concepts");
         });
   }
 
   openPopUp(data: any = {}, isNew?) {
     let self = this;
-    let title = isNew ? 'Add Medication' : 'Update Medication';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(MedicationPopupComponent, {
+    let title = isNew ? 'Add Active Ingredient' : 'Update Active Ingredient';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(ConceptPopupComponent, {
       width: '720px',
       disableClose: true,
-      data: { productId: isNew ? 0: data.id, title: title, payload: data }
+      data: { conceptId: isNew ? 0: data.id, title: title, payload: data }
     })
     dialogRef.afterClosed()
       .subscribe(res => {
@@ -111,13 +111,13 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
       })
   }
 
-  openDeletePopUp(data: any = {}) {
+  openDeletePopUp(type: string, id: number, name: string) {
     let self = this;
-    let title = 'Delete Medication';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(MedicationDeletePopupComponent, {
+    let title = 'Delete Active Ingredient';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(GenericDeletePopupComponent, {
       width: '720px',
       disableClose: true,
-      data: { productId: data.id, title: title, payload: data }
+      data: { id: id, type: type, title: title, name: name }
     })
     dialogRef.afterClosed()
       .subscribe(res => {
@@ -128,22 +128,19 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
         self.loadGrid();
       })
   }
-
 }
 
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['id', 'product', 'active-ingredient', 'form', 'manufacturer', 'active', 'actions']);
+          (['id', 'active-ingredient', 'form', 'active', 'actions']);
 
   searchTerm: string;
 }
 
 class GridRecordModel {
   id: number;
-  productName: string;
   conceptName: string;
   formName: string;
-  manufacturer: string;
   active: string;
 }
