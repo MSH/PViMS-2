@@ -1,4 +1,5 @@
 import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -6,26 +7,32 @@ import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { finalize } from 'rxjs/operators';
 import { MetaPageExpandedModel } from 'app/shared/models/meta/meta-page.expanded.model';
 import { MetaWidgetDetailModel } from 'app/shared/models/meta/meta-widget.detail.model';
-import { MetaService } from 'app/shared/services/meta.service';
+import { MetaPageService } from 'app/shared/services/meta-page.service';
+import { BasePopupComponent } from 'app/shared/base/base.popup.component';
+import { Router } from '@angular/router';
+import { AccountService } from 'app/shared/services/account.service';
 
 @Component({
   templateUrl: './page-viewer.popup.component.html',
   encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
-export class PageViewerPopupComponent implements OnInit, AfterViewInit {
+export class PageViewerPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
 
   public itemForm: FormGroup;
   
-  protected busy: boolean = false;
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: PageViewerPopupData,
     public dialogRef: MatDialogRef<PageViewerPopupComponent>,
+    protected _router: Router,
+    protected _location: Location,
+    protected _formBuilder: FormBuilder,
     protected popupService: PopupService,
-    protected metaService: MetaService,
-    protected formBuilder: FormBuilder,
-  ) { }
+    protected metaPageService: MetaPageService,
+    protected accountService: AccountService) 
+  { 
+    super(_router, _location, popupService, accountService);
+  }
 
   metaPage: MetaPageExpandedModel;
 
@@ -35,7 +42,6 @@ export class PageViewerPopupComponent implements OnInit, AfterViewInit {
   middleRight: MetaWidgetDetailModel;
   bottomLeft: MetaWidgetDetailModel;
   bottomRight: MetaWidgetDetailModel;
-
 
   ngOnInit(): void {
   }
@@ -47,38 +53,10 @@ export class PageViewerPopupComponent implements OnInit, AfterViewInit {
     }
   }
 
-  public setBusy(value: boolean): void {
-    setTimeout(() => { this.busy = value; });
-  }
-
-  public isBusy(): boolean {
-    return this.busy;
-  }
-
-  protected notify(message: string, action: string) {
-    return this.popupService.notify(message, action);
-  }
-
-  protected showError(errorMessage: any, title: string = "Error") {
-    this.popupService.showErrorMessage(errorMessage, title);
-  }
-
-  protected showInfo(message: string, title: string = "Info") {
-    this.popupService.showInfoMessage(message, title);
-  }
-
-  protected throwError(errorObject: any, title: string = "Exception") {
-    if (errorObject.status == 401) {
-        this.showError(errorObject.error.message, errorObject.error.statusCodeType);
-    } else {
-        this.showError(errorObject.message, title);
-    }
-  }
-
   loadData(): void {
     let self = this;
     self.setBusy(true);
-    self.metaService.getMetaPageExpanded(self.data.metaPageId)
+    self.metaPageService.getMetaPage(self.data.metaPageId, 'expanded')
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.metaPage = result;

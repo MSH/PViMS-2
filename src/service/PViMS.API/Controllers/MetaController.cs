@@ -19,10 +19,6 @@ using System.Text;
 using VPS.Common.Collections;
 using VPS.Common.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
-using System.Threading.Tasks;
-using PVIMS.API.Helpers;
-using System.Xml;
-using Microsoft.AspNetCore.Authorization;
 
 namespace PVIMS.API.Controllers
 {
@@ -99,7 +95,7 @@ namespace PVIMS.API.Controllers
             var metaSummary = new MetaSummaryDto();
 
             string sql = string.Format(@"
-                SELECT * FROM MetaPatient;
+                SELECT Id FROM MetaPatient;
                 ");
 
             metaSummary.PatientCount = _unitOfWork.Repository<ScalarInt>().ExecuteSqlScalar(sql, new SqlParameter[0]);
@@ -183,76 +179,6 @@ namespace PVIMS.API.Controllers
             var wrapper = new LinkedCollectionResourceWrapperDto<MetaDependencyDetailDto>(mappedMetaDependenciesWithLinks.TotalCount, mappedMetaDependenciesWithLinks);
 
             return Ok(wrapper);
-        }
-
-        /// <summary>
-        /// Get all meta pages using a valid media type 
-        /// </summary>
-        /// <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaPageDetailDto</returns>
-        [HttpGet("metapages", Name = "GetMetaPagesByDetail")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
-            "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<MetaPageDetailDto>> GetMetaPagesByDetail(
-            [FromQuery] IdResourceParameters metaResourceParameters)
-        {
-            if (!_typeHelperService.TypeHasProperties<MetaPageDetailDto>
-                (metaResourceParameters.OrderBy))
-            {
-                return BadRequest();
-            }
-
-            var mappedMetaPagesWithLinks = GetMetaPages<MetaPageDetailDto>(metaResourceParameters);
-
-            var wrapper = new LinkedCollectionResourceWrapperDto<MetaPageDetailDto>(mappedMetaPagesWithLinks.TotalCount, mappedMetaPagesWithLinks);
-
-            return Ok(wrapper);
-        }
-
-        /// <summary>
-        /// Get a single meta page using it's unique id and valid media type 
-        /// </summary>
-        /// <param name="id">The unique identifier for the lab test</param>
-        /// <returns>An ActionResult of type MetaPageIdentifierDto</returns>
-        [HttpGet("metapages/{id}", Name = "GetMetaPageByIdentifier")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
-            "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public async Task<ActionResult<MetaPageIdentifierDto>> GetMetaPageByIdentifier(long id)
-        {
-            var mappedMetaPage = await GetMetaPageAsync<MetaPageIdentifierDto>(id);
-            if (mappedMetaPage == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(CreateLinksForMetaPage<MetaPageIdentifierDto>(mappedMetaPage));
-        }
-
-        /// <summary>
-        /// Get a single meta page using it's unique id and valid media type 
-        /// </summary>
-        /// <param name="id">The unique identifier for the lab test</param>
-        /// <returns>An ActionResult of type MetaPageExpandedDto</returns>
-        [HttpGet("metapages/{id}", Name = "GetMetaPageByExpanded")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
-            "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<MetaPageExpandedDto>> GetMetaPageByExpanded(long id)
-        {
-            var mappedMetaPage = await GetMetaPageAsync<MetaPageExpandedDto>(id);
-            if (mappedMetaPage == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(CreateLinksForMetaPage<MetaPageExpandedDto>(CustomPageMap(mappedMetaPage)));
         }
 
         /// <summary>
@@ -418,154 +344,6 @@ namespace PVIMS.API.Controllers
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Get meta tables from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="metaResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetMetaPages<T>(IdResourceParameters metaResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = metaResourceParameters.PageNumber,
-                PageSize = metaResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<MetaPage>(metaResourceParameters.OrderBy, "asc");
-
-            var pagedMetaPagesFromRepo = _metaPageRepository.List(pagingInfo, null, orderby, "");
-            if (pagedMetaPagesFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedMetaPages = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedMetaPagesFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedMetaPagesFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedMetaPages.TotalCount,
-                    pageSize = mappedMetaPages.PageSize,
-                    currentPage = mappedMetaPages.CurrentPage,
-                    totalPages = mappedMetaPages.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                //mappedMetaTables.ForEach(dto => CreateLinksForMetaTable(dto));
-
-                return mappedMetaPages;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get single meta page from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private async Task<T> GetMetaPageAsync<T>(long id) where T : class
-        {
-            var metaPageFromRepo = await _metaPageRepository.GetAsync(f => f.Id == id);
-
-            if (metaPageFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedMetaPage = _mapper.Map<T>(metaPageFromRepo);
-
-                return mappedMetaPage;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private MetaPageIdentifierDto CreateLinksForMetaPage<T>(T dto)
-        {
-            MetaPageIdentifierDto identifier = (MetaPageIdentifierDto)(object)dto;
-
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "MetaPage", identifier.Id), "self", "GET"));
-
-            return identifier;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private MetaPageExpandedDto CustomPageMap(MetaPageExpandedDto dto)
-        {
-            dto.Widgets.ForEach(widget => CustomWidgetMap(widget));
-            return dto;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private MetaWidgetDetailDto CustomWidgetMap(MetaWidgetDetailDto dto)
-        {
-            var metaWidget = _metaWidgetRepository.Get(p => p.Id == dto.Id);
-
-            if (metaWidget == null)
-            {
-                return dto;
-            }
-
-            var widgetType = (MetaWidgetTypes)metaWidget.WidgetType.Id;
-            if (widgetType == MetaWidgetTypes.SubItem )
-            {
-                XmlDocument wdoc = new XmlDocument();
-                wdoc.LoadXml(metaWidget.Content);
-                XmlNode wroot = wdoc.DocumentElement;
-
-                // Loop through each listitem
-                foreach (XmlNode node in wroot.ChildNodes)
-                {
-                    var listItem = new WidgetistItemDto()
-                    {
-                        Title = node.ChildNodes[0].InnerText,
-                        SubTitle = node.ChildNodes[1].InnerText,
-                        ContentPage = node.ChildNodes[2].InnerText,
-                        Modified = node.ChildNodes[3] != null ? node.ChildNodes[3].InnerText : DateTime.Today.ToString("yyyy-MM-dd")
-                    };
-                    dto.ContentItems.Add(listItem);
-                }
-
-            }
-            if (widgetType == MetaWidgetTypes.ItemList)
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(metaWidget.Content);
-                XmlNode root = doc.DocumentElement;
-
-                // Loop through each listitem
-                foreach (XmlNode node in root.ChildNodes)
-                {
-                    var listItem = new WidgetistItemDto()
-                    {
-                        Title = node.ChildNodes[0].InnerText,
-                        Content = node.ChildNodes[1].InnerText,
-                    };
-                    dto.ContentItems.Add(listItem);
-                }
-            }
-
-            return dto;
         }
 
         #region "Prepare Meta Definitions"

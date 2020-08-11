@@ -270,6 +270,12 @@ namespace PVIMS.API.Helpers
               new { datasetid, id = resourceId });
         }
 
+        public static string CreateDatasetCategoryElementResourceUri(IUrlHelper urlHelper, string resourceName, long datasetid, long datasetCategoryId, long resourceId)
+        {
+            return urlHelper.Link($"Get{resourceName}ByIdentifier",
+              new { datasetid, datasetCategoryId, id = resourceId });
+        }
+
         public static string CreateDownloadActivitySingleAttachmentResourceUri(IUrlHelper urlHelper, Guid workFlowGuid, long reportinstanceId, long activityExecutionStatusEventId, long attachmentId)
         {
             return urlHelper.Link("DownloadActivitySingleAttachment",
@@ -335,6 +341,12 @@ namespace PVIMS.API.Helpers
         {
             return urlHelper.Link("GetEnrolmentForPatient",
               new { patientId, id = enrolmentId });
+        }
+
+        public static string CreateMetaWidgetResourceUri(IUrlHelper urlHelper, long metaPageId, long metaWidgetId)
+        {
+            return urlHelper.Link("GetMetaWidgetByIdentifier",
+              new { metaPageId, id = metaWidgetId });
         }
 
         public static string CreateNewEnrolmentForPatientResourceUri(IUrlHelper urlHelper, long patientId)
@@ -893,6 +905,5 @@ namespace PVIMS.API.Helpers
             return urlHelper.Link($"Delete{resourceName}",
               new { id = resourceId });
         }
-
     }
 }
