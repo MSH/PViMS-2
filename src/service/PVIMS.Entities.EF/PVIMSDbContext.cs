@@ -283,7 +283,6 @@ namespace PVIMS.Entities.EF
                 CreateFacilityTypes(context);
                 CreateFieldTypes(context);
                 CreateContextTypes(context);
-                CreateEncounterTypes(context);
                 CreateStatus(context);
                 CreateMetaTypes(context);
                 CreatePostDeploymentScripts(context);
@@ -1204,20 +1203,6 @@ namespace PVIMS.Entities.EF
 			};
 
             context.ContextTypes.AddOrUpdate(ct => ct.Description, contextTypes);
-            context.SaveChanges();
-        }
-
-        private static void CreateEncounterTypes(PVIMSDbContext context)
-        {
-            var encounterTypes = new[]
-			{
-                new EncounterType { Description = "Pre-Treatment Visit", Help = "" },
-                new EncounterType { Description = "Treatment Initiation Visit", Help = "" },
-                new EncounterType { Description = "Scheduled Follow-Up Visit", Help = "" },
-                new EncounterType { Description = "Unscheduled Visit", Help = "" }
-			};
-
-            context.EncounterTypes.AddOrUpdate(et => et.Description, encounterTypes);
             context.SaveChanges();
         }
 

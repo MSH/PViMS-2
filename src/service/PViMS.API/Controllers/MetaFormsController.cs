@@ -27,23 +27,17 @@ namespace PVIMS.API.Controllers
     [Authorize]
     public class MetaFormsController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
-        private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly IRepositoryInt<MetaForm> _metaFormRepository;
         private readonly IRepositoryInt<AuditLog> _auditLogRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
         private readonly FormHandler _formHandler;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public MetaFormsController(IPropertyMappingService propertyMappingService,
-            ITypeHelperService typeHelperService,
+        public MetaFormsController(ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
-            ITypeExtensionHandler modelExtensionBuilder,
             IRepositoryInt<MetaForm> metaFormRepository,
             IRepositoryInt<AuditLog> auditLogRepository,
             IRepositoryInt<User> userRepository,
@@ -51,11 +45,8 @@ namespace PVIMS.API.Controllers
             FormHandler formHandler,
             IHttpContextAccessor httpContextAccessor)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
-            _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _metaFormRepository = metaFormRepository ?? throw new ArgumentNullException(nameof(metaFormRepository));
             _auditLogRepository = auditLogRepository ?? throw new ArgumentNullException(nameof(auditLogRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
@@ -128,7 +119,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Store form for audit purposes
+            // Store user for audit log generation purposes
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var userFromRepo = _userRepository.Get(u => u.UserName == userName);
             AuditLog auditLog = null;
@@ -139,7 +130,7 @@ namespace PVIMS.API.Controllers
             _formHandler.SetForm(formForCreation);
 
             // Validation of the source entity
-            _formHandler.ValidateSourceEntity();
+            _formHandler.ValidateSourceIdentifier();
             if (_formHandler.GetValidationErrors().Count > 0)
             {
                 foreach (string message in _formHandler.GetValidationErrors())
@@ -150,7 +141,7 @@ namespace PVIMS.API.Controllers
 
             if (ModelState.IsValid)
             {
-                _formHandler.PrepareAndValidatePatientDetailForCreation();
+                _formHandler.PreparePatientAndClinicalDetail();
                 if (_formHandler.GetValidationErrors().Count > 0)
                 {
                     foreach (string message in _formHandler.GetValidationErrors())
@@ -174,7 +165,7 @@ namespace PVIMS.API.Controllers
                     };
                     await _auditLogRepository.SaveAsync(auditLog);
 
-                    _formHandler.ProcessFormForCreation();
+                    _formHandler.ProcessFormForCreationOrUpdate();
                     _unitOfWork.Complete();
 
                     return Ok();

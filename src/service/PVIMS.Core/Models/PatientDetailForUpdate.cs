@@ -6,12 +6,10 @@ using VPS.CustomAttributes;
 
 namespace PVIMS.Core.Models
 {
-    public class PatientDetail
+    public class PatientDetailForUpdate
     {
-        public PatientDetail()
+        public PatientDetailForUpdate()
         {
-            PatientId = 0;
-
             Conditions = new List<ConditionDetail>();
             LabTests = new List<LabTestDetail>();
             Medications = new List<MedicationDetail>();
@@ -19,31 +17,16 @@ namespace PVIMS.Core.Models
             Attachments = new List<AttachmentDetail>();
         }
 
-        [Required]
-        public int PatientId { get; set; }
-
-        [Required]
         [StringLength(30)]
         public string FirstName { get; set; }
 
-        [Required]
         [StringLength(30)]
         public string Surname { get; set; }
 
         [StringLength(30)]
         public string MiddleName { get; set; }
 
-        [Required]
-        [StringLength(100)]
-        public string CurrentFacilityName { get; set; }
-
-        [StringLength(1000)]
-        public string Notes { get; set; }
-
         public DateTime? DateOfBirth { get; set; }
-
-        public int? CohortGroupId { get; set; }
-        public DateTime? EnroledDate { get; set; }
 
         public int EncounterTypeId { get; set; }
         public int PriorityId { get; set; }

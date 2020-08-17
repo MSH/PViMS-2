@@ -26,7 +26,8 @@ namespace PVIMS.API.Helpers
         private List<string> _validationErrors { get; set; } = new List<string>();
 
         FormForCreationDto _formForCreation;
-        private PatientDetail _patientDetail;
+        private PatientDetailForCreation _patientDetailForCreation;
+        private PatientDetailForUpdate _patientDetailForUpdate;
 
         public FormHandler(IPatientService patientService,
             IWorkFlowService workflowService,
@@ -58,6 +59,9 @@ namespace PVIMS.API.Helpers
                     _formValues.Add(JsonConvert.DeserializeObject<Dictionary<string, string>>(formValue));
                 }
             }
+
+            _patientDetailForCreation = null;
+            _patientDetailForUpdate = null;
         }
 
         public void SetSpontaneousForm(Object[] formControlValues)
@@ -83,7 +87,7 @@ namespace PVIMS.API.Helpers
             }
         }
 
-        public void ValidateSourceEntity()
+        public void ValidateSourceIdentifier()
         {
             List<CustomAttributeParameter> parameters = new List<CustomAttributeParameter>();
 
@@ -93,7 +97,6 @@ namespace PVIMS.API.Helpers
             switch (_formForCreation.FormType)
             {
                 case "FormA":
-
                     var identifier_id = GetAttributeValueFromObject(1, "patientIdentityNumber");
 
                     // Ensure patient record does not exist
@@ -134,63 +137,49 @@ namespace PVIMS.API.Helpers
             }
         }
 
-        public void PrepareAndValidatePatientDetailForCreation()
+        public void PreparePatientAndClinicalDetail()
         {
-            _patientDetail = new PatientDetail();
-            _patientDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<Patient>();
-
-            // Prepare patient first class
-            _patientDetail.CurrentFacilityName = GetAttributeValueFromObject(1, "treatmentSiteId");
-            _patientDetail.FirstName = GetAttributeValueFromObject(1, "patientFirstName");
-            _patientDetail.Surname = GetAttributeValueFromObject(1, "patientLastName");
-            _patientDetail.DateOfBirth = String.IsNullOrWhiteSpace(GetAttributeValueFromObject(1, "birthDate")) ? (DateTime?)null : Convert.ToDateTime(GetAttributeValueFromObject(1, "birthDate"));
-
-            // Prepare patient attributes
-            _patientDetail.SetAttributeValue("Medical Record Number", GetAttributeValueFromObject(1, "asmNumber"));
-            _patientDetail.SetAttributeValue("Gender", TransformToGender(GetAttributeValueFromObject(1, "gender")));
-            _patientDetail.SetAttributeValue("Address", GetAttributeValueFromObject(1, "address"));
-            _patientDetail.SetAttributeValue("Patient Contact Number", GetAttributeValueFromObject(1, "contactNumber"));
-            _patientDetail.SetAttributeValue("Patient Identity Number", GetAttributeValueFromObject(1, "patientIdentityNumber"));
-
-            // Clinical
-            _patientDetail.Conditions.AddRange(PrepareConditionDetail());
-            _patientDetail.LabTests.AddRange(PrepareLabTestDetail());
-            _patientDetail.Medications.AddRange(PrepareMedicationDetail());
-
-            // Attachments
-            _patientDetail.Attachments.Add(new AttachmentDetail()
+            switch (_formForCreation.FormType)
             {
-                Description = _formForCreation.FormIdentifier,
-                ImageSource = _formForCreation.Attachment
-            });
+                case "FormA":
+                    PreparePatientDetailsFromFormA();
 
-            if (_formForCreation.HasSecondAttachment)
-            {
-                _patientDetail.Attachments.Add(new AttachmentDetail()
-                {
-                    Description = _formForCreation.FormIdentifier,
-                    ImageSource = _formForCreation.Attachment_2
-                });
-            }
+                    break;
 
-            if (!_patientDetail.IsValid())
-            {
-                _patientDetail.InvalidAttributes.ForEach(element => _validationErrors.Add(element));
+                case "FormB":
+                    PreparePatientDetailsFromFormB();
+
+                    break;
+
+                case "FormC":
+                    PreparePatientDetailsFromFormC();
+
+                    break;
+
+                default:
+                    break;
             }
         }
 
-        public void ProcessFormForCreation()
+        public void ProcessFormForCreationOrUpdate()
         {
             if(_validationErrors.Count > 0)
             {
                 throw new Exception("Unable to process form as there are validation errors");
             }
-            if(_patientDetail == null)
+            if(_patientDetailForCreation == null && _patientDetailForUpdate == null)
             {
                 throw new Exception("Unable to process form as patient detail is not prepared");
             }
 
-            var patientId = _patientService.AddPatient(_patientDetail);
+            if (_patientDetailForCreation != null)
+            {
+                _patientService.AddPatient(_patientDetailForCreation);
+            }
+            if (_patientDetailForUpdate != null)
+            {
+                _patientService.UpdatePatient(_patientDetailForUpdate);
+            }
         }
 
         public void ProcessSpontaneousFormForCreation(Dataset datasetFromRepo)
@@ -378,10 +367,172 @@ namespace PVIMS.API.Helpers
             }
         }
 
-        private List<ConditionDetail> PrepareConditionDetail()
+        private void PreparePatientDetailsFromFormA()
+        {
+            _patientDetailForCreation = new PatientDetailForCreation();
+            _patientDetailForCreation.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<Patient>();
+
+            // Prepare patient first class
+            _patientDetailForCreation.CurrentFacilityName = GetAttributeValueFromObject(1, "treatmentSiteId");
+            _patientDetailForCreation.FirstName = GetAttributeValueFromObject(1, "patientFirstName");
+            _patientDetailForCreation.Surname = GetAttributeValueFromObject(1, "patientLastName");
+            _patientDetailForCreation.DateOfBirth = String.IsNullOrWhiteSpace(GetAttributeValueFromObject(1, "birthDate")) ? (DateTime?)null : Convert.ToDateTime(GetAttributeValueFromObject(1, "birthDate"));
+
+            // Prepare patient attributes
+            _patientDetailForCreation.SetAttributeValue("Medical Record Number", GetAttributeValueFromObject(1, "asmNumber"));
+            _patientDetailForCreation.SetAttributeValue("Gender", TransformToGender(GetAttributeValueFromObject(1, "gender")));
+            _patientDetailForCreation.SetAttributeValue("Address", GetAttributeValueFromObject(1, "address"));
+            _patientDetailForCreation.SetAttributeValue("Patient Contact Number", GetAttributeValueFromObject(1, "contactNumber"));
+            _patientDetailForCreation.SetAttributeValue("Patient Identity Number", GetAttributeValueFromObject(1, "patientIdentityNumber"));
+
+            // Clinical
+            _patientDetailForCreation.Conditions.AddRange(PrepareConditionDetail(0));
+            _patientDetailForCreation.LabTests.AddRange(PrepareLabTestDetail(1));
+            _patientDetailForCreation.Medications.AddRange(PrepareMedicationDetail());
+
+            // Attachments
+            _patientDetailForCreation.Attachments.Add(new AttachmentDetail()
+            {
+                Description = _formForCreation.FormIdentifier,
+                ImageSource = _formForCreation.Attachment
+            });
+
+            if (_formForCreation.HasSecondAttachment)
+            {
+                _patientDetailForCreation.Attachments.Add(new AttachmentDetail()
+                {
+                    Description = _formForCreation.FormIdentifier,
+                    ImageSource = _formForCreation.Attachment_2
+                });
+            }
+
+            // Encounter
+            _patientDetailForCreation.EncounterTypeId = 1;
+            _patientDetailForCreation.EncounterDate = String.IsNullOrWhiteSpace(GetAttributeValueFromObject(2, "currentDate")) ? DateTime.Today : Convert.ToDateTime(GetAttributeValueFromObject(2, "currentDate"));
+            _patientDetailForCreation.PriorityId = 1;
+
+            if (!_patientDetailForCreation.IsValid())
+            {
+                _patientDetailForCreation.InvalidAttributes.ForEach(element => _validationErrors.Add(element));
+            }
+        }
+
+        private void PreparePatientDetailsFromFormB()
+        {
+            var identifier_asm = GetAttributeValueFromObject(1, "asmNumber");
+
+            List<CustomAttributeParameter> parameters = new List<CustomAttributeParameter>();
+            parameters.Add(new CustomAttributeParameter() { AttributeKey = "Medical Record Number", AttributeValue = identifier_asm });
+
+            var patientFromRepo = _patientService.GetPatientUsingAttributes(parameters);
+            if (patientFromRepo == null)
+            {
+                throw new Exception($"Unable to locate patient record for {identifier_asm}");
+            }
+            VPS.CustomAttributes.IExtendable patientExtended = patientFromRepo;
+
+            _patientDetailForUpdate = new PatientDetailForUpdate();
+            _patientDetailForUpdate.CustomAttributes = _modelExtensionBuilder.BuildModelExtension(patientExtended);
+
+            // Prepare patient first class
+            _patientDetailForUpdate.FirstName = GetAttributeValueFromObject(1, "patientFirstName");
+            _patientDetailForUpdate.Surname = GetAttributeValueFromObject(1, "patientLastName");
+            _patientDetailForUpdate.DateOfBirth = String.IsNullOrWhiteSpace(GetAttributeValueFromObject(1, "birthDate")) ? (DateTime?)null : Convert.ToDateTime(GetAttributeValueFromObject(1, "birthDate"));
+
+            // Prepare patient attributes
+            _patientDetailForUpdate.SetAttributeValue("Medical Record Number", GetAttributeValueFromObject(1, "asmNumber"));
+            if (!String.IsNullOrWhiteSpace(GetAttributeValueFromObject(1, "patientIdentityNumber")))
+            {
+                _patientDetailForUpdate.SetAttributeValue("Patient Identity Number", GetAttributeValueFromObject(1, "patientIdentityNumber"));
+            }
+            if (!String.IsNullOrWhiteSpace(GetAttributeValueFromObject(1, "patientIdentityNumber")))
+            {
+                _patientDetailForUpdate.SetAttributeValue("Patient Identity Number", GetAttributeValueFromObject(1, "patientIdentityNumber"));
+            }
+            if (TransformToGender(GetAttributeValueFromObject(1, "gender")) != "0")
+            {
+                _patientDetailForUpdate.SetAttributeValue("Gender", TransformToGender(GetAttributeValueFromObject(1, "gender")));
+            }
+
+            // Clinical
+            _patientDetailForUpdate.LabTests.AddRange(PrepareLabTestDetail(3));
+            _patientDetailForUpdate.ClinicalEvents.AddRange(PrepareClinicalEventDetail(1));
+
+            // Attachments
+            _patientDetailForUpdate.Attachments.Add(new AttachmentDetail()
+            {
+                Description = _formForCreation.FormIdentifier,
+                ImageSource = _formForCreation.Attachment
+            });
+
+            if (_formForCreation.HasSecondAttachment)
+            {
+                _patientDetailForUpdate.Attachments.Add(new AttachmentDetail()
+                {
+                    Description = _formForCreation.FormIdentifier,
+                    ImageSource = _formForCreation.Attachment_2
+                });
+            }
+
+            // Encounter
+            _patientDetailForUpdate.EncounterTypeId = 2;
+            _patientDetailForUpdate.EncounterDate = String.IsNullOrWhiteSpace(GetAttributeValueFromObject(6, "currentDate")) ? DateTime.Today : Convert.ToDateTime(GetAttributeValueFromObject(6, "currentDate"));
+            _patientDetailForUpdate.PriorityId = 1;
+
+            if (!_patientDetailForUpdate.IsValid())
+            {
+                _patientDetailForUpdate.InvalidAttributes.ForEach(element => _validationErrors.Add(element));
+            }
+        }
+
+        private void PreparePatientDetailsFromFormC()
+        {
+            var identifier_asm = GetAttributeValueFromObject(1, "asmNumber");
+
+            List<CustomAttributeParameter> parameters = new List<CustomAttributeParameter>();
+            parameters.Add(new CustomAttributeParameter() { AttributeKey = "Medical Record Number", AttributeValue = identifier_asm });
+
+            var patientFromRepo = _patientService.GetPatientUsingAttributes(parameters);
+            if (patientFromRepo == null)
+            {
+                throw new Exception($"Unable to locate patient record for {identifier_asm}");
+            }
+            VPS.CustomAttributes.IExtendable patientExtended = patientFromRepo;
+
+            _patientDetailForUpdate = new PatientDetailForUpdate();
+            _patientDetailForUpdate.CustomAttributes = _modelExtensionBuilder.BuildModelExtension(patientExtended);
+
+            // Attachments
+            _patientDetailForUpdate.Attachments.Add(new AttachmentDetail()
+            {
+                Description = _formForCreation.FormIdentifier,
+                ImageSource = _formForCreation.Attachment
+            });
+
+            if (_formForCreation.HasSecondAttachment)
+            {
+                _patientDetailForUpdate.Attachments.Add(new AttachmentDetail()
+                {
+                    Description = _formForCreation.FormIdentifier,
+                    ImageSource = _formForCreation.Attachment_2
+                });
+            }
+
+            // Encounter
+            _patientDetailForUpdate.EncounterTypeId = 3;
+            _patientDetailForUpdate.EncounterDate = String.IsNullOrWhiteSpace(GetAttributeValueFromObject(4, "currentDate")) ? DateTime.Today : Convert.ToDateTime(GetAttributeValueFromObject(4, "currentDate"));
+            _patientDetailForUpdate.PriorityId = 1;
+
+            if (!_patientDetailForUpdate.IsValid())
+            {
+                _patientDetailForUpdate.InvalidAttributes.ForEach(element => _validationErrors.Add(element));
+            }
+        }
+
+        private List<ConditionDetail> PrepareConditionDetail(int attributeArray)
         {
             List<ConditionDetail> conditions = new List<ConditionDetail>();
-            var rowCount = GetRowCountFromArray(0);
+            var rowCount = GetRowCountFromArray(attributeArray);
             if (rowCount > 0)
             {
                 for (int i = 0; i < rowCount; i++)
@@ -391,11 +542,11 @@ namespace PVIMS.API.Helpers
 
                     // Prepare first class
                     conditionDetail.DateStart = DateTime.Today;
-                    conditionDetail.ConditionSource = GetAttributeValueFromArrayRow(0, i, "condition");
-                    conditionDetail.TreatmentOutcome = GetAttributeValueFromArrayRow(0, i, "conditionStatus");
+                    conditionDetail.ConditionSource = GetAttributeValueFromArrayRow(attributeArray, i, "condition");
+                    conditionDetail.TreatmentOutcome = GetAttributeValueFromArrayRow(attributeArray, i, "conditionStatus");
 
                     // Prepare attributes
-                    conditionDetail.SetAttributeValue("Condition Ongoing", GetAttributeValueFromArrayRow(0, i, "conditionStatus") == "Continues" ? "1" : "2");
+                    conditionDetail.SetAttributeValue("Condition Ongoing", GetAttributeValueFromArrayRow(attributeArray, i, "conditionStatus") == "Continues" ? "1" : "2");
 
                     conditions.Add(conditionDetail);
                 }
@@ -403,10 +554,10 @@ namespace PVIMS.API.Helpers
             return conditions;
         }
 
-        private List<LabTestDetail> PrepareLabTestDetail()
+        private List<LabTestDetail> PrepareLabTestDetail(int attributeArray)
         {
             List<LabTestDetail> labTests = new List<LabTestDetail>();
-            var rowCount = GetRowCountFromArray(1);
+            var rowCount = GetRowCountFromArray(attributeArray);
             if (rowCount > 0)
             {
                 for (int i = 0; i < rowCount; i++)
@@ -415,9 +566,9 @@ namespace PVIMS.API.Helpers
                     labTestDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<PatientLabTest>();
 
                     // Prepare first class
-                    labTestDetail.TestDate = Convert.ToDateTime(GetAttributeValueFromArrayRow(1, i, "testResultDate"));
-                    labTestDetail.LabTestSource = GetAttributeValueFromArrayRow(1, i, "labTest");
-                    labTestDetail.TestResult = GetAttributeValueFromArrayRow(1, i, "testResultValue");
+                    labTestDetail.TestDate = Convert.ToDateTime(GetAttributeValueFromArrayRow(attributeArray, i, "testResultDate"));
+                    labTestDetail.LabTestSource = GetAttributeValueFromArrayRow(attributeArray, i, "labTest");
+                    labTestDetail.TestResult = GetAttributeValueFromArrayRow(attributeArray, i, "testResultValue");
 
                     labTests.Add(labTestDetail);
                 }
@@ -449,9 +600,87 @@ namespace PVIMS.API.Helpers
             return medications;
         }
 
+        private List<ClinicalEventDetail> PrepareClinicalEventDetail(int attributeArray)
+        {
+            List<ClinicalEventDetail> clinicalEvents = new List<ClinicalEventDetail>();
+            var rowCount = GetRowCountFromArray(attributeArray);
+            if (rowCount > 0)
+            {
+                for (int i = 0; i < rowCount; i++)
+                {
+                    var clinicalEventDetail = new ClinicalEventDetail();
+                    clinicalEventDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<PatientClinicalEvent>();
+
+                    // Prepare first class
+                    clinicalEventDetail.SourceDescription = GetAttributeValueFromArrayRow(attributeArray, i, "adverseEvent");
+                    clinicalEventDetail.OnsetDate = Convert.ToDateTime(GetAttributeValueFromArrayRow(attributeArray, i, "startDate"));
+                    clinicalEventDetail.ResolutionDate = String.IsNullOrWhiteSpace(GetAttributeValueFromArrayRow(attributeArray, i, "endDate")) ? (DateTime?)null : Convert.ToDateTime(GetAttributeValueFromArrayRow(attributeArray, i, "endDate"));
+
+                    // Prepare attributes
+                    clinicalEventDetail.SetAttributeValue("Intensity (Severity)", TransformToSeverity(GetAttributeValueFromArrayRow(attributeArray, i, "gravity")));
+                    clinicalEventDetail.SetAttributeValue("Is the adverse event serious?", TransformToYesNo(GetAttributeValueFromArrayRow(attributeArray, i, "serious")));
+                    clinicalEventDetail.SetAttributeValue("Seriousness", TransformToSeriousness(GetAttributeValueFromArrayRow(attributeArray, i, "severity")));
+
+                    clinicalEvents.Add(clinicalEventDetail);
+                }
+            }
+            return clinicalEvents;
+        }
+
         private string TransformToGender(string source)
         {
             return (source == "M") ? "1" : (source == "F") ? "2" : "0";
         }
+
+        private string TransformToYesNo(string source)
+        {
+            return (source == "Yes") ? "1" : (source == "No") ? "2" : "0";
+        }
+
+        private string TransformToSeverity(string source)
+        {
+            switch (source)
+            {
+                case "Mild":
+                    return "1";
+
+                case "Moderate":
+                    return "2";
+
+                case "Severe":
+                    return "3";
+
+                default:
+                    return "0";
+            }
+        }
+
+        private string TransformToSeriousness(string source)
+        {
+            switch (source)
+            {
+                case "Hospitalisation":
+                    return "4";
+
+                case "Prolonged hospital stay":
+                    return "5";
+
+                case "Permanent disability":
+                    return "2";
+
+                case "Congenital malformations":
+                    return "1";
+
+                case "Life risk":
+                    return "6";
+
+                case "Death":
+                    return "3";
+
+                default:
+                    return "0";
+            }
+        }
+
     }
 }

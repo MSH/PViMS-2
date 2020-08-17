@@ -107,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\SystemLog.cs" />
+    <Compile Include="Models\PatientDetailForUpdate.cs" />
     <Compile Include="Models\SeriesValueList.cs" />
     <Compile Include="Entities\Accounts\RefreshToken.cs" />
     <Compile Include="Entities\Accounts\User.cs" />
@@ -238,7 +239,7 @@
     <Compile Include="Models\OutstandingVisitList.cs" />
     <Compile Include="Models\ConditionDetail.cs" />
     <Compile Include="Models\EncounterDetail.cs" />
-    <Compile Include="Models\PatientDetail.cs" />
+    <Compile Include="Models\PatientDetailForCreation.cs" />
     <Compile Include="Models\PatientEventSummary.cs" />
     <Compile Include="Models\EncounterList.cs" />
     <Compile Include="Models\PatientList.cs" />
