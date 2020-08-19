@@ -10,6 +10,7 @@
         InValidMedDRAImport = 6,
         ValidMedDRAImport = 7,
         SynchronisationForm = 8,
-        SynchronisationError = 9
+        SynchronisationError = 9,
+        DataValidation = 10
     }
 }

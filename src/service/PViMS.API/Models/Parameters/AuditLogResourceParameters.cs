@@ -41,6 +41,7 @@ namespace PVIMS.API.Models.Parameters
         MeddraImport = 3,
         UserLogin = 4,
         SynchronisationSuccessful = 5,
-        SynchronisationError = 6
+        SynchronisationError = 6,
+        DataValidation = 7
     }
 }

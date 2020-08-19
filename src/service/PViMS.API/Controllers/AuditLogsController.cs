@@ -254,9 +254,13 @@ namespace PVIMS.API.Controllers
                 case AuditTypeFilter.SynchronisationError:
                     predicate = predicate.And(au => au.AuditType == AuditType.SynchronisationError);
                     break;
+
+                case AuditTypeFilter.DataValidation:
+                    predicate = predicate.And(au => au.AuditType == AuditType.DataValidation);
+                    break;
             }
 
-            if(auditLogResourceParameters.FacilityId > 0)
+            if (auditLogResourceParameters.FacilityId > 0)
             {
                 predicate = predicate.And(au => au.User.Facilities.Any(uf => uf.Facility.Id == auditLogResourceParameters.FacilityId));
             }
