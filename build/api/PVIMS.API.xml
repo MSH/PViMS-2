@@ -2125,6 +2125,12 @@
             </summary>
             <returns>An ActionResult of type MetaSummaryDto</returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.MetaController.GetMetaTablesByIdentifier(PVIMS.API.Models.Parameters.MetaResourceParameters)">
+            <summary>
+            Get all meta tables using a valid media type 
+            </summary>
+            <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaTableIdentifierDto</returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.MetaController.GetMetaTablesByDetail(PVIMS.API.Models.Parameters.MetaResourceParameters)">
             <summary>
             Get all meta tables using a valid media type 
@@ -2171,6 +2177,16 @@
             </summary>
             <typeparam name="T">Identifier or detail Dto</typeparam>
             <param name="metaResourceParameters">Standard parameters for representing resource</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaController.CreateLinksForTables(PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.MetaResourceParameters,System.Boolean,System.Boolean)">
+            <summary>
+            Prepare HATEOAS links for a identifier based collection resource
+            </summary>
+            <param name="wrapper">The linked dto wrapper that will host each link</param>
+            <param name="metaResourceParameters">Standard parameters for representing resource</param>
+            <param name="hasNext">Are there additional pages</param>
+            <param name="hasPrevious">Are there previous pages</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.MetaFormsController.GetMetaFormsByDetail(PVIMS.API.Models.Parameters.MetaFormResourceParameters)">
@@ -2366,6 +2382,12 @@
             <param name="metaWidgetForUpdate">The meta widget payload</param>
             <returns></returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.GetMetaReportsByIdentifier(PVIMS.API.Models.Parameters.IdResourceParameters)">
+            <summary>
+            Get all meta reports using a valid media type 
+            </summary>
+            <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaReportIdentifierDto</returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.MetaReportsController.GetMetaReportsByDetail(PVIMS.API.Models.Parameters.IdResourceParameters)">
             <summary>
             Get all meta reports using a valid media type 
@@ -2385,6 +2407,13 @@
             </summary>
             <param name="id">The unique identifier for the meta report</param>
             <returns>An ActionResult of type MetaReportDetailDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.GetMetaReportByExpanded(System.Int64)">
+            <summary>
+            Get a single meta report using it's unique id and valid media type 
+            </summary>
+            <param name="id">The unique identifier for the meta report</param>
+            <returns>An ActionResult of type MetaReportExpandedDto</returns>
         </member>
         <member name="M:PVIMS.API.Controllers.MetaReportsController.CreateMetaReport(PVIMS.API.Models.MetaReportForUpdateDto)">
             <summary>
@@ -2473,6 +2502,30 @@
              Map additional dto detail elements not handled through automapper
             </summary>
             <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.CustomReportMap(PVIMS.API.Models.MetaReportExpandedDto)">
+            <summary>
+             Map additional dto detail elements not handled through automapper
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.CustomColumnMap(PVIMS.API.Models.MetaColumnExpandedDto)">
+            <summary>
+             Map additional dto detail elements not handled through automapper
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.CreateLinksForReports(PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.IdResourceParameters,System.Boolean,System.Boolean)">
+            <summary>
+            Prepare HATEOAS links for a identifier based collection resource
+            </summary>
+            <param name="wrapper">The linked dto wrapper that will host each link</param>
+            <param name="metaResourceParameters">Standard parameters for representing resource</param>
+            <param name="hasNext">Are there additional pages</param>
+            <param name="hasPrevious">Are there previous pages</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.OutcomesController.GetOutcomesByIdentifier(PVIMS.API.Models.Parameters.IdResourceParameters)">
@@ -6459,7 +6512,12 @@
         </member>
         <member name="T:PVIMS.API.Models.MetaAttributeDto">
             <summary>
-            A meta aatribute representation DTO
+            A meta attribute representation DTO
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaAttributeDto.Index">
+            <summary>
+            The order of the attribute
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.MetaAttributeDto.AttributeName">
@@ -6505,6 +6563,16 @@
         <member name="P:PVIMS.API.Models.MetaColumnDetailDto.Range">
             <summary>
             Column range of values
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaColumnExpandedDto">
+            <summary>
+            A meta column representation DTO - EXPANDED
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaColumnExpandedDto.Operators">
+            <summary>
+            The operators that are applicable to the attribute type
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.MetaColumnIdentifierDto">
@@ -6567,6 +6635,11 @@
             A meta filter representation DTO
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.MetaFilterDto.Index">
+            <summary>
+            The order of the filter
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.MetaFilterDto.AttributeName">
             <summary>
             The unique attribute name
@@ -6580,6 +6653,21 @@
         <member name="P:PVIMS.API.Models.MetaFilterDto.Relation">
             <summary>
             The relation of the filters
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaOperatorDto">
+            <summary>
+            A meta operator representation DTO
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaOperatorDto.OperatorName">
+            <summary>
+            The name of the operator
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaOperatorDto.OperatorValue">
+            <summary>
+            The operator value
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.MetaReportDetailDto">
@@ -6620,6 +6708,26 @@
         <member name="P:PVIMS.API.Models.MetaReportDetailDto.CoreEntity">
             <summary>
             The core entity for the report
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaReportExpandedDto">
+            <summary>
+            A meta report representation DTO - EXPANDED
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportExpandedDto.CoreMetaTable">
+            <summary>
+            The associated core entity for the report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportExpandedDto.Attributes">
+            <summary>
+            The attributes associated to the report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportExpandedDto.Filters">
+            <summary>
+            The filters associated to the report
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.MetaReportForAttributeUpdateDto.ReportType">
@@ -6735,6 +6843,16 @@
         <member name="P:PVIMS.API.Models.MetaTableDetailDto.TableType">
             <summary>
             The type of table
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaTableExpandedDto">
+            <summary>
+            A meta table representation DTO - EXPANDED
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaTableExpandedDto.Columns">
+            <summary>
+            The columns associated to this meta table
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.MetaTableIdentifierDto">
