@@ -17,9 +17,6 @@ import { SharedComponentsModule } from 'app/shared/components/shared-components.
 import { SharedModule } from 'app/shared/shared.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { AcceptEulaPopupComponent } from './accept-eula/accept-eula.popup.component';
-import { SpontaneousComponent } from './spontaneous/spontaneous.component';
-import { SpontaneousLabsPopupComponent } from './spontaneous/spontaneous-labs-popup/spontaneous-labs.popup.component';
-import { SpontaneousMedicationsPopupComponent } from './spontaneous/spontaneous-medications-popup/spontaneous-medications.popup.component';
 import { LandingComponent } from './landing/landing.component';
 
 @NgModule({
@@ -40,16 +37,11 @@ import { LandingComponent } from './landing/landing.component';
     LockscreenComponent, 
     NotFoundComponent, 
     LoginComponent,
-    SpontaneousComponent,
-    SpontaneousLabsPopupComponent,
-    SpontaneousMedicationsPopupComponent,
     AcceptEulaPopupComponent,
     LandingComponent
   ],
   entryComponents: [
-    AcceptEulaPopupComponent,
-    SpontaneousLabsPopupComponent,
-    SpontaneousMedicationsPopupComponent
+    AcceptEulaPopupComponent
   ]
 })
 export class SessionsModule { }

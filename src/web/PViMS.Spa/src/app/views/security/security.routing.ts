@@ -33,10 +33,5 @@ export const SecurityRoutes: Routes = [
     path: "404",
     component: NotFoundComponent,
     data: { title: "Not Found" }
-  },
-  {
-    path: "spontaneous",
-    component: SpontaneousComponent,
-    data: { title: "Not Found" }
   }
 ];
