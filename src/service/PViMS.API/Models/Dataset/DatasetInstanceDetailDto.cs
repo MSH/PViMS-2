@@ -22,7 +22,7 @@ namespace PVIMS.API.Models
         public string UpdatedDetail { get; set; }
 
         /// <summary>
-        /// Dataset categories linked to the encounter through it's instance
+        /// Dataset categories linked through it's instance
         /// </summary>
         [DataMember]
         public ICollection<DatasetCategoryViewDto> DatasetCategories { get; set; } = new List<DatasetCategoryViewDto>();
