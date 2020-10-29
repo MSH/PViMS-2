@@ -5,13 +5,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PVIMS.API.Attributes;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.API.Services;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Models;
+using PVIMS.Core.Services;
+using PVIMS.Core.ValueTypes;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -25,21 +30,20 @@ namespace PVIMS.API.Controllers
     [Route("api/datasets")]
     public class DatasetsController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<Dataset> _datasetRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<DatasetCategory> _datasetCategoryRepository;
         private readonly IRepositoryInt<DatasetCategoryElement> _datasetCategoryElementRepository;
         private readonly IRepositoryInt<DatasetElement> _datasetElementRepository;
+        private readonly IRepositoryInt<DatasetElementSub> _datasetElementSubRepository;
         private readonly IRepositoryInt<ContextType> _contextTypeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly FormHandler _formHandler;
         private readonly IUrlHelper _urlHelper;
+        private readonly IWorkFlowService _workflowService;
 
-        public DatasetsController(IPropertyMappingService propertyMappingService,
-            ITypeHelperService typeHelperService,
+        public DatasetsController(ITypeHelperService typeHelperService,
             IMapper mapper,
             IUrlHelper urlHelper,
             IRepositoryInt<Dataset> datasetRepository,
@@ -47,11 +51,11 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<DatasetCategory> datasetCategoryRepository,
             IRepositoryInt<DatasetCategoryElement> datasetCategoryElementRepository,
             IRepositoryInt<DatasetElement> datasetElementRepository,
+            IRepositoryInt<DatasetElementSub> datasetElementSubRepository,
             IRepositoryInt<ContextType> contextTypeRepository,
-            FormHandler formHandler,
-            IUnitOfWorkInt unitOfWork)
+            IUnitOfWorkInt unitOfWork,
+            IWorkFlowService workflowService)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
@@ -60,9 +64,10 @@ namespace PVIMS.API.Controllers
             _datasetCategoryRepository = datasetCategoryRepository ?? throw new ArgumentNullException(nameof(datasetCategoryRepository));
             _datasetCategoryElementRepository = datasetCategoryElementRepository ?? throw new ArgumentNullException(nameof(datasetCategoryElementRepository));
             _datasetElementRepository = datasetElementRepository ?? throw new ArgumentNullException(nameof(datasetElementRepository));
+            _datasetElementSubRepository = datasetElementSubRepository ?? throw new ArgumentNullException(nameof(datasetElementSubRepository));
             _contextTypeRepository = contextTypeRepository ?? throw new ArgumentNullException(nameof(contextTypeRepository));
-            _formHandler = formHandler ?? throw new ArgumentNullException(nameof(formHandler));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
         }
 
         /// <summary>
@@ -902,38 +907,149 @@ namespace PVIMS.API.Controllers
         /// Create a new dataset instance
         /// </summary>
         /// <param name="datasetId">The unique identifier of the dataset that the instance is being created for</param>
-        /// <param name="formValues">The dataset instance payload</param>
+        /// <param name="elementValues">The dataset instance payload</param>
         /// <returns></returns>
         [HttpPut("{datasetId}/instances", Name = "CreateDatasetInstance")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [Consumes("application/json")]
-        public async Task<IActionResult> CreateDatasetInstance(long datasetId, [FromBody] Object[] formValues)
+        public async Task<IActionResult> CreateDatasetInstance(long datasetId, [FromBody] Object[] elementValues)
         {
-            if (formValues == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate payload for new form");
-                return BadRequest(ModelState);
-            }
-
             var datasetFromRepo = await _datasetRepository.GetAsync(f => f.Id == datasetId);
             if (datasetFromRepo == null)
             {
                 return NotFound();
             }
 
+            if (elementValues == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new form");
+            }
+
             if(datasetFromRepo.DatasetName != "Spontaneous Report")
             {
                 ModelState.AddModelError("Message", "Can only generate instance of type spontaneous report");
-                return BadRequest(ModelState);
             }
-
-            _formHandler.SetSpontaneousForm(formValues);
 
             if (ModelState.IsValid)
             {
-                _formHandler.ProcessSpontaneousFormForCreation(datasetFromRepo);
+                // Prepare new dataset
+                var datasetInstance = datasetFromRepo.CreateInstance(1, null);
+                datasetInstance.Status = DatasetInstanceStatus.COMPLETE;
 
-                return Ok();
+                // Update dataset instance values
+                foreach (var elementValue in elementValues)
+                {
+                    if (elementValue is JObject)
+                    {
+                        JObject elementsJObject = JObject.FromObject(elementValue);
+
+                        foreach (var elements in elementsJObject)
+                        {
+                            string name = elements.Key;
+                            JToken value = elements.Value;
+
+                            if (value is JObject)
+                            {
+                                JObject fieldsJObject = JObject.FromObject(value);
+                                foreach (var field in fieldsJObject)
+                                {
+                                    string fieldName = field.Key;
+                                    JToken fieldValue = field.Value;
+
+                                    // Do not process elements with no values
+                                    if (!String.IsNullOrEmpty(fieldValue.ToString()))
+                                    {
+                                        var id = Convert.ToInt32(fieldName);
+                                        var datasetElementFromRepo = _datasetElementRepository.Get(de => de.Id == id);
+                                        if (datasetElementFromRepo != null)
+                                        {
+                                            if (datasetElementFromRepo.Field.FieldType.Description == "Table")
+                                            {
+                                                //if (formValues is JArray)
+                                                JArray tablesJArray = JArray.FromObject(fieldValue);
+                                                foreach (JObject arrayContent in tablesJArray.Children<JObject>())
+                                                {
+                                                    var context = Guid.NewGuid();
+
+                                                    foreach (var tableRowValue in arrayContent)
+                                                    {
+                                                        string subName = tableRowValue.Key;
+                                                        JToken subValue = tableRowValue.Value;
+
+                                                        var sid = Convert.ToInt32(subName);
+                                                        var datasetElementSubFromRepo = _datasetElementSubRepository.Get(des => des.Id == sid);
+                                                        try
+                                                        {
+                                                            datasetInstance.SetInstanceSubValue(datasetElementSubFromRepo, subValue.ToString(), context);
+                                                        }
+                                                        catch (Exception ex)
+                                                        {
+                                                            ModelState.AddModelError("Message", ex.Message);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                try
+                                                {
+                                                    datasetInstance.SetInstanceValue(datasetElementFromRepo, fieldValue.ToString());
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    ModelState.AddModelError("Message", ex.Message);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+                if (ModelState.IsValid)
+                {
+                    _unitOfWork.Repository<DatasetInstance>().Save(datasetInstance);
+
+                    // Instantiate new instance of work flow
+                    var patientIdentifier = datasetInstance.GetInstanceValue("Initials");
+                    if (String.IsNullOrWhiteSpace(patientIdentifier))
+                    {
+                        patientIdentifier = datasetInstance.GetInstanceValue("Identification Number");
+                    }
+                    var sourceIdentifier = datasetInstance.GetInstanceValue("Description of reaction");
+                    _workflowService.CreateWorkFlowInstance("New Spontaneous Surveilliance Report", datasetInstance.DatasetInstanceGuid, patientIdentifier, sourceIdentifier);
+
+                    // Prepare medications
+                    List<ReportInstanceMedicationListItem> medications = new List<ReportInstanceMedicationListItem>();
+                    var sourceProductElement = _datasetElementRepository.Get(u => u.ElementName == "Product Information");
+                    var destinationProductElement = _datasetElementRepository.Get(u => u.ElementName == "Medicinal Products");
+                    var sourceContexts = datasetInstance.GetInstanceSubValuesContext("Product Information");
+                    foreach (Guid sourceContext in sourceContexts)
+                    {
+                        var drugItemValues = datasetInstance.GetInstanceSubValues("Product Information", sourceContext);
+                        var drugName = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product").InstanceValue;
+
+                        if (drugName != string.Empty)
+                        {
+                            var item = new ReportInstanceMedicationListItem()
+                            {
+                                MedicationIdentifier = drugName,
+                                ReportInstanceMedicationGuid = sourceContext
+                            };
+                            medications.Add(item);
+                        }
+                    }
+                    _workflowService.AddOrUpdateMedicationsForWorkFlowInstance(datasetInstance.DatasetInstanceGuid, medications);
+
+                    _unitOfWork.Complete();
+
+                    return Ok();
+                }
+
+                return BadRequest(ModelState);
             }
 
             return BadRequest(ModelState);
@@ -1320,7 +1436,15 @@ namespace PVIMS.API.Controllers
                         {
                             DatasetElementSubId = elementSub.Id,
                             DatasetElementSubName = elementSub.ElementName,
-                            DatasetElementSubType = elementSub.Field.FieldType.Description
+                            DatasetElementSubType = elementSub.Field.FieldType.Description,
+                            DatasetElementSubDisplayName = elementSub.FriendlyName ?? elementSub.ElementName,
+                            DatasetElementSubHelp = elementSub.Help,
+                            DatasetElementSubSystem = elementSub.System,
+                            StringMaxLength = elementSub.Field.MaxLength,
+                            NumericMinValue = elementSub.Field.MinSize,
+                            NumericMaxValue = elementSub.Field.MaxSize,
+                            Required = elementSub.Field.Mandatory,
+                            SelectionDataItems = elementSub.Field.FieldValues.Select(fv => new SelectionDataItemDto() { SelectionKey = fv.Value, Value = fv.Value }).ToList(),
                         }).ToArray()
                     })
                     .ToArray()
@@ -1376,7 +1500,15 @@ namespace PVIMS.API.Controllers
                         {
                             DatasetElementSubId = elementSub.Id,
                             DatasetElementSubName = elementSub.ElementName,
-                            DatasetElementSubType = elementSub.Field.FieldType.Description
+                            DatasetElementSubType = elementSub.Field.FieldType.Description,
+                            DatasetElementSubDisplayName = elementSub.FriendlyName ?? elementSub.ElementName,
+                            DatasetElementSubHelp = elementSub.Help,
+                            DatasetElementSubSystem = elementSub.System,
+                            StringMaxLength = elementSub.Field.MaxLength,
+                            NumericMinValue = elementSub.Field.MinSize,
+                            NumericMaxValue = elementSub.Field.MaxSize,
+                            Required = elementSub.Field.Mandatory,
+                            SelectionDataItems = elementSub.Field.FieldValues.Select(fv => new SelectionDataItemDto() { SelectionKey = fv.Value, Value = fv.Value }).ToList(),
                         }).ToArray()
                     })
                     .ToArray()
