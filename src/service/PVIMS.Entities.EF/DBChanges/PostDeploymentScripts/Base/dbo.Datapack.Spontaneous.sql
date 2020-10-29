@@ -22,8 +22,8 @@ DECLARE @dscid int
 DECLARE @fid int
 DECLARE @deid int
 DECLARE @dceid int
-INSERT [dbo].[Dataset] ([DatasetName], [Active], [InitialiseProcess], [RulesProcess], [Help], [Created], [LastUpdated], [ContextType_Id], [CreatedBy_Id], [UpdatedBy_Id])
-	VALUES ('Spontaneous Report', 1, '', '', 'Suspected adverse drug reaction (ADR) online reporting form', GETDATE(), GETDATE(), 4, 1, 1) 
+INSERT [dbo].[Dataset] ([DatasetName], [Active], [InitialiseProcess], [RulesProcess], [Help], [Created], [LastUpdated], [ContextType_Id], [CreatedBy_Id], [UpdatedBy_Id], [IsSystem])
+	VALUES ('Spontaneous Report', 1, '', '', 'Suspected adverse drug reaction (ADR) online reporting form', GETDATE(), GETDATE(), 4, 1, 1, 1)
 set @dsid = (SELECT @@IDENTITY)
 
 /**************************************************
@@ -188,22 +188,22 @@ set @dceid = (SELECT @@IDENTITY)
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 			VALUES (1, 100, NULL, NULL, NULL, '', NULL, '', 0, 3) 
 		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Product', @fid, @deid, '', '', 0, 1) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Product', @fid, @deid, '', '', 0, 1, 'Product Name', 'Enter the brand or generic name') 
 
 		-- Product Suspected
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 			VALUES (1, NULL, NULL, NULL, NULL, '', NULL, '', 0, 5) 
 		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Product Suspected', @fid, @deid, '', '', 0, 2) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Product Suspected', @fid, @deid, '', '', 0, 2, 'Is the product suspected?', '') 
 
 		-- Drug strength
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 			VALUES (0, NULL, 0, 99999999.00, 1.00, '', NULL, '', 0, 4) 
 		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Drug Strength', @fid, @deid, '', '', 0, 3) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Drug Strength', @fid, @deid, '', '', 0, 3, 'Drug Strength', '') 
 
 		-- Drug strength unit
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
@@ -231,15 +231,15 @@ set @dceid = (SELECT @@IDENTITY)
 			VALUES ('drops (gtt)', 0, 0, 0, @fid) 
 		INSERT [dbo].[FieldValue] (Value, [Default], Other, Unknown, Field_Id)
 			VALUES ('Other', 0, 1, 0, @fid) 
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Drug strength unit', @fid, @deid, '', '', 0, 4) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Drug strength unit', @fid, @deid, '', '', 0, 4, 'Unit of strength', '') 
 
 		-- Dose Number
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 			VALUES (0, NULL, 0, 99999999.00, 1.00, '', NULL, '', 0, 4) 
 		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Dose Number', @fid, @deid, '', '', 0, 5) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Dose Number', @fid, @deid, '', '', 0, 5, 'Dose number', '') 
 
 		-- Dose Unit
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
@@ -269,8 +269,8 @@ set @dceid = (SELECT @@IDENTITY)
 			VALUES ('patch(es)', 0, 0, 0, @fid) 
 		INSERT [dbo].[FieldValue] (Value, [Default], Other, Unknown, Field_Id)
 			VALUES ('Other', 0, 1, 0, @fid) 
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Dose Unit', @fid, @deid, '', '', 0, 6) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Dose Unit', @fid, @deid, '', '', 0, 6, 'Unit of dosage', '') 
 
 		-- Drug route of administration
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
@@ -302,29 +302,29 @@ set @dceid = (SELECT @@IDENTITY)
 			VALUES ('Vaginal', 0, 0, 0, @fid) 
 		INSERT [dbo].[FieldValue] (Value, [Default], Other, Unknown, Field_Id)
 			VALUES ('Other', 0, 1, 0, @fid) 
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Drug route of administration', @fid, @deid, '', '', 0, 7) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Drug route of administration', @fid, @deid, '', '', 0, 7, 'Drug route of administration', '') 
 
 		-- Drug Start Date
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 			VALUES (0, NULL, NULL, NULL, NULL, '', NULL, '', 0, 6) 
 		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Drug Start Date', @fid, @deid, '', '', 0, 8) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Drug Start Date', @fid, @deid, '', '', 0, 8, 'Date drug usage started', '') 
 
 		-- Drug End Date
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 			VALUES (0, NULL, NULL, NULL, NULL, '', NULL, '', 0, 6) 
 		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Drug End Date', @fid, @deid, '', '', 0, 9) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Drug End Date', @fid, @deid, '', '', 0, 9, 'Date drug usage ended', '') 
 
 		-- Drug Treatment Duration
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 			VALUES (0, NULL, 0, 99999.00, 1.00, '', NULL, '', 0, 4) 
 		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Drug Treatment Duration', @fid, @deid, '', '', 0, 10) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Drug Treatment Duration', @fid, @deid, '', '', 0, 10, 'Duration of usage', '') 
 
 		-- Drug Treatment Duration Unit
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
@@ -342,29 +342,29 @@ set @dceid = (SELECT @@IDENTITY)
 			VALUES ('805=Hour', 0, 0, 0, @fid) 
 		INSERT [dbo].[FieldValue] (Value, [Default], Other, Unknown, Field_Id)
 			VALUES ('806=Minute', 0, 0, 0, @fid) 
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Drug Treatment Duration Unit', @fid, @deid, '', '', 0, 11) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Drug Treatment Duration Unit', @fid, @deid, '', '', 0, 11, 'Unit of duration', '') 
 
 		-- Drug Indication
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 			VALUES (0, 250, NULL, NULL, NULL, '', NULL, '', 0, 3) 
 		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Drug Indication', @fid, @deid, '', '', 0, 12) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Drug Indication', @fid, @deid, '', '', 0, 12, 'Indication for drug usage', '') 
 
 		-- Product Frequency
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 			VALUES (0, 50, NULL, NULL, NULL, '', NULL, '', 0, 3) 
 		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Product Frequency', @fid, @deid, '', '', 0, 12) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Product Frequency', @fid, @deid, '', '', 0, 12, 'Frequency of product usage', '') 
 			
 		-- Product Batch Number
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 			VALUES (0, 25, NULL, NULL, NULL, '', NULL, '', 0, 3) 
 		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Product Batch Number', @fid, @deid, '', '', 0, 12) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Product Batch Number', @fid, @deid, '', '', 0, 12, 'Product batch number', '') 
 						
 		-- Actions taken with product
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
@@ -382,8 +382,8 @@ set @dceid = (SELECT @@IDENTITY)
 			VALUES ('Unknown', 0, 0, 0, @fid) 
 		INSERT [dbo].[FieldValue] (Value, [Default], Other, Unknown, Field_Id)
 			VALUES ('Not applicable', 0, 0, 0, @fid) 
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Actions taken with product', @fid, @deid, '', '', 0, 13) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Actions taken with product', @fid, @deid, '', '', 0, 13, 'Actions taken with product', '') 
 
 		-- Product challenge
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
@@ -395,8 +395,8 @@ set @dceid = (SELECT @@IDENTITY)
 			VALUES ('No', 0, 0, 0, @fid) 
 		INSERT [dbo].[FieldValue] (Value, [Default], Other, Unknown, Field_Id)
 			VALUES ('Unknown', 0, 0, 0, @fid) 
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Product challenge', @fid, @deid, '', '', 0, 14) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Product challenge', @fid, @deid, '', '', 0, 14, 'Was there a challenge to the usage of the product?', '') 
 
 		-- Product rechallenge
 		INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
@@ -408,8 +408,8 @@ set @dceid = (SELECT @@IDENTITY)
 			VALUES ('No', 0, 0, 0, @fid) 
 		INSERT [dbo].[FieldValue] (Value, [Default], Other, Unknown, Field_Id)
 			VALUES ('Didn''t restart', 0, 0, 0, @fid) 
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Product rechallenge', @fid, @deid, '', '', 0, 15) 
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+			VALUES ('Product rechallenge', @fid, @deid, '', '', 0, 15, 'Was there a rechallenge to the usage of the product?', '') 
 
 /**************************************************
 CATEGORY Reaction and Treatment
@@ -426,7 +426,7 @@ INSERT [dbo].[DatasetElement] ([ElementName], [Field_Id], [DatasetElementType_Id
 	VALUES ('Description of reaction', @fid, 1, '', '', 0, 'ACD938A4-76D1-44CE-A070-2B8DF0FE9E0F') 
 set @deid = (SELECT @@IDENTITY)
 INSERT [dbo].[DatasetCategoryElement] ([FieldOrder], [DatasetCategory_Id], [DatasetElement_Id], [Acute], [Chronic], [FriendlyName], [Help])
-	VALUES (84, @dscid, @deid, 0, 0, '', '') 
+	VALUES (84, @dscid, @deid, 0, 0, 'Description of reaction', '') 
 set @dceid = (SELECT @@IDENTITY)
 
 -- Reaction start date
@@ -572,45 +572,45 @@ set @dceid = (SELECT @@IDENTITY)
 
 	-- Test Date
 	INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
-		VALUES (0, NULL, NULL, NULL, NULL, '', NULL, '', 0, 6) 
+		VALUES (1, NULL, NULL, NULL, NULL, '', NULL, '', 0, 6) 
 	set @fid = (SELECT @@IDENTITY)
-	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-		VALUES ('Test Date', @fid, @deid, '', '', 0, 1) 
+	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+		VALUES ('Test Date', @fid, @deid, '', '', 0, 1, 'Date the test was conducted', '') 
 
 	-- Test Name
 	INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
-		VALUES (0, 100, NULL, NULL, NULL, '', NULL, '', 0, 3) 
+		VALUES (1, 100, NULL, NULL, NULL, '', NULL, '', 0, 3) 
 	set @fid = (SELECT @@IDENTITY)
-	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-		VALUES ('Test Name', @fid, @deid, '', '', 0, 2) 
+	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+		VALUES ('Test Name', @fid, @deid, '', '', 0, 2, 'Name of the test', '') 
 
 	-- Test Result
 	INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
-		VALUES (0, 50, NULL, NULL, NULL, '', NULL, '', 0, 3) 
+		VALUES (1, 50, NULL, NULL, NULL, '', NULL, '', 0, 3) 
 	set @fid = (SELECT @@IDENTITY)
-	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-		VALUES ('Test Result', @fid, @deid, '', '', 0, 3) 
+	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+		VALUES ('Test Result', @fid, @deid, '', '', 0, 3, 'Result of the test', '') 
 
 	-- Test Unit
 	INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 		VALUES (0, 35, NULL, NULL, NULL, '', NULL, '', 0, 3) 
 	set @fid = (SELECT @@IDENTITY)
-	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-		VALUES ('Test Unit', @fid, @deid, '', '', 0, 4) 
+	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+		VALUES ('Test Unit', @fid, @deid, '', '', 0, 4, 'Unit of the test result', '') 
 
 	-- Low Test Range
 	INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 		VALUES (0, 50, NULL, NULL, NULL, '', NULL, '', 0, 3) 
 	set @fid = (SELECT @@IDENTITY)
-	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-		VALUES ('Low Test Range', @fid, @deid, '', '', 0, 5) 
+	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+		VALUES ('Low Test Range', @fid, @deid, '', '', 0, 5, 'Lower limit of the test result', '') 
 
 	-- High Test Range
 	INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
 		VALUES (0, 50, NULL, NULL, NULL, '', NULL, '', 0, 3) 
 	set @fid = (SELECT @@IDENTITY)
-	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-		VALUES ('High Test Range', @fid, @deid, '', '', 0, 6) 
+	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+		VALUES ('High Test Range', @fid, @deid, '', '', 0, 6, 'Upper limit of the test result', '') 
 
 	-- More Information
 	INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
@@ -620,8 +620,8 @@ set @dceid = (SELECT @@IDENTITY)
 		VALUES ('Yes', 1, 0, 0, @fid) 
 	INSERT [dbo].[FieldValue] (Value, [Default], Other, Unknown, Field_Id)
 		VALUES ('No', 0, 0, 0, @fid) 
-	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-		VALUES ('More Information', @fid, @deid, '', '', 0, 7) 
+	INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder, FriendlyName, Help)
+		VALUES ('More Information', @fid, @deid, '', '', 0, 7, 'Any additional information', '') 
 
 /**************************************************
 CATEGORY Reporter Information

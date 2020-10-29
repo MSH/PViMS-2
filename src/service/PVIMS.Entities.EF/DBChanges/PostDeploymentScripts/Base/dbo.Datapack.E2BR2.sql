@@ -29,8 +29,8 @@ DECLARE @dsxcnid2 int
 DECLARE @dsxcnid3 int
 DECLARE @dsxcnid4 int
 DECLARE @dsxenid int
-INSERT [dbo].[Dataset] ([DatasetName], [Active], [InitialiseProcess], [RulesProcess], [Help], [Created], [LastUpdated], [ContextType_Id], [CreatedBy_Id], [UpdatedBy_Id], [EncounterTypeWorkPlan_Id]) 
-	VALUES (N'E2B(R2) ICH Report', 1, NULL, NULL, N'ICH ICSR E2B v2 Dataset', GETDATE(), GETDATE(), 5, 1, 1, NULL)
+INSERT [dbo].[Dataset] ([DatasetName], [Active], [InitialiseProcess], [RulesProcess], [Help], [Created], [LastUpdated], [ContextType_Id], [CreatedBy_Id], [UpdatedBy_Id], [EncounterTypeWorkPlan_Id], [IsSystem])
+	VALUES (N'E2B(R2) ICH Report', 1, NULL, NULL, N'ICH ICSR E2B v2 Dataset', GETDATE(), GETDATE(), 5, 1, 1, NULL, 1)
 set @dsid = (SELECT @@IDENTITY)
 
 -- base xml
