@@ -6,6 +6,8 @@
 trigger:
 - dev
 
+name: $(Build.DefinitionName)-$(Year:yy).$(Month).$(DayOfYear)$(Rev:.rr)
+
 pool:
   vmImage: 'windows-latest'
 
@@ -13,7 +15,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  
+
 
 steps:
 - task: NuGetToolInstaller@1
