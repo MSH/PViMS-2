@@ -7,6 +7,9 @@ import { MetaTableDetailWrapperModel } from '../models/meta/meta-table.detail.mo
 import { MetaColumnDetailWrapperModel } from '../models/meta/meta-column.detail.model';
 import { MetaDependencyDetailWrapperModel } from '../models/meta/meta-dependency.detail.model';
 import { MetaSummaryModel } from '../models/meta/meta-summary.model';
+import { FilterModel } from '../models/grid.model';
+import { EMPTY } from 'rxjs';
+import { expand, map, reduce } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class MetaService extends BaseService {
@@ -17,6 +20,26 @@ export class MetaService extends BaseService {
       this.apiController = "";
   }
 
+  getAllMetaTables(): any {
+    let filter = new FilterModel();
+    filter.recordsPerPage = 50;
+    filter.currentPage = 1;
+
+    return this.getMetaTables(filter)
+      .pipe( 
+        expand(response => {
+          let typedResponse = response as MetaTableDetailWrapperModel;
+          let next = typedResponse.links.find(l => l.rel == 'nextPage');
+          return next ? this.GetByAddress<MetaTableDetailWrapperModel>(next.href, 'application/vnd.pvims.detail.v1+json') : EMPTY;
+        }),
+        map(response => {
+          let typedResponse = response as MetaTableDetailWrapperModel;
+          return typedResponse.value;
+        }),
+        reduce((accData, data) => accData.concat(data), [])
+      );
+  }  
+
   getMetaTables(filterModel: any): any {
     let parameters: ParameterKeyValueModel[] = [];
 
@@ -24,6 +47,14 @@ export class MetaService extends BaseService {
     parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
 
     return this.Get<MetaTableDetailWrapperModel>('/metatables', 'application/vnd.pvims.detail.v1+json', parameters);
+  }
+
+  getAllMetaColumns(): any {
+    let filter = new FilterModel();
+    filter.recordsPerPage = 50;
+    filter.currentPage = 1;
+
+    return this.getMetaColumns(filter);
   }
 
   getMetaColumns(filterModel: any): any {
