@@ -11,11 +11,14 @@ using PVIMS.Core;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
+using PVIMS.Entities.EF;
 
 namespace PVIMS.Services
 {
     public class MedDraService : IMedDraService
     {
+        public PVIMSDbContext _dbContext;
+
         private string _summary = "";
         private string _subDirectory = "";
         private string _currentVersion = "";
@@ -31,8 +34,9 @@ namespace PVIMS.Services
 
         XmlDocument _response;
 
-        public MedDraService()
+        public MedDraService(PVIMSDbContext dbContext)
         {
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         #region "Public"
@@ -41,215 +45,203 @@ namespace PVIMS.Services
         {
             _subDirectory = subdirectory;
 
-            //var err = false;
+            var err = false;
 
-            //PVIMSDbContext db = new PVIMSDbContext();
+            var configValue = _dbContext.Configs.Single(c => c.ConfigType == ConfigType.MedDRAVersion).ConfigValue;
+            _currentVersion = !String.IsNullOrEmpty(configValue) ? configValue : "Not Set";
 
-            //var configValue = db.Configs.Single(c => c.ConfigType == ConfigType.MedDRAVersion).ConfigValue;
-            //_currentVersion = !String.IsNullOrEmpty(configValue) ? configValue : "Not Set";
+            // Validate all files exists
+            err = CheckAllFilesExist();
+            if (!err) { err = CheckVersion(); };
 
-            //db = null;
+            // **** SOC
+            var file = String.Format("{0}{1}", _subDirectory, _files[5]);
+            if (!err) { err = ValidateBase("SOC", file, _elements[5]); };
 
-            //// Validate all files exists
-            //err = CheckAllFilesExist();
-            //if (!err) { err = CheckVersion(); };
+            // **** HLGT
+            file = String.Format("{0}{1}", _subDirectory, _files[4]);
+            if (!err) { err = ValidateBase("HLGT", file, _elements[4]); };
 
-            //// **** SOC
-            //var file = String.Format("{0}{1}", _subDirectory, _files[5]);
-            //if (!err) { err = ValidateBase("SOC", file, _elements[5]); };
+            // **** HLT
+            file = String.Format("{0}{1}", _subDirectory, _files[3]);
+            if (!err) { err = ValidateBase("HLT", file, _elements[3]); };
 
-            //// **** HLGT
-            //file = String.Format("{0}{1}", _subDirectory, _files[4]);
-            //if (!err) { err = ValidateBase("HLGT", file, _elements[4]); };
+            // **** PT
+            file = String.Format("{0}{1}", _subDirectory, _files[2]);
+            if (!err) { err = ValidateBase("PT", file, _elements[2]); };
 
-            //// **** HLT
-            //file = String.Format("{0}{1}", _subDirectory, _files[3]);
-            //if (!err) { err = ValidateBase("HLT", file, _elements[3]); };
+            // **** LLT
+            file = String.Format("{0}{1}", _subDirectory, _files[1]);
+            if (!err) { err = ValidateBase("LLT", file, _elements[1]); };
 
-            //// **** PT
-            //file = String.Format("{0}{1}", _subDirectory, _files[2]);
-            //if (!err) { err = ValidateBase("PT", file, _elements[2]); };
+            // **** LINK PT TO HLT
+            file = String.Format("{0}{1}", _subDirectory, _files[6]);
+            if (!err) { err = ValidateLink("PT", file, _elements[6]); };
 
-            //// **** LLT
-            //file = String.Format("{0}{1}", _subDirectory, _files[1]);
-            //if (!err) { err = ValidateBase("LLT", file, _elements[1]); };
+            // **** LINK HLT TO HLGT
+            file = String.Format("{0}{1}", _subDirectory, _files[7]);
+            if (!err) { err = ValidateLink("HLT", file, _elements[7]); };
 
-            //// **** LINK PT TO HLT
-            //file = String.Format("{0}{1}", _subDirectory, _files[6]);
-            //if (!err) { err = ValidateLink("PT", file, _elements[6]); };
+            // **** LINK HLGT TO SOC
+            file = String.Format("{0}{1}", _subDirectory, _files[8]);
+            if (!err) { err = ValidateLink("HLGT", file, _elements[8]); };
 
-            //// **** LINK HLT TO HLGT
-            //file = String.Format("{0}{1}", _subDirectory, _files[7]);
-            //if (!err) { err = ValidateLink("HLT", file, _elements[7]); };
-
-            //// **** LINK HLGT TO SOC
-            //file = String.Format("{0}{1}", _subDirectory, _files[8]);
-            //if (!err) { err = ValidateLink("HLGT", file, _elements[8]); };
-
-            //// Process response
-            //if (err) {
-            //    _summary += String.Format("<li>ERROR: Import files not validated successfully...</li>");
-            //}
-            //else {
-            //    _summary += String.Format("<li>INFO: Import files validated successfully...</li>");
-            //}
+            // Process response
+            if (err) {
+                _summary += String.Format("<li>ERROR: Import files not validated successfully...</li>");
+            }
+            else {
+                _summary += String.Format("<li>INFO: Import files validated successfully...</li>");
+            }
 
             return _summary;
         }
 
         public string ImportSourceData(string fileName, string subdirectory)
         {
-            //_subDirectory = subdirectory;
+            _subDirectory = subdirectory;
 
-            //var ns = ""; // urn:pvims-org:v3
+            var ns = ""; // urn:pvims-org:v3
 
-            //XmlNode rootNode = null;
-            //XmlNode responseNode;
-            //XmlNode outerNode;
-            //XmlNode innerNode;
+            XmlNode rootNode = null;
+            XmlNode responseNode;
+            XmlNode outerNode;
+            XmlNode innerNode;
 
-            //XmlAttribute attrib;
+            XmlAttribute attrib;
 
-            //PVIMSDbContext db = new AppDbContext();
+            var configValue = _dbContext.Configs.Single(c => c.ConfigType == ConfigType.MedDRAVersion).ConfigValue;
+            _currentVersion = !String.IsNullOrEmpty(configValue) ? configValue : "Not Set";
 
-            //var configValue = db.Configs.Single(c => c.ConfigType == ConfigType.MedDRAVersion).ConfigValue;
-            //_currentVersion = !String.IsNullOrEmpty(configValue) ? configValue : "Not Set";
+            // Prepare for updates
+            _movements = new ArrayList();
+            _updates = new ArrayList();
+            _additions = new ArrayList();
+            _refreshCount = 0;
 
-            //db = null;
+            // Process response
+            _response = new XmlDocument();
 
-            //// Prepare for updates
-            //_movements = new ArrayList();
-            //_updates = new ArrayList();
-            //_additions = new ArrayList();
-            //_refreshCount = 0;
+            try
+            {
+                // **** SOC
+                var file = String.Format("{0}{1}", _subDirectory, _files[5]);
+                StoreBase("SOC", file, _elements[5]);
 
-            //// Process response
-            //_response = new XmlDocument();
+                // **** HLGT
+                file = String.Format("{0}{1}", _subDirectory, _files[4]);
+                StoreBase("HLGT", file, _elements[4]);
 
-            //try
-            //{
-            //    // **** SOC
-            //    var file = String.Format("{0}{1}", _subDirectory, _files[5]);
-            //    StoreBase("SOC", file, _elements[5]);
+                // **** HLT
+                file = String.Format("{0}{1}", _subDirectory, _files[3]);
+                StoreBase("HLT", file, _elements[3]);
 
-            //    // **** HLGT
-            //    file = String.Format("{0}{1}", _subDirectory, _files[4]);
-            //    StoreBase("HLGT", file, _elements[4]);
+                // **** PT
+                file = String.Format("{0}{1}", _subDirectory, _files[2]);
+                StoreBase("PT", file, _elements[2]);
 
-            //    // **** HLT
-            //    file = String.Format("{0}{1}", _subDirectory, _files[3]);
-            //    StoreBase("HLT", file, _elements[3]);
+                // **** LLT
+                file = String.Format("{0}{1}", _subDirectory, _files[1]);
+                StoreBase("LLT", file, _elements[1]);
 
-            //    // **** PT
-            //    file = String.Format("{0}{1}", _subDirectory, _files[2]);
-            //    StoreBase("PT", file, _elements[2]);
+                // **** LINK PT TO HLT
+                file = String.Format("{0}{1}", _subDirectory, _files[6]);
+                StoreLink("PT", file, _elements[6]);
 
-            //    // **** LLT
-            //    file = String.Format("{0}{1}", _subDirectory, _files[1]);
-            //    StoreBase("LLT", file, _elements[1]);
+                // **** LINK HLT TO HLGT
+                file = String.Format("{0}{1}", _subDirectory, _files[7]);
+                StoreLink("HLT", file, _elements[7]);
 
-            //    // **** LINK PT TO HLT
-            //    file = String.Format("{0}{1}", _subDirectory, _files[6]);
-            //    StoreLink("PT", file, _elements[6]);
+                // **** LINK HLGT TO SOC
+                file = String.Format("{0}{1}", _subDirectory, _files[8]);
+                StoreLink("HLGT", file, _elements[8]);
 
-            //    // **** LINK HLT TO HLGT
-            //    file = String.Format("{0}{1}", _subDirectory, _files[7]);
-            //    StoreLink("HLT", file, _elements[7]);
+            }
+            catch (Exception ex)
+            {
+                rootNode = _response.CreateElement("Status", ns);
+                attrib = _response.CreateAttribute("Code");
+                attrib.InnerText = "900";
+                rootNode.Attributes.Append(attrib);
 
-            //    // **** LINK HLGT TO SOC
-            //    file = String.Format("{0}{1}", _subDirectory, _files[8]);
-            //    StoreLink("HLGT", file, _elements[8]);
+                responseNode = _response.CreateElement("Description", ns);
+                responseNode.InnerText = ex.Message;
+                rootNode.AppendChild(responseNode);
 
-            //}
-            //catch (Exception ex)
-            //{
-            //    rootNode = _response.CreateElement("Status", ns);
-            //    attrib = _response.CreateAttribute("Code");
-            //    attrib.InnerText = "900";
-            //    rootNode.Attributes.Append(attrib);
+                _summary += String.Format("<li>ERROR: Import not completed successfully. Please see log file...</li>");
 
-            //    responseNode = _response.CreateElement("Description", ns);
-            //    responseNode.InnerText = ex.Message;
-            //    rootNode.AppendChild(responseNode);
+                _response.AppendChild(rootNode);
 
-            //    _summary += String.Format("<li>ERROR: Import not completed successfully. Please see log file...</li>");
+                // invalid import
+                LogAudit(AuditType.InValidMedDRAImport, String.Format("Unsuccessful meddra import (version {0})", _version), _response.InnerXml);
+            }
+            finally
+            {
+                rootNode = _response.CreateElement("Status", ns);
+                attrib = _response.CreateAttribute("Code");
+                attrib.InnerText = "200";
+                rootNode.Attributes.Append(attrib);
 
-            //    _response.AppendChild(rootNode);
+                responseNode = _response.CreateElement("Description", ns);
+                responseNode.InnerText = "Import completed successfully";
+                rootNode.AppendChild(responseNode);
 
-            //    // invalid import
-            //    LogAudit(AuditType.InValidMedDRAImport, String.Format("Unsuccessful meddra import (version {0})", _version), _response.InnerXml);
-            //}
-            //finally
-            //{
-            //    rootNode = _response.CreateElement("Status", ns);
-            //    attrib = _response.CreateAttribute("Code");
-            //    attrib.InnerText = "200";
-            //    rootNode.Attributes.Append(attrib);
+                outerNode = _response.CreateElement("Movements", ns);
+                foreach (string item in _movements)
+                {
+                    innerNode = _response.CreateElement("Movement", ns);
+                    attrib = _response.CreateAttribute("MedDRACode");
+                    attrib.InnerText = item;
+                    innerNode.Attributes.Append(attrib);
 
-            //    responseNode = _response.CreateElement("Description", ns);
-            //    responseNode.InnerText = "Import completed successfully";
-            //    rootNode.AppendChild(responseNode);
+                    outerNode.AppendChild(innerNode);
+                }
+                rootNode.AppendChild(outerNode);
+                _summary += String.Format("<li>INFO: # of movements processed ({0})...</li>", _movements.Count.ToString());
 
-            //    outerNode = _response.CreateElement("Movements", ns);
-            //    foreach (string item in _movements)
-            //    {
-            //        innerNode = _response.CreateElement("Movement", ns);
-            //        attrib = _response.CreateAttribute("MedDRACode");
-            //        attrib.InnerText = item;
-            //        innerNode.Attributes.Append(attrib);
+                outerNode = _response.CreateElement("Additions", ns);
+                foreach (string item in _additions)
+                {
+                    innerNode = _response.CreateElement("Addition", ns);
+                    attrib = _response.CreateAttribute("MedDRACode");
+                    attrib.InnerText = item;
+                    innerNode.Attributes.Append(attrib);
 
-            //        outerNode.AppendChild(innerNode);
-            //    }
-            //    rootNode.AppendChild(outerNode);
-            //    _summary += String.Format("<li>INFO: # of movements processed ({0})...</li>", _movements.Count.ToString());
+                    outerNode.AppendChild(innerNode);
+                }
+                rootNode.AppendChild(outerNode);
+                _summary += String.Format("<li>INFO: # of additions processed ({0})...</li>", _additions.Count.ToString());
 
-            //    outerNode = _response.CreateElement("Additions", ns);
-            //    foreach (string item in _additions)
-            //    {
-            //        innerNode = _response.CreateElement("Addition", ns);
-            //        attrib = _response.CreateAttribute("MedDRACode");
-            //        attrib.InnerText = item;
-            //        innerNode.Attributes.Append(attrib);
+                outerNode = _response.CreateElement("Updates", ns);
+                foreach (string item in _updates)
+                {
+                    innerNode = _response.CreateElement("Update", ns);
+                    attrib = _response.CreateAttribute("MedDRACode");
+                    attrib.InnerText = item;
+                    innerNode.Attributes.Append(attrib);
 
-            //        outerNode.AppendChild(innerNode);
-            //    }
-            //    rootNode.AppendChild(outerNode);
-            //    _summary += String.Format("<li>INFO: # of additions processed ({0})...</li>", _additions.Count.ToString());
+                    outerNode.AppendChild(innerNode);
+                }
+                rootNode.AppendChild(outerNode);
+                _summary += String.Format("<li>INFO: # of updates processed ({0})...</li>", _updates.Count.ToString());
+                _summary += String.Format("<li>INFO: # of refreshes processed ({0})...</li>", _refreshCount.ToString());
 
-            //    outerNode = _response.CreateElement("Updates", ns);
-            //    foreach (string item in _updates)
-            //    {
-            //        innerNode = _response.CreateElement("Update", ns);
-            //        attrib = _response.CreateAttribute("MedDRACode");
-            //        attrib.InnerText = item;
-            //        innerNode.Attributes.Append(attrib);
+                _summary += String.Format("<li>INFO: Import completed successfully. Please see log file...</li>");
 
-            //        outerNode.AppendChild(innerNode);
-            //    }
-            //    rootNode.AppendChild(outerNode);
-            //    _summary += String.Format("<li>INFO: # of updates processed ({0})...</li>", _updates.Count.ToString());
-            //    _summary += String.Format("<li>INFO: # of refreshes processed ({0})...</li>", _refreshCount.ToString());
+                _response.AppendChild(rootNode);
 
-            //    _summary += String.Format("<li>INFO: Import completed successfully. Please see log file...</li>");
+                // valid import
+                LogAudit(AuditType.ValidMedDRAImport, String.Format("Successful meddra import (version {0})", _version), _response.InnerXml);
 
-            //    _response.AppendChild(rootNode);
+                // ConfigType.MedDRAVersion
+                var config = _dbContext.Configs.Single(c => c.ConfigType == ConfigType.MedDRAVersion);
+                config.ConfigValue = _version;
+                _dbContext.SaveChanges();
+            }
 
-            //    // valid import
-            //    LogAudit(AuditType.ValidMedDRAImport, String.Format("Successful meddra import (version {0})", _version), _response.InnerXml);
-
-            //    // ConfigType.MedDRAVersion
-            //    db = new PVIMSDbContext();
-
-            //    var config = db.Configs.Single(c => c.ConfigType == ConfigType.MedDRAVersion);
-            //    config.ConfigValue = _version;
-            //    db.SaveChanges();
-
-            //    db = null;
-            //}
-
-            //// Clean up
-            //System.IO.Directory.Delete(_subDirectory, true);
-            //_summary += String.Format("<li>INFO: Extraction cleaned up...</li>");
+            // Clean up
+            System.IO.Directory.Delete(_subDirectory, true);
+            _summary += String.Format("<li>INFO: Extraction cleaned up...</li>");
 
             return _summary;
         }
