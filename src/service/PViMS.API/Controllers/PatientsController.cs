@@ -2002,9 +2002,9 @@ namespace PVIMS.API.Controllers
         /// <summary>
         /// Prepare the model for adding a new patient
         /// </summary>
-        private PatientDetail PreparePatientDetail(PatientForCreationDto patientForCreation)
+        private PatientDetailForCreation PreparePatientDetail(PatientForCreationDto patientForCreation)
         {
-            var patientDetail = new PatientDetail();
+            var patientDetail = new PatientDetailForCreation();
             patientDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<Patient>();
 
             // Update patient custom attributes from source
@@ -2048,9 +2048,9 @@ namespace PVIMS.API.Controllers
         /// <summary>
         /// Prepare the model for updating an existing patient
         /// </summary>
-        private PatientDetail PreparePatientDetail(PatientForUpdateDto patientForUpdate)
+        private PatientDetailForCreation PreparePatientDetail(PatientForUpdateDto patientForUpdate)
         {
-            var patientDetail = new PatientDetail();
+            var patientDetail = new PatientDetailForCreation();
             patientDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<Patient>();
 
             // Update patient custom attributes from source
