@@ -18,6 +18,7 @@ namespace PVIMS.API.Helpers
         private readonly IWorkFlowService _workflowService;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly IRepositoryInt<DatasetElement> _datasetElementRepository;
+        private readonly IRepositoryInt<FieldType> _fieldTypeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
 
         private List<Dictionary<string, string>> _formValues = new List<Dictionary<string, string>>();
@@ -32,12 +33,14 @@ namespace PVIMS.API.Helpers
         public FormHandler(IPatientService patientService,
             IWorkFlowService workflowService,
             IRepositoryInt<DatasetElement> datasetElementRepository,
+            IRepositoryInt<FieldType> fieldTypeRepository,
             ITypeExtensionHandler modelExtensionBuilder,
             IUnitOfWorkInt unitOfWork)
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
             _datasetElementRepository = datasetElementRepository ?? throw new ArgumentNullException(nameof(datasetElementRepository));
+            _fieldTypeRepository = fieldTypeRepository ?? throw new ArgumentNullException(nameof(fieldTypeRepository));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
@@ -62,29 +65,6 @@ namespace PVIMS.API.Helpers
 
             _patientDetailForCreation = null;
             _patientDetailForUpdate = null;
-        }
-
-        public void SetSpontaneousForm(Object[] formControlValues)
-        {
-            foreach (Object formValue in formControlValues)
-            {
-                if (formValue is JObject)
-                {
-                    _formValues.Add(((JObject)formValue).ToObject<Dictionary<string, string>>());
-                }
-                if (formValue is JArray)
-                {
-                    var tempArray = (JArray)formValue;
-                    var outputArray = new List<Dictionary<string, string>>();
-
-                    foreach (JObject content in tempArray.Children<JObject>())
-                    {
-                        outputArray.Add(content.ToObject<Dictionary<string, string>>());
-                    }
-
-                    _formArrayValues.Add(outputArray.ToArray());
-                }
-            }
         }
 
         public void ValidateSourceIdentifier()
@@ -180,127 +160,6 @@ namespace PVIMS.API.Helpers
             {
                 _patientService.UpdatePatient(_patientDetailForUpdate);
             }
-        }
-
-        public void ProcessSpontaneousFormForCreation(Dataset datasetFromRepo)
-        {
-            var datasetInstance = datasetFromRepo.CreateInstance(1, null);
-
-            datasetInstance.Status = DatasetInstanceStatus.COMPLETE;
-
-            var datasetElementIds = datasetFromRepo.DatasetCategories.SelectMany(dc => dc.DatasetCategoryElements.Select(dce => dce.DatasetElement.Id)).ToArray();
-
-            var datasetElements = _unitOfWork.Repository<DatasetElement>()
-                .Queryable()
-                .Where(de => datasetElementIds.Contains(de.Id))
-                .ToDictionary(e => e.ElementName);
-
-            var datasetElementSubs = datasetElements
-                .SelectMany(de => de.Value.DatasetElementSubs)
-                .ToDictionary(des => des.ElementName);
-
-            // Save patient info
-            datasetInstance.SetInstanceValue(datasetElements["Initials"], GetAttributeValueFromObject(0, "initials"));
-            datasetInstance.SetInstanceValue(datasetElements["Identification Number"], GetAttributeValueFromObject(0, "identification"));
-            datasetInstance.SetInstanceValue(datasetElements["Identification Type"], GetAttributeValueFromObject(0, "identificationType"));
-            datasetInstance.SetInstanceValue(datasetElements["Date of Birth"], GetAttributeValueFromObject(0, "birthDate"));
-            datasetInstance.SetInstanceValue(datasetElements["Age"], GetAttributeValueFromObject(0, "age"));
-            datasetInstance.SetInstanceValue(datasetElements["Age Unit"], GetAttributeValueFromObject(0, "ageUnitOfMeasure"));
-            datasetInstance.SetInstanceValue(datasetElements["Weight  (kg)"], GetAttributeValueFromObject(0, "weight"));
-            datasetInstance.SetInstanceValue(datasetElements["Sex"], GetAttributeValueFromObject(0, "sex"));
-            datasetInstance.SetInstanceValue(datasetElements["Ethnic Group"], GetAttributeValueFromObject(0, "ethnic"));
-
-            // Test results
-            var rowCount = GetRowCountFromArray(0);
-            if (rowCount > 0)
-            {
-                for (int i = 0; i < rowCount; i++)
-                {
-                    // Create context for lab test
-                    var context = Guid.NewGuid();
-
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Test Date"], GetAttributeValueFromArrayRow(0, i, "testResultDate"), context);
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Test Name"], GetAttributeValueFromArrayRow(0, i, "labTest"), context);
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Test Result"], GetAttributeValueFromArrayRow(0, i, "testResultValue"), context);
-                }
-            }
-
-            // Product information
-            rowCount = GetRowCountFromArray(1);
-            if (rowCount > 0)
-            {
-                for (int i = 0; i < rowCount; i++)
-                {
-                    // Create context for medication
-                    var context = Guid.NewGuid();
-
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Product"], GetAttributeValueFromArrayRow(1, i, "product"), context);
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Product Suspected"], GetAttributeValueFromArrayRow(1, i, "suspected"), context);
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Drug Strength"], GetAttributeValueFromArrayRow(1, i, "strength"), context);
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Drug Strength Unit"], GetAttributeValueFromArrayRow(1, i, "strengthUnit"), context);
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Dose Number"], GetAttributeValueFromArrayRow(1, i, "dose"), context);
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Dose Unit"], GetAttributeValueFromArrayRow(1, i, "doseUnit"), context);
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Drug route of administration"], GetAttributeValueFromArrayRow(1, i, "route"), context);
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Drug Start Date"], GetAttributeValueFromArrayRow(1, i, "startDate"), context);
-                    datasetInstance.SetInstanceSubValue(datasetElementSubs["Drug End Date"], GetAttributeValueFromArrayRow(1, i, "endDate"), context);
-                }
-            }
-
-            // Reaction and treatment
-            datasetInstance.SetInstanceValue(datasetElements["Description of reaction"], GetAttributeValueFromObject(1, "reaction"));
-            datasetInstance.SetInstanceValue(datasetElements["Reaction start date"], GetAttributeValueFromObject(1, "startDate"));
-            datasetInstance.SetInstanceValue(datasetElements["Reaction estimated start date"], GetAttributeValueFromObject(1, "estimatedStartDate"));
-            datasetInstance.SetInstanceValue(datasetElements["Reaction serious details"], GetAttributeValueFromObject(1, "reactionHappen"));
-            datasetInstance.SetInstanceValue(datasetElements["Treatment given for reaction"], GetAttributeValueFromObject(1, "treatmentGiven"));
-            datasetInstance.SetInstanceValue(datasetElements["Treatment given for reaction details"], GetAttributeValueFromObject(1, "whatTreatment"));
-            datasetInstance.SetInstanceValue(datasetElements["Outcome of reaction"], GetAttributeValueFromObject(1, "treatmentOutcome"));
-            datasetInstance.SetInstanceValue(datasetElements["Reaction date of recovery"], GetAttributeValueFromObject(1, "recoveryDate"));
-            datasetInstance.SetInstanceValue(datasetElements["Reaction date of death"], GetAttributeValueFromObject(1, "deceasedDate"));
-            datasetInstance.SetInstanceValue(datasetElements["Reaction other relevant info"], GetAttributeValueFromObject(1, "otherInfo"));
-
-            // Reporter information
-            datasetInstance.SetInstanceValue(datasetElements["Reporter Name"], GetAttributeValueFromObject(2, "reporter"));
-            datasetInstance.SetInstanceValue(datasetElements["Reporter Telephone Number"], GetAttributeValueFromObject(2, "telephoneNumber"));
-            datasetInstance.SetInstanceValue(datasetElements["Reporter Profession"], GetAttributeValueFromObject(2, "profession"));
-            datasetInstance.SetInstanceValue(datasetElements["Report Reference Number"], GetAttributeValueFromObject(2, "reference"));
-            datasetInstance.SetInstanceValue(datasetElements["Reporter Place of Practice"], GetAttributeValueFromObject(2, "place"));
-            datasetInstance.SetInstanceValue(datasetElements["Keep Reporter Confidential"], GetAttributeValueFromObject(2, "confidential"));
-            datasetInstance.SetInstanceValue(datasetElements["Reporter E-mail Address"], GetAttributeValueFromObject(2, "email"));
-
-            _unitOfWork.Repository<DatasetInstance>().Save(datasetInstance);
-
-            // Instantiate new instance of work flow
-            var patientIdentifier = datasetInstance.GetInstanceValue("Identification Number");
-            if (String.IsNullOrWhiteSpace(patientIdentifier))
-            {
-                patientIdentifier = datasetInstance.GetInstanceValue("Initials");
-            }
-            var sourceIdentifier = datasetInstance.GetInstanceValue("Description of reaction");
-            _workflowService.CreateWorkFlowInstance("New Spontaneous Surveilliance Report", datasetInstance.DatasetInstanceGuid, patientIdentifier, sourceIdentifier);
-
-            // Prepare medications
-            List<ReportInstanceMedicationListItem> medications = new List<ReportInstanceMedicationListItem>();
-            var sourceProductElement = _datasetElementRepository.Get(u => u.ElementName == "Product Information");
-            var destinationProductElement = _datasetElementRepository.Get(u => u.ElementName == "Medicinal Products");
-            var sourceContexts = datasetInstance.GetInstanceSubValuesContext("Product Information");
-            foreach (Guid sourceContext in sourceContexts)
-            {
-                var drugItemValues = datasetInstance.GetInstanceSubValues("Product Information", sourceContext);
-                var drugName = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product").InstanceValue;
-
-                if (drugName != string.Empty)
-                {
-                    var item = new ReportInstanceMedicationListItem()
-                    {
-                        MedicationIdentifier = drugName,
-                        ReportInstanceMedicationGuid = sourceContext
-                    };
-                    medications.Add(item);
-                }
-            }
-            _workflowService.AddOrUpdateMedicationsForWorkFlowInstance(datasetInstance.DatasetInstanceGuid, medications);
-
-            _unitOfWork.Complete();
         }
 
         public List<string> GetValidationErrors()
@@ -681,6 +540,5 @@ namespace PVIMS.API.Helpers
                     return "0";
             }
         }
-
     }
 }
