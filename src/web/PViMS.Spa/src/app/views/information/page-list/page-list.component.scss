@@ -21,3 +21,8 @@ mat-column {
   -webkit-hyphens: auto;
   hyphens: auto;
 }
+
+.mat-column-actions {
+  flex: 0 0 10% !important;
+  width: 10% !important;
+}
