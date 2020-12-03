@@ -14,6 +14,10 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.MetaColumnGuid, opt => opt.MapFrom(src => src.metacolumn_guid))
                 .ForMember(dest => dest.ColumnType, opt => opt.MapFrom(src => src.ColumnType.Description))
                 .ForMember(dest => dest.TableName, opt => opt.MapFrom(src => src.Table.TableName));
+            CreateMap<MetaColumn, MetaColumnExpandedDto>()
+                .ForMember(dest => dest.MetaColumnGuid, opt => opt.MapFrom(src => src.metacolumn_guid))
+                .ForMember(dest => dest.ColumnType, opt => opt.MapFrom(src => src.ColumnType.Description))
+                .ForMember(dest => dest.TableName, opt => opt.MapFrom(src => src.Table.TableName));
 
             CreateMap<MetaDependency, MetaDependencyIdentifierDto>()
                 .ForMember(dest => dest.MetaDependencyGuid, opt => opt.MapFrom(src => src.metadependency_guid));
@@ -31,6 +35,9 @@ namespace PVIMS.API.MapperProfiles
             CreateMap<MetaTable, MetaTableIdentifierDto>()
                 .ForMember(dest => dest.MetaTableGuid, opt => opt.MapFrom(src => src.metatable_guid));
             CreateMap<MetaTable, MetaTableDetailDto>()
+                .ForMember(dest => dest.MetaTableGuid, opt => opt.MapFrom(src => src.metatable_guid))
+                .ForMember(dest => dest.TableType, opt => opt.MapFrom(src => src.TableType.Description));
+            CreateMap<MetaTable, MetaTableExpandedDto>()
                 .ForMember(dest => dest.MetaTableGuid, opt => opt.MapFrom(src => src.metatable_guid))
                 .ForMember(dest => dest.TableType, opt => opt.MapFrom(src => src.TableType.Description));
         }

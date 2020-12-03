@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using PVIMS.API.Attributes;
+using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.API.Services;
@@ -109,12 +110,40 @@ namespace PVIMS.API.Controllers
         /// <summary>
         /// Get all meta tables using a valid media type 
         /// </summary>
+        /// <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaTableIdentifierDto</returns>
+        [HttpGet("metatables", Name = "GetMetaTablesByIdentifier")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
+        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+            "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
+        public ActionResult<LinkedCollectionResourceWrapperDto<MetaTableIdentifierDto>> GetMetaTablesByIdentifier(
+            [FromQuery] MetaResourceParameters metaResourceParameters)
+        {
+            if (!_typeHelperService.TypeHasProperties<MetaTableIdentifierDto>
+                (metaResourceParameters.OrderBy))
+            {
+                return BadRequest();
+            }
+
+            var mappedMetaTablesWithLinks = GetMetaTables<MetaTableIdentifierDto>(metaResourceParameters);
+
+            var wrapper = new LinkedCollectionResourceWrapperDto<MetaTableIdentifierDto>(mappedMetaTablesWithLinks.TotalCount, mappedMetaTablesWithLinks);
+            var wrapperWithLinks = CreateLinksForTables(wrapper, metaResourceParameters,
+                mappedMetaTablesWithLinks.HasNext, mappedMetaTablesWithLinks.HasPrevious);
+
+            return Ok(wrapperWithLinks);
+        }
+
+        /// <summary>
+        /// Get all meta tables using a valid media type 
+        /// </summary>
         /// <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaTableDetailDto</returns>
         [HttpGet("metatables", Name = "GetMetaTablesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaTableDetailDto>> GetMetaTablesByDetail(
             [FromQuery] MetaResourceParameters metaResourceParameters)
         {
@@ -127,8 +156,10 @@ namespace PVIMS.API.Controllers
             var mappedMetaTablesWithLinks = GetMetaTables<MetaTableDetailDto>(metaResourceParameters);
 
             var wrapper = new LinkedCollectionResourceWrapperDto<MetaTableDetailDto>(mappedMetaTablesWithLinks.TotalCount, mappedMetaTablesWithLinks);
+            var wrapperWithLinks = CreateLinksForTables(wrapper, metaResourceParameters,
+                mappedMetaTablesWithLinks.HasNext, mappedMetaTablesWithLinks.HasPrevious);
 
-            return Ok(wrapper);
+            return Ok(wrapperWithLinks);
         }
 
         /// <summary>
@@ -344,6 +375,41 @@ namespace PVIMS.API.Controllers
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Prepare HATEOAS links for a identifier based collection resource
+        /// </summary>
+        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
+        /// <param name="metaResourceParameters">Standard parameters for representing resource</param>
+        /// <param name="hasNext">Are there additional pages</param>
+        /// <param name="hasPrevious">Are there previous pages</param>
+        /// <returns></returns>
+        private LinkedResourceBaseDto CreateLinksForTables(
+            LinkedResourceBaseDto wrapper,
+            MetaResourceParameters metaResourceParameters,
+            bool hasNext, bool hasPrevious)
+        {
+            // self 
+            wrapper.Links.Add(
+               new LinkDto(CreateResourceUriHelper.CreateMetaTablesResourceUri(_urlHelper, ResourceUriType.Current, metaResourceParameters),
+               "self", "GET"));
+
+            if (hasNext)
+            {
+                wrapper.Links.Add(
+                  new LinkDto(CreateResourceUriHelper.CreateMetaTablesResourceUri(_urlHelper, ResourceUriType.NextPage, metaResourceParameters),
+                  "nextPage", "GET"));
+            }
+
+            if (hasPrevious)
+            {
+                wrapper.Links.Add(
+                    new LinkDto(CreateResourceUriHelper.CreateMetaTablesResourceUri(_urlHelper, ResourceUriType.PreviousPage, metaResourceParameters),
+                    "previousPage", "GET"));
+            }
+
+            return wrapper;
         }
 
         #region "Prepare Meta Definitions"
