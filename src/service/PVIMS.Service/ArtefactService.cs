@@ -1394,12 +1394,12 @@ namespace PVIMS.Services
             Table table = new Table();
             DateTime tempdt;
 
-            var temp = datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "0D704069-5C50-4085-8FE1-355BB64EF196").ElementName);
+            var temp = datasetInstance.GetInstanceValue("Date of Birth");
             DateTime dob = DateTime.TryParse(temp, out tempdt) ? tempdt : DateTime.MinValue;
 
-            temp = datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "D314C438-5ABA-4ED2-855D-1A5B22B5A301").ElementName);
+            temp = datasetInstance.GetInstanceValue("Age");
             string age = temp;
-            temp = datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "80C219DC-238C-487E-A3D5-8919ABA674B1").ElementName);
+            temp = datasetInstance.GetInstanceValue("Age Unit");
             age += " " + temp; // Include age unit
 
             var headerWidth = 2500;
@@ -1432,7 +1432,7 @@ namespace PVIMS.Services
             tr.AppendChild<TableRowProperties>(rprops);
 
             tr.Append(PrepareHeaderCell("Patient Name", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "29CD2157-8FB6-4883-A4E6-A4B9EDE6B36B").ElementName), cellWidth));
+            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Initials"), cellWidth));
             tr.Append(PrepareHeaderCell("Date of Birth", headerWidth));
             tr.Append(PrepareCell(dob == DateTime.MinValue ? "" : dob.ToString("yyyy-MM-dd"), cellWidth));
 
@@ -1460,7 +1460,7 @@ namespace PVIMS.Services
             tr.AppendChild<TableRowProperties>(rprops);
 
             tr.Append(PrepareHeaderCell("Gender", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "E061D363-534E-4EA4-B6E5-F1C531931B12").ElementName), cellWidth));
+            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Sex"), cellWidth));
             tr.Append(PrepareHeaderCell("Facility", headerWidth));
             tr.Append(PrepareCell("", cellWidth));
 
@@ -1476,7 +1476,7 @@ namespace PVIMS.Services
             tr.Append(PrepareHeaderCell("Medical Record Number", headerWidth));
             tr.Append(PrepareCell("", cellWidth));
             tr.Append(PrepareHeaderCell("Identity Number", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "5A2E89A9-8240-4665-967D-0C655CF281B7").ElementName), cellWidth));
+            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Identification Number"), cellWidth));
 
             table.AppendChild<TableRow>(tr);
 
@@ -1488,7 +1488,7 @@ namespace PVIMS.Services
             tr.AppendChild<TableRowProperties>(rprops);
 
             tr.Append(PrepareHeaderCell("Weight (kg)", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "985BD25D-54E7-4A24-8636-6DBC0F9C7B96").ElementName), cellWidth));
+            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Weight  (kg)"), cellWidth));
             tr.Append(PrepareHeaderCell("Height (cm)", headerWidth));
             tr.Append(PrepareCell("", cellWidth));
 
@@ -1534,17 +1534,17 @@ namespace PVIMS.Services
             tr.AppendChild<TableRowProperties>(rprops);
 
             tr.Append(PrepareHeaderCell("Source Description", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "ACD938A4-76D1-44CE-A070-2B8DF0FE9E0F").ElementName), cellWidth));
+            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Description of reaction"), cellWidth));
             tr.Append(PrepareHeaderCell("MedDRA Term", headerWidth));
             tr.Append(PrepareCell(reportInstance.TerminologyMedDra != null ? reportInstance.TerminologyMedDra.MedDraTerm : string.Empty, cellWidth));
 
             table.AppendChild<TableRow>(tr);
 
             // Row 2
-            var temp = datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "F5EEB382-D4A5-41A1-A447-37D5ECA50B99").ElementName);
+            var temp = datasetInstance.GetInstanceValue("Reaction start date");
             DateTime onsetDate = DateTime.TryParse(temp, out tempdt) ? tempdt : DateTime.MinValue;
 
-            temp = datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "F977C2F8-C7DD-4AFE-BCAA-1C06BD54D155").ElementName);
+            temp = datasetInstance.GetInstanceValue("Reaction date of recovery");
             DateTime recoveryDate = DateTime.TryParse(temp, out tempdt) ? tempdt : DateTime.MinValue;
 
             tr = new TableRow();
@@ -1578,7 +1578,7 @@ namespace PVIMS.Services
                 tr.Append(PrepareCell(string.Empty, cellWidth));
             }
             tr.Append(PrepareHeaderCell("Outcome", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "976F6C53-78F2-4007-8F39-54057E554EEB").ElementName), cellWidth));
+            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Outcome of reaction"), cellWidth));
 
             table.AppendChild<TableRow>(tr);
 
@@ -1593,7 +1593,7 @@ namespace PVIMS.Services
                 tr.AppendChild<TableRowProperties>(rprops);
 
                 tr.Append(PrepareHeaderCell("Seriousness", headerWidth));
-                tr.Append(PrepareCell(datasetInstance.GetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "302C07C9-B0E0-46AB-9EF8-5D5C2F756BF1").ElementName), cellWidth));
+                tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Reaction serious details"), cellWidth));
                 tr.Append(PrepareHeaderCell("Grading Scale", headerWidth));
                 tr.Append(PrepareCell("", cellWidth));
 
@@ -1645,7 +1645,7 @@ namespace PVIMS.Services
 
             table.AppendChild<TableProperties>(tprops);
 
-            var sourceProductElement = _unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "712CA632-0CD0-4418-9176-FB0B95AEE8A1");
+            var sourceProductElement = _unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Product Information");
             var sourceContexts = datasetInstance.GetInstanceSubValuesContext(sourceProductElement.ElementName);
 
             var i = 0;
@@ -1782,7 +1782,7 @@ namespace PVIMS.Services
 
             table.AppendChild<TableRow>(tr);
 
-            var sourceLabElement = _unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "12D7089D-1603-4309-99DE-60F20F9A005E");
+            var sourceLabElement = _unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Test Results");
             var sourceContexts = datasetInstance.GetInstanceSubValuesContext(sourceLabElement.ElementName);
 
             foreach (Guid sourceContext in sourceContexts)
