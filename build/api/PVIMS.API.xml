@@ -1282,8 +1282,14 @@
             <summary>
             Get a single dataset using it's unique id and valid media type 
             </summary>
-            <param name="id">The unique detail for the dataset</param>
+            <param name="id">The unique identifier for the dataset</param>
             <returns>An ActionResult of type DatasetDetailDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.GetSpontaneousDataset">
+            <summary>
+            Get a single dataset using it's unique id and valid media type 
+            </summary>
+            <returns>An ActionResult of type DatasetForSpontaneousDto</returns>
         </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetCategoryByIdentifier(System.Int64,System.Int64)">
             <summary>
@@ -1398,7 +1404,7 @@
             Create a new dataset instance
             </summary>
             <param name="datasetId">The unique identifier of the dataset that the instance is being created for</param>
-            <param name="formValues">The dataset instance payload</param>
+            <param name="elementValues">The dataset instance payload</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasets``1(PVIMS.API.Models.Parameters.IdResourceParameters)">
@@ -1434,6 +1440,13 @@
             </summary>
             <typeparam name="T">Identifier or detail Dto</typeparam>
             <param name="id">Resource id to search by</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.GetSpontaneousDatasetAsync``1">
+            <summary>
+            Get spontaneous dataset from repository and auto map to Dto
+            </summary>
+            <typeparam name="T">Identifier or detail Dto</typeparam>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetInstanceAsync``1(System.Int64,System.Int64)">
@@ -1511,6 +1524,13 @@
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.CustomDatasetInstanceMap(PVIMS.API.Models.DatasetInstanceDetailDto)">
+            <summary>
+             Map additional dto detail elements not handled through automapper
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.CustomDatasetMap(PVIMS.API.Models.DatasetForSpontaneousDto)">
             <summary>
              Map additional dto detail elements not handled through automapper
             </summary>
@@ -5311,7 +5331,17 @@
         </member>
         <member name="P:PVIMS.API.Models.DatasetCategoryViewDto.DatasetCategoryName">
             <summary>
-            The name of the  dataset category
+            The name of the dataset category
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryViewDto.DatasetCategoryDisplayName">
+            <summary>
+            The friendly name of the dataset category
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryViewDto.DatasetCategoryHelp">
+            <summary>
+            Additional help for the dataset category
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.DatasetCategoryViewDto.DatasetCategoryDisplayed">
@@ -5529,9 +5559,49 @@
             The name of the dataset sub element
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.DatasetElementSubDisplayName">
+            <summary>
+            The name of the dataset sub element as it should be displayed
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.DatasetElementSubHelp">
+            <summary>
+            Additional help text that is associated to the element sub
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.DatasetElementSubType">
             <summary>
             The type of sub element
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.DatasetElementSubSystem">
+            <summary>
+            Is this a system sub element
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.Required">
+            <summary>
+            Is this sub element mandatory
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.StringMaxLength">
+            <summary>
+            Maximum string length for string based attributes
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.NumericMinValue">
+            <summary>
+            Minimum value in a min max range for numeric based elements
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.NumericMaxValue">
+            <summary>
+            Maximum value in a min max range for numeric based elements
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.SelectionDataItems">
+            <summary>
+            A list of selection values associated to the attribute (if applicable)
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.DatasetElementViewDto">
@@ -5614,6 +5684,16 @@
             A list of selection values associated to the attribute (if applicable)
             </summary>
         </member>
+        <member name="T:PVIMS.API.Models.DatasetForSpontaneousDto">
+            <summary>
+            A spontaneous dataset representation DTO
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetForSpontaneousDto.DatasetCategories">
+            <summary>
+            Dataset categories linked through it's instance
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.DatasetForUpdateDto.DatasetName">
             <summary>
             The name of the dataset
@@ -5656,7 +5736,7 @@
         </member>
         <member name="P:PVIMS.API.Models.DatasetInstanceDetailDto.DatasetCategories">
             <summary>
-            Dataset categories linked to the encounter through it's instance
+            Dataset categories linked through it's instance
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.DatasetInstanceIdentifierDto">
@@ -6525,6 +6605,11 @@
             The unique attribute name
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.MetaAttributeDto.Aggregate">
+            <summary>
+            Stratification aggregator applied to this column
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.MetaAttributeDto.DisplayName">
             <summary>
             The attribute display name
@@ -6643,6 +6728,11 @@
         <member name="P:PVIMS.API.Models.MetaFilterDto.AttributeName">
             <summary>
             The unique attribute name
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaFilterDto.ColumnType">
+            <summary>
+            The type of column being used for the filter
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.MetaFilterDto.Operator">
