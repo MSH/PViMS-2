@@ -737,6 +737,43 @@
             <param name="id">The unique identifier for the product</param>
             <returns>An ActionResult of type ProgramDetailDto</returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.ConceptsController.CreateConcept(PVIMS.API.Models.ConceptForUpdateDto)">
+            <summary>
+            Create a new concept
+            </summary>
+            <param name="conceptForUpdate">The concept payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.ConceptsController.UpdateConcept(System.Int64,PVIMS.API.Models.ConceptForUpdateDto)">
+            <summary>
+            Update an existing concept
+            </summary>
+            <param name="id">The unique id of the concept</param>
+            <param name="conceptForUpdate">The concept payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.ConceptsController.DeleteConcept(System.Int64)">
+            <summary>
+            Delete an existing concept
+            </summary>
+            <param name="id">The unique id of the concept</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.ConceptsController.CreateProduct(PVIMS.API.Models.ProductForUpdateDto)">
+            <summary>
+            Create a new product
+            </summary>
+            <param name="productForUpdate">The product payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.ConceptsController.UpdateProduct(System.Int64,PVIMS.API.Models.ProductForUpdateDto)">
+            <summary>
+            Update an existing product
+            </summary>
+            <param name="id">The unique id of the product</param>
+            <param name="productForUpdate">The product payload</param>
+            <returns></returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.ConceptsController.DeleteProduct(System.Int64)">
             <summary>
             Delete an existing product
@@ -1228,6 +1265,12 @@
             </summary>
             <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of DatasetCategoryDetailDto</returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetCategoryElementsByDetail(System.Int64,System.Int64,PVIMS.API.Models.Parameters.IdResourceParameters)">
+            <summary>
+            Get all dataset category elements using a valid media type 
+            </summary>
+            <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of DatasetCategoryElementDetailDto</returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetByIdentifier(System.Int64)">
             <summary>
             Get a single dataset using it's unique id and valid media type 
@@ -1239,8 +1282,14 @@
             <summary>
             Get a single dataset using it's unique id and valid media type 
             </summary>
-            <param name="id">The unique detail for the dataset</param>
+            <param name="id">The unique identifier for the dataset</param>
             <returns>An ActionResult of type DatasetDetailDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.GetSpontaneousDataset">
+            <summary>
+            Get a single dataset using it's unique id and valid media type 
+            </summary>
+            <returns>An ActionResult of type DatasetForSpontaneousDto</returns>
         </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetCategoryByIdentifier(System.Int64,System.Int64)">
             <summary>
@@ -1249,6 +1298,15 @@
             <param name="datasetId">The unique identifier for the dataset</param>
             <param name="id">The unique identifier for the dataset category</param>
             <returns>An ActionResult of type DatasetCategoryIdentifierDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetCategoryElementByIdentifier(System.Int64,System.Int64,System.Int64)">
+            <summary>
+            Get a single dataset category element using it's unique id and valid media type 
+            </summary>
+            <param name="datasetId">The unique identifier for the dataset</param>
+            <param name="datasetCategoryId">The unique identifier for the dataset</param>
+            <param name="id">The unique identifier for the dataset category</param>
+            <returns>An ActionResult of type DatasetCategoryElementIdentifierDto</returns>
         </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetInstanceByIdentifier(System.Int64,System.Int64)">
             <summary>
@@ -1281,12 +1339,40 @@
             <param name="datasetCategoryForUpdate">The dataset category payload</param>
             <returns></returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.CreateDatasetCategoryElement(System.Int64,System.Int64,PVIMS.API.Models.DatasetCategoryElementForUpdateDto)">
+            <summary>
+            Create a new dataset category element
+            </summary>
+            <param name="datasetId">The unique identifier for the dataset</param>
+            <param name="datasetCategoryId">The unique identifier for the dataset category</param>
+            <param name="datasetCategoryElementForUpdate">The dataset category element payload</param>
+            <returns></returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.UpdateDataset(System.Int64,PVIMS.API.Models.DatasetForUpdateDto)">
             <summary>
             Update an existing dataset
             </summary>
             <param name="id">The unique id of the dataset</param>
             <param name="datasetForUpdate">The dataset payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.UpdateDatasetCategory(System.Int64,System.Int64,PVIMS.API.Models.DatasetCategoryForUpdateDto)">
+            <summary>
+            Update an existing dataset category
+            </summary>
+            <param name="datasetId">The unique identifier for the dataset</param>
+            <param name="id">The unique id of the dataset</param>
+            <param name="datasetCategoryForUpdate">The dataset category payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.UpdateDatasetCategoryElement(System.Int64,System.Int64,System.Int64,PVIMS.API.Models.DatasetCategoryElementForUpdateDto)">
+            <summary>
+            Update an existing dataset category element
+            </summary>
+            <param name="datasetId">The unique identifier for the dataset</param>
+            <param name="datasetCategoryId">The unique identifier for the dataset</param>
+            <param name="id">The unique identifier for the dataset category</param>
+            <param name="datasetCategoryElementForUpdate">The dataset category element payload</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.DeleteDataset(System.Int64)">
@@ -1296,12 +1382,29 @@
             <param name="id">The unique id of the dataset</param>
             <returns></returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.DeleteDatasetCategory(System.Int64,System.Int64)">
+            <summary>
+            Delete an existing dataset category
+            </summary>
+            <param name="datasetId">The unique identifier for the dataset</param>
+            <param name="id">The unique id of the dataset category</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.DeleteDatasetCategoryElement(System.Int64,System.Int64,System.Int64)">
+            <summary>
+            Delete an existing dataset category element
+            </summary>
+            <param name="datasetId">The unique identifier for the dataset</param>
+            <param name="datasetCategoryId">The unique identifier for the dataset</param>
+            <param name="id">The unique identifier for the dataset category</param>
+            <returns></returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.CreateDatasetInstance(System.Int64,System.Object[])">
             <summary>
             Create a new dataset instance
             </summary>
             <param name="datasetId">The unique identifier of the dataset that the instance is being created for</param>
-            <param name="formValues">The dataset instance payload</param>
+            <param name="elementValues">The dataset instance payload</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasets``1(PVIMS.API.Models.Parameters.IdResourceParameters)">
@@ -1321,12 +1424,29 @@
             <param name="datasetCategoryResourceParameters">Standard parameters for representing resource</param>
             <returns></returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetCategoryElements``1(System.Int64,System.Int64,PVIMS.API.Models.Parameters.IdResourceParameters)">
+            <summary>
+            Get dataset category elements from repository and auto map to Dto
+            </summary>
+            <typeparam name="T">Identifier or detail Dto</typeparam>
+            <param name="datasetId">Unique id of the dataset being queried for categories</param>
+            <param name="id">Unique id of the dataset category being queried for elements</param>
+            <param name="datasetCategoryElementResourceParameters">Standard parameters for representing resource</param>
+            <returns></returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetAsync``1(System.Int64)">
             <summary>
             Get single dataset from repository and auto map to Dto
             </summary>
             <typeparam name="T">Identifier or detail Dto</typeparam>
             <param name="id">Resource id to search by</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.GetSpontaneousDatasetAsync``1">
+            <summary>
+            Get spontaneous dataset from repository and auto map to Dto
+            </summary>
+            <typeparam name="T">Identifier or detail Dto</typeparam>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetInstanceAsync``1(System.Int64,System.Int64)">
@@ -1344,6 +1464,16 @@
             </summary>
             <typeparam name="T">Identifier or detail Dto</typeparam>
             <param name="datasetId">Unique id of the dataset being queried for categories</param>
+            <param name="id">Resource id to search by</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.GetDatasetCategoryElementAsync``1(System.Int64,System.Int64,System.Int64)">
+            <summary>
+            Get single dataset category element from repository and auto map to Dto
+            </summary>
+            <typeparam name="T">Identifier or detail Dto</typeparam>
+            <param name="datasetId">Unique id of the dataset being queried for categories</param>
+            <param name="datasetCategoryId">Unique id of the dataset being queried for categories</param>
             <param name="id">Resource id to search by</param>
             <returns></returns>
         </member>
@@ -1370,6 +1500,15 @@
             <param name="dto">The dto that the link has been added to</param>
             <returns></returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.CreateLinksForDatasetCategoryElement``1(System.Int64,System.Int64,``0)">
+            <summary>
+             Prepare HATEOAS links for a single resource
+            </summary>
+            <param name="datasetId">Unique id of the dataset being queried for categories</param>
+            <param name="datasetCategoryId">Unique id of the dataset category being queried for elements</param>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.GetNextCategoryOrder(PVIMS.Core.Entities.Dataset)">
             <summary>
              Get the next category order number
@@ -1377,7 +1516,21 @@
             <param name="dataset">The dataset that is being queried to determine the order number for the category</param>
             <returns></returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.GetNextFieldOrder(PVIMS.Core.Entities.DatasetCategory)">
+            <summary>
+             Get the next element order number
+            </summary>
+            <param name="datasetCategory">The dataset category that is being queried to determine the order number for the element</param>
+            <returns></returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.DatasetsController.CustomDatasetInstanceMap(PVIMS.API.Models.DatasetInstanceDetailDto)">
+            <summary>
+             Map additional dto detail elements not handled through automapper
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.DatasetsController.CustomDatasetMap(PVIMS.API.Models.DatasetForSpontaneousDto)">
             <summary>
              Map additional dto detail elements not handled through automapper
             </summary>
@@ -1992,6 +2145,12 @@
             </summary>
             <returns>An ActionResult of type MetaSummaryDto</returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.MetaController.GetMetaTablesByIdentifier(PVIMS.API.Models.Parameters.MetaResourceParameters)">
+            <summary>
+            Get all meta tables using a valid media type 
+            </summary>
+            <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaTableIdentifierDto</returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.MetaController.GetMetaTablesByDetail(PVIMS.API.Models.Parameters.MetaResourceParameters)">
             <summary>
             Get all meta tables using a valid media type 
@@ -2009,26 +2168,6 @@
             Get all meta dependencies using a valid media type 
             </summary>
             <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaDependencyDetailDto</returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.MetaController.GetMetaPagesByDetail(PVIMS.API.Models.Parameters.IdResourceParameters)">
-            <summary>
-            Get all meta pages using a valid media type 
-            </summary>
-            <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaPageDetailDto</returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.MetaController.GetMetaPageByIdentifier(System.Int64)">
-            <summary>
-            Get a single meta page using it's unique id and valid media type 
-            </summary>
-            <param name="id">The unique identifier for the lab test</param>
-            <returns>An ActionResult of type MetaPageIdentifierDto</returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.MetaController.GetMetaPageByExpanded(System.Int64)">
-            <summary>
-            Get a single meta page using it's unique id and valid media type 
-            </summary>
-            <param name="id">The unique identifier for the lab test</param>
-            <returns>An ActionResult of type MetaPageExpandedDto</returns>
         </member>
         <member name="M:PVIMS.API.Controllers.MetaController.RefreshMeta">
             <summary>
@@ -2060,41 +2199,14 @@
             <param name="metaResourceParameters">Standard parameters for representing resource</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.MetaController.GetMetaPages``1(PVIMS.API.Models.Parameters.IdResourceParameters)">
+        <member name="M:PVIMS.API.Controllers.MetaController.CreateLinksForTables(PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.MetaResourceParameters,System.Boolean,System.Boolean)">
             <summary>
-            Get meta tables from repository and auto map to Dto
+            Prepare HATEOAS links for a identifier based collection resource
             </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
+            <param name="wrapper">The linked dto wrapper that will host each link</param>
             <param name="metaResourceParameters">Standard parameters for representing resource</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.MetaController.GetMetaPageAsync``1(System.Int64)">
-            <summary>
-            Get single meta page from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="id">Resource id to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.MetaController.CreateLinksForMetaPage``1(``0)">
-            <summary>
-             Prepare HATEOAS links for a single resource
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.MetaController.CustomPageMap(PVIMS.API.Models.MetaPageExpandedDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.MetaController.CustomWidgetMap(PVIMS.API.Models.MetaWidgetDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
+            <param name="hasNext">Are there additional pages</param>
+            <param name="hasPrevious">Are there previous pages</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.MetaFormsController.GetMetaFormsByDetail(PVIMS.API.Models.Parameters.MetaFormResourceParameters)">
@@ -2119,6 +2231,321 @@
             </summary>
             <typeparam name="T">Identifier or detail Dto</typeparam>
             <param name="metaFormResourceParameters">Standard parameters for representing resource</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetMetaPagesByDetail(PVIMS.API.Models.Parameters.IdResourceParameters)">
+            <summary>
+            Get all meta pages using a valid media type 
+            </summary>
+            <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaPageDetailDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetMetaPageByIdentifier(System.Int64)">
+            <summary>
+            Get a single meta page using it's unique id and valid media type 
+            </summary>
+            <param name="id">The unique identifier for the meta page</param>
+            <returns>An ActionResult of type MetaPageIdentifierDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetMetaPageByDetail(System.Int64)">
+            <summary>
+            Get a single meta page using it's unique id and valid media type 
+            </summary>
+            <param name="id">The unique identifier for the meta page</param>
+            <returns>An ActionResult of type MetaPageDetailDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetMetaPageByExpanded(System.Int64)">
+            <summary>
+            Get a single meta page using it's unique id and valid media type 
+            </summary>
+            <param name="id">The unique identifier for the meta page</param>
+            <returns>An ActionResult of type MetaPageExpandedDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetMetaWidgetByIdentifier(System.Int64,System.Int64)">
+            <summary>
+            Get a single meta page widget using it's unique id and valid media type 
+            </summary>
+            <param name="metaPageId">The unique identifier for the meta page that owns the widget</param>
+            <param name="id">The unique identifier for the widget</param>
+            <returns>An ActionResult of type MetaPageIdentifierDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetMetaWidgetByDetail(System.Int64,System.Int64)">
+            <summary>
+            Get a single meta page widget using it's unique id and valid media type 
+            </summary>
+            <param name="metaPageId">The unique identifier for the meta page that owns the widget</param>
+            <param name="id">The unique identifier for the widget</param>
+            <returns>An ActionResult of type MetaWidgetDetailDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.CreateMetaPage(PVIMS.API.Models.MetaPageForUpdateDto)">
+            <summary>
+            Create a new meta page
+            </summary>
+            <param name="metaPageForUpdate">The meta page payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.UpdateMetaPage(System.Int64,PVIMS.API.Models.MetaPageForUpdateDto)">
+            <summary>
+            Update an existing meta page
+            </summary>
+            <param name="id">The unique id of the meta page</param>
+            <param name="metaPageForUpdate">The meta page payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.DeleteMetaPage(System.Int64)">
+            <summary>
+            Delete an existing meta page
+            </summary>
+            <param name="id">The unique id of the meta page</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.CreateMetaWidget(System.Int64,PVIMS.API.Models.MetaWidgetForCreationDto)">
+            <summary>
+            Create a new meta widget
+            </summary>
+            <param name="metaPageId">The unique identifier of the meta page</param>
+            <param name="metaWidgetForCreation">The meta widget payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.UpdateMetaWidget(System.Int64,System.Int64,PVIMS.API.Models.MetaWidgetForUpdateDto)">
+            <summary>
+            Update an existing meta widget
+            </summary>
+            <param name="metaPageId">The unique identifier of the meta page</param>
+            <param name="id">The unique id of the meta widget</param>
+            <param name="metaWidgetForUpdate">The meta widget payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.MoveMetaWidget(System.Int64,System.Int64,PVIMS.API.Models.MetaWidgetForMoveDto)">
+            <summary>
+            Move a meta widget to a new page
+            </summary>
+            <param name="metaPageId">The unique identifier of the meta page</param>
+            <param name="id">The unique id of the meta page</param>
+            <param name="metaWidgetForMove">The move meta widget payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.DeleteMetaWidget(System.Int64,System.Int64)">
+            <summary>
+            Delete an existing meta widget
+            </summary>
+            <param name="metaPageId">The unique identifier of the meta page</param>
+            <param name="id">The unique id of the meta page</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetMetaPages``1(PVIMS.API.Models.Parameters.IdResourceParameters)">
+            <summary>
+            Get meta tables from repository and auto map to Dto
+            </summary>
+            <typeparam name="T">Identifier or detail Dto</typeparam>
+            <param name="metaResourceParameters">Standard parameters for representing resource</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetMetaPageAsync``1(System.Int64)">
+            <summary>
+            Get single meta page from repository and auto map to Dto
+            </summary>
+            <typeparam name="T">Identifier or detail Dto</typeparam>
+            <param name="id">Resource id to search by</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetMetaWidgetAsync``1(System.Int64,System.Int64)">
+            <summary>
+            Get single meta widget from repository and auto map to Dto
+            </summary>
+            <typeparam name="T">Identifier or detail Dto</typeparam>
+            <param name="metaPageId">Parent id to search by</param>
+            <param name="id">Resource id to search by</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.CreateLinksForMetaPage``1(``0)">
+            <summary>
+             Prepare HATEOAS links for a single resource
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.CreateLinksForMetaWidget``1(System.Int64,``0)">
+            <summary>
+             Prepare HATEOAS links for a single resource
+            </summary>
+            <param name="metaPageId">The unique identifier for the meta page that owns the widget</param>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.CustomPageMap(PVIMS.API.Models.MetaPageExpandedDto)">
+            <summary>
+             Map additional dto detail elements not handled through automapper
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.CustomWidgetMap(PVIMS.API.Models.MetaWidgetDetailDto)">
+            <summary>
+             Map additional dto detail elements not handled through automapper
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetBaseTemplate(PVIMS.Core.ValueTypes.MetaWidgetTypes,System.Int64)">
+            <summary>
+             Prepare base content for widget
+            </summary>
+            <param name="metaPageId">The unique identifier of the meta page</param>
+            <param name="widgetTypeE">The type of widget to prepare content for</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaPagesController.GetContentFromWidget(PVIMS.Core.ValueTypes.MetaWidgetTypes,PVIMS.API.Models.MetaWidgetForUpdateDto)">
+            <summary>
+             Prepare new content for widget
+            </summary>
+            <param name="widgetTypeE">The type of widget to prepare content for</param>
+            <param name="metaWidgetForUpdate">The meta widget payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.GetMetaReportsByIdentifier(PVIMS.API.Models.Parameters.IdResourceParameters)">
+            <summary>
+            Get all meta reports using a valid media type 
+            </summary>
+            <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaReportIdentifierDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.GetMetaReportsByDetail(PVIMS.API.Models.Parameters.IdResourceParameters)">
+            <summary>
+            Get all meta reports using a valid media type 
+            </summary>
+            <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaReportDetailDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.GetMetaReportByIdentifier(System.Int64)">
+            <summary>
+            Get a single meta report using it's unique id and valid media type 
+            </summary>
+            <param name="id">The unique identifier for the meta report</param>
+            <returns>An ActionResult of type MetaReportIdentifierDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.GetMetaReportByDetail(System.Int64)">
+            <summary>
+            Get a single meta report using it's unique id and valid media type 
+            </summary>
+            <param name="id">The unique identifier for the meta report</param>
+            <returns>An ActionResult of type MetaReportDetailDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.GetMetaReportByExpanded(System.Int64)">
+            <summary>
+            Get a single meta report using it's unique id and valid media type 
+            </summary>
+            <param name="id">The unique identifier for the meta report</param>
+            <returns>An ActionResult of type MetaReportExpandedDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.CreateMetaReport(PVIMS.API.Models.MetaReportForUpdateDto)">
+            <summary>
+            Create a new meta report
+            </summary>
+            <param name="metaReportForUpdate">The meta report payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.UpdateMetaReport(System.Int64,PVIMS.API.Models.MetaReportForUpdateDto)">
+            <summary>
+            Update an existing meta report
+            </summary>
+            <param name="id">The unique id of the meta report</param>
+            <param name="metaReportForUpdate">The meta report payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.DeleteMetaReport(System.Int64)">
+            <summary>
+            Delete an existing meta report
+            </summary>
+            <param name="id">The unique id of the meta report</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.UpdateMetaReportAttributes(System.Int64,System.Int64,PVIMS.API.Models.MetaReportForAttributeUpdateDto)">
+            <summary>
+            Update an existing meta report attributes
+            </summary>
+            <param name="id">The unique id of the meta report</param>
+            <param name="metaReportForAttributeUpdate">The meta widget payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.GetMetaReports``1(PVIMS.API.Models.Parameters.IdResourceParameters)">
+            <summary>
+            Get meta tables from repository and auto map to Dto
+            </summary>
+            <typeparam name="T">Identifier or detail Dto</typeparam>
+            <param name="metaResourceParameters">Standard parameters for representing resource</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.GetMetaReportAsync``1(System.Int64)">
+            <summary>
+            Get single meta report from repository and auto map to Dto
+            </summary>
+            <typeparam name="T">Identifier or detail Dto</typeparam>
+            <param name="id">Resource id to search by</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.CreateLinksForMetaReport``1(``0)">
+            <summary>
+             Prepare HATEOAS links for a single resource
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.PrepareMetaDefinition(PVIMS.API.Models.MetaReportForUpdateDto)">
+            <summary>
+             Prepare an XML definition containing details of the report
+            </summary>
+            <param name="metaReportForUpdate">The meta report payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.PrepareMetaDefinitionForAttribute(PVIMS.API.Models.MetaReportForAttributeUpdateDto,PVIMS.Core.Entities.MetaReport)">
+            <summary>
+             Prepare an XML definition containing details of the report (including attributes)
+            </summary>
+            <param name="metaReportForAttributeUpdate">The meta report attribute payload</param>
+            <param name="metaReport">The meta report being updated</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.PrepareListQueryForPublication(PVIMS.API.Models.MetaReportForAttributeUpdateDto)">
+            <summary>
+             Prepare the sql query needed to produce the list report
+            </summary>
+            <param name="metaReportForAttributeUpdate">The meta report attribute payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.PrepareSummaryQueryForPublication(PVIMS.API.Models.MetaReportForAttributeUpdateDto)">
+            <summary>
+             Prepare the sql query needed to produce the summary report
+            </summary>
+            <param name="metaReportForAttributeUpdate">The meta report attribute payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.CustomReportMap(PVIMS.API.Models.MetaReportDetailDto)">
+            <summary>
+             Map additional dto detail elements not handled through automapper
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.CustomReportMap(PVIMS.API.Models.MetaReportExpandedDto)">
+            <summary>
+             Map additional dto detail elements not handled through automapper
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.CustomColumnMap(PVIMS.API.Models.MetaColumnExpandedDto)">
+            <summary>
+             Map additional dto detail elements not handled through automapper
+            </summary>
+            <param name="dto">The dto that the link has been added to</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.CreateLinksForReports(PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.IdResourceParameters,System.Boolean,System.Boolean)">
+            <summary>
+            Prepare HATEOAS links for a identifier based collection resource
+            </summary>
+            <param name="wrapper">The linked dto wrapper that will host each link</param>
+            <param name="metaResourceParameters">Standard parameters for representing resource</param>
+            <param name="hasNext">Are there additional pages</param>
+            <param name="hasPrevious">Are there previous pages</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.OutcomesController.GetOutcomesByIdentifier(PVIMS.API.Models.Parameters.IdResourceParameters)">
@@ -3024,13 +3451,13 @@
             </param>
             <returns>An ActionResult of type CausalityReportDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.UpdateReportInstanceStatus(System.Guid,System.Int32,PVIMS.API.Models.ActivityForUpdateDto)">
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.UpdateReportInstanceStatus(System.Guid,System.Int32,PVIMS.API.Models.ActivityChangeDto)">
             <summary>
             Set report instance status
             </summary>
             <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
             <param name="id">The unique identifier of the reporting instance</param>
-            <param name="activityForUpdate">The payload for setting the new status</param>
+            <param name="activityChange">The payload for setting the new status</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.ReportInstancesController.UpdateReportInstanceTerminology(System.Guid,System.Int32,PVIMS.API.Models.ReportInstanceTerminologyForUpdateDto)">
@@ -4210,6 +4637,21 @@
             The form of the concept
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.ConceptForUpdateDto.ConceptName">
+            <summary>
+            The name of the concept
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ConceptForUpdateDto.MedicationForm">
+            <summary>
+            The form of the concept
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ConceptForUpdateDto.Active">
+            <summary>
+            Is this concept currently active
+            </summary>
+        </member>
         <member name="T:PVIMS.API.Models.ConceptIdentifierDto">
             <summary>
             A concept representation DTO - IDENTIFIER ONLY
@@ -4268,6 +4710,36 @@
         <member name="P:PVIMS.API.Models.ProductDetailDto.Manufacturer">
             <summary>
             The manufacturer
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ProductForUpdateDto.ConceptName">
+            <summary>
+            The name of the concept
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ProductForUpdateDto.MedicationForm">
+            <summary>
+            The form of the concept
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ProductForUpdateDto.ProductName">
+            <summary>
+            The name of the product
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ProductForUpdateDto.Manufacturer">
+            <summary>
+            The name of the manufacturer
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ProductForUpdateDto.Description">
+            <summary>
+            A general description of the product
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ProductForUpdateDto.Active">
+            <summary>
+            Is this product currently active
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.ProductIdentifierDto">
@@ -4727,6 +5199,86 @@
             Additional help for the dataset category
             </summary>
         </member>
+        <member name="T:PVIMS.API.Models.DatasetCategoryElementDetailDto">
+            <summary>
+            A dataset category element representation DTO - FULL DETAILS
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementDetailDto.FieldOrder">
+            <summary>
+            The order of the field in relation to the category
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementDetailDto.System">
+            <summary>
+            Is this a system defined element
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementDetailDto.Acute">
+            <summary>
+            Is this element used for acute data collection
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementDetailDto.Chronic">
+            <summary>
+            Is this element used for chronic data collection
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementDetailDto.FriendlyName">
+            <summary>
+            The friendly name of the dataset category element
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementDetailDto.Help">
+            <summary>
+            Additional help for the dataset category element
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementForUpdateDto.DatasetElementId">
+            <summary>
+            The unique identifier of the element being linked
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementForUpdateDto.FriendlyName">
+            <summary>
+            The friendly name of the dataset category
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementForUpdateDto.Help">
+            <summary>
+            Additional help for the dataset category
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementForUpdateDto.Acute">
+            <summary>
+            Is this a category used for acute data collection
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementForUpdateDto.Chronic">
+            <summary>
+            Is this a category used for chronic data collection
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.DatasetCategoryElementIdentifierDto">
+            <summary>
+            A dataset category element representation DTO - IDENTIFIER ONLY
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementIdentifierDto.Id">
+            <summary>
+            The unique Id of the dataset category element
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementIdentifierDto.DatasetElementId">
+            <summary>
+            The dataset element unique identifier
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryElementIdentifierDto.ElementName">
+            <summary>
+            The name of the dataset element
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.DatasetCategoryForUpdateDto.DatasetCategoryName">
             <summary>
             The name of the dataset category
@@ -4779,7 +5331,17 @@
         </member>
         <member name="P:PVIMS.API.Models.DatasetCategoryViewDto.DatasetCategoryName">
             <summary>
-            The name of the  dataset category
+            The name of the dataset category
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryViewDto.DatasetCategoryDisplayName">
+            <summary>
+            The friendly name of the dataset category
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetCategoryViewDto.DatasetCategoryHelp">
+            <summary>
+            Additional help for the dataset category
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.DatasetCategoryViewDto.DatasetCategoryDisplayed">
@@ -4977,7 +5539,7 @@
             The name of the dataset element
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.DatasetElementIdentifierDto.fieldTypeName">
+        <member name="P:PVIMS.API.Models.DatasetElementIdentifierDto.FieldTypeName">
             <summary>
             The type of field
             </summary>
@@ -4997,9 +5559,49 @@
             The name of the dataset sub element
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.DatasetElementSubDisplayName">
+            <summary>
+            The name of the dataset sub element as it should be displayed
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.DatasetElementSubHelp">
+            <summary>
+            Additional help text that is associated to the element sub
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.DatasetElementSubType">
             <summary>
             The type of sub element
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.DatasetElementSubSystem">
+            <summary>
+            Is this a system sub element
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.Required">
+            <summary>
+            Is this sub element mandatory
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.StringMaxLength">
+            <summary>
+            Maximum string length for string based attributes
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.NumericMinValue">
+            <summary>
+            Minimum value in a min max range for numeric based elements
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.NumericMaxValue">
+            <summary>
+            Maximum value in a min max range for numeric based elements
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetElementSubViewDto.SelectionDataItems">
+            <summary>
+            A list of selection values associated to the attribute (if applicable)
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.DatasetElementViewDto">
@@ -5082,6 +5684,16 @@
             A list of selection values associated to the attribute (if applicable)
             </summary>
         </member>
+        <member name="T:PVIMS.API.Models.DatasetForSpontaneousDto">
+            <summary>
+            A spontaneous dataset representation DTO
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.DatasetForSpontaneousDto.DatasetCategories">
+            <summary>
+            Dataset categories linked through it's instance
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.DatasetForUpdateDto.DatasetName">
             <summary>
             The name of the dataset
@@ -5124,7 +5736,7 @@
         </member>
         <member name="P:PVIMS.API.Models.DatasetInstanceDetailDto.DatasetCategories">
             <summary>
-            Dataset categories linked to the encounter through it's instance
+            Dataset categories linked through it's instance
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.DatasetInstanceIdentifierDto">
@@ -5733,9 +6345,39 @@
             A meta page representation DTO - FULL DETAILS
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.MetaPageExpandedDto.UnpublishedWidgets">
+            <summary>
+            A list of widgets associated to the page that are not published
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.MetaPageExpandedDto.Widgets">
             <summary>
             A list of widgets associated to the page
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaPageForUpdateDto.PageName">
+            <summary>
+            The name of the meta page
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaPageForUpdateDto.PageDefinition">
+            <summary>
+            What the purpose of the page is
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaPageForUpdateDto.MetaDefinition">
+            <summary>
+            Page configuration details. Currently not in use
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaPageForUpdateDto.Breadcrumb">
+            <summary>
+            Page breadcrumb. Currently not in use
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaPageForUpdateDto.Visible">
+            <summary>
+            Is this page visible to the menu
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.MetaPageIdentifierDto">
@@ -5798,6 +6440,71 @@
             A list of widgets associated to the page
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForCreationDto.WidgetName">
+            <summary>
+            The name of the meta widget
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForCreationDto.WidgetType">
+            <summary>
+            The type of widget that is being created
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForCreationDto.WidgetDefinition">
+            <summary>
+            What the purpose of the widget is
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForCreationDto.Icon">
+            <summary>
+            The icon that is associated to the widget
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForMoveDto.DestinationMetaPageId">
+            <summary>
+            The unique identifier of the destination meta page
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForUpdateDto.WidgetName">
+            <summary>
+            The name of the meta widget
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForUpdateDto.WidgetDefinition">
+            <summary>
+            What the purpose of the widget is
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForUpdateDto.Icon">
+            <summary>
+            The icon that is associated to the widget
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForUpdateDto.WidgetLocation">
+            <summary>
+            The location of the widget
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForUpdateDto.WidgetStatus">
+            <summary>
+            The status of the widget
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForUpdateDto.GeneralContent">
+            <summary>
+            Text associated to the general widget type
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForUpdateDto.SubItems">
+            <summary>
+            Sub item content for the sub item widget type
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaWidgetForUpdateDto.ListItems">
+            <summary>
+            Sub item content for the sub item widget type
+            </summary>
+        </member>
         <member name="T:PVIMS.API.Models.MetaWidgetIdentifierDto">
             <summary>
             A meta widget representation DTO - IDENTIFIER ONLY
@@ -5840,12 +6547,72 @@
         </member>
         <member name="P:PVIMS.API.Models.WidgetistItemDto.Content">
             <summary>
-            Any additional comments to the status
+            Widget content
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.WidgetistItemDto.Modified">
             <summary>
             Widget modified date
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.WidgetListItemForUpdateDto">
+            <summary>
+            A representation of a widget list item content
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.WidgetListItemForUpdateDto.Title">
+            <summary>
+            The title of the widget
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.WidgetListItemForUpdateDto.Content">
+            <summary>
+            Widget content
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.WidgetSubItemForUpdateDto">
+            <summary>
+            A representation of a widget sub item content
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.WidgetSubItemForUpdateDto.Title">
+            <summary>
+            The title of the widget
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.WidgetSubItemForUpdateDto.SubTitle">
+            <summary>
+            The sub-title of the widget
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.WidgetSubItemForUpdateDto.ContentPage">
+            <summary>
+            The page the widget should point to
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaAttributeDto">
+            <summary>
+            A meta attribute representation DTO
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaAttributeDto.Index">
+            <summary>
+            The order of the attribute
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaAttributeDto.AttributeName">
+            <summary>
+            The unique attribute name
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaAttributeDto.Aggregate">
+            <summary>
+            Stratification aggregator applied to this column
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaAttributeDto.DisplayName">
+            <summary>
+            The attribute display name
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.MetaColumnDetailDto">
@@ -5881,6 +6648,16 @@
         <member name="P:PVIMS.API.Models.MetaColumnDetailDto.Range">
             <summary>
             Column range of values
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaColumnExpandedDto">
+            <summary>
+            A meta column representation DTO - EXPANDED
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaColumnExpandedDto.Operators">
+            <summary>
+            The operators that are applicable to the attribute type
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.MetaColumnIdentifierDto">
@@ -5938,6 +6715,186 @@
             The globally unique identifier for the meta dependency
             </summary>
         </member>
+        <member name="T:PVIMS.API.Models.MetaFilterDto">
+            <summary>
+            A meta filter representation DTO
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaFilterDto.Index">
+            <summary>
+            The order of the filter
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaFilterDto.AttributeName">
+            <summary>
+            The unique attribute name
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaFilterDto.ColumnType">
+            <summary>
+            The type of column being used for the filter
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaFilterDto.Operator">
+            <summary>
+            The operator used in the query
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaFilterDto.Relation">
+            <summary>
+            The relation of the filters
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaOperatorDto">
+            <summary>
+            A meta operator representation DTO
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaOperatorDto.OperatorName">
+            <summary>
+            The name of the operator
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaOperatorDto.OperatorValue">
+            <summary>
+            The operator value
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaReportDetailDto">
+            <summary>
+            A meta report representation DTO - FULL DETAILS
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportDetailDto.ReportDefinition">
+            <summary>
+            The definition of the report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportDetailDto.MetaDefinition">
+            <summary>
+            The meta definition of the report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportDetailDto.Breadcrumb">
+            <summary>
+            The page breadcrumb
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportDetailDto.System">
+            <summary>
+            Is this a system report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportDetailDto.ReportStatus">
+            <summary>
+            Report status: Published or unpublished
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportDetailDto.ReportType">
+            <summary>
+            The type of report: List or summary
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportDetailDto.CoreEntity">
+            <summary>
+            The core entity for the report
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaReportExpandedDto">
+            <summary>
+            A meta report representation DTO - EXPANDED
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportExpandedDto.CoreMetaTable">
+            <summary>
+            The associated core entity for the report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportExpandedDto.Attributes">
+            <summary>
+            The attributes associated to the report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportExpandedDto.Filters">
+            <summary>
+            The filters associated to the report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForAttributeUpdateDto.ReportType">
+            <summary>
+            Is the report a list or summary based report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForAttributeUpdateDto.CoreEntity">
+            <summary>
+            The core entity of the report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForAttributeUpdateDto.Attributes">
+            <summary>
+            The attributes associated to the report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForAttributeUpdateDto.Filters">
+            <summary>
+            The filters associated to the report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForUpdateDto.ReportName">
+            <summary>
+            The name of the meta report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForUpdateDto.ReportDefinition">
+            <summary>
+            What the purpose of the report is
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForUpdateDto.MetaDefinition">
+            <summary>
+            Report configuration details. Currently not in use
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForUpdateDto.Breadcrumb">
+            <summary>
+            Report breadcrumb. Currently not in use
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForUpdateDto.ReportStatus">
+            <summary>
+            Is the report in a published or unpublished state
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForUpdateDto.ReportType">
+            <summary>
+            Is the report a list or summary based report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportForUpdateDto.CoreEntity">
+            <summary>
+            The core entity of the report
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaReportIdentifierDto">
+            <summary>
+            A meta report representation DTO - IDENTIFIER ONLY
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportIdentifierDto.Id">
+            <summary>
+            The unique Id of the meta report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportIdentifierDto.MetaReportGuid">
+            <summary>
+            The globally unique identifier for the meta report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaReportIdentifierDto.ReportName">
+            <summary>
+            The name of the meta report
+            </summary>
+        </member>
         <member name="T:PVIMS.API.Models.MetaSummaryDto">
             <summary>
             A meta summary representation DTO
@@ -5976,6 +6933,16 @@
         <member name="P:PVIMS.API.Models.MetaTableDetailDto.TableType">
             <summary>
             The type of table
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.MetaTableExpandedDto">
+            <summary>
+            A meta table representation DTO - EXPANDED
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.MetaTableExpandedDto.Columns">
+            <summary>
+            The columns associated to this meta table
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.MetaTableIdentifierDto">
@@ -6041,6 +7008,11 @@
         <member name="P:PVIMS.API.Models.Parameters.AnalyserTermSetResourceParameters.SearchTo">
             <summary>
             Filter by range
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.Parameters.AnalyserTermSetResourceParameters.RiskFactorOptionNames">
+            <summary>
+            Include risk factor options into analysis
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.Parameters.AnalyserDatasetResourceParameters.CohortGroupId">
@@ -7658,16 +8630,6 @@
         <member name="P:PVIMS.API.Models.ActivityExecutionStatusEventDto.E2bXmlFileId">
             <summary>
             The unique identifier of the xml file attachment
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Models.ActivityForUpdateDto.NewExecutionStatus">
-            <summary>
-            The status the report instance should be set too
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Models.ActivityForUpdateDto.Comments">
-            <summary>
-            Comments associated to the change in status
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.CausalityReportDto">
