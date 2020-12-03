@@ -12,7 +12,7 @@ import { ConceptSelectPopupComponent } from 'app/shared/components/popup/concept
 import { ConditionService } from 'app/shared/services/condition.service';
 import { GridModel } from 'app/shared/models/grid.model';
 import { LabTestSelectPopupComponent } from 'app/views/administration/shared/lab-test-select-popup/lab-test-select.popup.component';
-import { MeddraSelectPopupComponent } from 'app/views/clinical/shared/meddra-select-popup/meddra-select.popup.component';
+import { MeddraSelectPopupComponent } from 'app/shared/components/popup/meddra-select-popup/meddra-select.popup.component';
 
 @Component({
   templateUrl: './condition.popup.component.html',
