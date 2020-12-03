@@ -290,19 +290,17 @@ namespace PVIMS.API.Controllers
             if (Regex.Matches(conceptForUpdate.ConceptName, @"[a-zA-Z0-9 .,()%/]").Count < conceptForUpdate.ConceptName.Length)
             {
                 ModelState.AddModelError("Message", "Concept name contains invalid characters (Enter A-Z, a-z, 0-9, space, period, comma, brackets, percentage, forward slash)");
-                return BadRequest(ModelState);
             }
 
             if (Regex.Matches(conceptForUpdate.MedicationForm, @"[-a-zA-Z0-9 ,]").Count < conceptForUpdate.MedicationForm.Length)
             {
                 ModelState.AddModelError("Message", "Medication form contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, comma)");
-                return BadRequest(ModelState);
             }
 
             var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == conceptForUpdate.MedicationForm);
             if (medicationFormFromRepo == null)
             {
-                return NotFound();
+                ModelState.AddModelError("Message", "Unable to locate medication form");
             }
 
             if (_unitOfWork.Repository<Concept>().Queryable().
@@ -359,21 +357,18 @@ namespace PVIMS.API.Controllers
             if (Regex.Matches(conceptForUpdate.ConceptName, @"[-a-zA-Z0-9 .,()%/]").Count < conceptForUpdate.ConceptName.Length)
             {
                 ModelState.AddModelError("Message", "Concept name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage, forward slash)");
-                return BadRequest(ModelState);
             }
 
             if (Regex.Matches(conceptForUpdate.MedicationForm, @"[-a-zA-Z0-9 ,]").Count < conceptForUpdate.MedicationForm.Length)
             {
                 ModelState.AddModelError("Message", "Medication form contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, comma)");
-                return BadRequest(ModelState);
             }
 
             var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == conceptForUpdate.MedicationForm);
             if (medicationFormFromRepo == null)
             {
-                return NotFound();
+                ModelState.AddModelError("Message", "Unable to locate medication form");
             }
-
 
             if (_unitOfWork.Repository<Concept>().Queryable().
                 Where(l => l.ConceptName == conceptForUpdate.ConceptName && l.MedicationForm.Id == medicationFormFromRepo.Id && l.Id != id)
@@ -420,16 +415,17 @@ namespace PVIMS.API.Controllers
             if (_unitOfWork.Repository<Product>().Queryable().Any(p => p.Concept.Id == id))
             {
                 ModelState.AddModelError("Message", "Unable to delete as item is in use.");
-                return BadRequest(ModelState);
             }
 
             if (ModelState.IsValid)
             {
                 _conceptRepository.Delete(conceptFromRepo);
                 _unitOfWork.Complete();
+
+                return NoContent();
             }
 
-            return NoContent();
+            return BadRequest(ModelState);
         }
 
         /// <summary>
@@ -483,7 +479,8 @@ namespace PVIMS.API.Controllers
             var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == productForUpdate.MedicationForm);
             if (medicationFormFromRepo == null)
             {
-                return NotFound();
+                ModelState.AddModelError("Message", "Unable to locate medication form");
+                return BadRequest(ModelState);
             }
 
             var conceptFromRepo = await _conceptRepository.GetAsync(f => f.ConceptName == productForUpdate.ConceptName && f.MedicationForm.Id == medicationFormFromRepo.Id);
@@ -573,7 +570,8 @@ namespace PVIMS.API.Controllers
             var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == productForUpdate.MedicationForm);
             if (medicationFormFromRepo == null)
             {
-                return NotFound();
+                ModelState.AddModelError("Message", "Unable to locate medication form");
+                return BadRequest(ModelState);
             }
 
             if (_unitOfWork.Repository<Product>().Queryable().
@@ -709,11 +707,6 @@ namespace PVIMS.API.Controllers
             var orderby = Extensions.GetOrderBy<Concept>(conceptResourceParameters.OrderBy, "asc");
 
             var predicate = PredicateBuilder.New<Concept>(true);
-            if (conceptResourceParameters.Active != Models.ValueTypes.YesNoBothValueType.Both)
-            {
-                predicate = predicate.And(f => f.Active == (conceptResourceParameters.Active == Models.ValueTypes.YesNoBothValueType.Yes));
-            }
-
             if (!String.IsNullOrWhiteSpace(conceptResourceParameters.SearchTerm))
             {
                 predicate = predicate.And(f => f.ConceptName.Contains(conceptResourceParameters.SearchTerm.Trim()));
