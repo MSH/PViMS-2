@@ -1765,7 +1765,7 @@ namespace PVIMS.API.Controllers
 
             // ************************************* patient
             var dob = sourceInstance.GetInstanceValue("Date of Birth");
-            var onset = sourceInstance.GetInstanceValue("Reaction start date");
+            var onset = sourceInstance.GetInstanceValue("Reaction known start date");
             var recovery = sourceInstance.GetInstanceValue("Reaction date of recovery");
             if (!String.IsNullOrWhiteSpace(dob))
             {
