@@ -16,6 +16,12 @@ import { AdverseEventFrequencyComponent } from './system/adverse-event-frequency
 import { PatientTreatmentComponent } from './system/patient-treatment/patient-treatment.component';
 import { PatientMedicationComponent } from './system/patient-medication/patient-medication.component';
 import { PatientListPopupComponent } from './shared/patient-list/patient-list.popup.component';
+import { ReportListComponent } from './report-list/report-list.component';
+import { ReportConfigurePopupComponent } from './shared/report-configure-popup/report-configure.popup.component';
+import { GenericDeletePopupComponent } from './shared/generic-delete-popup/generic-delete.popup.component';
+import { AttributeConfigurePopupComponent } from './report-list/attribute-configure-popup/attribute-configure.popup.component';
+import { FilterConfigurePopupComponent } from './report-list/filter-configure-popup/filter-configure.popup.component';
+import { ReportViewerComponent } from './report-viewer/report-viewer.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +31,13 @@ import { PatientListPopupComponent } from './shared/patient-list/patient-list.po
     PatientTreatmentComponent,
     PatientMedicationComponent,
     CausalityComponent,
-    PatientListPopupComponent
+    PatientListPopupComponent,
+    ReportListComponent,
+    ReportViewerComponent,
+    ReportConfigurePopupComponent,
+    GenericDeletePopupComponent,
+    AttributeConfigurePopupComponent,
+    FilterConfigurePopupComponent
   ],
   imports: [
     CommonModule,
@@ -39,7 +51,11 @@ import { PatientListPopupComponent } from './shared/patient-list/patient-list.po
   ],
   entryComponents:
   [
-    PatientListPopupComponent
+    PatientListPopupComponent,
+    ReportConfigurePopupComponent,
+    GenericDeletePopupComponent,
+    AttributeConfigurePopupComponent,
+    FilterConfigurePopupComponent
   ]
 })
 export class ReportsModule { }
