@@ -141,7 +141,6 @@ export class EncounterViewComponent extends BaseComponent implements OnInit, Aft
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        console.log(result);
         self.updateForm(self.viewNotesForm, (self.viewModel = result));
         self.updateForm(self.viewAuditForm, (self.viewModel = result));
         
