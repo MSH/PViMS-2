@@ -3601,7 +3601,7 @@ INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType
 	VALUES (0, 0, 500, NULL, 3)
 set @fid = (SELECT @@IDENTITY)
 INSERT [dbo].[DatasetElement] ([ElementName], [Field_Id], [DatasetElementType_Id], [OID], [DefaultValue], [System], [DatasetElementGuid]) 
-	VALUES ('Reporter Comment', @fid, 1, NULL, NULL, 0, 'Reporter Comment')
+	VALUES ('Reporter Comment', @fid, 1, NULL, NULL, 0, '9A22BCE4-CD6F-4582-919B-D8B37A2953A8')
 set @deid = (SELECT @@IDENTITY)
 INSERT [dbo].[DatasetCategoryElement] ([FieldOrder], [DatasetCategory_Id], [DatasetElement_Id], [Acute], [Chronic]) 
 	select ISNULL(MAX(FieldOrder) + 1, 1), @dscid, @deid, 0, 0 from [DatasetCategoryElement] where [DatasetCategory_Id] = @dscid
@@ -3615,7 +3615,7 @@ INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType
 	VALUES (0, 0, 10, NULL, 8)
 set @fid = (SELECT @@IDENTITY)
 INSERT [dbo].[DatasetElement] ([ElementName], [Field_Id], [DatasetElementType_Id], [OID], [DefaultValue], [System], [DatasetElementGuid]) 
-	VALUES ('Sender Diagnosis MedDRA Version', @fid, 1, NULL, '', 1, 'Sender Diagnosis MedDRA Version')
+	VALUES ('Sender Diagnosis MedDRA Version', @fid, 1, NULL, '', 1, '95708474-7779-4006-8C40-E391256F0A5F')
 set @deid = (SELECT @@IDENTITY)
 INSERT [dbo].[DatasetCategoryElement] ([FieldOrder], [DatasetCategory_Id], [DatasetElement_Id], [Acute], [Chronic]) 
 	select ISNULL(MAX(FieldOrder) + 1, 1), @dscid, @deid, 0, 0 from [DatasetCategoryElement] where [DatasetCategory_Id] = @dscid
@@ -3628,7 +3628,7 @@ INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType
 	VALUES (0, 0, 250, NULL, 3)
 set @fid = (SELECT @@IDENTITY)
 INSERT [dbo].[DatasetElement] ([ElementName], [Field_Id], [DatasetElementType_Id], [OID], [DefaultValue], [System], [DatasetElementGuid]) 
-	VALUES ('Sender Diagnosis', @fid, 1, NULL, NULL, 0, 'Sender Diagnosis')
+	VALUES ('Sender Diagnosis', @fid, 1, NULL, NULL, 0, 'FE91B984-30F0-4CE8-A15E-49056C761CB6')
 set @deid = (SELECT @@IDENTITY)
 INSERT [dbo].[DatasetCategoryElement] ([FieldOrder], [DatasetCategory_Id], [DatasetElement_Id], [Acute], [Chronic]) 
 	select ISNULL(MAX(FieldOrder) + 1, 1), @dscid, @deid, 0, 0 from [DatasetCategoryElement] where [DatasetCategory_Id] = @dscid

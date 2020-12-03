@@ -1,4 +1,9 @@
--- ***************** MEDICATION FORMS
+/**************************************************************************************************************************
+**
+**	Function: SEED MEDICATION FORMS : Mozambique Implementation
+**
+***************************************************************************************************************************/
+
 SET IDENTITY_INSERT [dbo].[MedicationForm] ON
 INSERT [dbo].[MedicationForm] ([Id], [Description]) VALUES (1, N'Ampola')
 INSERT [dbo].[MedicationForm] ([Id], [Description]) VALUES (2, N'Garrafa ')
