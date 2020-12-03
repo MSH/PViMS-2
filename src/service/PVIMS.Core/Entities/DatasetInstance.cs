@@ -288,10 +288,10 @@ namespace PVIMS.Core.Entities
                     // Length restriction for alpha numerics
                     if (subMapping.DestinationElement.Field.FieldType.Description == "AlphaNumericTextbox")
                     {
-                        var len = subMapping.DestinationElement.DatasetElement.Field.MaxLength != null ? Convert.ToInt32(subMapping.DestinationElement.DatasetElement.Field.MaxLength) : 0;
+                        var len = subMapping.DestinationElement.Field.MaxLength != null ? Convert.ToInt32(subMapping.DestinationElement.Field.MaxLength) : 0;
                         formattedValue = len > 0 ? formattedValue.Length > len ? formattedValue.Substring(0, len - 1) : formattedValue : formattedValue;
                     }
-                    if (subMapping.DestinationElement.DatasetElement.Field.FieldType.Description == "Date")
+                    if (subMapping.DestinationElement.Field.FieldType.Description == "Date")
                     {
                         DateTime tempdt;
                         if (DateTime.TryParse(formattedValue, out tempdt))
@@ -306,12 +306,12 @@ namespace PVIMS.Core.Entities
                             formattedValue = "";
                         }
                     }
-                    if (subMapping.DestinationElement.DatasetElement.Field.FieldType.Description == "NumericTextbox" && subMapping.DestinationElement.DatasetElement.Field.Decimals == 0)
+                    if (subMapping.DestinationElement.Field.FieldType.Description == "NumericTextbox" && subMapping.DestinationElement.Field.Decimals == 0)
                     {
                         Int32 tempi;
                         formattedValue = Int32.TryParse(formattedValue, out tempi) ? Convert.ToInt32(formattedValue).ToString() : "";
                     }
-                    if (subMapping.DestinationElement.DatasetElement.Field.FieldType.Description == "NumericTextbox" && subMapping.DestinationElement.DatasetElement.Field.Decimals > 0)
+                    if (subMapping.DestinationElement.Field.FieldType.Description == "NumericTextbox" && subMapping.DestinationElement.Field.Decimals > 0)
                     {
                         Decimal tempd;
                         formattedValue = Decimal.TryParse(formattedValue, out tempd) ? Convert.ToDecimal(formattedValue).ToString() : "";
@@ -335,12 +335,12 @@ namespace PVIMS.Core.Entities
 
                 case MappingType.ElementToElement:
                     // Length restriction for alpha numerics
-                    if (subMapping.DestinationElement.DatasetElement.Field.FieldType.Description == "AlphaNumericTextbox")
+                    if (subMapping.DestinationElement.Field.FieldType.Description == "AlphaNumericTextbox")
                     {
-                        var len = subMapping.DestinationElement.DatasetElement.Field.MaxLength != null ? Convert.ToInt32(subMapping.DestinationElement.DatasetElement.Field.MaxLength) : 0;
+                        var len = subMapping.DestinationElement.Field.MaxLength != null ? Convert.ToInt32(subMapping.DestinationElement.Field.MaxLength) : 0;
                         formattedValue = len > 0 ? formattedValue.Length > len ? formattedValue.Substring(0, len - 1) : formattedValue : formattedValue;
                     }
-                    if (subMapping.DestinationElement.DatasetElement.Field.FieldType.Description == "Date")
+                    if (subMapping.DestinationElement.Field.FieldType.Description == "Date")
                     {
                         DateTime tempdt;
                         if (DateTime.TryParse(formattedValue, out tempdt))
@@ -355,12 +355,12 @@ namespace PVIMS.Core.Entities
                             formattedValue = "";
                         }
                     }
-                    if (subMapping.DestinationElement.DatasetElement.Field.FieldType.Description == "NumericTextbox" && subMapping.DestinationElement.DatasetElement.Field.Decimals == 0)
+                    if (subMapping.DestinationElement.Field.FieldType.Description == "NumericTextbox" && subMapping.DestinationElement.Field.Decimals == 0)
                     {
                         Int32 tempi;
                         formattedValue = Int32.TryParse(formattedValue, out tempi) ? Convert.ToInt32(formattedValue).ToString() : "";
                     }
-                    if (subMapping.DestinationElement.DatasetElement.Field.FieldType.Description == "NumericTextbox" && subMapping.DestinationElement.DatasetElement.Field.Decimals > 0)
+                    if (subMapping.DestinationElement.Field.FieldType.Description == "NumericTextbox" && subMapping.DestinationElement.Field.Decimals > 0)
                     {
                         Decimal tempd;
                         formattedValue = Decimal.TryParse(formattedValue, out tempd) ? Convert.ToDecimal(formattedValue).ToString() : "";
