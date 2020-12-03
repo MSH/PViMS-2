@@ -1,4 +1,5 @@
-﻿using PVIMS.Core.Entities;
+﻿using Microsoft.AspNetCore.Http;
+using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
@@ -6,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using VPS.Common.Repositories;
@@ -26,7 +28,10 @@ namespace PVIMS.Services
         private readonly IRepositoryInt<Dataset> _datasetRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<Priority> _priorityRepository;
+        private readonly IRepositoryInt<AuditLog> _auditLogRepository;
+        private readonly IRepositoryInt<User> _userRepository;
         private readonly ITypeExtensionHandler _typeExtensionHandler;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PatientService(IUnitOfWorkInt unitOfWork,
             IRepositoryInt<Patient> patientRepository,
@@ -39,7 +44,10 @@ namespace PVIMS.Services
             IRepositoryInt<Dataset> datasetRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<Priority> priorityRepository,
-            ITypeExtensionHandler modelExtensionBuilder)
+            IRepositoryInt<AuditLog> auditLogRepository,
+            IRepositoryInt<User> userRepository,
+            ITypeExtensionHandler modelExtensionBuilder,
+            IHttpContextAccessor httpContextAccessor)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientStatusRepository = patientStatusRepository ?? throw new ArgumentNullException(nameof(patientStatusRepository));
@@ -51,8 +59,11 @@ namespace PVIMS.Services
             _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _priorityRepository = priorityRepository ?? throw new ArgumentNullException(nameof(priorityRepository));
+            _auditLogRepository = auditLogRepository ?? throw new ArgumentNullException(nameof(auditLogRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _typeExtensionHandler = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public SeriesValueList[] GetElementValues(long patientId, string elementName, int records)
@@ -198,6 +209,7 @@ namespace PVIMS.Services
         public void UpdatePatient(PatientDetailForUpdate patientDetail)
         {
             var identifier_asm = patientDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == "Medical Record Number")?.Value.ToString();
+            var identifierChanged = false;
 
             if(String.IsNullOrWhiteSpace(identifier_asm))
             {
@@ -215,11 +227,19 @@ namespace PVIMS.Services
 
             if(!String.IsNullOrWhiteSpace(patientDetail.FirstName))
             {
+                if(!patientFromRepo.FirstName.Equals(patientDetail.FirstName, StringComparison.OrdinalIgnoreCase))
+                {
+                    identifierChanged = true;
+                }
                 patientFromRepo.FirstName = patientDetail.FirstName;
             }
 
             if (!String.IsNullOrWhiteSpace(patientDetail.Surname))
             {
+                if (!patientFromRepo.Surname.Equals(patientDetail.Surname, StringComparison.OrdinalIgnoreCase))
+                {
+                    identifierChanged = true;
+                }
                 patientFromRepo.Surname = patientDetail.Surname;
             }
 
@@ -230,6 +250,10 @@ namespace PVIMS.Services
 
             if(patientDetail.DateOfBirth.HasValue)
             {
+                if (!patientFromRepo.DateOfBirth.Equals(patientDetail.DateOfBirth))
+                {
+                    identifierChanged = true;
+                }
                 patientFromRepo.DateOfBirth = patientDetail.DateOfBirth;
             }
 
@@ -256,6 +280,21 @@ namespace PVIMS.Services
                     PatientId = patientFromRepo.Id, 
                     PriorityId = patientDetail.PriorityId 
                 });
+            }
+
+            if(identifierChanged)
+            {
+                var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                var userFromRepo = _userRepository.Get(u => u.UserName == userName);
+
+                var auditLog = new AuditLog()
+                {
+                    AuditType = AuditType.DataValidation,
+                    User = userFromRepo,
+                    ActionDate = DateTime.Now,
+                    Details = $"Identifier (name or date of birth) changed for patient {identifier_asm}"
+                };
+                _auditLogRepository.Save(auditLog);
             }
         }
 
