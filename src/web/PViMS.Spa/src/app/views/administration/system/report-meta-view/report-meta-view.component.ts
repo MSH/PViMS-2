@@ -114,24 +114,9 @@ export class ReportMetaViewComponent extends BaseComponent implements OnInit, Af
 
       self.updateForm(self.viewModelForm, self.viewModel);
     }, error => {
-        self.throwError(error, error.statusText);
+        self.handleError(error, error.statusText);
     });
   }
-
-  refreshMeta(): void {
-    let self = this;
-    self.setBusy(true);
-
-    self.metaService.refresh()
-        .pipe(takeUntil(self._unsubscribeAll))
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-          self.loadData();
-          self.notify("Meta data refreshed successfully", "Success");          
-        }, error => {
-          self.throwError(error, error.statusText);
-        });
-  }   
 
   ngOnDestroy(): void {
     this._unsubscribeAll.next();
