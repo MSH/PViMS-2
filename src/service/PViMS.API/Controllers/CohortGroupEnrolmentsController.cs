@@ -75,7 +75,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("cohortgroups/{cohortGroupId}/cohortgroupenrolments", Name = "GetCohortGroupEnrolmentsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<EnrolmentDetailDto>> GetCohortGroupEnrolmentsByDetail(int cohortGroupId, 
             [FromQuery] CohortGroupEnrolmentResourceParameters cohortGroupEnrolmentResourceParameters)
@@ -112,7 +112,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<EnrolmentIdentifierDto>> GetPatientEnrolmentByIdentifier(long patientId, long id)
         {
