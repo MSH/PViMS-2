@@ -52,7 +52,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("outcomes", Name = "GetOutcomesByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<OutcomeIdentifierDto>> GetOutcomesByIdentifier(
             [FromQuery] IdResourceParameters baseResourceParameters)
@@ -81,7 +81,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<OutcomeIdentifierDto>> GetOutcomeByIdentifier(long id)
         {

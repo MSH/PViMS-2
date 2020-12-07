@@ -64,7 +64,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMetaFormsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaFormDetailDto>> GetMetaFormsByDetail(

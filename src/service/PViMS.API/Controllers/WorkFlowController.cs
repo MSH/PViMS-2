@@ -61,7 +61,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<WorkFlowIdentifierDto>> GetWorkFlowByIdentifier(Guid id)
         {
@@ -83,7 +83,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<WorkFlowDetailDto>> GetWorkFlowByDetail(Guid id)
@@ -109,7 +109,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.dataset.v1+json")]
         [ApiExplorerSettings(IgnoreApi = true)]
         [Authorize(Roles = "Analyst")]

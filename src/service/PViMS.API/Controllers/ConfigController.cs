@@ -49,7 +49,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("configs", Name = "GetConfigsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<ConfigIdentifierDto>> GetConfigsByIdentifier(
             [FromQuery] ConfigResourceParameters configResourceParameters)
@@ -78,7 +78,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<ConfigIdentifierDto>> GetConfigByIdentifier(long id)
         {

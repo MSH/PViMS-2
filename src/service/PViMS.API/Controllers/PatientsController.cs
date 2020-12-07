@@ -141,7 +141,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetPatientsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<PatientIdentifierDto>> GetPatientsByIdentifier(
             [FromQuery] PatientResourceParameters patientResourceParameters)
@@ -171,7 +171,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetPatientsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<PatientDetailDto>> GetPatientsByDetail(
@@ -228,7 +228,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<PatientIdentifierDto>> GetPatientByIdentifier(long id)
         {
@@ -250,7 +250,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<PatientDetailDto>> GetPatientByDetail(long id)
@@ -273,7 +273,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<PatientExpandedDto>> GetPatientByExpanded(long id)
@@ -298,7 +298,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.adverseventreport.v1+json", "application/vnd.pvims.adverseventreport.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.adverseventreport.v1+json", "application/vnd.pvims.adverseventreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<AdverseEventReportDto>> GetAdverseEventReport(
@@ -330,7 +330,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.quarterlyadverseventreport.v1+json", "application/vnd.pvims.quarterlyadverseventreport.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.quarterlyadverseventreport.v1+json", "application/vnd.pvims.quarterlyadverseventreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<AdverseEventFrequencyReportDto>> GetAdverseEventQuarterlyReport(
@@ -362,7 +362,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.annualadverseventreport.v1+json", "application/vnd.pvims.annualadverseventreport.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.annualadverseventreport.v1+json", "application/vnd.pvims.annualadverseventreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<AdverseEventFrequencyReportDto>> GetAdverseEventAnnualReport(
@@ -394,7 +394,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.patienttreatmentreport.v1+json", "application/vnd.pvims.patienttreatmentreport.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.patienttreatmentreport.v1+json", "application/vnd.pvims.patienttreatmentreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<PatientTreatmentReportDto>> GetPatientTreatmentReport(
@@ -429,7 +429,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.patientmedicationreport.v1+json", "application/vnd.pvims.patientmedicationreport.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.patientmedicationreport.v1+json", "application/vnd.pvims.patientmedicationreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<PatientMedicationReportDto>> GetPatientByMedicationReport(
@@ -463,7 +463,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<AttachmentIdentifierDto>> GetPatientAttachmentByIdentifier(int patientId, int id)
@@ -487,7 +487,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("{patientId}/attachments/{id}", Name = "DownloadSingleAttachment")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.attachment.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult> DownloadSingleAttachment(int patientId, int id)
@@ -560,7 +560,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.attachment.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.attachment.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult> DownloadAllAttachment(int patientId)

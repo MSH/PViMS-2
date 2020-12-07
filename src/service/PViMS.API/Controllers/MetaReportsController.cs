@@ -63,7 +63,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMetaReportsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaReportIdentifierDto>> GetMetaReportsByIdentifier(
             [FromQuery] IdResourceParameters metaResourceParameters)
@@ -90,7 +90,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMetaReportsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaReportDetailDto>> GetMetaReportsByDetail(
@@ -120,7 +120,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<MetaReportIdentifierDto>> GetMetaReportByIdentifier(long id)
         {
@@ -142,7 +142,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MetaReportDetailDto>> GetMetaReportByDetail(long id)
@@ -165,7 +165,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MetaReportExpandedDto>> GetMetaReportByExpanded(long id)
