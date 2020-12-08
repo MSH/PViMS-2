@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using VPS.CustomAttributes;
+using PVIMS.Core.CustomAttributes;
 using CustomAttributeConfiguration = PVIMS.Core.Entities.CustomAttributeConfiguration;
 using ICustomAttributeConfigRepository = PVIMS.Core.Repositories.ICustomAttributeConfigRepository;
 using ISelectionDataRepository = PVIMS.Core.Repositories.ISelectionDataRepository;

@@ -1,27 +1,22 @@
-﻿using System.Linq;
-
-using VPS.Common.Repositories;
-using VPS.Common.Utilities;
-
-using PVIMS.Core.Entities;
+﻿using PVIMS.Core.Entities;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
+using System;
+using System.Linq;
 
 namespace PVIMS.Services
 {
     public class InfrastructureService : IInfrastructureService 
     {
         private readonly IUnitOfWorkInt _unitOfWork;
-
         private readonly IRepositoryInt<DatasetInstanceValue> _instanceValueRepository;
 
-        public InfrastructureService(IUnitOfWorkInt unitOfWork)
+        public InfrastructureService(IUnitOfWorkInt unitOfWork,
+            IRepositoryInt<DatasetInstanceValue> instanceValueRepository)
         {
-            Check.IsNotNull(unitOfWork, "unitOfWork may not be null");
-
-            _unitOfWork = unitOfWork;
-
-            _instanceValueRepository = unitOfWork.Repository<DatasetInstanceValue>();
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _instanceValueRepository = instanceValueRepository ?? throw new ArgumentNullException(nameof(instanceValueRepository));
         }
 
         #region "Referential Checks"

@@ -1,10 +1,9 @@
 ﻿using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
 using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
 using System;
 using System.Collections.Generic;
-using VPS.Common.Repositories;
-using VPS.Common.Utilities;
 using System.Data.SqlClient;
 
 namespace PVIMS.Services
@@ -15,9 +14,7 @@ namespace PVIMS.Services
 
         public ReportService(IUnitOfWorkInt unitOfWork)
         {
-            Check.IsNotNull(unitOfWork, "unitOfWork may not be null");
-
-            _unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
         public ICollection<AdverseEventList> GetAdverseEventItems(DateTime searchFrom, DateTime searchTo, AdverseEventCriteria adverseEventCriteria, AdverseEventStratifyCriteria adverseEventStratifyCriteria)

@@ -1,4 +1,4 @@
-﻿using VPS.Common.Domain;
+﻿using PVIMS.Core.SeedWork;
 
 namespace PVIMS.Core.Models
 {

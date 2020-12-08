@@ -15,8 +15,7 @@ using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.API.Services;
 using PVIMS.Core.Entities;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
+using PVIMS.Core.SeedWork;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Controllers

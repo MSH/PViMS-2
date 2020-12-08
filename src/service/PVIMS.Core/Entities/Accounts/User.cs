@@ -1,11 +1,10 @@
 ﻿using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.SeedWork;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-
-using VPS.Common.Domain;
 
 namespace PVIMS.Core.Entities
 {

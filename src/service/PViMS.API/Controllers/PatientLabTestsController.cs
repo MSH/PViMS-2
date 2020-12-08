@@ -7,15 +7,15 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using PVIMS.API.Attributes;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Services;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using VPS.Common.Repositories;
 
 namespace PVIMS.API.Controllers
 {
@@ -32,8 +32,8 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<LabTest> _labTestRepository;
         private readonly IRepositoryInt<LabTestUnit> _labTestUnitRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<Core.Entities.CustomAttributeConfiguration> _customAttributeRepository;
-        private readonly IRepositoryInt<Core.Entities.SelectionDataItem> _selectionDataItemRepository;
+        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
+        private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
@@ -49,8 +49,8 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<LabTest> labTestRepository,
             IRepositoryInt<LabTestUnit> labTestUnitRepository,
             IRepositoryInt<User> userRepository,
-            IRepositoryInt<Core.Entities.CustomAttributeConfiguration> customAttributeRepository,
-            IRepositoryInt<Core.Entities.SelectionDataItem> selectionDataItemRepository,
+            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
+            IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
             IUnitOfWorkInt unitOfWork,
             IHttpContextAccessor httpContextAccessor)
         {
@@ -367,7 +367,7 @@ namespace PVIMS.API.Controllers
             {
                 return dto;
             }
-            VPS.CustomAttributes.IExtendable patientLabTestExtended = patientLabTest;
+            IExtendable patientLabTestExtended = patientLabTest;
 
             // Map all custom attributes
             dto.LabTestAttributes = _modelExtensionBuilder.BuildModelExtension(patientLabTestExtended)
@@ -376,7 +376,7 @@ namespace PVIMS.API.Controllers
                     Key = h.AttributeKey,
                     Value = h.TransformValueToString(),
                     Category = h.Category,
-                    SelectionValue = (h.Type == VPS.CustomAttributes.CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
+                    SelectionValue = (h.Type == CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
                 }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
 
             return dto;

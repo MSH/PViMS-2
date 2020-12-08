@@ -3,15 +3,18 @@ using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using PVIMS.API.Attributes;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.API.Services;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.SeedWork;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -22,8 +25,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Controllers
@@ -45,7 +46,7 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<DatasetElement> _datasetElementRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<Attachment> _attachmentRepository;
-        private readonly IRepositoryInt<Core.Entities.CustomAttributeConfiguration> _customAttributeRepository;
+        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
@@ -66,7 +67,7 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<DatasetElement> datasetElementRepository,
             IRepositoryInt<User> userRepository,
             IRepositoryInt<Attachment> attachmentRepository,
-            IRepositoryInt<Core.Entities.CustomAttributeConfiguration> customAttributeRepository,
+            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IUnitOfWorkInt unitOfWork,
             IPatientService patientService,
             IHttpContextAccessor httpContextAccessor)
@@ -500,7 +501,7 @@ namespace PVIMS.API.Controllers
 
             var facility = !String.IsNullOrWhiteSpace(encounterResourceParameters.FacilityName) ? _facilityRepository.Get(f => f.FacilityName == encounterResourceParameters.FacilityName) : null;
             var customAttribute = _customAttributeRepository.Get(ca => ca.Id == encounterResourceParameters.CustomAttributeId);
-            var path = customAttribute?.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute";
+            var path = customAttribute?.CustomAttributeType == CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute";
 
             List<SqlParameter> parameters = new List<SqlParameter>();
             parameters.Add(new SqlParameter("@FacilityId", facility != null ? facility.Id : 0));
@@ -693,7 +694,7 @@ namespace PVIMS.API.Controllers
             dto.WeightSeries = _patientService.GetElementValues(encounterFromRepo.Patient.Id, "Weight (kg)", 5);
 
             // patient custom mapping
-            VPS.CustomAttributes.IExtendable patientExtended = encounterFromRepo.Patient;
+            IExtendable patientExtended = encounterFromRepo.Patient;
             var attribute = patientExtended.GetAttributeValue("Medical Record Number");
             dto.Patient.MedicalRecordNumber = attribute != null ? attribute.ToString() : "";
 

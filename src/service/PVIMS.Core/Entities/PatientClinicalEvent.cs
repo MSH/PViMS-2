@@ -1,9 +1,9 @@
+using PVIMS.Core.CustomAttributes;
+using PVIMS.Core.Utilities;
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using VPS.Common.Utilities;
-using VPS.CustomAttributes;
 
 namespace PVIMS.Core.Entities
 {
@@ -100,7 +100,7 @@ namespace PVIMS.Core.Entities
             return customAttributes.GetAttributeValue(attributeKey);
         }
 
-        public void ValidateAndSetAttributeValue<T>(VPS.CustomAttributes.CustomAttributeConfiguration attributeConfig, T attributeValue, string updatedByUser)
+        public void ValidateAndSetAttributeValue<T>(CustomAttributeConfiguration attributeConfig, T attributeValue, string updatedByUser)
         {
             customAttributes.ValidateAndSetAttributeValue(attributeConfig, attributeValue, updatedByUser);
         }

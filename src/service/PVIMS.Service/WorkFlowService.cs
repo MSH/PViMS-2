@@ -1,6 +1,7 @@
 ﻿using PVIMS.Core;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -8,13 +9,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using VPS.Common.Repositories;
-using VPS.Common.Utilities;
-using VPS.CustomAttributes;
-
-using SelectionDataItem = PVIMS.Core.Entities.SelectionDataItem;
-using CustomAttributeConfiguration = PVIMS.Core.Entities.CustomAttributeConfiguration;
-using VPS.Common.Exceptions;
 
 namespace PVIMS.Services
 {
@@ -36,33 +30,28 @@ namespace PVIMS.Services
             UserContext userContext,
             IRepositoryInt<ReportInstance> reportInstanceRepository)
         {
-            Check.IsNotNull(reportInstanceRepository, "reportInstanceRepository may not be null");
-            Check.IsNotNull(unitOfWork, "unitOfWork may not be null");
-            Check.IsNotNull(artefactService, "artefactService may not be null");
-            Check.IsNotNull(attributeService, "attributeService may not be null");
-            Check.IsNotNull(patientService, "patientService may not be null");
-            Check.IsNotNull(userContext, "userContext may not be null");
-
-            _unitOfWork = unitOfWork;
-
-            _artefactService = artefactService;
-            _attributeService = attributeService;
-            _patientService = patientService;
-            _userContext = userContext;
-            _reportInstanceRepository = reportInstanceRepository;
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _attributeService = attributeService ?? throw new ArgumentNullException(nameof(attributeService));
+            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+            _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
         }
 
         public void AddOrUpdateMedicationsForWorkFlowInstance(Guid contextGuid, List<ReportInstanceMedicationListItem> medications)
         {
-            Check.IsNotNull(contextGuid, "contextGuid may not be null");
-            Check.IsNotNull(medications, "medications may not be null");
-
+            if(medications == null)
+            {
+                throw new ArgumentNullException(nameof(medications));
+            }
             if (medications.Count == 0) { return; };
 
             ReportInstance reportInstance = _unitOfWork.Repository<ReportInstance>()
                 .Queryable()
                 .SingleOrDefault(ri => ri.ContextGuid == contextGuid);
-            if (reportInstance == null) { return; };
+            if (reportInstance == null) {
+                throw new ArgumentException("contextGuid may not be null");
+            };
 
             // Full managements of medications list for report instance
             ArrayList addCollection = new ArrayList();
@@ -105,21 +94,19 @@ namespace PVIMS.Services
 
         public void CreateWorkFlowInstance(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier)
         {
-            Check.IsEmpty(workFlowName, "workFlow may not be empty");
-            Check.IsNotNull(contextGuid, "contextGuid may not be null");
+            if (String.IsNullOrWhiteSpace(workFlowName))
+            {
+                throw new ArgumentNullException(nameof(workFlowName));
+            }
 
             // Ensure instance does not exist for this context
             var workFlow = _unitOfWork.Repository<WorkFlow>().Queryable().SingleOrDefault(wf => wf.Description == workFlowName);
-            Check.IsNotNull(workFlow, "contextGuid may not be null");
+            if (workFlow == null)
+            {
+                throw new ArgumentException("Unable to locate work flow");
+            }
 
-            User currentUser = null;
-            try
-            {
-                currentUser = _unitOfWork.Repository<User>().Queryable().SingleOrDefault(u => u.UserName == _userContext.UserName);
-            }
-            catch (Exception)
-            {
-            }
+            User currentUser = _unitOfWork.Repository<User>().Queryable().SingleOrDefault(u => u.UserName == _userContext.UserName);
 
             ReportInstance reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().SingleOrDefault(ri => ri.ContextGuid == contextGuid);
             if(reportInstance == null)
@@ -158,12 +145,17 @@ namespace PVIMS.Services
 
         public void DeleteMedicationsFromWorkFlowInstance(Guid contextGuid, List<ReportInstanceMedicationListItem> medications)
         {
-            Check.IsNotNull(contextGuid, "contextGuid may not be null");
-            Check.IsNotNull(medications, "medications may not be null");
-
+            if (medications == null)
+            {
+                throw new ArgumentNullException(nameof(medications));
+            }
             if (medications.Count == 0) { return; };
 
             ReportInstance reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().Single(ri => ri.ContextGuid == contextGuid);
+            if (reportInstance == null)
+            {
+                throw new ArgumentException("contextGuid may not be null");
+            };
 
             // Full managements of medications list for report instance
             ArrayList deleteCollection = new ArrayList();
@@ -341,8 +333,6 @@ namespace PVIMS.Services
 
         public TerminologyMedDra GetTerminologyMedDraForReportInstance(Guid contextGuid)
         {
-            Check.IsNotNull(contextGuid, "contextGuid may not be null");
-
             var reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().SingleOrDefault(ri => ri.ContextGuid == contextGuid);
             
             if(reportInstance != null)
@@ -354,18 +344,23 @@ namespace PVIMS.Services
 
         public void UpdateIdentifiersForWorkFlowInstance(Guid contextGuid, string patientIdentifier, string sourceIdentifier)
         {
-            Check.IsNotNull(contextGuid, "contextGuid may not be null");
-            Check.IsNotNull(patientIdentifier, "patientIdentifier may not be null");
-            Check.IsNotNull(sourceIdentifier, "sourceIdentifier may not be null");
+            if (String.IsNullOrWhiteSpace(patientIdentifier))
+            {
+                throw new ArgumentNullException(nameof(patientIdentifier));
+            }
+            if (String.IsNullOrWhiteSpace(sourceIdentifier))
+            {
+                throw new ArgumentNullException(nameof(sourceIdentifier));
+            }
 
             var reportInstance = _reportInstanceRepository.Get(ri => ri.ContextGuid == contextGuid, new string[] { "WorkFlow" });
             if(reportInstance == null)
             {
-                throw new AssertionFailedException("reportInstance may not be null");
+                throw new ArgumentException("reportInstance may not be null");
             }
             if (reportInstance.WorkFlow == null)
             {
-                throw new AssertionFailedException("reportInstance work flow may not be null");
+                throw new ArgumentException("reportInstance work flow may not be null");
             }
 
             reportInstance.PatientIdentifier = patientIdentifier;

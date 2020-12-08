@@ -3,7 +3,6 @@ using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using PVIMS.API.Attributes;
 using PVIMS.API.Helpers;
@@ -12,6 +11,9 @@ using PVIMS.API.Models.Parameters;
 using PVIMS.API.Services;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.SeedWork;
 using PVIMS.Core.Services;
 using System;
 using System.Collections.Generic;
@@ -20,8 +22,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
 
 namespace PVIMS.API.Controllers
 {
@@ -35,7 +35,7 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<Appointment> _appointmentRepository;
         private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<Core.Entities.CustomAttributeConfiguration> _customAttributeRepository;
+        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
@@ -49,7 +49,7 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<Appointment> appointmentRepository,
             IRepositoryInt<Facility> facilityRepository,
             IRepositoryInt<User> userRepository,
-            IRepositoryInt<Core.Entities.CustomAttributeConfiguration> customAttributeRepository,
+            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IUnitOfWorkInt unitOfWork,
             IReportService reportService,
             IHttpContextAccessor httpContextAccessor)
@@ -485,7 +485,7 @@ namespace PVIMS.API.Controllers
 
             var facility = !String.IsNullOrWhiteSpace(appointmentResourceParameters.FacilityName) ? _facilityRepository.Get(f => f.FacilityName == appointmentResourceParameters.FacilityName) : null;
             var customAttribute = _customAttributeRepository.Get(ca => ca.Id == appointmentResourceParameters.CustomAttributeId);
-            var path = customAttribute?.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute";
+            var path = customAttribute?.CustomAttributeType == PVIMS.Core.CustomAttributes.CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute";
 
             List<SqlParameter> parameters = new List<SqlParameter>();
             parameters.Add(new SqlParameter("@FacilityId", facility != null ? facility.Id : 0));

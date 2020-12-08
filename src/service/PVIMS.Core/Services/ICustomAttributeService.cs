@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-using VPS.CustomAttributes;
+using PVIMS.Core.CustomAttributes;
 
 using PVIMS.Core.Models;
 

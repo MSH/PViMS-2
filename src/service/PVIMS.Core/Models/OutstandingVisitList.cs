@@ -1,5 +1,5 @@
-﻿using System;
-using VPS.Common.Domain;
+﻿using PVIMS.Core.SeedWork;
+using System;
 
 namespace PVIMS.Core.Models
 {

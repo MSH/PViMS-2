@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using VPS.CustomAttributes;
+using PVIMS.Core.CustomAttributes;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities

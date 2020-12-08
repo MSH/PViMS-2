@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -8,9 +9,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using VPS.Common.Repositories;
 
 namespace PVIMS.Services
 {

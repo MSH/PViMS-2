@@ -1,14 +1,13 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using PVIMS.API.Models;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using VPS.Common.Repositories;
 
 namespace PVIMS.API.Helpers
 {
@@ -288,7 +287,7 @@ namespace PVIMS.API.Helpers
             {
                 throw new Exception($"Unable to locate patient record for {identifier_asm}");
             }
-            VPS.CustomAttributes.IExtendable patientExtended = patientFromRepo;
+            IExtendable patientExtended = patientFromRepo;
 
             _patientDetailForUpdate = new PatientDetailForUpdate();
             _patientDetailForUpdate.CustomAttributes = _modelExtensionBuilder.BuildModelExtension(patientExtended);
@@ -356,7 +355,7 @@ namespace PVIMS.API.Helpers
             {
                 throw new Exception($"Unable to locate patient record for {identifier_asm}");
             }
-            VPS.CustomAttributes.IExtendable patientExtended = patientFromRepo;
+            IExtendable patientExtended = patientFromRepo;
 
             _patientDetailForUpdate = new PatientDetailForUpdate();
             _patientDetailForUpdate.CustomAttributes = _modelExtensionBuilder.BuildModelExtension(patientExtended);

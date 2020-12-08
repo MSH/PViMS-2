@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using VPS.Common.Domain;
-using VPS.CustomAttributes;
+using PVIMS.Core.CustomAttributes;
+using PVIMS.Core.SeedWork;
 
 namespace PVIMS.Core.Entities
 {
