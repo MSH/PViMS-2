@@ -3,13 +3,12 @@ using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -18,9 +17,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Paging;
 
 namespace PVIMS.API.Controllers
 {

@@ -1,19 +1,14 @@
-﻿using AutoMapper;
-using LinqKit;
+﻿using LinqKit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
-using PViMS.API;
-using PVIMS.API.Attributes;
-using PVIMS.API.Auth;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Account;
-using PVIMS.API.Services;
-using PVIMS.API.Settings;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Utilities;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -22,7 +17,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using VPS.Common.Repositories;
 
 namespace PVIMS.API.Controllers
 {

@@ -4,17 +4,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
-using PVIMS.Core.SeedWork;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -25,7 +24,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Controllers
 {

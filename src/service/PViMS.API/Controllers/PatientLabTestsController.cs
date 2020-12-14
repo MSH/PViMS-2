@@ -7,10 +7,10 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
-using PVIMS.API.Services;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
@@ -24,8 +24,6 @@ namespace PVIMS.API.Controllers
     [Authorize]
     public class PatientLabTestsController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
-        private readonly ITypeHelperService _typeHelperService;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<PatientLabTest> _patientLabTestRepository;
@@ -39,8 +37,7 @@ namespace PVIMS.API.Controllers
         private readonly IUrlHelper _urlHelper;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PatientLabTestsController(IPropertyMappingService propertyMappingService,
-            ITypeHelperService typeHelperService,
+        public PatientLabTestsController(
             IMapper mapper,
             IUrlHelper urlHelper,
             ITypeExtensionHandler modelExtensionBuilder,
@@ -54,8 +51,6 @@ namespace PVIMS.API.Controllers
             IUnitOfWorkInt unitOfWork,
             IHttpContextAccessor httpContextAccessor)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
-            _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));

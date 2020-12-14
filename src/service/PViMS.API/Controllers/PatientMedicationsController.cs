@@ -8,7 +8,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.Core.CustomAttributes;

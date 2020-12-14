@@ -8,16 +8,14 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
+using PVIMS.Core.Repositories;
 
 namespace PVIMS.API.Controllers
 {
