@@ -1,8 +1,8 @@
-﻿using PVIMS.API.Auth;
+﻿using PVIMS.API.Infrastructure.Auth;
 using PVIMS.Core.Entities;
 using System.Threading.Tasks;
 
-namespace PVIMS.API.Services
+namespace PVIMS.API.Infrastructure.Services
 {
     public interface IJwtFactory
     {

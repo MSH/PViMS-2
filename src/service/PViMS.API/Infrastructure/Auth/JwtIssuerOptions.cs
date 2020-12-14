@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace PVIMS.API.Auth
+namespace PVIMS.API.Infrastructure.Auth
 {
     public class JwtIssuerOptions
     {

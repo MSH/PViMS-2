@@ -1,10 +1,10 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using PVIMS.API.Services;
+using PVIMS.API.Infrastructure.Services;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace PVIMS.API.Auth
+namespace PVIMS.API.Infrastructure.Auth
 {
     public sealed class JwtTokenHandler : IJwtTokenHandler
     {

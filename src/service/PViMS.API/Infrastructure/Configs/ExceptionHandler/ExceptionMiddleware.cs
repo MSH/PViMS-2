@@ -2,14 +2,14 @@
 using Newtonsoft.Json;
 using PVIMS.API.Helpers;
 using PVIMS.Core.Entities;
-using PVIMS.Entities.EF;
+using PVIMS.Persistence;
 using System;
 using System.Diagnostics;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace PVIMS.API.Configs.ExceptionHandler
+namespace PVIMS.API.Infrastructure.Configs.ExceptionHandler
 {
     public class ExceptionMiddleware
     {

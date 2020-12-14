@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PVIMS.API.Services
+namespace PVIMS.API.Infrastructure.Services
 {
     public interface IPropertyMappingService
     {

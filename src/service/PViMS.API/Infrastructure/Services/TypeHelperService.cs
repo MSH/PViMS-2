@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace PVIMS.API.Services
+namespace PVIMS.API.Infrastructure.Services
 {
     public class TypeHelperService : ITypeHelperService
     {

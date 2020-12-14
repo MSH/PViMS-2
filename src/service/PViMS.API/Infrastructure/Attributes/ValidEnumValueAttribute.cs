@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace PVIMS.API.Attributes
+namespace PVIMS.API.Infrastructure.Attributes
 {
     public class ValidEnumValueAttribute : ValidationAttribute
     {

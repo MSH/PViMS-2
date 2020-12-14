@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace PVIMS.API.Services
+namespace PVIMS.API.Infrastructure.Services
 {
     public interface IJwtTokenValidator
     {

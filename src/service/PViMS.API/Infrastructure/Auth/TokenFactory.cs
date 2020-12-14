@@ -1,8 +1,8 @@
-﻿using PVIMS.API.Services;
+﻿using PVIMS.API.Infrastructure.Services;
 using System;
 using System.Security.Cryptography;
 
-namespace PVIMS.API.Auth
+namespace PVIMS.API.Infrastructure.Auth
 {
     public sealed class TokenFactory : ITokenFactory
     {

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PVIMS.API.Services
+namespace PVIMS.API.Infrastructure.Services
 {
     public class PropertyMappingService : IPropertyMappingService
     {

@@ -1,4 +1,4 @@
-﻿namespace PVIMS.API.Settings
+﻿namespace PVIMS.API.Infrastructure.Settings
 {
     public class AuthSettings
     {

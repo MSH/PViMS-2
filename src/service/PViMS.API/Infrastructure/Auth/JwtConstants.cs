@@ -1,4 +1,4 @@
-﻿namespace PVIMS.API.Auth
+﻿namespace PVIMS.API.Infrastructure.Auth
 {
     public static class JwtConstants
     {

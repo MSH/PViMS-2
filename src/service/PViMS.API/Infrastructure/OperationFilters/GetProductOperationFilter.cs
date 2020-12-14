@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.OpenApi.Models;
-using PVIMS.API.Models;
+﻿using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace PVIMS.API.OperationFilters
+namespace PVIMS.API.Infrastructure.OperationFilters
 {
     public class GetAppointmentOperationFilter : IOperationFilter
     {

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
-using PVIMS.API.Services;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using System;
@@ -9,7 +9,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace PVIMS.API.Auth
+namespace PVIMS.API.Infrastructure.Auth
 {
     public sealed class JwtFactory : IJwtFactory
     {
