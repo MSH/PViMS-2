@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PVIMS.Entities.EF\PVIMS.Entities.EF.csproj" />
-    <ProjectReference Include="..\VPS.Framework\VPS.CustomAttributes\VPS.CustomAttributes.csproj" />
+    <ProjectReference Include="..\PVIMS.Core\PVIMS.Core.csproj" />
+    <ProjectReference Include="..\PViMS.Persistence\PViMS.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

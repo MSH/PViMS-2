@@ -1,4 +1,7 @@
-﻿using System;
+﻿using PVIMS.Core.Services;
+using PVIMS.Core.ValueTypes;
+using PVIMS.Persistence;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -6,12 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
-
-using PVIMS.Core;
-using PVIMS.Core.Entities;
-using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
-using PVIMS.Entities.EF;
 
 namespace PVIMS.Services
 {
