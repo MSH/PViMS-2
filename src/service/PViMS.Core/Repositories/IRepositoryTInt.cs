@@ -223,30 +223,6 @@ namespace PVIMS.Core.Repositories
         /// <param name="sql">The SQL.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
-        ICollection<TEntity> ExecuteSql(string sql, params SqlParameter[] parameters);
-
-        /// <summary>
-        /// Executes the SQL asynchronously.
-        /// </summary>
-        /// <param name="sql">The SQL.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        Task<int> ExecuteSqlCommandAsync(string sql, params SqlParameter[] parameters);
-
-        /// <summary>
-        /// Executes the SQL.
-        /// </summary>
-        /// <param name="sql">The SQL.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
         int ExecuteSqlCommand(string sql, params SqlParameter[] parameters);
-
-        /// <summary>
-        /// Executes the SQL and returns a scalar int value.
-        /// </summary>
-        /// <param name="sql">The SQL.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        int ExecuteSqlScalar(string sql, params SqlParameter[] parameters);
     }
 }
