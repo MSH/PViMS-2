@@ -8,16 +8,16 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
-using PVIMS.API.Services;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
-using VPS.Common.Repositories;
 
 namespace PVIMS.API.Controllers
 {
@@ -35,8 +35,8 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
         private readonly IRepositoryInt<Config> _configRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<Core.Entities.CustomAttributeConfiguration> _customAttributeRepository;
-        private readonly IRepositoryInt<Core.Entities.SelectionDataItem> _selectionDataItemRepository;
+        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
+        private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
@@ -55,8 +55,8 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
             IRepositoryInt<Config> configRepository,
             IRepositoryInt<User> userRepository,
-            IRepositoryInt<Core.Entities.CustomAttributeConfiguration> customAttributeRepository,
-            IRepositoryInt<Core.Entities.SelectionDataItem> selectionDataItemRepository,
+            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
+            IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
             IWorkFlowService workFlowService,
             IUnitOfWorkInt unitOfWork,
             ICustomAttributeService customAttributeService,
@@ -425,7 +425,7 @@ namespace PVIMS.API.Controllers
             {
                 return dto;
             }
-            VPS.CustomAttributes.IExtendable patientClinicalEventExtended = patientClinicalEvent;
+            IExtendable patientClinicalEventExtended = patientClinicalEvent;
 
             // Map all custom attributes
             dto.ClinicalEventAttributes = _modelExtensionBuilder.BuildModelExtension(patientClinicalEventExtended)
@@ -434,7 +434,7 @@ namespace PVIMS.API.Controllers
                     Key = h.AttributeKey,
                     Value = h.TransformValueToString(),
                     Category = h.Category,
-                    SelectionValue = (h.Type == VPS.CustomAttributes.CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
+                    SelectionValue = (h.Type == CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
                 }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
 
             dto.ReportDate = _customAttributeService.GetCustomAttributeValue("PatientClinicalEvent", "Date of Report", patientClinicalEventExtended);
@@ -455,7 +455,7 @@ namespace PVIMS.API.Controllers
             {
                 return dto;
             }
-            VPS.CustomAttributes.IExtendable patientClinicalEventExtended = patientClinicalEventFromRepo;
+            IExtendable patientClinicalEventExtended = patientClinicalEventFromRepo;
 
             // Map all custom attributes
             dto.ClinicalEventAttributes = _modelExtensionBuilder.BuildModelExtension(patientClinicalEventExtended)
@@ -464,7 +464,7 @@ namespace PVIMS.API.Controllers
                     Key = h.AttributeKey,
                     Value = h.TransformValueToString(),
                     Category = h.Category,
-                    SelectionValue = (h.Type == VPS.CustomAttributes.CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
+                    SelectionValue = (h.Type == CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
                 }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
 
             dto.ReportDate = _customAttributeService.GetCustomAttributeValue("PatientClinicalEvent", "Date of Report", patientClinicalEventExtended);

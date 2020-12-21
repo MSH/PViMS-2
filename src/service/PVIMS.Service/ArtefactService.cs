@@ -7,8 +7,10 @@ using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 using Microsoft.AspNetCore.Hosting;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.Utilities;
 using PVIMS.Core.ValueTypes;
@@ -20,13 +22,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
-using VPS.Common.Repositories;
-using VPS.Common.Utilities;
-using VPS.CustomAttributes;
 
-using SelectionDataItem = PVIMS.Core.Entities.SelectionDataItem;
-using CustomAttributeConfiguration = PVIMS.Core.Entities.CustomAttributeConfiguration;
-using FrameworkCustomAttributeConfiguration = VPS.CustomAttributes.CustomAttributeConfiguration;
 using FontSize = DocumentFormat.OpenXml.Wordprocessing.FontSize;
 
 namespace PVIMS.Services
@@ -49,20 +45,12 @@ namespace PVIMS.Services
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository)
         {
-            Check.IsNotNull(unitOfWork, "unitOfWork may not be null");
-            Check.IsNotNull(attributeService, "unitOfWork may not be null");
-            Check.IsNotNull(patientService, "unitOfWork may not be null");
-            Check.IsNotNull(reportInstanceRepository, "reportInstanceRepository may not be null");
-            Check.IsNotNull(patientMedicationRepository, "patientMedicationRepository may not be null");
-            Check.IsNotNull(environment, "environment may not be null");
-
-            _unitOfWork = unitOfWork;
-            _environment = environment;
-
-            _attributeService = attributeService;
-            _patientService = patientService;
-            _reportInstanceRepository = reportInstanceRepository;
-            _patientMedicationRepository = patientMedicationRepository;
+            _unitOfWork = _unitOfWork ?? throw new ArgumentNullException(nameof(_unitOfWork));
+            _attributeService = attributeService ?? throw new ArgumentNullException(nameof(attributeService));
+            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+            _environment = environment ?? throw new ArgumentNullException(nameof(environment));
+            _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
+            _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
         }
 
         public ArtefactInfoModel CreateActiveDatasetForDownload(long[] patientIds, long cohortGroupId)
@@ -480,7 +468,10 @@ namespace PVIMS.Services
             var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
 
             var patientClinicalEvent = _unitOfWork.Repository<PatientClinicalEvent>().Queryable().Single(pce => pce.PatientClinicalEventGuid == contextGuid);
-            Check.IsNotNull(patientClinicalEvent, "patientClinicalEvent may not be null");
+            if(patientClinicalEvent == null)
+            {
+                throw new ArgumentException("patientClinicalEvent may not be null");
+            }
 
             var extendable = (IExtendable)patientClinicalEvent;
             var extendableValue = _attributeService.GetCustomAttributeValue("PatientClinicalEvent", "Is the adverse event serious?", extendable);
@@ -567,7 +558,10 @@ namespace PVIMS.Services
             var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
 
             var datasetInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().Single(di => di.DatasetInstanceGuid == contextGuid);
-            Check.IsNotNull(datasetInstance, "datasetInstance may not be null");
+            if(datasetInstance == null)
+            {
+                throw new ArgumentException("datasetInstance may not be null");
+            }
 
             var isSerious = !String.IsNullOrWhiteSpace(datasetInstance.GetInstanceValue("Reaction serious details"));
 

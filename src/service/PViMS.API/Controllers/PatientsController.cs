@@ -13,16 +13,19 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
+using PVIMS.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace PVIMS.API.Controllers
 {
@@ -52,8 +55,8 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
         private readonly IRepositoryInt<EncounterType> _encounterTypeRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<Core.Entities.CustomAttributeConfiguration> _customAttributeRepository;
-        private readonly IRepositoryInt<Core.Entities.SelectionDataItem> _selectionDataItemRepository;
+        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
+        private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
@@ -63,6 +66,7 @@ namespace PVIMS.API.Controllers
         private readonly IArtefactService _artefactService;
         private readonly ICustomAttributeService _customAttributeService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly PVIMSDbContext _context;
 
         public PatientsController(IPropertyMappingService propertyMappingService, 
             ITypeHelperService typeHelperService,
@@ -87,15 +91,16 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
             IRepositoryInt<EncounterType> encounterTypeRepository,
             IRepositoryInt<User> userRepository,
-            IRepositoryInt<Core.Entities.CustomAttributeConfiguration> customAttributeRepository,
-            IRepositoryInt<Core.Entities.SelectionDataItem> selectionDataItemRepository,
+            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
+            IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
             IReportService reportService,
             IPatientService patientService,
             IWorkFlowService workFlowService,
             IArtefactService artefactService,
             IUnitOfWorkInt unitOfWork,
             ICustomAttributeService customAttributeService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            PVIMSDbContext dbContext)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
@@ -129,6 +134,7 @@ namespace PVIMS.API.Controllers
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _customAttributeService = customAttributeService ?? throw new ArgumentNullException(nameof(customAttributeService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         /// <summary>
@@ -1068,7 +1074,7 @@ namespace PVIMS.API.Controllers
 
             var facility = !String.IsNullOrWhiteSpace(patientResourceParameters.FacilityName) ? _facilityRepository.Get(f => f.FacilityName == patientResourceParameters.FacilityName) : null;
             var customAttribute = _customAttributeRepository.Get(ca => ca.Id == patientResourceParameters.CustomAttributeId);
-            var path = customAttribute?.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute";
+            var path = customAttribute?.CustomAttributeType == CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute";
 
             List <SqlParameter> parameters = new List<SqlParameter>();
             parameters.Add(new SqlParameter("@FacilityId", facility != null ? facility.Id : 0));
@@ -1080,8 +1086,8 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue) ? (Object)path : DBNull.Value));
             parameters.Add(new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue) ? (Object)patientResourceParameters.CustomAttributeValue : DBNull.Value));
 
-            var resultsFromService = PagedCollection<PatientList>.Create(_unitOfWork.Repository<PatientList>()
-                .ExecuteSql("spSearchPatients @FacilityId, @PatientId, @FirstName, @LastName, @DateOfBirth, @CustomAttributeKey, @CustomPath, @CustomValue",
+            var resultsFromService = PagedCollection<EncounterList>.Create(_context.EncounterLists
+                .FromSqlRaw("spSearchEncounters @FacilityId, @PatientId, @FirstName, @LastName, @SearchFrom, @SearchTo, @CustomAttributeKey, @CustomPath, @CustomValue",
                         parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (resultsFromService != null)
@@ -1362,7 +1368,7 @@ namespace PVIMS.API.Controllers
         private PatientDetailDto CustomPatientMap(PatientDetailDto dto)
         {
             var patient = _patientRepository.Get(p => p.Id == dto.Id);
-            VPS.CustomAttributes.IExtendable patientExtended = patient;
+            IExtendable patientExtended = patient;
 
             if (patient == null)
             {
@@ -1376,7 +1382,7 @@ namespace PVIMS.API.Controllers
                     Key = h.AttributeKey,
                     Value = h.Value.ToString(),
                     Category = h.Category,
-                    SelectionValue = (h.Type == VPS.CustomAttributes.CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
+                    SelectionValue = (h.Type == CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
                 }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
 
             var attribute = patientExtended.GetAttributeValue("Medical Record Number");
@@ -1393,7 +1399,7 @@ namespace PVIMS.API.Controllers
         private PatientExpandedDto CustomPatientMap(PatientExpandedDto dto)
         {
             var patient = _patientRepository.Get(p => p.Id == dto.Id);
-            VPS.CustomAttributes.IExtendable patientExtended = patient;
+            IExtendable patientExtended = patient;
 
             if (patient == null)
             {
@@ -1407,7 +1413,7 @@ namespace PVIMS.API.Controllers
                     Key = h.AttributeKey,
                     Value = h.Value.ToString(),
                     Category = h.Category,
-                    SelectionValue = (h.Type == VPS.CustomAttributes.CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
+                    SelectionValue = (h.Type == CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
                 }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
 
             // Map additional attributes to main dto
@@ -1502,7 +1508,7 @@ namespace PVIMS.API.Controllers
         private PatientClinicalEventDetailDto CustomClinicalEventMap(PatientClinicalEventDetailDto dto)
         {
             var clinicalEvent = _patientClinicalEventRepository.Get(p => p.Id == dto.Id);
-            VPS.CustomAttributes.IExtendable clinicalEventExtended = clinicalEvent;
+            IExtendable clinicalEventExtended = clinicalEvent;
 
             if (clinicalEvent == null)
             {
@@ -1524,7 +1530,7 @@ namespace PVIMS.API.Controllers
         private PatientMedicationDetailDto CustomMedicationMap(PatientMedicationDetailDto dto)
         {
             var medication = _patientMedicationRepository.Get(p => p.Id == dto.Id);
-            VPS.CustomAttributes.IExtendable medicationExtended = medication;
+            IExtendable medicationExtended = medication;
 
             if (medication == null)
             {

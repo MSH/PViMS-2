@@ -1,6 +1,6 @@
-﻿using System;
+﻿using PVIMS.Core.SeedWork;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using VPS.Common.Domain;
 
 namespace PVIMS.Core.Entities.Accounts
 {

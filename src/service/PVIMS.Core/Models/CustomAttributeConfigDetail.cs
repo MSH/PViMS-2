@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-using VPS.CustomAttributes;
+using PVIMS.Core.CustomAttributes;
 
 namespace PVIMS.Core.Models
 {

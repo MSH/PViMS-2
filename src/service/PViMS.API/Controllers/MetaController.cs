@@ -1,14 +1,16 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -17,9 +19,9 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
+using PVIMS.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace PVIMS.API.Controllers
 {
@@ -40,6 +42,7 @@ namespace PVIMS.API.Controllers
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
+        private readonly PVIMSDbContext _context;
 
         private List<String> _entities = new List<String>() { 
             "Patient", 
@@ -64,7 +67,8 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<MetaDependency> metaDependencyRepository,
             IRepositoryInt<MetaPage> metaPageRepository,
             IRepositoryInt<MetaWidget> metaWidgetRepository,
-            IUnitOfWorkInt unitOfWork)
+            IUnitOfWorkInt unitOfWork,
+            PVIMSDbContext dbContext)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
@@ -79,6 +83,7 @@ namespace PVIMS.API.Controllers
             _metaPageRepository = metaPageRepository ?? throw new ArgumentNullException(nameof(metaPageRepository));
             _metaWidgetRepository = metaWidgetRepository ?? throw new ArgumentNullException(nameof(metaWidgetRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         /// <summary>
@@ -99,7 +104,10 @@ namespace PVIMS.API.Controllers
                 SELECT Id FROM MetaPatient;
                 ");
 
-            metaSummary.PatientCount = _unitOfWork.Repository<ScalarInt>().ExecuteSqlScalar(sql, new SqlParameter[0]);
+            var resultsFromService = _context.MetaPatientLists
+                .FromSqlRaw("SELECT Id FROM MetaPatient");
+
+            metaSummary.PatientCount = resultsFromService.Count();
 
             var config = _infrastructureService.GetOrCreateConfig(ConfigType.MetaDataLastUpdated);
             metaSummary.LatestRefreshDate = config.ConfigValue;
@@ -764,10 +772,10 @@ namespace PVIMS.API.Controllers
                     metaColumnType = null;
                     range = "";
 
-                    if (attribute.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.DateTime) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "datetime"); };
-                    if (attribute.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.Numeric) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "int"); };
-                    if (attribute.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.String) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "varchar"); };
-                    if (attribute.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.Selection)
+                    if (attribute.CustomAttributeType == CustomAttributeType.DateTime) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "datetime"); };
+                    if (attribute.CustomAttributeType == CustomAttributeType.Numeric) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "int"); };
+                    if (attribute.CustomAttributeType == CustomAttributeType.String) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "varchar"); };
+                    if (attribute.CustomAttributeType == CustomAttributeType.Selection)
                     {
                         metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "varchar");
                         var selectionItems = _unitOfWork.Repository<SelectionDataItem>().Queryable().Where(sd => sd.AttributeKey == attribute.AttributeKey).Select(s => s.Value).ToList();
@@ -1036,13 +1044,13 @@ namespace PVIMS.API.Controllers
 
                 switch (attribute.CustomAttributeType)
                 {
-                    case VPS.CustomAttributes.CustomAttributeType.Numeric:
-                    case VPS.CustomAttributes.CustomAttributeType.String:
+                    case CustomAttributeType.Numeric:
+                    case CustomAttributeType.String:
                         attributeType = "CustomStringAttribute";
                         break;
 
-                    case VPS.CustomAttributes.CustomAttributeType.Selection:
-                    case VPS.CustomAttributes.CustomAttributeType.DateTime:
+                    case CustomAttributeType.Selection:
+                    case CustomAttributeType.DateTime:
                         attributeType = "CustomSelectionAttribute";
                         break;
                 }
@@ -1063,7 +1071,7 @@ namespace PVIMS.API.Controllers
                 .Where(c => c.ExtendableTypeName == entityName)
                 .OrderBy(c => c.Id).ToList();
 
-            foreach (CustomAttributeConfiguration attribute in attributes.Where(ca => ca.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.Selection))
+            foreach (CustomAttributeConfiguration attribute in attributes.Where(ca => ca.CustomAttributeType == CustomAttributeType.Selection))
             {
                 sbMain.Clear();
                 sbMain.AppendFormat(@"UPDATE {0} SET {0}.[{1}] = sdi.Value from Meta{2} as {0} inner join SelectionDataItem as sdi on sdi.AttributeKey = '{3}' and SelectionKey collate Latin1_General_CI_AS = {0}.[{1}] collate Latin1_General_CI_AS", alias, attribute.AttributeKey.Replace(" ", "").Replace("(", "").Replace(")", "").Replace("&", ""), entityName, attribute.AttributeKey);

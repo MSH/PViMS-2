@@ -3,8 +3,7 @@ using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
@@ -15,7 +14,8 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using VPS.Common.Repositories;
+using PVIMS.Core.Repositories;
+using PVIMS.Infrastructure;
 
 namespace PVIMS.API.Controllers
 {
