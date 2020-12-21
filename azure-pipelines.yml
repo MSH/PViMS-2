@@ -40,5 +40,5 @@ steps:
   displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
   inputs:
     Contents: |
-      **\bin\**\*.*
+      **\bin\**
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
