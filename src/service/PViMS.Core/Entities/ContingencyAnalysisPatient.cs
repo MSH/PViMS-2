@@ -1,8 +1,6 @@
-﻿using PVIMS.Core.SeedWork;
-
-namespace PVIMS.Core.Models
+﻿namespace PVIMS.Core.Entities
 {
-    public class ContingencyAnalysisPatient : Entity<int>
+    public class ContingencyAnalysisPatient
     {
         public string PatientName { get; set; }
         public string StartDate { get; set; }

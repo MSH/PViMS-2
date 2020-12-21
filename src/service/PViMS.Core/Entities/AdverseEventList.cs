@@ -1,8 +1,6 @@
-﻿using PVIMS.Core.SeedWork;
-
-namespace PVIMS.Core.Models
+﻿namespace PVIMS.Core.Entities
 {
-    public class AdverseEventList : Entity<int>
+    public class AdverseEventList
     {
         public string Description { get; set; }
         public string Criteria { get; set; }

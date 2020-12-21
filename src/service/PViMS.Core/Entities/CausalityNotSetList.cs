@@ -1,9 +1,8 @@
-﻿using PVIMS.Core.SeedWork;
-using System;
+﻿using System;
 
-namespace PVIMS.Core.Models
+namespace PVIMS.Core.Entities
 {
-    public class CausalityNotSetList : Entity<int>
+    public class CausalityNotSetList
     {
         public int Patient_Id { get; set; }
         public string FacilityName { get; set; }

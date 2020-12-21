@@ -1,8 +1,6 @@
-﻿using PVIMS.Core.SeedWork;
-
-namespace PVIMS.Core.Models
+﻿namespace PVIMS.Core.Entities
 {
-    public class PatientOnStudyList : Entity<int>
+    public class PatientOnStudyList
     {
         public string FacilityName { get; set; }
         public int FacilityId { get; set; }

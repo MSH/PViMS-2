@@ -24,6 +24,8 @@ using PVIMS.Core.Models;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
+using PVIMS.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace PVIMS.API.Controllers
 {
@@ -64,6 +66,7 @@ namespace PVIMS.API.Controllers
         private readonly IArtefactService _artefactService;
         private readonly ICustomAttributeService _customAttributeService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly PVIMSDbContext _context;
 
         public PatientsController(IPropertyMappingService propertyMappingService, 
             ITypeHelperService typeHelperService,
@@ -96,7 +99,8 @@ namespace PVIMS.API.Controllers
             IArtefactService artefactService,
             IUnitOfWorkInt unitOfWork,
             ICustomAttributeService customAttributeService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            PVIMSDbContext dbContext)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
@@ -130,6 +134,7 @@ namespace PVIMS.API.Controllers
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _customAttributeService = customAttributeService ?? throw new ArgumentNullException(nameof(customAttributeService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         /// <summary>
@@ -1081,8 +1086,8 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue) ? (Object)path : DBNull.Value));
             parameters.Add(new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue) ? (Object)patientResourceParameters.CustomAttributeValue : DBNull.Value));
 
-            var resultsFromService = PagedCollection<PatientList>.Create(_unitOfWork.Repository<PatientList>()
-                .ExecuteSql("spSearchPatients @FacilityId, @PatientId, @FirstName, @LastName, @DateOfBirth, @CustomAttributeKey, @CustomPath, @CustomValue",
+            var resultsFromService = PagedCollection<EncounterList>.Create(_context.EncounterLists
+                .FromSqlRaw("spSearchEncounters @FacilityId, @PatientId, @FirstName, @LastName, @SearchFrom, @SearchTo, @CustomAttributeKey, @CustomPath, @CustomValue",
                         parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (resultsFromService != null)

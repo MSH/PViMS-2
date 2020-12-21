@@ -20,6 +20,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Extensions = PVIMS.Core.Utilities.Extensions;
+using PVIMS.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace PVIMS.API.Controllers
 {
@@ -40,6 +42,7 @@ namespace PVIMS.API.Controllers
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
+        private readonly PVIMSDbContext _context;
 
         private List<String> _entities = new List<String>() { 
             "Patient", 
@@ -64,7 +67,8 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<MetaDependency> metaDependencyRepository,
             IRepositoryInt<MetaPage> metaPageRepository,
             IRepositoryInt<MetaWidget> metaWidgetRepository,
-            IUnitOfWorkInt unitOfWork)
+            IUnitOfWorkInt unitOfWork,
+            PVIMSDbContext dbContext)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
@@ -79,6 +83,7 @@ namespace PVIMS.API.Controllers
             _metaPageRepository = metaPageRepository ?? throw new ArgumentNullException(nameof(metaPageRepository));
             _metaWidgetRepository = metaWidgetRepository ?? throw new ArgumentNullException(nameof(metaWidgetRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         /// <summary>
@@ -99,7 +104,10 @@ namespace PVIMS.API.Controllers
                 SELECT Id FROM MetaPatient;
                 ");
 
-            metaSummary.PatientCount = _unitOfWork.Repository<ScalarInt>().ExecuteSqlScalar(sql, new SqlParameter[0]);
+            var resultsFromService = _context.MetaPatientLists
+                .FromSqlRaw("SELECT Id FROM MetaPatient");
+
+            metaSummary.PatientCount = resultsFromService.Count();
 
             var config = _infrastructureService.GetOrCreateConfig(ConfigType.MetaDataLastUpdated);
             metaSummary.LatestRefreshDate = config.ConfigValue;

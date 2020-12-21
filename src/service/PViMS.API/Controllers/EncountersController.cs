@@ -18,12 +18,13 @@ using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PVIMS.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace PVIMS.API.Controllers
 {
@@ -50,6 +51,7 @@ namespace PVIMS.API.Controllers
         private readonly IUrlHelper _urlHelper;
         private readonly IPatientService _patientService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly PVIMSDbContext _context;
 
         public EncountersController(IPropertyMappingService propertyMappingService,
             IMapper mapper,
@@ -68,7 +70,8 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IUnitOfWorkInt unitOfWork,
             IPatientService patientService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            PVIMSDbContext dbContext)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -88,6 +91,7 @@ namespace PVIMS.API.Controllers
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         /// <summary>
@@ -512,8 +516,8 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(encounterResourceParameters.CustomAttributeValue) ? (Object)path : DBNull.Value));
             parameters.Add(new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(encounterResourceParameters.CustomAttributeValue) ? (Object)encounterResourceParameters.CustomAttributeValue : DBNull.Value));
 
-            var resultsFromService = PagedCollection<EncounterList>.Create(_unitOfWork.Repository<EncounterList>()
-                .ExecuteSql("spSearchEncounters @FacilityId, @PatientId, @FirstName, @LastName, @SearchFrom, @SearchTo, @CustomAttributeKey, @CustomPath, @CustomValue",
+            var resultsFromService = PagedCollection<EncounterList>.Create(_context.EncounterLists
+                .FromSqlRaw("spSearchEncounters @FacilityId, @PatientId, @FirstName, @LastName, @SearchFrom, @SearchTo, @CustomAttributeKey, @CustomPath, @CustomValue",
                         parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (resultsFromService != null)

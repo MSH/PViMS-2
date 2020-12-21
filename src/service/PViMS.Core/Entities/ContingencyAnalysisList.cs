@@ -1,8 +1,6 @@
-﻿using PVIMS.Core.SeedWork;
-
-namespace PVIMS.Core.Models
+﻿namespace PVIMS.Core.Entities
 {
-    public class ContingencyAnalysisList : Entity<int>
+    public class ContingencyAnalysisList
     {
         public int TerminologyMeddra_Id { get; set; }
         public string MeddraTerm { get; set; }

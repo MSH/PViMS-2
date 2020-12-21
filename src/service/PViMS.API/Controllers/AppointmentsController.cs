@@ -10,7 +10,6 @@ using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Models;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
@@ -21,6 +20,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PVIMS.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace PVIMS.API.Controllers
 {
@@ -40,6 +41,7 @@ namespace PVIMS.API.Controllers
         private readonly IUrlHelper _urlHelper;
         private readonly IReportService _reportService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly PVIMSDbContext _context;
 
         public AppointmentsController(ITypeHelperService typeHelperService,
             IMapper mapper,
@@ -51,7 +53,8 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IUnitOfWorkInt unitOfWork,
             IReportService reportService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            PVIMSDbContext dbContext)
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -64,6 +67,7 @@ namespace PVIMS.API.Controllers
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         /// <summary>
@@ -498,8 +502,8 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(appointmentResourceParameters.CustomAttributeValue) ? (Object)path : DBNull.Value));
             parameters.Add(new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(appointmentResourceParameters.CustomAttributeValue) ? (Object)appointmentResourceParameters.CustomAttributeValue : DBNull.Value));
 
-            var resultsFromService = PagedCollection<AppointmentList>.Create(_unitOfWork.Repository<AppointmentList>()
-                .ExecuteSql("spSearchAppointments @FacilityId, @PatientId, @CriteriaId, @FirstName, @LastName, @SearchFrom, @SearchTo, @CustomAttributeKey, @CustomPath, @CustomValue",
+            var resultsFromService = PagedCollection<AppointmentList>.Create(_context.AppointmentLists
+                .FromSqlRaw("Exec spSearchAppointments @FacilityId, @PatientId, @CriteriaId, @FirstName, @LastName, @SearchFrom, @SearchTo, @CustomAttributeKey, @CustomPath, @CustomValue",
                         parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (resultsFromService != null)

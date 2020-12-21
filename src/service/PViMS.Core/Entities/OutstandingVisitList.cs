@@ -1,9 +1,8 @@
-﻿using PVIMS.Core.SeedWork;
-using System;
+﻿using System;
 
-namespace PVIMS.Core.Models
+namespace PVIMS.Core.Entities
 {
-    public class OutstandingVisitList : Entity<int>
+    public class OutstandingVisitList
     {
         public int Patient_Id { get; set; }
         public string FirstName { get; set; }

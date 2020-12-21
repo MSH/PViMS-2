@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
+using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -30,6 +32,7 @@ namespace PVIMS.Services
         private readonly IRepositoryInt<User> _userRepository;
         private readonly ITypeExtensionHandler _typeExtensionHandler;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly PVIMSDbContext _context;
 
         public PatientService(IUnitOfWorkInt unitOfWork,
             IRepositoryInt<Patient> patientRepository,
@@ -45,7 +48,8 @@ namespace PVIMS.Services
             IRepositoryInt<AuditLog> auditLogRepository,
             IRepositoryInt<User> userRepository,
             ITypeExtensionHandler modelExtensionBuilder,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            PVIMSDbContext dbContext)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientStatusRepository = patientStatusRepository ?? throw new ArgumentNullException(nameof(patientStatusRepository));
@@ -62,6 +66,7 @@ namespace PVIMS.Services
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _typeExtensionHandler = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         public SeriesValueList[] GetElementValues(long patientId, string elementName, int records)
@@ -365,7 +370,9 @@ namespace PVIMS.Services
             sql = sql.Substring(0, sql.Length - 3);
             sql += ")";
 
-            return _unitOfWork.Repository<ScalarInt>().ExecuteSqlScalar(sql, new SqlParameter[0]) == 0;
+            var result = _context.PatientLists
+                .FromSqlInterpolated($"Exec spPatientIsUnique {parameters}").ToList();
+            return result.Count == 0;
         }
 
         /// <summary>
@@ -392,7 +399,9 @@ namespace PVIMS.Services
             }
             sql = sql.Substring(0, sql.Length - 3);
 
-            return _unitOfWork.Repository<ScalarInt>().ExecuteSqlScalar(sql, new SqlParameter[0]) > 0;
+            var result = _context.PatientLists
+                .FromSqlInterpolated($"Exec spPatientExists {parameters}").ToList();
+            return result.Count > 0;
         }
 
         /// <summary>
@@ -419,12 +428,14 @@ namespace PVIMS.Services
             }
             sql = sql.Substring(0, sql.Length - 3);
 
-            var patientId = _unitOfWork.Repository<ScalarInt>().ExecuteSqlScalar(sql, new SqlParameter[0]);
-            if(patientId == 0)
+            var result = _context.PatientLists
+                .FromSqlInterpolated($"Exec spPatients {parameters}").ToList();
+
+            if(result.Count == 0)
             {
                 return null;
             }
-            return _patientRepository.Get(p => p.Id == patientId);
+            return _patientRepository.Get(p => p.Id == result.First().PatientId);
         }
 
         /// <summary>

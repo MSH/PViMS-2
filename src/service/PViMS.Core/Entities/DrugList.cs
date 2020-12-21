@@ -1,8 +1,6 @@
-﻿using PVIMS.Core.SeedWork;
-
-namespace PVIMS.Core.Models
+﻿namespace PVIMS.Core.Entities
 {
-    public class DrugList : Entity<int>
+    public class DrugList
     {
         public int ConceptId { get; set; }
         public string ConceptName { get; set; }
