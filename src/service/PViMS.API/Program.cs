@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PVIMS.API;
 using PVIMS.API.Infrastructure;
-using PVIMS.Persistence;
+using PVIMS.Infrastructure;
 using Serilog;
 using System;
 using System.IO;

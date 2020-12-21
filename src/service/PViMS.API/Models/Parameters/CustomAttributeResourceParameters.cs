@@ -1,4 +1,4 @@
-﻿using PVIMS.API.Attributes;
+﻿using PVIMS.API.Infrastructure.Attributes;
 
 namespace PVIMS.API.Models.Parameters
 {

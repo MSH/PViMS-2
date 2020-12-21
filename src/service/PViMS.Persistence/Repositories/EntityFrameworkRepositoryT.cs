@@ -1,6 +1,6 @@
 ﻿using PVIMS.Core.SeedWork;
 
-namespace PVIMS.Persistence.Repositories
+namespace PVIMS.Infrastructure.Repositories
 {
 	public class EntityFrameworkRepository<T> : DomainRepository<T> where T : Entity<int>
 	{

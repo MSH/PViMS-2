@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
-using PVIMS.Persistence;
+using PVIMS.Infrastructure;
 using System;
 using System.Threading.Tasks;
 

@@ -15,6 +15,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using PVIMS.Core.Repositories;
+using PVIMS.Infrastructure;
 
 namespace PVIMS.API.Controllers
 {

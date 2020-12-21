@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using PVIMS.API.Helpers;
 using PVIMS.Core.Entities;
-using PVIMS.Persistence;
+using PVIMS.Infrastructure;
 using System;
 using System.Diagnostics;
 using System.Net;

@@ -3,7 +3,7 @@ using PVIMS.Core.SeedWork;
 using System;
 using System.Collections;
 
-namespace PVIMS.Persistence.Repositories
+namespace PVIMS.Infrastructure.Repositories
 {
     public class EntityFrameworkUnitOfWork : IUnitOfWorkInt, IDisposable
     {

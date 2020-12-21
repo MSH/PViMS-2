@@ -9,7 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace PVIMS.Persistence.Repositories
+namespace PVIMS.Infrastructure.Repositories
 {
     public class DomainRepository<TEntity> : IRepositoryInt<TEntity> where TEntity : Entity<int>
     {

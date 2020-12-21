@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PVIMS.Persistence.Repositories
+namespace PVIMS.Infrastructure.Repositories
 {
     public class SelectionDataRepository : ISelectionDataRepository
     {

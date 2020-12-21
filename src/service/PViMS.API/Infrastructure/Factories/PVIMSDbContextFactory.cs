@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using PVIMS.Persistence;
+using PVIMS.Infrastructure;
 using System.IO;
 
 namespace PVIMS.API.Infrastructure.Factories
@@ -18,7 +18,7 @@ namespace PVIMS.API.Infrastructure.Factories
 
             var optionsBuilder = new DbContextOptionsBuilder<PVIMSDbContext>();
 
-            optionsBuilder.UseSqlServer(config["ConnectionString"], sqlServerOptionsAction: o => o.MigrationsAssembly("PViMS.Persistence"));
+            optionsBuilder.UseSqlServer(config["ConnectionString"], sqlServerOptionsAction: o => o.MigrationsAssembly("PVIMS.Infrastructure"));
 
             return new PVIMSDbContext(optionsBuilder.Options);
         }

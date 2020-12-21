@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PVIMS.Core\PVIMS.Core.csproj" />
-    <ProjectReference Include="..\PViMS.Persistence\PViMS.Persistence.csproj" />
+    <ProjectReference Include="..\PViMS.Persistence\PViMS.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
