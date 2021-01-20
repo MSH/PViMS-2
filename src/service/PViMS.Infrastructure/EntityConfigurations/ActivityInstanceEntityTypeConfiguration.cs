@@ -35,10 +35,8 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasForeignKey("CurrentStatus_Id");
 
             configuration.HasOne(c => c.ReportInstance)
-                .WithOne()
-                .HasForeignKey("ReportInstance_Id")
-                .IsRequired(true)
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithMany()
+                .HasForeignKey("ReportInstance_Id");
 
             configuration.Property(c => c.Current)
                 .HasDefaultValue(true)

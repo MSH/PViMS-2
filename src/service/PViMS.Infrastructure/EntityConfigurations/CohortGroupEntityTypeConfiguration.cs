@@ -49,12 +49,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                .IsRequired(true)
                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasMany(c => c.EncounterTypeWorkPlans)
-               .WithOne()
-               .HasForeignKey("CohortGroup_Id")
-               .IsRequired(false)
-               .OnDelete(DeleteBehavior.SetNull);
-
             configuration.HasIndex("CohortName").IsUnique(true);
             configuration.HasIndex("CohortCode").IsUnique(true);
         }

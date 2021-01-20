@@ -20,7 +20,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PViMS.Core", "service\PViMS
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{FF9E5DAD-7AFB-4584-A7F8-494991600C80}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PViMS.Infrastructure", "service\PViMS.Persistence\PViMS.Infrastructure.csproj", "{DD42E029-BFA1-4CB3-9275-1EE35FA5A8C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PViMS.Infrastructure", "service\PViMS.Infrastructure\PViMS.Infrastructure.csproj", "{DD42E029-BFA1-4CB3-9275-1EE35FA5A8C4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{1E6528E4-5367-4145-ABC2-11285576F989}"
 EndProject

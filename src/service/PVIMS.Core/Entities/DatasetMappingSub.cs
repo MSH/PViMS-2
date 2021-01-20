@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PViMS.Core.ValueTypes;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

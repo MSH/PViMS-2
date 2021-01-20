@@ -43,8 +43,6 @@ namespace PVIMS.Core.Entities
                 }
                 return false;
             }
-            return false;
         }
-
 	}
 }

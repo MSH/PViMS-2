@@ -1,19 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using PViMS.Core.ValueTypes;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    public enum MappingType
-    {
-        ElementToElement,
-        ValueToValue,
-        AttributeToElement,
-        AttributeToValue,
-        FirstClassToElement,
-        FirstClassToValue
-    }
-
     [Table(nameof(DatasetMapping))]
     public class DatasetMapping : EntityBase
     {

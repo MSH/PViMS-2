@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using PVIMS.Core.CustomAttributes;
 using System.ComponentModel.DataAnnotations.Schema;
+using PViMS.Core.ValueTypes;
 
 namespace PVIMS.Core.Entities
 {

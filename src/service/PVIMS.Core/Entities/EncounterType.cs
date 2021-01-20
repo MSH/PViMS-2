@@ -7,7 +7,7 @@ namespace PVIMS.Core.Entities
 	[Table(nameof(EncounterType))]
 	public class EncounterType : EntityBase
 	{
-		public EncounterType()
+		public EncounterType() 
 		{
 			Encounters = new HashSet<Encounter>();
 			EncounterTypeWorkPlans = new HashSet<EncounterTypeWorkPlan>();

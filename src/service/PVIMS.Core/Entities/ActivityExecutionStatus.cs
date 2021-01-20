@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
@@ -6,15 +5,10 @@ namespace PVIMS.Core.Entities
     [Table(nameof(ActivityExecutionStatus))]
     public class ActivityExecutionStatus : EntityBase
 	{
-        [Required]
-        public virtual Activity Activity { get; set; }
-
-        [Required]
-		[StringLength(50)]
-		public string Description { get; set; }
-
-        [StringLength(100)]
+        public string Description { get; set; }
+        public int ActivityId { get; set; }
         public string FriendlyDescription { get; set; }
 
+        public virtual Activity Activity { get; set; }
     }
 }

@@ -13,6 +13,15 @@ namespace PVIMS.Core.Entities
             Attachments = new HashSet<Attachment>();
         }
 
+        public DateTime EventDateTime { get; set; }
+        public string Comments { get; set; }
+        public int ActivityInstanceId { get; set; }
+        public int? EventCreatedById { get; set; }
+        public int ExecutionStatusId { get; set; }
+        public DateTime? ContextDateTime { get; set; }
+        public string ContextCode { get; set; }
+
+
         [Required]
         public virtual ActivityInstance ActivityInstance { get; set; }
 

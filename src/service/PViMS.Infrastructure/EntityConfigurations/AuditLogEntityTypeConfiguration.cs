@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PVIMS.Core.Entities;
+using PVIMS.Core.ValueTypes;
 
 namespace PVIMS.Infrastructure.EntityConfigurations
 {
@@ -12,8 +13,8 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property<int>("AuditType")
-                .IsRequired();
+            configuration.Property(c => c.AuditType)
+                .HasConversion(x => (int)x, x => (AuditType)x);
 
             configuration.Property(c => c.ActionDate)
                 .IsRequired(true);
