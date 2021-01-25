@@ -11,13 +11,28 @@ import { SharedMaterialModule } from 'app/shared/shared-material.module';
 import { SharedModule } from 'app/shared/shared.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
-import { PageViewerPopupComponent } from './page-viewer-popup/page-viewer.popup.component';
+import { PageViewerPopupComponent } from './page-viewer/page-viewer-popup/page-viewer.popup.component';
+import { PageConfigurePopupComponent } from './shared/page-configure-popup/page-configure.popup.component';
+import { GenericDeletePopupComponent } from './shared/generic-delete-popup/generic-delete.popup.component';
+import { WidgetConfigurePopupComponent } from './page-viewer/widget-configure-popup/widget-configure.popup.component';
+import { WidgetMovePopupComponent } from './page-viewer/widget-move-popup/widget-move.popup.component';
+import { QuillModule } from 'ngx-quill';
+import { GeneralWidgetComponent } from './page-viewer/general-widget/general-widget.component';
+import { SubitemWidgetComponent } from './page-viewer/subitem-widget/subitem-widget.component';
+import { ItemListWidgetComponent } from './page-viewer/item-list-widget/item-list-widget.component';
 
 @NgModule({
   declarations: [
+    GenericDeletePopupComponent,
     PageViewerComponent, 
     PageListComponent,
-    PageViewerPopupComponent
+    PageViewerPopupComponent,
+    PageConfigurePopupComponent,
+    WidgetConfigurePopupComponent,
+    WidgetMovePopupComponent,
+    GeneralWidgetComponent,
+    SubitemWidgetComponent,
+    ItemListWidgetComponent
   ],
   imports: [
     CommonModule,
@@ -27,11 +42,16 @@ import { PageViewerPopupComponent } from './page-viewer-popup/page-viewer.popup.
     SharedModule,
     TranslateModule,
     PerfectScrollbarModule,
+    QuillModule,
     RouterModule.forChild(InformationRoutes)
   ],
   entryComponents:
   [
-    PageViewerPopupComponent
+    GenericDeletePopupComponent,
+    PageViewerPopupComponent,
+    PageConfigurePopupComponent,
+    WidgetConfigurePopupComponent,
+    WidgetMovePopupComponent
   ]
 })
 export class InformationModule { }

@@ -40,6 +40,8 @@ export class ActivityStatusChangePopupComponent extends BasePopupComponent imple
       currentStatus: [self.data.currentStatus],
       newExecutionStatus: [self.data.newStatus],
       comments: ['', [Validators.maxLength(100), Validators.pattern('[a-zA-Z0-9 .,()]*')]],
+      contextDate: [''],
+      contextCode: ['', [Validators.maxLength(20), Validators.pattern('[-a-zA-Z0-9]*')]],
     })
   }
 

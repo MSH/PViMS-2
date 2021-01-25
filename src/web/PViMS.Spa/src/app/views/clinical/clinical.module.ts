@@ -44,7 +44,6 @@ import { CohortSearchComponent } from './cohort/cohort-search/cohort-search.comp
 import { CohortPopupComponent } from './cohort/cohort-search/cohort-popup/cohort.popup.component';
 import { CohortDeletePopupComponent } from './cohort/cohort-search/cohort-delete-popup/cohort-delete.popup.component';
 import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/cohort-enrolment-list.component';
-import { MeddraSelectPopupComponent } from './shared/meddra-select-popup/meddra-select.popup.component';
 
 @NgModule({
   imports: [
@@ -92,8 +91,7 @@ import { MeddraSelectPopupComponent } from './shared/meddra-select-popup/meddra-
     DnaPopupComponent,
     FormDeletePopupComponent,
     FeedbackSearchComponent,
-    CohortEnrolmentListComponent,
-    MeddraSelectPopupComponent
+    CohortEnrolmentListComponent
   ],
   entryComponents:
   [
@@ -115,8 +113,7 @@ import { MeddraSelectPopupComponent } from './shared/meddra-select-popup/meddra-
     DnaPopupComponent,
     FormDeletePopupComponent,
     CohortPopupComponent,
-    CohortDeletePopupComponent,
-    MeddraSelectPopupComponent
+    CohortDeletePopupComponent
   ]
 })
 export class ClinicalModule { }

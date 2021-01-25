@@ -12,7 +12,7 @@ import { finalize } from 'rxjs/operators';
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
-import { MeddraSelectPopupComponent } from 'app/views/clinical/shared/meddra-select-popup/meddra-select.popup.component';
+import { MeddraSelectPopupComponent } from 'app/shared/components/popup/meddra-select-popup/meddra-select.popup.component';
 
 @Component({
   templateUrl: './clinical-event.popup.component.html',

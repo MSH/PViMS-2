@@ -54,8 +54,8 @@ namespace PVIMS.API.Configs.ExceptionHandler
                     var frame = new StackTrace(exception, true).GetFrame(0);
                     Guid.TryParse((context.User.Identity as ClaimsIdentity).FindFirst("id")?.Value, out Guid identityId);
                     _AppDbContext.SystemLogs.Add(new SystemLog(
-                        $"{frame.GetMethod().ReflectedType.Namespace}.{frame.GetMethod().ReflectedType.Name}.{frame.GetMethod().Name} [{frame.GetFileLineNumber()}]",
-                        ((HttpStatusCode)context.Response.StatusCode).ToString(), message.ReferenceCode, exception.Message)
+                        $"{frame.GetMethod()?.ReflectedType?.Namespace}.{frame.GetMethod()?.ReflectedType?.Name}.{frame.GetMethod()?.Name} [{frame.GetFileLineNumber()}]",
+                        ((HttpStatusCode)context.Response?.StatusCode).ToString(), message.ReferenceCode, exception.Message)
                     {
                         ExceptionStackTrace = exception.StackTrace,
                         InnerExceptionMessage = exception.InnerException?.Message,

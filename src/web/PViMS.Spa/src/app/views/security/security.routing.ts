@@ -5,7 +5,6 @@ import { ForgotPasswordComponent } from "./forgot-password/forgot-password.compo
 import { LockscreenComponent } from "./lockscreen/lockscreen.component";
 import { NotFoundComponent } from "./not-found/not-found.component";
 import { LoginComponent } from './login/login.component';
-import { SpontaneousComponent } from "./spontaneous/spontaneous.component";
 import { LandingComponent } from "./landing/landing.component";
 
 export const SecurityRoutes: Routes = [
@@ -32,11 +31,6 @@ export const SecurityRoutes: Routes = [
   {
     path: "404",
     component: NotFoundComponent,
-    data: { title: "Not Found" }
-  },
-  {
-    path: "spontaneous",
-    component: SpontaneousComponent,
     data: { title: "Not Found" }
   }
 ];

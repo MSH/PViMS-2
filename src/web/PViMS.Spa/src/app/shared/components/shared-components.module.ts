@@ -42,7 +42,6 @@ import { LabResultPopupComponent } from 'app/views/administration/reference/lab-
 import { LabResultDeletePopupComponent } from 'app/views/administration/reference/lab-result-list/lab-result-delete-popup/lab-result-delete.popup.component';
 import { ConfigPopupComponent } from 'app/views/administration/system/config-list/config-popup/config.popup.component';
 import { FacilityPopupComponent } from 'app/views/administration/system/facility-list/facility-popup/facility.popup.component';
-import { MedicationPopupComponent } from 'app/views/administration/reference/medicine-list/medication-popup/medication.popup.component';
 import { ContactDetailPopupComponent } from 'app/views/administration/system/contact-detail-list/contact-detail-popup/contact-detail.popup.component';
 import { HolidayPopupComponent } from 'app/views/administration/system/holiday-list/holiday-popup/holiday.popup.component';
 import { HolidayDeletePopupComponent } from 'app/views/administration/system/holiday-list/holiday-delete-popup/holiday-delete.popup.component';
@@ -54,14 +53,11 @@ import { DatasetElementDeletePopupComponent } from 'app/views/administration/wor
 import { DatasetPopupComponent } from 'app/views/administration/work/dataset-list/dataset-popup/dataset.popup.component';
 import { EncounterTypePopupComponent } from 'app/views/administration/work/encounter-type-list/encounter-type-popup/encounter-type.popup.component';
 import { EncounterTypeDeletePopupComponent } from 'app/views/administration/work/encounter-type-list/encounter-type-delete-popup/encounter-type-delete.popup.component';
-import { DatasetCategoryPopupComponent } from 'app/views/administration/work/dataset-category-list/dataset-category-popup/dataset-category.popup.component';
 import { UserDeletePopupComponent } from 'app/views/administration/user/user-list/user-delete-popup/user-delete.popup.component';
 import { UserAddPopupComponent } from 'app/views/administration/user/user-list/user-add-popup/user-add.popup.component';
 import { UserUpdatePopupComponent } from 'app/views/administration/user/user-list/user-update-popup/user-update.popup.component';
-import { DatasetCategoryDeletePopupComponent } from 'app/views/administration/work/dataset-category-list/dataset-category-delete-popup/dataset-category-delete.popup.component';
 import { DatasetDeletePopupComponent } from 'app/views/administration/work/dataset-list/dataset-delete-popup/dataset-delete.popup.component';
 import { PasswordResetPopupComponent } from 'app/views/administration/user/user-list/password-reset-popup/password-reset.popup.component';
-import { MedicationDeletePopupComponent } from 'app/views/administration/reference/medicine-list/medication-delete-popup/medication-delete.popup.component';
 import { FormAConditionsPopupComponent } from 'app/views/clinical/form/form-a/form-a-conditions-popup/form-a-conditions.popup.component';
 import { FormALabsPopupComponent } from 'app/views/clinical/form/form-a/form-a-labs-popup/form-a-labs.popup.component';
 import { FormAMedicationsPopupComponent } from 'app/views/clinical/form/form-a/form-a-medications-popup/form-a-medications.popup.component';
@@ -83,6 +79,8 @@ import { InfoPopupComponent } from './popup/info.popup.component';
 import { ConceptSelectPopupComponent } from './popup/concept-select-popup/concept-select.popup.component';
 import { AboutPopupComponent } from './about/about.popup.component';
 import { TimeoutComponent } from './timeout/timeout.component';
+import { MeddraSelectPopupComponent } from './popup/meddra-select-popup/meddra-select.popup.component';
+import { DatasetCategoryPopupComponent } from 'app/views/administration/work/dataset-list/dataset-category-list/dataset-category-popup/dataset-category.popup.component';
 
 const components = [
   HeaderTopComponent,
@@ -130,7 +128,6 @@ const components = [
   DatasetPopupComponent,
   DatasetDeletePopupComponent,
   DatasetCategoryPopupComponent,
-  DatasetCategoryDeletePopupComponent,
   DatasetElementPopupComponent,
   DatasetElementDeletePopupComponent,
   EncounterTypePopupComponent,
@@ -143,14 +140,13 @@ const components = [
   LabDeletePopupComponent,
   LabResultPopupComponent,
   LabResultDeletePopupComponent,
-  MedicationPopupComponent,
-  MedicationDeletePopupComponent,
   PasswordResetPopupComponent,
   UserAddPopupComponent,
   UserDeletePopupComponent,
   UserUpdatePopupComponent,
 
   ConceptSelectPopupComponent,
+  MeddraSelectPopupComponent,
 
   ViewErrorPopupComponent,
   AboutPopupComponent,
@@ -214,7 +210,6 @@ const components = [
     DatasetDeletePopupComponent,
     DatasetElementPopupComponent,
     DatasetCategoryPopupComponent,
-    DatasetCategoryDeletePopupComponent,
     DatasetElementDeletePopupComponent,
     EncounterTypePopupComponent,
     EncounterTypeDeletePopupComponent,
@@ -226,15 +221,14 @@ const components = [
     LabDeletePopupComponent,
     LabResultPopupComponent,
     LabResultDeletePopupComponent,
-    MedicationPopupComponent,
-    MedicationDeletePopupComponent,
     PasswordResetPopupComponent,
     UserAddPopupComponent,
     UserDeletePopupComponent,
     UserUpdatePopupComponent,
 
     ConceptSelectPopupComponent,
-
+    MeddraSelectPopupComponent,
+    
     ViewErrorPopupComponent,
     AboutPopupComponent
     

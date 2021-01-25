@@ -9,11 +9,14 @@ export const _routes = {
     _501: `${_paths.error}/${_paths.errorPath._501}`,
     general: `${_paths.error}/${_paths.errorPath.general}`,
   },
+  public: {
+      spontaneous: `${_paths.public}/${_paths.publicPath.spontaneous}`,
+  },
   security: {
+      landing: `${_paths.security}/${_paths.securityPath.landing}`,
       login: `${_paths.security}/${_paths.securityPath.login}`,
       forgotPassword: `${_paths.security}/${_paths.securityPath.forgotPassword}`,
-      lockscreen: `${_paths.security}/${_paths.securityPath.lockscreen}`,
-      spontaneous: `${_paths.security}/${_paths.securityPath.spontaneous}`,
+      lockscreen: `${_paths.security}/${_paths.securityPath.lockscreen}`
   },
   clinical: {
       patients: {
@@ -62,15 +65,19 @@ export const _routes = {
       patienttreatment: `${_paths.reports}/${_paths.reportPath.patienttreatment}`
     },
     information: {
-      home(id: number): string {
-          return `${_paths.information}/${_paths.informationPath.home.replace(':id', id.toString())}`;
+      view(id: number): string {
+          return `${_paths.information}/${_paths.informationPath.view.replace(':id', id.toString())}`;
       }
     },
     administration: {
       landing: `${_paths.administration}/${_paths.administrationPath.landing}`,
       work: {
+        dataset: `${_paths.administration}/${_paths.administrationPath.work.dataset}`,
         datasetcategoryView(datasetId: number): string {
             return `${_paths.administration}/${_paths.administrationPath.work.datasetcategory.replace(':datasetid', datasetId.toString())}`;
+        },
+        datasetcategoryElementView(datasetId: number, datasetCategoryId: number): string {
+          return `${_paths.administration}/${_paths.administrationPath.work.datasetcategoryelement.replace(':datasetid', datasetId.toString()).replace(':datasetcategoryid', datasetCategoryId.toString())}`;
         }
       }
     }

@@ -127,7 +127,6 @@ export class CohortEnrolmentListComponent extends BaseComponent implements OnIni
     let self = this;
     self._router.navigate([_routes.clinical.cohorts.search]);
   }
-
 }
 
 class ViewModel {

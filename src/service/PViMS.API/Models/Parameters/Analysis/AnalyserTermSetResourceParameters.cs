@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace PVIMS.API.Models.Parameters
 {
@@ -23,5 +24,10 @@ namespace PVIMS.API.Models.Parameters
         /// Filter by range
         /// </summary>
         public DateTime SearchTo { get; set; } = DateTime.MaxValue;
+
+        /// <summary>
+        /// Include risk factor options into analysis
+        /// </summary>
+        public List<string> RiskFactorOptionNames { get; set; }
     }
 }

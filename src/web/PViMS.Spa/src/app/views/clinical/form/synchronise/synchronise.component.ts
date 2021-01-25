@@ -117,6 +117,7 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
     // Notify UI that the form is about to be loaded
     form.synchStatus = "InProgress";
 
+    console.log(form);
     self.metaFormService.saveFormToAPI(form)
       .subscribe(result => {
         form.synchStatus = "Successful";

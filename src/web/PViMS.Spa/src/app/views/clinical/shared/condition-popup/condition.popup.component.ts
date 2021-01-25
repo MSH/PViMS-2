@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
 import { ConditionService } from 'app/shared/services/condition.service';
 import { OutcomeIdentifierModel } from 'app/shared/models/condition/outcome.identifier.model';
 import { TreatmentOutcomeIdentifierModel } from 'app/shared/models/condition/treatment-outcome.identifier.model';
-import { MeddraSelectPopupComponent } from 'app/views/clinical/shared/meddra-select-popup/meddra-select.popup.component';
+import { MeddraSelectPopupComponent } from 'app/shared/components/popup/meddra-select-popup/meddra-select.popup.component';
 
 @Component({
   templateUrl: './condition.popup.component.html',

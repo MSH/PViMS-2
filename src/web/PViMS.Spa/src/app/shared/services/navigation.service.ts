@@ -4,8 +4,10 @@ import { AccountService } from "./account.service";
 import { Router } from "@angular/router";
 import { _routes } from "app/config/routes";
 import { RoutePartsService } from "./route-parts.service";
-import { MetaService } from "./meta.service";
 import { MetaPageDetailModel } from "../models/meta/meta-page.detail.model";
+import { MetaPageService } from "./meta-page.service";
+import { MetaReportDetailModel } from "../models/meta/meta-report.detail.model";
+import { MetaReportService } from "./meta-report.service";
 
 interface IMenuItem {
   type: string; // Possible values: link/dropDown/icon/separator/extLink
@@ -38,12 +40,17 @@ export class NavigationService {
   constructor(
     protected _router: Router,
     protected accountService: AccountService,
-    protected metaService: MetaService,
+    protected metaPageService: MetaPageService,
+    protected metaReportService: MetaReportService,
     protected routePartsService: RoutePartsService
   ) 
   {
     this.prepareClinicalMenus();
     this.prepareInfoMenus();
+    this.prepareReportMenus();
+   }
+
+  initialiseMenus(): void {
   }
 
   currentPortal: string;
@@ -79,28 +86,7 @@ export class NavigationService {
     }
   ];
 
-  reportMenu: IMenuItem[] = [
-    {
-      type: "separator",
-      name: "Main Actions"
-    },
-    {
-      name: "Standard Reports",
-      type: "dropDown",
-      tooltip: "Standard Reports",
-      icon: "data_usage",
-      state: "reports",
-      sub: [
-        { name: "Patients on Treatment", state: "system/patienttreatment" },
-        { name: "Adverse Events", state: "system/adverseevent" },
-        { name: "Quarterly Adverse Events", state: "system/adverseeventfrequency", parameter: "Quarterly" },
-        { name: "Annual Adverse Events", state: "system/adverseeventfrequency", parameter: "Annual" },
-        { name: "Causality", state: "system/causality" },
-        { name: "Patients by Drug", state: "system/patientsdrugreport" },
-        { name: "Outstanding Visits", state: "system/outstandingvisit" }
-      ]
-    }
-  ];
+  reportMenu: IMenuItem[] = [];
 
   infoMenu: IMenuItem[] = [];
 
@@ -123,8 +109,9 @@ export class NavigationService {
       icon: "extension",
       state: "administration/reference",
       sub: [
+        { name: "Active Ingredients", state: "concept" },
         { name: "Condition Groups", state: "condition" },
-        { name: "MedDra Terms", state: "meddra" },
+        { name: "MedDRA Terms", state: "meddra" },
         { name: "Medications", state: "medicine" },
         { name: "Tests and Procedures", state: "labtest" },
         { name: "Test Results", state: "labresult" }
@@ -166,7 +153,6 @@ export class NavigationService {
         { name: "Datasets", state: "dataset" },
         { name: "Dataset Elements", state: "datasetelement" },
         { name: "Encounter Types", state: "encountertype" },
-        { name: "Forms", state: "form" },
         { name: "Work Plans", state: "workplan" }
       ]
     }
@@ -191,6 +177,7 @@ export class NavigationService {
   // Supply different menu for different user type.
   publishNavigationChange(menuType: string) 
   {
+    console.log('publish');
     switch (menuType) {
       case "clinical-menu":
         this.prepareClinicalMenus();
@@ -202,11 +189,11 @@ export class NavigationService {
         break;
 
       case "reports-menu":
-        this.menuItems.next(this.reportMenu);
+        this.prepareReportMenus();
         break;
 
       case "information-menu":
-        this.menuItems.next(this.infoMenu);
+        this.prepareInfoMenus();
         break;
   
       case "administration-menu":
@@ -285,7 +272,7 @@ export class NavigationService {
   }
 
   routeToPublisherHome() : void {
-    this._router.navigate([_routes.information.home(1)]);
+    this._router.navigate([_routes.information.view(1)]);
   }
 
   routeToAdminLanding() : void {
@@ -391,34 +378,106 @@ export class NavigationService {
     };      
     this.infoMenu.push(newMenu);
 
-    this.metaService.getAllMetaPages()
-        .subscribe(result => {
-          metaPageList = result;
-          let infoMenu: IMenuItem[] = [];
+    this.metaPageService.getAllMetaPages()
+      .subscribe(result => {
+        metaPageList = result;
 
-          metaPageList.filter(mp => mp.visible == 'Yes').forEach(function (page) {
-            let newMenu: IMenuItem = {
-              name: page.pageName,
-              type: "link",
-              tooltip: page.pageName,
-              icon: "content_copy",
-              state: "information/pageviewer",
-              parameter: page.id.toString()
+        let menuItems: IMenuItem[] = [];
+
+        metaPageList.filter(mp => mp.visible == 'Yes').forEach(function (page) {
+          let newMenu: IMenuItem = {
+            name: page.pageName,
+            type: "link",
+            tooltip: page.pageName,
+            icon: "content_copy",
+            state: "information/pageviewer",
+            parameter: page.id.toString()
+          };
+          menuItems.push(newMenu);
+        });
+        this.infoMenu = this.infoMenu.concat(menuItems);
+
+        if(this.accountService.hasRole('PublisherAdmin'))
+        {
+          let newMenu: IMenuItem = {
+            name: 'List pages',
+            type: "link",
+            tooltip: 'List all pages',
+            icon: "content_copy",
+            state: "information/pagelist"
+          };      
+          this.infoMenu.push(newMenu);
+        }
+        this.menuItems.next(this.infoMenu);
+      }, error => {
+          console.log(error + ' ' + error.statusText);
+      });
+  }
+
+  private prepareReportMenus(): void {
+    this.reportMenu = [];
+    
+    let metaReportList: MetaReportDetailModel[] = [];
+
+    let newMenu: IMenuItem = {
+      type: "separator",
+      name: "Main Actions"
+    };      
+    this.reportMenu.push(newMenu);
+
+    this.metaReportService.getAllMetaReports()
+        .subscribe(result => {
+          metaReportList = result;
+          let childMenu: IChildItem[] = [];
+
+          let newStandardReportMenu: IMenuItem = {
+            type: "dropDown",
+            tooltip: "Standard Reports",
+            icon: "data_usage",
+            state: "reports",
+            name: "Standard Reports",
+            sub: [
+              { name: "Patients on Treatment", state: "system/patienttreatment" },
+              { name: "Adverse Events", state: "system/adverseevent" },
+              { name: "Quarterly Adverse Events", state: "system/adverseeventfrequency", parameter: "Quarterly" },
+              { name: "Annual Adverse Events", state: "system/adverseeventfrequency", parameter: "Annual" },
+              { name: "Causality", state: "system/causality" },
+              { name: "Patients by Drug", state: "system/patientsdrugreport" },
+              { name: "Outstanding Visits", state: "system/outstandingvisit" }
+            ]
+          };      
+          this.reportMenu.push(newStandardReportMenu);
+
+          metaReportList.filter(mr => mr.system == 'No' && mr.reportStatus == 'Published').forEach(function (report) {
+            let newChildMenu: IChildItem = {
+              name: report.reportName,
+              state: `reportviewer/${report.id}`,
             };      
-            infoMenu.push(newMenu);
+            childMenu.push(newChildMenu);
           });
-          this.infoMenu = infoMenu;
-          if(this.accountService.hasRole('PublisherAdmin'))
+
+          let newCustomReportMenu: IMenuItem = {
+            type: "dropDown",
+            tooltip: "Custom Reports",
+            icon: "data_usage",
+            state: "reports",
+            name: "Custom Reports",
+            sub: childMenu
+          };      
+          this.reportMenu.push(newCustomReportMenu);
+
+          if(this.accountService.hasRole('ReporterAdmin'))
           {
             let newMenu: IMenuItem = {
-              name: 'List pages',
+              name: 'List reports',
               type: "link",
-              tooltip: 'List all pages',
+              tooltip: 'List all custom reports',
               icon: "content_copy",
-              state: "information/pagelist"
+              state: "reports/reportlist"
             };      
-            this.infoMenu.push(newMenu);
+            this.reportMenu.push(newMenu);
           }
+          this.menuItems.next(this.reportMenu);
         }, error => {
             console.log(error + ' ' + error.statusText);
         });

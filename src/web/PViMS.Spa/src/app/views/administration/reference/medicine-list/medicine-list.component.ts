@@ -2,13 +2,13 @@ import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ViewEncapsulati
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatSort, MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
@@ -49,11 +49,9 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
   currentScreenWidth: string = '';
   flexMediaWatcher: Subscription;
 
-  formControl: FormControl = new FormControl();
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridSort', { static: false }) mainGridSort: MatSort;
   @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
@@ -68,7 +66,7 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
   ngAfterViewInit(): void {
     let self = this;
     self.viewModel.mainGrid.setupAdvance(
-       null, self.mainGridSort, self.mainGridPaginator)
+       null, null, self.mainGridPaginator)
        .subscribe(() => { self.loadGrid(); });
     self.loadGrid();
   }  
@@ -91,7 +89,7 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
         .subscribe(result => {
             self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-            self.throwError(error, error.statusText);
+            self.handleError(error, "Error searching for products");
         });
   }
 

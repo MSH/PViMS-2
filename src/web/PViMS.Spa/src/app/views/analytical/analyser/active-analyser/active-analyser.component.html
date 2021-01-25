@@ -126,14 +126,14 @@
                     <mat-form-field class="p-8 full-width">
                       <mat-select formControlName="riskFactorOptionId" placeholder="{{'Option' | translate}}">
                         <mat-option value="0"></mat-option>
-                        <mat-option *ngFor="let riskfactorOption of selectedRiskFactor.options" [value]="riskfactorOption.optionName">
-                          {{riskfactorOption.optionName}}
+                        <mat-option *ngFor="let riskfactorOption of selectedRiskFactor.options" [value]="riskfactorOption.display">
+                          {{riskfactorOption.display}}
                         </mat-option>
                       </mat-select>                        
                     </mat-form-field>
                   </div>
                   <div fxFlex="25" class="pr-1" *ngIf="selectedRiskFactor != null && viewModelForm.get('riskFactorOptionId').value != null && viewModelForm.get('riskFactorOptionId').value != '0'">
-                    <button mat-mini-fab (click)="addRiskFactor({}, true)" color=""><mat-icon>add</mat-icon></button>
+                    <button mat-mini-fab color="accent" (click)="addRiskFactor({}, true)"><mat-icon>add</mat-icon></button>
                   </div>
                 </div>
                 <div>
@@ -185,8 +185,8 @@
           <mat-card-content class="m-1 p-5">
               <mat-card-title class="text-center">
                 <div class="card-title-text mat-bg-accent p-24">
-                  Select an adverse drug reaction below to view signals for that reaction <br/>
-                  PLEASE NOTE: Exposed Cases ONLY include cases where the Adverse Drug Reaction falls within the start and end date of the medication
+                  {{'L_TEXT_24' | translate}} <br/>
+                  {{'L_TEXT_25' | translate}}
                 </div>
               </mat-card-title>              
 
@@ -197,11 +197,16 @@
                       {{result.meddraTerm}}
                     </mat-chip>
                   </div>
+                  <div>
+                    <mat-chip color="warn" (click)="resetCriteria()"> 
+                      {{'Reset criteria' | translate}}
+                    </mat-chip>
+                  </div>
                 </mat-chip-list>
               </div>
 
               <mat-tab-group>
-                <mat-tab label="Exposed Incidence Rate">
+                <mat-tab label="{{'Exposed incidence rate' | translate}}">
                   <mat-card-content class="m-1 p-5">
   
                     <div class="ml-05 mr-05 mt-05 pb-1">
@@ -210,35 +215,35 @@
                                   [@animate]="{value:'50'}">
               
                           <ng-container matColumnDef="medication">
-                              <mat-header-cell *matHeaderCellDef>Medication</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef>{{'Medication' | translate}}</mat-header-cell>
                               <mat-cell *matCellDef="let record">
                                   {{record.medication}}
                               </mat-cell>
                           </ng-container>
               
                           <ng-container matColumnDef="cases">
-                              <mat-header-cell *matHeaderCellDef>Cases</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef>{{'Cases' | translate}}</mat-header-cell>
                               <mat-cell *matCellDef="let record">
                                   {{record.exposedIncidenceRate.cases}}
                               </mat-cell>
                           </ng-container>
   
                           <ng-container matColumnDef="non-cases">
-                            <mat-header-cell *matHeaderCellDef>Non-Cases</mat-header-cell>
+                            <mat-header-cell *matHeaderCellDef>{{'Non cases' | translate}}</mat-header-cell>
                             <mat-cell *matCellDef="let record">
                                 {{record.exposedIncidenceRate.nonCases}}
                             </mat-cell>
                           </ng-container>
 
                           <ng-container matColumnDef="population">
-                            <mat-header-cell *matHeaderCellDef>Population</mat-header-cell>
+                            <mat-header-cell *matHeaderCellDef>{{'Population' | translate}}</mat-header-cell>
                             <mat-cell *matCellDef="let record">
                                 {{record.exposedIncidenceRate.population | number:'1.2-5'}}
                             </mat-cell>
                           </ng-container>
 
                           <ng-container matColumnDef="incidence rate">
-                            <mat-header-cell *matHeaderCellDef>Incidence Rate</mat-header-cell>
+                            <mat-header-cell *matHeaderCellDef>{{'Incidence rate' | translate}}</mat-header-cell>
                             <mat-cell *matCellDef="let record">
                                 {{record.exposedIncidenceRate.incidenceRate | number:'1.2-5'}}
                             </mat-cell>
@@ -254,7 +259,7 @@
                   </mat-card-content>
                 </mat-tab>
   
-                <mat-tab label="Unexposed Incidence Rate">
+                <mat-tab label="{{'Non exposed incidence rate' | translate}}">
                   <mat-card-content class="m-1 p-5">
   
                     <div class="ml-05 mr-05 mt-05 pb-1">
@@ -263,35 +268,35 @@
                                   [@animate]="{value:'50'}">
               
                           <ng-container matColumnDef="medication">
-                              <mat-header-cell *matHeaderCellDef>Medication</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef>{{'Medication' | translate}}</mat-header-cell>
                               <mat-cell *matCellDef="let record">
                                   {{record.medication}}
                               </mat-cell>
                           </ng-container>
               
                           <ng-container matColumnDef="cases">
-                              <mat-header-cell *matHeaderCellDef>Cases</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef>{{'Cases' | translate}}</mat-header-cell>
                               <mat-cell *matCellDef="let record">
                                   {{record.nonExposedIncidenceRate.cases}}
                               </mat-cell>
                           </ng-container>
   
                           <ng-container matColumnDef="non-cases">
-                            <mat-header-cell *matHeaderCellDef>Non-Cases</mat-header-cell>
+                            <mat-header-cell *matHeaderCellDef>{{'Non cases' | translate}}</mat-header-cell>
                             <mat-cell *matCellDef="let record">
                                 {{record.nonExposedIncidenceRate.nonCases}}
                             </mat-cell>
                           </ng-container>
 
                           <ng-container matColumnDef="population">
-                            <mat-header-cell *matHeaderCellDef>Population</mat-header-cell>
+                            <mat-header-cell *matHeaderCellDef>{{'Population' | translate}}</mat-header-cell>
                             <mat-cell *matCellDef="let record">
                                 {{record.nonExposedIncidenceRate.population | number:'1.2-5'}}
                             </mat-cell>
                           </ng-container>
 
                           <ng-container matColumnDef="incidence rate">
-                            <mat-header-cell *matHeaderCellDef>Incidence Rate</mat-header-cell>
+                            <mat-header-cell *matHeaderCellDef>{{'Incidence rate' | translate}}</mat-header-cell>
                             <mat-cell *matCellDef="let record">
                                 {{record.nonExposedIncidenceRate.incidenceRate | number:'1.2-5'}}
                             </mat-cell>
@@ -307,7 +312,7 @@
                   </mat-card-content>
                 </mat-tab>
   
-                <mat-tab label="Relative Risk">
+                <mat-tab label="{{'Relative risk' | translate}}">
                   <mat-card-content class="m-1 p-5">
   
                     <div class="ml-05 mr-05 mt-05 pb-1">
@@ -316,40 +321,30 @@
                                   [@animate]="{value:'50'}">
               
                           <ng-container matColumnDef="medication">
-                            <mat-header-cell *matHeaderCellDef>Medication</mat-header-cell>
+                            <mat-header-cell *matHeaderCellDef>{{'Medication' | translate}}</mat-header-cell>
                             <mat-cell *matCellDef="let record">
                                 {{record.medication}}
                             </mat-cell>
                           </ng-container>
       
                           <ng-container matColumnDef="unadjusted relative risk">
-                              <mat-header-cell *matHeaderCellDef>Unadjusted Relative Risk</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef>{{'Unadjusted relative risk' | translate}}</mat-header-cell>
                               <mat-cell *matCellDef="let record">
-                                <span *ngIf="record.medication == 'doxycycline'">
-                                  <mat-chip class="icon-chip" color="primary" selected="true">2.70</mat-chip>
-                                </span>
-                                <span *ngIf="record.medication != 'doxycycline'">
-                                  {{ record.unadjustedRelativeRisk | number:'1.2-5'}}
-                                </span>
+                                {{ record.unadjustedRelativeRisk | number:'1.2-5'}}
                               </mat-cell>
                           </ng-container>
 
                           <ng-container matColumnDef="adjusted relative risk">
-                            <mat-header-cell *matHeaderCellDef>Adjusted Relative Risk</mat-header-cell>
+                            <mat-header-cell *matHeaderCellDef>{{'Adjusted relative risk' | translate}}</mat-header-cell>
                             <mat-cell *matCellDef="let record">
-                                {{record.AdjustedRelativeRisk | number:'1.2-5'}}
+                                {{record.adjustedRelativeRisk | number:'1.2-5'}}
                             </mat-cell>
                           </ng-container>
                         
                           <ng-container matColumnDef="CI 95%">
-                              <mat-header-cell *matHeaderCellDef>Confidence Interval 95%</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef>{{'Confidence intervale 95%' | translate}}</mat-header-cell>
                               <mat-cell *matCellDef="let record">
-                                <span *ngIf="record.medication == 'doxycycline'">
-                                  <mat-chip class="icon-chip" color="primary" selected="true">1.83 ~ 5.64</mat-chip>
-                                </span>
-                                <span *ngIf="record.medication != 'doxycycline'">
-                                  {{record.confidenceIntervalLow | number:'1.2-5'}} ~ {{record.confidenceIntervalHigh | number:'1.2-5'}}
-                                </span>
+                                {{record.confidenceIntervalLow | number:'1.2-5'}} ~ {{record.confidenceIntervalHigh | number:'1.2-5'}}
                               </mat-cell>
                           </ng-container>
   

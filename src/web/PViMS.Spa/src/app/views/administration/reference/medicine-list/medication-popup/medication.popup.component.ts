@@ -22,7 +22,6 @@ import { MedicationFormIdentifierModel } from 'app/shared/models/concepts/medica
 export class MedicationPopupComponent extends BasePopupComponent implements OnInit {
   
   public itemForm: FormGroup;
-  protected busy: boolean = false;
 
   conceptList: ConceptIdentifierModel[] = [];
   filteredConceptList: Observable<ConceptIdentifierModel[]>;
@@ -48,17 +47,17 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
     self.loadDropDowns();
 
     self.itemForm = this._formBuilder.group({
-      conceptName: [this.data.payload.conceptName || '', [Validators.required, Validators.maxLength(1000), Validators.pattern('[a-zA-Z0-9 ]*')]],
-      formName: [this.data.payload.formName || '', Validators.required],
-      productName: [this.data.payload.productName || '', [Validators.required, Validators.maxLength(200), Validators.pattern('[a-zA-Z0-9 ]*')]],
-      manufacturer: [this.data.payload.manufacturer || '', [Validators.required, Validators.maxLength(200), Validators.pattern('[a-zA-Z0-9 ]*')]],
+      conceptName: [this.data.payload.conceptName || '', [Validators.required, Validators.maxLength(250), Validators.pattern('[-a-zA-Z0-9 .,()%/]*')]],
+      medicationForm: [this.data.payload.formName || '', Validators.required],
+      productName: [this.data.payload.productName || '', [Validators.required, Validators.maxLength(200), Validators.pattern('[-a-zA-Z0-9 .,()%]*')]],
+      manufacturer: [this.data.payload.manufacturer || '', [Validators.required, Validators.maxLength(200), Validators.pattern('[-a-zA-Z0-9 .,()%]*')]],
       active: [this.data.payload.active, Validators.required]
     })
 
     this.filteredConceptList = this.itemForm.controls['conceptName'].valueChanges
       .pipe(
         startWith(''),
-        map(value => this._conceptFilter(value))
+        map(value => value.length >= 3 ? this._conceptFilter(value) : [])
     );    
   }
 
@@ -74,36 +73,32 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
         .subscribe(result => {
             self.formList = result;
         }, error => {
-            self.throwError(error, error.statusText);
+            self.handleError(error, "Error fetching medication forms");
         });
   }
 
   getConceptList(): void {
     let self = this;
-    // self.conceptService.getConceptList()
-    //     .subscribe(result => {
-    //         self.conceptList = result.value;
-    //     }, error => {
-    //         self.throwError(error, error.statusText);
-    //     });
+    self.conceptService.getAllConcepts()
+        .subscribe(result => {
+            self.conceptList = result;
+        }, error => {
+            self.handleError(error, "Error fetching concept list");
+        });
   }
 
   submit() {
     let self = this;
     self.setBusy(true);
 
-    // self.medicationService.saveMedication(self.data.medicationId, self.itemForm.value)
-    //   .pipe(finalize(() => self.setBusy(false)))
-    //   .subscribe(result => {
-    //     self.notify("Medication saved successfully", "Medications");
-    //     this.dialogRef.close(this.itemForm.value);
-    // }, error => {
-    //     if(error.status == 400) {
-    //       self.showInfo(error.error.message, error.statusText);
-    //     } else {
-    //       self.throwError(error, error.statusText);
-    //     }
-    // });
+    self.conceptService.saveProduct(self.data.productId, self.itemForm.value)
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.notify("Medication saved successfully", "Medications");
+        this.dialogRef.close(this.itemForm.value);
+    }, error => {
+        self.handleError(error, "Error saving medication");
+    });
   }
 
   private _conceptFilter(value: string): ConceptIdentifierModel[] {

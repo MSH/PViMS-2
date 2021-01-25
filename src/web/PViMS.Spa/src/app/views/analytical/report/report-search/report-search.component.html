@@ -218,8 +218,8 @@
                         {{ 'Create E2B' | translate }}
                       </span>
                     </button>
-                    <button mat-menu-item *ngIf="hasLink(record, 'updatee2b') && record.e2BInstance != null" (click)="openDatasetPopUp('Update E2B', record.e2BInstance?.datasetId, record.e2BInstance?.datasetInstanceId)">
-                      <mat-icon>insert_drive_file</mat-icon>
+                    <button mat-menu-item *ngIf="hasLink(record, 'updatee2b')" (click)="openDatasetPopUp('Update E2B', record.e2BInstance.datasetId, record.e2BInstance.datasetInstanceId)">
+                      <mat-icon>edit</mat-icon>
                       <span style="vertical-align: middle;">
                         {{ 'Update E2B' | translate }}
                       </span>
@@ -248,12 +248,6 @@
                         <span style="vertical-align: middle;">
                           {{ 'View patient' | translate }}
                         </span>
-                    </button>
-                    <button mat-menu-item *ngIf="hasLink(record, 'updatespont') && record.spontaneousInstance != null" (click)="openDatasetPopUp('Update report', record.spontaneousInstance?.datasetId, record.spontaneousInstance?.datasetInstanceId)">
-                      <mat-icon>insert_drive_file</mat-icon>
-                      <span style="vertical-align: middle;">
-                        {{ 'Update report' | translate }}
-                      </span>
                     </button>
                     <button mat-menu-item (click)="downloadSummary(record)">
                       <mat-icon>cloud_download</mat-icon>

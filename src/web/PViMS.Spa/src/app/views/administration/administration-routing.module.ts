@@ -14,12 +14,14 @@ import { DatasetElementListComponent } from './work/dataset-element-list/dataset
 import { DatasetListComponent } from './work/dataset-list/dataset-list.component';
 import { EncounterTypeListComponent } from './work/encounter-type-list/encounter-type-list.component';
 import { WorkPlanListComponent } from './work/work-plan-list/work-plan-list.component';
-import { DatasetCategoryListComponent } from './work/dataset-category-list/dataset-category-list.component';
 import { ConditionListComponent } from './reference/condition-list/condition-list.component';
 import { AuditLogListComponent } from './audit-log-list/audit-log-list.component';
 import { LandingComponent } from './landing/landing.component';
 import { MeddraListComponent } from './reference/meddra-list/meddra-list.component';
 import { FormListComponent } from './work/form-list/form-list.component';
+import { DatasetCategoryListComponent } from './work/dataset-list/dataset-category-list/dataset-category-list.component';
+import { DatasetCategoryElementListComponent } from './work/dataset-list/dataset-category-element-list/dataset-category-element-list.component';
+import { ConceptListComponent } from './reference/concept-list/concept-list.component';
 
 export const ReportRoutes: Routes = [
   {
@@ -78,6 +80,11 @@ export const ReportRoutes: Routes = [
     data: { title: 'Meddra Management', breadcrumb: 'Meddra Management' }
   },
   {
+    path: 'reference/concept',
+    component: ConceptListComponent,
+    data: { title: 'Active Ingredient Management', breadcrumb: 'Active Ingredient Management' }
+  },
+  {
     path: 'reference/medicine',
     component: MedicineListComponent,
     data: { title: 'Medicine Management', breadcrumb: 'Medicine Management' }
@@ -108,6 +115,11 @@ export const ReportRoutes: Routes = [
     data: { title: 'Dataset Category Management', breadcrumb: 'Dataset Category Management' }
   },  
   {
+    path: 'work/datasetcategoryelement/:datasetid/:datasetcategoryid',
+    component: DatasetCategoryElementListComponent,
+    data: { title: 'Dataset Category Element Management', breadcrumb: 'Dataset Category Element Management' }
+  },  
+  {
     path: 'work/datasetelement',
     component: DatasetElementListComponent,
     data: { title: 'Dataset Element Management', breadcrumb: 'Dataset Element Management' }
@@ -125,6 +137,6 @@ export const ReportRoutes: Routes = [
   {
     path: 'work/workplan',
     component: WorkPlanListComponent,
-    data: { title: 'Workj Plan Management', breadcrumb: 'Work Plan Management' }
+    data: { title: 'Work Plan Management', breadcrumb: 'Work Plan Management' }
   }
 ];

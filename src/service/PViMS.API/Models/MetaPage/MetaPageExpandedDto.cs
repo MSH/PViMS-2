@@ -10,6 +10,12 @@ namespace PVIMS.API.Models
     public class MetaPageExpandedDto : MetaPageDetailDto
     {
         /// <summary>
+        /// A list of widgets associated to the page that are not published
+        /// </summary>
+        [DataMember]
+        public ICollection<MetaWidgetIdentifierDto> UnpublishedWidgets { get; set; } = new List<MetaWidgetIdentifierDto>();
+
+        /// <summary>
         /// A list of widgets associated to the page
         /// </summary>
         [DataMember]

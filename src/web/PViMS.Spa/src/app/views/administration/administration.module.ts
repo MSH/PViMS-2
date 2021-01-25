@@ -24,7 +24,6 @@ import { DatasetElementListComponent } from './work/dataset-element-list/dataset
 import { DatasetListComponent } from './work/dataset-list/dataset-list.component';
 import { EncounterTypeListComponent } from './work/encounter-type-list/encounter-type-list.component';
 import { WorkPlanListComponent } from './work/work-plan-list/work-plan-list.component';
-import { DatasetCategoryListComponent } from './work/dataset-category-list/dataset-category-list.component';
 import { ConditionListComponent } from './reference/condition-list/condition-list.component';
 import { AuditLogListComponent } from './audit-log-list/audit-log-list.component';
 import { LandingComponent } from './landing/landing.component';
@@ -36,36 +35,57 @@ import { FormDeletePopupComponent } from './work/form-list/form-delete-popup/for
 import { ConditionDeletePopupComponent } from './reference/condition-list/condition-delete-popup/condition-delete.popup.component';
 import { ConditionPopupComponent } from './reference/condition-list/condition-popup/condition.popup.component';
 import { LabTestSelectPopupComponent } from './shared/lab-test-select-popup/lab-test-select.popup.component';
+import { DatasetCategoryListComponent } from './work/dataset-list/dataset-category-list/dataset-category-list.component';
+import { DatasetCategoryElementListComponent } from './work/dataset-list/dataset-category-element-list/dataset-category-element-list.component';
+import { DatasetCategoryElementDeletePopupComponent } from './work/dataset-list/dataset-category-element-list/dataset-category-element-delete-popup/dataset-category-element-delete.popup.component';
+import { DatasetCategoryDeletePopupComponent } from './work/dataset-list/dataset-category-list/dataset-category-delete-popup/dataset-category-delete.popup.component';
+import { DatasetElementSelectPopupComponent } from './shared/dataset-element-select-popup/dataset-element-select.popup.component';
+import { DatasetCategoryElementPopupComponent } from './work/dataset-list/dataset-category-element-list/dataset-category-element-popup/dataset-category-element.popup.component';
+import { ConceptListComponent } from './reference/concept-list/concept-list.component';
+import { MedicationPopupComponent } from './reference/medicine-list/medication-popup/medication.popup.component';
+import { MedicationDeletePopupComponent } from './reference/medicine-list/medication-delete-popup/medication-delete.popup.component';
+import { ConceptPopupComponent } from './reference/concept-list/concept-popup/concept.popup.component';
+import { GenericDeletePopupComponent } from './shared/generic-delete-popup/generic-delete.popup.component';
 
 @NgModule({
   declarations: [
-    ConfigListComponent,
-    ContactDetailListComponent,
-    FacilityListComponent, 
-    MedicineListComponent, 
-    UserListComponent, 
-    LabTestListComponent,
-    LabResultListComponent,
-    HolidayListComponent,
-    ReportMetaViewComponent,
-    RoleListComponent,
+    AuditLogListComponent,
     CareEventListComponent,
-    DatasetElementListComponent,
-    DatasetListComponent,
-    EncounterTypeListComponent,
-    WorkPlanListComponent,
-    DatasetCategoryListComponent,
+    ConceptListComponent,
+    ConceptPopupComponent,
+    ConfigListComponent,
     ConditionListComponent,
     ConditionDeletePopupComponent,
     ConditionPopupComponent,
-    AuditLogListComponent,
-    LandingComponent,
-    MeddraListComponent,
-    ImportMeddraPopupComponent,
+    ContactDetailListComponent,
+    DatasetCategoryListComponent,
+    DatasetCategoryDeletePopupComponent,
+    DatasetCategoryElementPopupComponent,
+    DatasetCategoryElementListComponent,
+    DatasetCategoryElementDeletePopupComponent,
+    DatasetListComponent,
+    DatasetElementListComponent,
+    DatasetElementSelectPopupComponent,
+    FacilityListComponent, 
     FormListComponent,
     FormDeletePopupComponent,
     FormPopupComponent,
-    LabTestSelectPopupComponent
+    HolidayListComponent,
+    LabResultListComponent,
+    LabTestListComponent,
+    LabTestSelectPopupComponent,
+    MeddraListComponent,
+    ImportMeddraPopupComponent,
+    MedicineListComponent,
+    MedicationPopupComponent,
+    MedicationDeletePopupComponent,
+    RoleListComponent,
+    UserListComponent, 
+    WorkPlanListComponent,
+    ReportMetaViewComponent,
+    EncounterTypeListComponent,
+    LandingComponent,
+    GenericDeletePopupComponent
   ],
   imports: [
     CommonModule,
@@ -79,10 +99,18 @@ import { LabTestSelectPopupComponent } from './shared/lab-test-select-popup/lab-
   ],
   entryComponents:
   [
-    ImportMeddraPopupComponent,
+    ConceptPopupComponent,
     ConditionPopupComponent,
     ConditionDeletePopupComponent,
-    LabTestSelectPopupComponent
+    DatasetCategoryDeletePopupComponent,
+    DatasetCategoryElementPopupComponent,
+    DatasetCategoryElementDeletePopupComponent,
+    DatasetElementSelectPopupComponent,
+    GenericDeletePopupComponent,
+    ImportMeddraPopupComponent,
+    LabTestSelectPopupComponent,
+    MedicationPopupComponent,
+    MedicationDeletePopupComponent
   ]  
 })
 export class AdministrationModule { }

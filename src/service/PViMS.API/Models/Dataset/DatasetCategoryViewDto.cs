@@ -15,10 +15,22 @@ namespace PVIMS.API.Models
         public int DatasetCategoryId { get; set; }
 
         /// <summary>
-        /// The name of the  dataset category
+        /// The name of the dataset category
         /// </summary>
         [DataMember]
         public string DatasetCategoryName { get; set; }
+
+        /// <summary>
+        /// The friendly name of the dataset category
+        /// </summary>
+        [DataMember]
+        public string DatasetCategoryDisplayName { get; set; }
+
+        /// <summary>
+        /// Additional help for the dataset category
+        /// </summary>
+        [DataMember]
+        public string DatasetCategoryHelp { get; set; }
 
         /// <summary>
         /// Should the category be displayed

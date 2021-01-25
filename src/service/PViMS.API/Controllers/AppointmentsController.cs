@@ -193,6 +193,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.outstandingvisitreport.v1+json", "application/vnd.pvims.outstandingvisitreport.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.outstandingvisitreport.v1+json", "application/vnd.pvims.outstandingvisitreport.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<OutstandingVisitReportDto>> GetOutstandingVisitReport(
                         [FromQuery] OutstandingVisitResourceParameters outstandingVisitResourceParameters)
         {

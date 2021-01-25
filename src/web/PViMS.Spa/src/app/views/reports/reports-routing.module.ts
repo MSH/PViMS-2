@@ -5,6 +5,8 @@ import { PatientTreatmentComponent } from './system/patient-treatment/patient-tr
 import { AdverseEventFrequencyComponent } from './system/adverse-event-frequency/adverse-event-frequency.component';
 import { CausalityComponent } from './system/causality/causality.component';
 import { PatientMedicationComponent } from './system/patient-medication/patient-medication.component';
+import { ReportListComponent } from './report-list/report-list.component';
+import { ReportViewerComponent } from './report-viewer/report-viewer.component';
 
 export const ReportRoutes: Routes = [
   {
@@ -39,6 +41,18 @@ export const ReportRoutes: Routes = [
       component: AdverseEventFrequencyComponent,
       data: { title: 'Adverse Event Frequency Report', breadcrumb: 'Reports' },
       runGuardsAndResolvers: 'always'
-    }]
+    },
+    {
+      path: 'reportlist',
+      component: ReportListComponent,
+      data: { title: 'View Report List', breadcrumb: 'Report List' }
+    },
+    {
+      path: 'reportviewer/:id',
+      component: ReportViewerComponent,
+      data: { title: 'View Custom Report', breadcrumb: 'View Custom Report' },
+      runGuardsAndResolvers: 'always'      
+    }
+  ]
   }
 ];

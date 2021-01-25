@@ -355,8 +355,8 @@ namespace PVIMS.Core.Entities
             }
             else
             {
-                return PatientConditions.Where(pc => pc.Archived == false 
-                        && pc.DateStart <= date 
+                return PatientConditions.Where(pc => pc.Archived == false && pc.TerminologyMedDra != null)
+                    .Where(pc => pc.DateStart <= date 
                         && pc.TerminologyMedDra.ConditionMedDras.Any(cm => cm.Condition.Description == condition))
                     .OrderByDescending(pc => pc.DateStart)
                     .FirstOrDefault();

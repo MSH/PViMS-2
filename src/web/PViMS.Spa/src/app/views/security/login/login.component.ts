@@ -50,6 +50,7 @@ export class LoginComponent implements OnInit {
             }
             else {
               self.notify("Successfully authenticated!", "Login");
+              self.navigationService.initialiseMenus();
               self.navigationService.determineRouteToLanding();
             }
         }, error => {

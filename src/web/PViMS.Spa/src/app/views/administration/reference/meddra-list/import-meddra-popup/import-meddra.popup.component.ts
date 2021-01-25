@@ -50,19 +50,15 @@ export class ImportMeddraPopupComponent extends BasePopupComponent implements On
     let self = this;
     self.setBusy(true);
 
-    // self.meddraTermService.import(self.fileToUpload)
-    //   .pipe(finalize(() => self.setBusy(false)))
-    //   .subscribe(result => {
-    //     self.notify("Meddra terms successfully uploaded!", "Success");
-    //     self.dialogRef.close(self.fileToUpload.name);
-    //   }, error => {
-    //     if(error.status == 400) {
-    //       self.showInfo(error.error.message[0], error.statusText);
-    //     } else {
-    //       self.throwError(error, error.statusText);
-    //     }
-    // });
-  }  
+    self.meddraTermService.saveMedDraFile(self.fileToUpload)
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.notify("Meddra terms successfully uploaded!", "Success");
+        self.dialogRef.close(self.fileToUpload.name);
+      }, error => {
+        self.handleError(error, "Error saving MedDRA file for import");
+    });
+  }
 }
 
 export interface ImportMeddraPopupData {

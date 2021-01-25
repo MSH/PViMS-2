@@ -8,7 +8,6 @@ namespace PVIMS.Infrastructure.Shared.Repositories
 {
     public class EntityFrameworkUnitOfWork : IUnitOfWorkInt, IDisposable
     {
-        // Need to make this public for the demo as associations aren't loading without the Include().
         public PVIMSDbContext _dbContext;
 
         public EntityFrameworkUnitOfWork(PVIMSDbContext dbContext)

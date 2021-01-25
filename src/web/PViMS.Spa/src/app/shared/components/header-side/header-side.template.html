@@ -5,7 +5,7 @@
   </button>
   
   <span fxFlex></span>
-  <button mat-icon-button matTooltip="{{'Refresh application' | translate }}" class="mr-12" *ngIf="pwaService.updateRequired" (click)="refresh()">
+  <button mat-icon-button matTooltip="{{'Refresh meta' | translate }}">
     <mat-icon>refresh</mat-icon>
   </button>  
   <button mat-icon-button matTooltip="{{'Install to device' | translate }}" *ngIf="pwaService.promptEvent" (click)="installPwa()">

@@ -10,6 +10,7 @@ import { UserProfilePopupComponent } from 'app/views/security/user-profile/user-
 import { PwaService } from 'app/shared/services/pwa.service';
 import { AboutPopupComponent } from '../about/about.popup.component';
 import { ConfigService } from 'app/shared/services/config.service';
+import { MetaService } from 'app/shared/services/meta.service';
 
 @Component({
   selector: 'app-header-side',
@@ -40,6 +41,7 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
     private renderer: Renderer2,
     private accountService: AccountService,
     protected configService: ConfigService,
+    protected metaService: MetaService,
     public pwaService: PwaService,
     private _router: Router,
     protected dialog: MatDialog,
@@ -117,6 +119,17 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
   refresh(): void {
     window.location.reload();
   }
+
+  refreshMeta(): void {
+    let self = this;
+
+    self.metaService.refresh()
+        .subscribe(result => {
+          //self.notify("Meta data refreshed successfully", "Success");          
+        }, error => {
+          //self.handleError(error, "Error refreshing meta data");
+        });
+  }   
 
   installPwa(): void {
     this.pwaService.promptEvent.prompt();

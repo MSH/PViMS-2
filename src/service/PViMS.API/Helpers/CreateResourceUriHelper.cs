@@ -14,7 +14,7 @@ namespace PVIMS.API.Helpers
             switch (type)
             {
                 case ResourceUriType.PreviousPage:
-                    return urlHelper.Link("GetAnalyserTermSet",
+                    return urlHelper.Link("GetAnalyserTermsByIdentifier",
                       new
                       {
                           workFlowGuid,
@@ -22,11 +22,12 @@ namespace PVIMS.API.Helpers
                           cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                           searchFrom = analyserTermSetResourceParameters.SearchFrom,
                           searchTo = analyserTermSetResourceParameters.SearchTo,
+                          riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                           pageNumber = analyserTermSetResourceParameters.PageNumber - 1,
                           pageSize = analyserTermSetResourceParameters.PageSize
                       });
                 case ResourceUriType.NextPage:
-                    return urlHelper.Link("GetAnalyserTermSet",
+                    return urlHelper.Link("GetAnalyserTermsByIdentifier",
                       new
                       {
                           workFlowGuid,
@@ -34,12 +35,13 @@ namespace PVIMS.API.Helpers
                           cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                           searchFrom = analyserTermSetResourceParameters.SearchFrom,
                           searchTo = analyserTermSetResourceParameters.SearchTo,
+                          riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                           pageNumber = analyserTermSetResourceParameters.PageNumber + 1,
                           pageSize = analyserTermSetResourceParameters.PageSize
                       });
                 case ResourceUriType.Current:
                 default:
-                    return urlHelper.Link("GetAnalyserTermSet",
+                    return urlHelper.Link("GetAnalyserTermsByIdentifier",
                     new
                     {
                         workFlowGuid,
@@ -47,6 +49,7 @@ namespace PVIMS.API.Helpers
                         cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                         searchFrom = analyserTermSetResourceParameters.SearchFrom,
                         searchTo = analyserTermSetResourceParameters.SearchTo,
+                        riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                         pageNumber = analyserTermSetResourceParameters.PageNumber,
                         pageSize = analyserTermSetResourceParameters.PageSize
                     });
@@ -71,6 +74,7 @@ namespace PVIMS.API.Helpers
                           cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                           searchFrom = analyserTermSetResourceParameters.SearchFrom,
                           searchTo = analyserTermSetResourceParameters.SearchTo,
+                          riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                           pageNumber = analyserTermSetResourceParameters.PageNumber - 1,
                           pageSize = analyserTermSetResourceParameters.PageSize
                       });
@@ -84,6 +88,7 @@ namespace PVIMS.API.Helpers
                           cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                           searchFrom = analyserTermSetResourceParameters.SearchFrom,
                           searchTo = analyserTermSetResourceParameters.SearchTo,
+                          riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                           pageNumber = analyserTermSetResourceParameters.PageNumber + 1,
                           pageSize = analyserTermSetResourceParameters.PageSize
                       });
@@ -98,6 +103,7 @@ namespace PVIMS.API.Helpers
                         cohortGroupId = analyserTermSetResourceParameters.CohortGroupId,
                         searchFrom = analyserTermSetResourceParameters.SearchFrom,
                         searchTo = analyserTermSetResourceParameters.SearchTo,
+                        riskFactorOptionNames = analyserTermSetResourceParameters.RiskFactorOptionNames,
                         pageNumber = analyserTermSetResourceParameters.PageNumber,
                         pageSize = analyserTermSetResourceParameters.PageSize
                     });
@@ -264,6 +270,12 @@ namespace PVIMS.API.Helpers
               new { datasetid, id = resourceId });
         }
 
+        public static string CreateDatasetCategoryElementResourceUri(IUrlHelper urlHelper, string resourceName, long datasetid, long datasetCategoryId, long resourceId)
+        {
+            return urlHelper.Link($"Get{resourceName}ByIdentifier",
+              new { datasetid, datasetCategoryId, id = resourceId });
+        }
+
         public static string CreateDownloadActivitySingleAttachmentResourceUri(IUrlHelper urlHelper, Guid workFlowGuid, long reportinstanceId, long activityExecutionStatusEventId, long attachmentId)
         {
             return urlHelper.Link("DownloadActivitySingleAttachment",
@@ -329,6 +341,12 @@ namespace PVIMS.API.Helpers
         {
             return urlHelper.Link("GetEnrolmentForPatient",
               new { patientId, id = enrolmentId });
+        }
+
+        public static string CreateMetaWidgetResourceUri(IUrlHelper urlHelper, long metaPageId, long metaWidgetId)
+        {
+            return urlHelper.Link("GetMetaWidgetByIdentifier",
+              new { metaPageId, id = metaWidgetId });
         }
 
         public static string CreateNewEnrolmentForPatientResourceUri(IUrlHelper urlHelper, long patientId)
@@ -453,36 +471,70 @@ namespace PVIMS.API.Helpers
             }
         }
 
-        public static string CreateUsersResourceUri(IUrlHelper urlHelper,
+        public static string CreateMetaTablesResourceUri(IUrlHelper urlHelper,
             ResourceUriType type,
-            UserResourceParameters userResourceParameters)
+            MetaResourceParameters metaResourceParameters)
         {
             switch (type)
             {
                 case ResourceUriType.PreviousPage:
-                    return urlHelper.Link("GetUsersByIdentifier",
+                    return urlHelper.Link("GetMetaTablesByIdentifier",
                       new
                       {
-                          orderBy = userResourceParameters.OrderBy,
-                          pageNumber = userResourceParameters.PageNumber - 1,
-                          pageSize = userResourceParameters.PageSize
+                          orderBy = metaResourceParameters.OrderBy,
+                          pageNumber = metaResourceParameters.PageNumber - 1,
+                          pageSize = metaResourceParameters.PageSize
                       });
                 case ResourceUriType.NextPage:
-                    return urlHelper.Link("GetUsersByIdentifier",
+                    return urlHelper.Link("GetMetaTablesByIdentifier",
                       new
                       {
-                          orderBy = userResourceParameters.OrderBy,
-                          pageNumber = userResourceParameters.PageNumber + 1,
-                          pageSize = userResourceParameters.PageSize
+                          orderBy = metaResourceParameters.OrderBy,
+                          pageNumber = metaResourceParameters.PageNumber + 1,
+                          pageSize = metaResourceParameters.PageSize
                       });
                 case ResourceUriType.Current:
                 default:
-                    return urlHelper.Link("GetUsersByIdentifier",
+                    return urlHelper.Link("GetMetaTablesByIdentifier",
                     new
                     {
-                        orderBy = userResourceParameters.OrderBy,
-                        pageNumber = userResourceParameters.PageNumber,
-                        pageSize = userResourceParameters.PageSize
+                        orderBy = metaResourceParameters.OrderBy,
+                        pageNumber = metaResourceParameters.PageNumber,
+                        pageSize = metaResourceParameters.PageSize
+                    });
+            }
+        }
+
+        public static string CreateMetaReportsResourceUri(IUrlHelper urlHelper,
+            ResourceUriType type,
+            IdResourceParameters metaResourceParameters)
+        {
+            switch (type)
+            {
+                case ResourceUriType.PreviousPage:
+                    return urlHelper.Link("GetMetaReportsByIdentifier",
+                      new
+                      {
+                          orderBy = metaResourceParameters.OrderBy,
+                          pageNumber = metaResourceParameters.PageNumber - 1,
+                          pageSize = metaResourceParameters.PageSize
+                      });
+                case ResourceUriType.NextPage:
+                    return urlHelper.Link("GetMetaReportsByIdentifier",
+                      new
+                      {
+                          orderBy = metaResourceParameters.OrderBy,
+                          pageNumber = metaResourceParameters.PageNumber + 1,
+                          pageSize = metaResourceParameters.PageSize
+                      });
+                case ResourceUriType.Current:
+                default:
+                    return urlHelper.Link("GetMetaReportsByIdentifier",
+                    new
+                    {
+                        orderBy = metaResourceParameters.OrderBy,
+                        pageNumber = metaResourceParameters.PageNumber,
+                        pageSize = metaResourceParameters.PageSize
                     });
             }
         }
@@ -520,6 +572,40 @@ namespace PVIMS.API.Helpers
                         facilityName = patientResourceParameters.FacilityName,
                         pageNumber = patientResourceParameters.PageNumber,
                         pageSize = patientResourceParameters.PageSize
+                    });
+            }
+        }
+
+        public static string CreateUsersResourceUri(IUrlHelper urlHelper,
+            ResourceUriType type,
+            UserResourceParameters userResourceParameters)
+        {
+            switch (type)
+            {
+                case ResourceUriType.PreviousPage:
+                    return urlHelper.Link("GetUsersByIdentifier",
+                      new
+                      {
+                          orderBy = userResourceParameters.OrderBy,
+                          pageNumber = userResourceParameters.PageNumber - 1,
+                          pageSize = userResourceParameters.PageSize
+                      });
+                case ResourceUriType.NextPage:
+                    return urlHelper.Link("GetUsersByIdentifier",
+                      new
+                      {
+                          orderBy = userResourceParameters.OrderBy,
+                          pageNumber = userResourceParameters.PageNumber + 1,
+                          pageSize = userResourceParameters.PageSize
+                      });
+                case ResourceUriType.Current:
+                default:
+                    return urlHelper.Link("GetUsersByIdentifier",
+                    new
+                    {
+                        orderBy = userResourceParameters.OrderBy,
+                        pageNumber = userResourceParameters.PageNumber,
+                        pageSize = userResourceParameters.PageSize
                     });
             }
         }
@@ -887,6 +973,5 @@ namespace PVIMS.API.Helpers
             return urlHelper.Link($"Delete{resourceName}",
               new { id = resourceId });
         }
-
     }
 }

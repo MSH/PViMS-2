@@ -9,12 +9,16 @@ import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { Subscription } from 'rxjs';
-import { MetaService } from 'app/shared/services/meta.service';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { MetaPageExpandedModel } from 'app/shared/models/meta/meta-page.expanded.model';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { MetaWidgetDetailModel } from 'app/shared/models/meta/meta-widget.detail.model';
-import { PageViewerPopupComponent } from '../page-viewer-popup/page-viewer.popup.component';
+import { MetaPageService } from 'app/shared/services/meta-page.service';
+import { PageConfigurePopupComponent } from '../shared/page-configure-popup/page-configure.popup.component';
+import { GenericDeletePopupComponent } from '../shared/generic-delete-popup/generic-delete.popup.component';
+import { NavigationService } from 'app/shared/services/navigation.service';
+import { WidgetConfigurePopupComponent } from './widget-configure-popup/widget-configure.popup.component';
+import { WidgetMovePopupComponent } from './widget-move-popup/widget-move.popup.component';
 
 @Component({
   templateUrl: './page-viewer.component.html',
@@ -30,9 +34,10 @@ export class PageViewerComponent extends BaseComponent implements OnInit, OnDest
     protected _location: Location,
     protected _formBuilder: FormBuilder,
     protected popupService: PopupService,
-    protected accountService: AccountService,
+    protected navigationService: NavigationService,
     protected eventService: EventService,
-    protected metaService: MetaService,
+    protected metaPageService: MetaPageService,
+    public accountService: AccountService,
     protected mediaObserver: MediaObserver,
     protected dialog: MatDialog) 
   {
@@ -61,12 +66,8 @@ export class PageViewerComponent extends BaseComponent implements OnInit, OnDest
   id: number;
   metaPage: MetaPageExpandedModel;
 
-  topLeft: MetaWidgetDetailModel;
-  topRight: MetaWidgetDetailModel;
-  middleLeft: MetaWidgetDetailModel;
-  middleRight: MetaWidgetDetailModel;
-  bottomLeft: MetaWidgetDetailModel;
-  bottomRight: MetaWidgetDetailModel;
+  leftWidgetList: MetaWidgetDetailModel[] = [];
+  rightWidgetList: MetaWidgetDetailModel[] = [];
 
   ngOnInit() {
     const self = this;
@@ -91,30 +92,33 @@ export class PageViewerComponent extends BaseComponent implements OnInit, OnDest
   loadData(): void {
     let self = this;
     self.setBusy(true);
-    self.metaService.getMetaPageExpanded(self.id)
+    self.metaPageService.getMetaPage(self.id, 'expanded')
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.metaPage = result;
 
-        self.topLeft = self.metaPage.widgets.find(w => w.widgetLocation == 'TopLeft');
-        self.topRight = self.metaPage.widgets.find(w => w.widgetLocation == 'TopRight');
-        self.middleLeft = self.metaPage.widgets.find(w => w.widgetLocation == 'MiddleLeft');
-        self.middleRight = self.metaPage.widgets.find(w => w.widgetLocation == 'MiddleRight');
-        self.bottomLeft = self.metaPage.widgets.find(w => w.widgetLocation == 'BottomLeft');
-        self.bottomRight = self.metaPage.widgets.find(w => w.widgetLocation == 'BottomRight');
+        self.leftWidgetList = [];
+        self.leftWidgetList.push(self.metaPage.widgets.find(w => w.widgetLocation == 'TopLeft'));
+        self.leftWidgetList.push(self.metaPage.widgets.find(w => w.widgetLocation == 'MiddleLeft'));
+        self.leftWidgetList.push(self.metaPage.widgets.find(w => w.widgetLocation == 'BottomLeft'));
+
+        self.rightWidgetList = [];
+        self.rightWidgetList.push(self.metaPage.widgets.find(w => w.widgetLocation == 'TopRight'));
+        self.rightWidgetList.push(self.metaPage.widgets.find(w => w.widgetLocation == 'MiddleRight'));
+        self.rightWidgetList.push(self.metaPage.widgets.find(w => w.widgetLocation == 'BottomRight'));
       }, error => {
-        self.throwError(error, error.statusText);
+        self.handleError(error, "Error fetching meta page");
       });
   }
 
-  openPageViewerPopup(id: number) {
+  openPageConfigurePopup() {
     let self = this;
-    let title = '';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(PageViewerPopupComponent, {
-      width: '920px',
+    let title = 'Update Page';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(PageConfigurePopupComponent, {
+      width: '720px',
       disableClose: true,
-      data: { metaPageId: id, title: title }
+      data: { metaPageId: self.id, title: title }
     })
     dialogRef.afterClosed()
       .subscribe(result => {
@@ -122,6 +126,79 @@ export class PageViewerComponent extends BaseComponent implements OnInit, OnDest
           // If user press cancel
           return;
         }
+        self.initialiseReport();
       })
-  }  
+  }
+
+  openDeletePopUp() {
+    let self = this;
+    let title = 'Delete Page';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(GenericDeletePopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { id: self.id, type: 'MetaPage', title: title, name: self.metaPage.pageName }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.navigationService.routeToPublisherHome();
+      })
+  }
+
+  openDeleteWidgetPopUp(id: number, widgetName: string) {
+    let self = this;
+    let title = 'Delete Widget';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(GenericDeletePopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { parentId: self.id, id: id, type: 'MetaWidget', title: title, name: widgetName }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.initialiseReport();
+      })
+  }
+
+  openWidgetConfigurePopup(id: number) {
+    let self = this;
+    let title = id == 0 ? 'Add Widget' : 'Update Widget';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(WidgetConfigurePopupComponent, {
+      width: '920px',
+      disableClose: true,
+      data: { metaPageId: self.id, metaWidgetId: id, title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(result => {
+        if(!result) {
+          // If user press cancel
+          return;
+        }
+        self.initialiseReport();
+      })
+  }
+
+  openWidgetMovePopup(id: number, widgetName: string) {
+    let self = this;
+    let title = 'Move Widget';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(WidgetMovePopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { metaPageId: self.id, metaWidgetId: id, title: title, widgetName }
+    })
+    dialogRef.afterClosed()
+      .subscribe(result => {
+        if(!result) {
+          // If user press cancel
+          return;
+        }
+        self.initialiseReport();
+      })
+  }
 }

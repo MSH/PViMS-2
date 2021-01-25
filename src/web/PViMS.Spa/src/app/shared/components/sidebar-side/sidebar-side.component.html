@@ -4,10 +4,11 @@
             
             <!-- App Logo -->
             <div class="branding">
-                <span class="app-logo-text">{{ appName }}</span><span class="app-logo-small-text m-333">(version {{ version }})</span>
+                <span class="app-logo-text mt-8">{{ appName }}<br/>
+                  <span class="app-logo-small-text">version {{ version }}</span>
+                </span>
                 <span style="margin: auto" *ngIf="layoutConf.sidebarStyle !== 'compact'"></span>
             </div>
-        
             <!-- Navigation -->
             <app-sidenav [items]="menuItems" [hasIconMenu]="hasIconTypeMenuItem" [iconMenuTitle]="iconTypeMenuTitle"></app-sidenav>
         </div>

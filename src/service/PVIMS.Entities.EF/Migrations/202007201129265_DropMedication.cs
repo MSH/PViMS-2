@@ -11,10 +11,15 @@
             DropForeignKey("dbo.Medication", "MedicationForm_Id", "dbo.MedicationForm");
             DropForeignKey("dbo.PatientClinicalEvent", "Medication_Id", "dbo.Medication");
             DropForeignKey("dbo.PatientMedication", "Medication_Id", "dbo.Medication");
+
             DropIndex("dbo.PatientClinicalEvent", new[] { "Medication_Id" });
             DropIndex("dbo.ConditionMedication", new[] { "Medication_Id" });
             DropIndex("dbo.Medication", new[] { "MedicationForm_Id" });
             DropIndex("dbo.PatientMedication", new[] { "Medication_Id" });
+
+            // Fix drop constraint issue
+            Sql("ALTER TABLE PatientClinicalEvent DROP CONSTRAINT [FK_dbo.PatientClinicalEvent_dbo.Medication_CausativeMedication_Id]");
+
             DropColumn("dbo.PatientClinicalEvent", "Medication_Id");
             DropColumn("dbo.ConditionMedication", "Medication_Id");
             DropColumn("dbo.PatientMedication", "Medication_Id");

@@ -137,7 +137,6 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-
             if (contactForUpdateDto == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
@@ -213,9 +212,18 @@ namespace PVIMS.API.Controllers
 
             if (ModelState.IsValid)
             {
-                var mappedContactDetail = _mapper.Map<SiteContactDetail>(contactDetailFromRepo);
+                contactDetailFromRepo.OrganisationName = contactForUpdateDto.OrganisationName;
+                contactDetailFromRepo.ContactFirstName = contactForUpdateDto.ContactFirstName;
+                contactDetailFromRepo.ContactSurname = contactForUpdateDto.ContactLastName;
+                contactDetailFromRepo.StreetAddress = contactForUpdateDto.StreetAddress;
+                contactDetailFromRepo.City = contactForUpdateDto.City;
+                contactDetailFromRepo.State = contactForUpdateDto.State;
+                contactDetailFromRepo.CountryCode = contactForUpdateDto.CountryCode;
+                contactDetailFromRepo.PostCode = contactForUpdateDto.PostCode;
+                contactDetailFromRepo.ContactNumber = contactForUpdateDto.ContactNumber;
+                contactDetailFromRepo.ContactEmail = contactForUpdateDto.ContactEmail;
 
-                _contactRepository.Update(mappedContactDetail);
+                _contactRepository.Update(contactDetailFromRepo);
                 _unitOfWork.Complete();
 
                 return Ok();

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using LinqKit;
@@ -269,6 +271,354 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Create a new concept
+        /// </summary>
+        /// <param name="conceptForUpdate">The concept payload</param>
+        /// <returns></returns>
+        [HttpPost("concepts", Name = "CreateConcept")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [Consumes("application/json")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateConcept(
+            [FromBody] ConceptForUpdateDto conceptForUpdate)
+        {
+            if (conceptForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+            }
+
+            if (Regex.Matches(conceptForUpdate.ConceptName, @"[a-zA-Z0-9 .,()%/]").Count < conceptForUpdate.ConceptName.Length)
+            {
+                ModelState.AddModelError("Message", "Concept name contains invalid characters (Enter A-Z, a-z, 0-9, space, period, comma, brackets, percentage, forward slash)");
+            }
+
+            if (Regex.Matches(conceptForUpdate.MedicationForm, @"[-a-zA-Z0-9 ,]").Count < conceptForUpdate.MedicationForm.Length)
+            {
+                ModelState.AddModelError("Message", "Medication form contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, comma)");
+            }
+
+            var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == conceptForUpdate.MedicationForm);
+            if (medicationFormFromRepo == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate medication form");
+            }
+
+            if (_unitOfWork.Repository<Concept>().Queryable().
+                Where(l => l.ConceptName == conceptForUpdate.ConceptName && l.MedicationForm.Id == medicationFormFromRepo.Id)
+                .Count() > 0)
+            {
+                ModelState.AddModelError("Message", "Item with same name already exists");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var newConcept = new Concept()
+                {
+                    ConceptName = conceptForUpdate.ConceptName,
+                    MedicationForm = medicationFormFromRepo,
+                    Active = (conceptForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes)
+                };
+
+                _conceptRepository.Save(newConcept);
+
+                var mappedConcept = await GetConceptAsync<ConceptIdentifierDto>(newConcept.Id);
+                if (mappedConcept == null)
+                {
+                    return StatusCode(500, "Unable to locate newly added item");
+                }
+
+                return CreatedAtRoute("GetConceptByIdentifier",
+                    new
+                    {
+                        id = mappedConcept.Id
+                    }, CreateLinksForConcept<ConceptIdentifierDto>(mappedConcept));
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        /// <summary>
+        /// Update an existing concept
+        /// </summary>
+        /// <param name="id">The unique id of the concept</param>
+        /// <param name="conceptForUpdate">The concept payload</param>
+        /// <returns></returns>
+        [HttpPut("concepts/{id}", Name = "UpdateConcept")]
+        [Consumes("application/json")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateConcept(long id,
+            [FromBody] ConceptForUpdateDto conceptForUpdate)
+        {
+            if (conceptForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+            }
+
+            if (Regex.Matches(conceptForUpdate.ConceptName, @"[-a-zA-Z0-9 .,()%/]").Count < conceptForUpdate.ConceptName.Length)
+            {
+                ModelState.AddModelError("Message", "Concept name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage, forward slash)");
+            }
+
+            if (Regex.Matches(conceptForUpdate.MedicationForm, @"[-a-zA-Z0-9 ,]").Count < conceptForUpdate.MedicationForm.Length)
+            {
+                ModelState.AddModelError("Message", "Medication form contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, comma)");
+            }
+
+            var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == conceptForUpdate.MedicationForm);
+            if (medicationFormFromRepo == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate medication form");
+            }
+
+            if (_unitOfWork.Repository<Concept>().Queryable().
+                Where(l => l.ConceptName == conceptForUpdate.ConceptName && l.MedicationForm.Id == medicationFormFromRepo.Id && l.Id != id)
+                .Count() > 0)
+            {
+                ModelState.AddModelError("Message", "Item with same name already exists");
+            }
+
+            var conceptFromRepo = await _conceptRepository.GetAsync(f => f.Id == id);
+            if (conceptFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                conceptFromRepo.ConceptName = conceptForUpdate.ConceptName;
+                conceptFromRepo.MedicationForm = medicationFormFromRepo;
+                conceptFromRepo.Active = (conceptForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
+
+                _conceptRepository.Update(conceptFromRepo);
+                _unitOfWork.Complete();
+
+                return Ok();
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        /// <summary>
+        /// Delete an existing concept
+        /// </summary>
+        /// <param name="id">The unique id of the concept</param>
+        /// <returns></returns>
+        [HttpDelete("concepts/{id}", Name = "DeleteConcept")]
+        public async Task<IActionResult> DeleteConcept(long id)
+        {
+            var conceptFromRepo = await _conceptRepository.GetAsync(f => f.Id == id);
+            if (conceptFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            if (_unitOfWork.Repository<Product>().Queryable().Any(p => p.Concept.Id == id))
+            {
+                ModelState.AddModelError("Message", "Unable to delete as item is in use.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                _conceptRepository.Delete(conceptFromRepo);
+                _unitOfWork.Complete();
+
+                return NoContent();
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        /// <summary>
+        /// Create a new product
+        /// </summary>
+        /// <param name="productForUpdate">The product payload</param>
+        /// <returns></returns>
+        [HttpPost("products", Name = "CreateProduct")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [Consumes("application/json")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateProduct(
+            [FromBody] ProductForUpdateDto productForUpdate)
+        {
+            if (productForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+            }
+
+            if (Regex.Matches(productForUpdate.ConceptName, @"[-a-zA-Z0-9 .,()%/]").Count < productForUpdate.ConceptName.Length)
+            {
+                ModelState.AddModelError("Message", "Concept name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage, forward slash)");
+                return BadRequest(ModelState);
+            }
+
+            if (Regex.Matches(productForUpdate.MedicationForm, @"[-a-zA-Z0-9 ,]").Count < productForUpdate.MedicationForm.Length)
+            {
+                ModelState.AddModelError("Message", "Medication form contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, comma)");
+                return BadRequest(ModelState);
+            }
+
+            if (Regex.Matches(productForUpdate.ProductName, @"[-a-zA-Z0-9 .,()%]").Count < productForUpdate.ProductName.Length)
+            {
+                ModelState.AddModelError("Message", "Product name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage)");
+                return BadRequest(ModelState);
+            }
+
+            if (Regex.Matches(productForUpdate.Manufacturer, @"[-a-zA-Z0-9 .,()%]").Count < productForUpdate.Manufacturer.Length)
+            {
+                ModelState.AddModelError("Message", "Manufacturer contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage)");
+                return BadRequest(ModelState);
+            }
+
+            if (_unitOfWork.Repository<Product>().Queryable().
+                Where(l => l.Concept.ConceptName == productForUpdate.ConceptName && l.ProductName == productForUpdate.ProductName)
+                .Count() > 0)
+            {
+                ModelState.AddModelError("Message", "Item with same name already exists");
+            }
+
+            var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == productForUpdate.MedicationForm);
+            if (medicationFormFromRepo == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate medication form");
+                return BadRequest(ModelState);
+            }
+
+            var conceptFromRepo = await _conceptRepository.GetAsync(f => f.ConceptName == productForUpdate.ConceptName && f.MedicationForm.Id == medicationFormFromRepo.Id);
+
+            if (ModelState.IsValid)
+            {
+                // Create concept first if necessary
+                if (conceptFromRepo == null)
+                {
+                    conceptFromRepo = new Concept()
+                    {
+                        ConceptName = productForUpdate.ConceptName,
+                        MedicationForm = medicationFormFromRepo,
+                        Active = (productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes)
+                    };
+                    _conceptRepository.Save(conceptFromRepo);
+                }
+
+                var newProduct = new Product()
+                {
+                    ProductName = productForUpdate.ProductName,
+                    Concept = conceptFromRepo,
+                    Manufacturer = productForUpdate.Manufacturer,
+                    Description = productForUpdate.Description,
+                    Active = (productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes)
+                };
+
+                _productRepository.Save(newProduct);
+
+                var mappedProduct = await GetProductAsync<ProductIdentifierDto>(newProduct.Id);
+                if (mappedProduct == null)
+                {
+                    return StatusCode(500, "Unable to locate newly added item");
+                }
+
+                return CreatedAtRoute("GetProductByIdentifier",
+                    new
+                    {
+                        id = mappedProduct.Id
+                    }, CreateLinksForProduct<ProductIdentifierDto>(mappedProduct));
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        /// <summary>
+        /// Update an existing product
+        /// </summary>
+        /// <param name="id">The unique id of the product</param>
+        /// <param name="productForUpdate">The product payload</param>
+        /// <returns></returns>
+        [HttpPut("products/{id}", Name = "UpdateProduct")]
+        [Consumes("application/json")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateProduct(long id,
+            [FromBody] ProductForUpdateDto productForUpdate)
+        {
+            if (productForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+            }
+
+            if (Regex.Matches(productForUpdate.ConceptName, @"[-a-zA-Z0-9 .,()%/]").Count < productForUpdate.ConceptName.Length)
+            {
+                ModelState.AddModelError("Message", "Concept name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage, forward slash)");
+                return BadRequest(ModelState);
+            }
+
+            if (Regex.Matches(productForUpdate.MedicationForm, @"[-a-zA-Z0-9 ,]").Count < productForUpdate.MedicationForm.Length)
+            {
+                ModelState.AddModelError("Message", "Medication form contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, comma)");
+                return BadRequest(ModelState);
+            }
+
+            if (Regex.Matches(productForUpdate.ProductName, @"[-a-zA-Z0-9 .,()%]").Count < productForUpdate.ProductName.Length)
+            {
+                ModelState.AddModelError("Message", "Product name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage)");
+                return BadRequest(ModelState);
+            }
+
+            if (Regex.Matches(productForUpdate.Manufacturer, @"[-a-zA-Z0-9 .,()%]").Count < productForUpdate.Manufacturer.Length)
+            {
+                ModelState.AddModelError("Message", "Manufacturer contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage)");
+                return BadRequest(ModelState);
+            }
+
+            var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == productForUpdate.MedicationForm);
+            if (medicationFormFromRepo == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate medication form");
+                return BadRequest(ModelState);
+            }
+
+            if (_unitOfWork.Repository<Product>().Queryable().
+                Where(l => l.Concept.ConceptName == productForUpdate.ConceptName && l.ProductName == productForUpdate.ProductName && l.Id != id)
+                .Count() > 0)
+            {
+                ModelState.AddModelError("Message", "Item with same name already exists");
+            }
+
+            var conceptFromRepo = await _conceptRepository.GetAsync(f => f.ConceptName == productForUpdate.ConceptName && f.MedicationForm.Id == medicationFormFromRepo.Id);
+
+            var productFromRepo = await _productRepository.GetAsync(f => f.Id == id);
+            if (productFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                // Create concept first if necessary
+                if (conceptFromRepo == null)
+                {
+                    conceptFromRepo = new Concept()
+                    {
+                        ConceptName = productForUpdate.ConceptName,
+                        MedicationForm = medicationFormFromRepo,
+                        Active = (productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes)
+                    };
+                    _conceptRepository.Save(conceptFromRepo);
+                }
+
+                productFromRepo.ProductName = productForUpdate.ProductName;
+                productFromRepo.Concept = conceptFromRepo;
+                productFromRepo.Manufacturer = productForUpdate.Manufacturer;
+                productFromRepo.Description = productForUpdate.Description;
+                productFromRepo.Active = (productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
+
+                _productRepository.Update(productFromRepo);
+                _unitOfWork.Complete();
+
+                return Ok();
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        /// <summary>
         /// Delete an existing product
         /// </summary>
         /// <param name="id">The unique id of the product</param>
@@ -282,16 +632,12 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            //if (productFromRepo.DatasetCategoryElements.Count > 0 ||
-            //    datasetElementFromRepo.DatasetElementSubs.Count > 0 ||
-            //    _unitOfWork.Repository<DatasetInstanceValue>()
-            //        .Queryable()
-            //        .Where(div => div.DatasetElement.Id == datasetElementFromRepo.Id)
-            //        .Any())
-            //{
-            //    ModelState.AddModelError("Message", "Unable to delete as item is in use.");
-            //    return BadRequest(ModelState);
-            //}
+            if (_unitOfWork.Repository<ConditionMedication>().Queryable().Any(cm => cm.Product.Id == id) ||
+                _unitOfWork.Repository<PatientMedication>().Queryable().Any(pm => pm.Product.Id == id))
+            {
+                ModelState.AddModelError("Message", "Unable to delete as item is in use.");
+                return BadRequest(ModelState);
+            }
 
             if (ModelState.IsValid)
             {
@@ -361,8 +707,6 @@ namespace PVIMS.API.Controllers
             var orderby = Extensions.GetOrderBy<Concept>(conceptResourceParameters.OrderBy, "asc");
 
             var predicate = PredicateBuilder.New<Concept>(true);
-            predicate = predicate.And(f => f.Active == true);
-
             if (!String.IsNullOrWhiteSpace(conceptResourceParameters.SearchTerm))
             {
                 predicate = predicate.And(f => f.ConceptName.Contains(conceptResourceParameters.SearchTerm.Trim()));
@@ -419,7 +763,10 @@ namespace PVIMS.API.Controllers
             var orderby = Extensions.GetOrderBy<Product>(productResourceParameters.OrderBy, "asc");
 
             var predicate = PredicateBuilder.New<Product>(true);
-            predicate = predicate.And(f => f.Active == true);
+            if(productResourceParameters.Active != Models.ValueTypes.YesNoBothValueType.Both)
+            {
+                predicate = predicate.And(f => f.Active == (productResourceParameters.Active == Models.ValueTypes.YesNoBothValueType.Yes));
+            }
 
             if (!String.IsNullOrWhiteSpace(productResourceParameters.SearchTerm))
             {

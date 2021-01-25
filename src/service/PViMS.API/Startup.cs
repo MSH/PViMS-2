@@ -117,6 +117,7 @@ namespace PViMS.API
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.feedback.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.patientsummary.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.dataset.v1+json");
+                    jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.spontaneousdataset.v1+json");
 
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.outstandingvisitreport.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.adverseventreport.v1+json");
@@ -144,6 +145,7 @@ namespace PViMS.API
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.newreports.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.feedback.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.dataset.v1+xml");
+                    xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.spontaneousdataset.v1+xml");
 
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.outstandingvisitreport.v1+xml");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.adverseventreport.v1+xml");
@@ -272,6 +274,7 @@ namespace PViMS.API
             services.AddTransient<IPatientService, PatientService>();
             services.AddTransient<IArtefactService, ArtefactService>();
             services.AddTransient<IWorkFlowService, WorkFlowService>();
+            services.AddTransient<IMedDraService, MedDraService>();
             services.AddTransient<IJwtTokenHandler, JwtTokenHandler>();
             services.AddTransient<ITokenFactory, TokenFactory>();
             services.AddTransient<IJwtFactory, JwtFactory>();
@@ -317,7 +320,7 @@ namespace PViMS.API
                         }, new List<string>() }
                 });
 
-                setupAction.OperationFilter<GetProductOperationFilter>();
+                setupAction.OperationFilter<GetAppointmentOperationFilter>();
 
                 var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);

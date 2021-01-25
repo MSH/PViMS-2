@@ -18,8 +18,8 @@ export class AnalysisService extends BaseService {
       this.apiController = "";
   }
 
-  getAllAnalysisTermSets(filterModel: any): any {
-    return this.getAnalysisTermSet(filterModel)
+  getAllAnalysisTermSets(filterModel: any, riskFactors: any[]): any {
+    return this.getAnalysisTermSet(filterModel, riskFactors)
       .pipe( 
         expand(response => {
           let typedResponse = response as AnalyserTermIdentifierWrapperModel;
@@ -34,7 +34,7 @@ export class AnalysisService extends BaseService {
       );
   }  
 
-  getAnalysisTermSet(filterModel: any): any {
+  getAnalysisTermSet(filterModel: any, riskFactors: any[]): any {
       let parameters: ParameterKeyValueModel[] = [];
 
       parameters.push(<ParameterKeyValueModel> { key: 'conditionId', value: filterModel.conditionId == null ? 1 : filterModel.conditionId });
@@ -44,10 +44,16 @@ export class AnalysisService extends BaseService {
       parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: '1'});
       parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: '50'});
 
+      if(riskFactors.length > 0) {
+        riskFactors.forEach(element => {
+          parameters.push(<ParameterKeyValueModel> { key: 'riskFactorOptionNames', value: element.optionName});
+        })
+      }
+
       return this.Get<AnalyserTermIdentifierWrapperModel>(`/workflow/892F3305-7819-4F18-8A87-11CBA3AEE219/analysisterms`, 'application/vnd.pvims.identifier.v1+json', parameters);
   }
 
-  getAnalysisTermSetByDetail(filterModel: any, termId: number): any {
+  getAnalysisTermSetByDetail(filterModel: any, termId: number, riskFactors: any[]): any {
     let parameters: ParameterKeyValueModel[] = [];
 
     parameters.push(<ParameterKeyValueModel> { key: 'conditionId', value: filterModel.conditionId == null ? 1 : filterModel.conditionId });
@@ -57,18 +63,30 @@ export class AnalysisService extends BaseService {
     parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: '1'});
     parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: '50'});
 
+    if(riskFactors.length > 0) {
+      riskFactors.forEach(element => {
+        parameters.push(<ParameterKeyValueModel> { key: 'riskFactorOptionNames', value: element.optionName});
+      })
+    }
+
     return this.Get<AnalyserTermDetailModel>(`/workflow/892F3305-7819-4F18-8A87-11CBA3AEE219/analysisterms/${termId}`, 'application/vnd.pvims.detail.v1+json', parameters);
   }
 
-  getAnalysisPatientSet(filterModel: any, termId: number): any {
+  getAnalysisPatientSet(filterModel: any, termId: number, riskFactors: any[]): any {
     let parameters: ParameterKeyValueModel[] = [];
-    console.log(filterModel);
+
     parameters.push(<ParameterKeyValueModel> { key: 'conditionId', value: filterModel.conditionId == null ? 1 : filterModel.conditionId });
     parameters.push(<ParameterKeyValueModel> { key: 'cohortGroupId', value: filterModel.cohortGroupId == null ? 0 : filterModel.cohortGroupId });
     parameters.push(<ParameterKeyValueModel> { key: 'searchFrom', value: filterModel.searchFrom.format("YYYY-MM-DD") });
     parameters.push(<ParameterKeyValueModel> { key: 'searchTo', value: filterModel.searchTo.format("YYYY-MM-DD") });
     parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
     parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
+
+    if(riskFactors.length > 0) {
+      riskFactors.forEach(element => {
+        parameters.push(<ParameterKeyValueModel> { key: 'riskFactorOptionNames', value: element.optionName});
+      })
+    }
 
     return this.Get<AnalyserPatientWrapperModel>(`/workflow/892F3305-7819-4F18-8A87-11CBA3AEE219/analysisterms/${termId}/patients`, 'application/vnd.pvims.analyserpatientset.v1+json', parameters);
   }

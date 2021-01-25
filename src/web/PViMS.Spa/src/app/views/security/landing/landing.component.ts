@@ -21,7 +21,7 @@ export class LandingComponent implements OnInit {
 
   navigateToSpontaneous(): void {
     let self = this;
-    self._router.navigate([_routes.security.spontaneous]);
+    self._router.navigate([_routes.public.spontaneous]);
   }
 
   navigateToLogin(): void {

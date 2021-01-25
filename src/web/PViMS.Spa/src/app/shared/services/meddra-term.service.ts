@@ -90,4 +90,11 @@ export class MeddraTermService extends BaseService {
       return this.Get<MeddraTermDetailWrapperModel>('', 'application/vnd.pvims.detail.v1+json', parameters);
     }
 
+    saveMedDraFile(fileToUpload: File): any {
+      const formData: FormData = new FormData();
+      formData.append('source', fileToUpload, fileToUpload.name);
+
+      return this.PostFile('', formData);
+    }
+
 }

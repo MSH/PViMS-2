@@ -27,7 +27,7 @@ namespace PVIMS.API.Models
         public string ContentPage { get; set; }
 
         /// <summary>
-        /// Any additional comments to the status
+        /// Widget content
         /// </summary>
         [DataMember]
         public string Content { get; set; }
@@ -37,6 +37,5 @@ namespace PVIMS.API.Models
         /// </summary>
         [DataMember]
         public string Modified { get; set; }
-
     }
 }

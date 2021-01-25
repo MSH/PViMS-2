@@ -8,12 +8,16 @@ export const _paths = {
       _501: `501`,
       general: `general`,
   },
+  public: `public`,
+  publicPath: {
+      spontaneous: `spontaneous`,
+  },
   security: `security`,
   securityPath: {
+      landing: `landing`,
       login: `login`,
       forgotPassword: `forgot-password`,
-      lockscreen: `lockscreen`,
-      spontaneous: `spontaneous`,
+      lockscreen: `lockscreen`
   },
   clinical: `clinical`,
   clinicalPath: {
@@ -50,13 +54,15 @@ export const _paths = {
   },
   information: `information`,
   informationPath: {
-    home: `pageviewer/:id`
+    view: `pageviewer/:id`
   },
   administration: `administration`,
   administrationPath: {
     landing: `landing`,
     work: {
-        datasetcategory: `work/datasetcategory/:datasetid`
+        dataset: `work/dataset`,
+        datasetcategory: `work/datasetcategory/:datasetid`,
+        datasetcategoryelement: `work/datasetcategoryelement/:datasetid/:datasetcategoryid`
     }
   }
 };

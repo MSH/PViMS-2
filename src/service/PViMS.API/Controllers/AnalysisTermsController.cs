@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Xml;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -29,18 +31,21 @@ namespace PVIMS.API.Controllers
     {
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
         private readonly IRepositoryInt<TerminologyMedDra> _termsRepository;
+        private readonly IRepositoryInt<RiskFactor> _riskFactorRepository;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
         private readonly IUnitOfWorkInt _unitOfWork;
 
         public AnalysisTermsController(IRepositoryInt<WorkFlow> workFlowRepository,
                 IRepositoryInt<TerminologyMedDra> termsRepository,
+                IRepositoryInt<RiskFactor> riskFactorRepository,
                 IMapper mapper,
                 IUnitOfWorkInt unitOfWork,
                 IUrlHelper urlHelper)
         {
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _termsRepository = termsRepository ?? throw new ArgumentNullException(nameof(termsRepository));
+            _riskFactorRepository = riskFactorRepository ?? throw new ArgumentNullException(nameof(riskFactorRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -60,7 +65,6 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<AnalyserTermIdentifierDto>> GetAnalyserTermsByIdentifier(Guid workFlowGuid,
                         [FromQuery] AnalyserTermSetResourceParameters analyserTermSetResourceParameters)
         {
@@ -127,7 +131,6 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.analyserpatientset.v1+json", "application/vnd.pvims.analyserpatientset.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.analyserpatientset.v1+json", "application/vnd.pvims.analyserpatientset.v1+xml")]
-        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<AnalyserPatientDto>> GetAnalyserTermPatients(Guid workFlowGuid, int id, 
                         [FromQuery] AnalyserTermSetResourceParameters analyserTermSetResourceParameters)
         {
@@ -187,16 +190,50 @@ namespace PVIMS.API.Controllers
                 PageSize = analyserTermSetResourceParameters.PageSize
             };
 
+            // prepare risk factor xml
+            var riskFactorXml = "";
+            var includeRiskFactor = "False";
+
+            XmlDocument xmlDoc = new XmlDocument();
+            if (analyserTermSetResourceParameters.RiskFactorOptionNames?.Count > 0)
+            {
+                XmlNode rootNode = xmlDoc.CreateElement("Factors", "");
+
+                foreach (var display in analyserTermSetResourceParameters.RiskFactorOptionNames)
+                {
+                    var riskFactor = _riskFactorRepository.Get(r => r.Options.Any(ro => ro.Display == display));
+                    if(riskFactor != null)
+                    {
+                        XmlNode factorNode = xmlDoc.CreateElement("Factor", "");
+
+                        XmlNode factorChildNode = xmlDoc.CreateElement("Name", "");
+                        factorChildNode.InnerText = riskFactor.FactorName;
+                        factorNode.AppendChild(factorChildNode);
+
+                        factorChildNode = xmlDoc.CreateElement("Option", "");
+                        factorChildNode.InnerText = riskFactor.Options.Single(ro => ro.Display == display)?.Display;
+                        factorNode.AppendChild(factorChildNode);
+
+                        rootNode.AppendChild(factorNode);
+                        includeRiskFactor = "True";
+                    }
+                }
+
+                xmlDoc.AppendChild(rootNode);
+
+                riskFactorXml = xmlDoc.InnerXml;
+            }
+
             List<SqlParameter> parameters = new List<SqlParameter>();
             parameters.Add(new SqlParameter("@ConditionId", analyserTermSetResourceParameters.ConditionId.ToString()));
             parameters.Add(new SqlParameter("@CohortId", analyserTermSetResourceParameters.CohortGroupId.ToString()));
             parameters.Add(new SqlParameter("@StartDate", analyserTermSetResourceParameters.SearchFrom.ToString()));
             parameters.Add(new SqlParameter("@FinishDate", analyserTermSetResourceParameters.SearchTo.ToString()));
             parameters.Add(new SqlParameter("@TermID", "0"));
-            parameters.Add(new SqlParameter("@IncludeRiskFactor", "False"));
+            parameters.Add(new SqlParameter("@IncludeRiskFactor", includeRiskFactor));
             parameters.Add(new SqlParameter("@RateByCount", "True"));
             parameters.Add(new SqlParameter("@DebugPatientList", "False"));
-            parameters.Add(new SqlParameter("@RiskFactorXml", ""));
+            parameters.Add(new SqlParameter("@RiskFactorXml", riskFactorXml));
             parameters.Add(new SqlParameter("@DebugMode", "False"));
 
             var resultsFromService = _unitOfWork.Repository<ContingencyAnalysisList>()
@@ -238,16 +275,50 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private ICollection<T> GetAnalyserResultSets<T>(int termId, AnalyserTermSetResourceParameters analyserTermSetResourceParameters) where T : class
         {
+            // prepare risk factor xml
+            var riskFactorXml = "";
+            var includeRiskFactor = "False";
+
+            XmlDocument xmlDoc = new XmlDocument();
+            if (analyserTermSetResourceParameters.RiskFactorOptionNames?.Count > 0)
+            {
+                XmlNode rootNode = xmlDoc.CreateElement("Factors", "");
+
+                foreach (var display in analyserTermSetResourceParameters.RiskFactorOptionNames)
+                {
+                    var riskFactor = _riskFactorRepository.Get(r => r.Options.Any(ro => ro.Display == display));
+                    if (riskFactor != null)
+                    {
+                        XmlNode factorNode = xmlDoc.CreateElement("Factor", "");
+
+                        XmlNode factorChildNode = xmlDoc.CreateElement("Name", "");
+                        factorChildNode.InnerText = riskFactor.FactorName;
+                        factorNode.AppendChild(factorChildNode);
+
+                        factorChildNode = xmlDoc.CreateElement("Option", "");
+                        factorChildNode.InnerText = riskFactor.Options.Single(ro => ro.Display == display)?.Display;
+                        factorNode.AppendChild(factorChildNode);
+
+                        rootNode.AppendChild(factorNode);
+                        includeRiskFactor = "True";
+                    }
+                }
+
+                xmlDoc.AppendChild(rootNode);
+
+                riskFactorXml = xmlDoc.InnerXml;
+            }
+
             List<SqlParameter> parameters = new List<SqlParameter>();
             parameters.Add(new SqlParameter("@ConditionId", analyserTermSetResourceParameters.ConditionId.ToString()));
             parameters.Add(new SqlParameter("@CohortId", analyserTermSetResourceParameters.CohortGroupId.ToString()));
             parameters.Add(new SqlParameter("@StartDate", analyserTermSetResourceParameters.SearchFrom.ToString()));
             parameters.Add(new SqlParameter("@FinishDate", analyserTermSetResourceParameters.SearchTo.ToString()));
             parameters.Add(new SqlParameter("@TermID", termId.ToString()));
-            parameters.Add(new SqlParameter("@IncludeRiskFactor", "False"));
+            parameters.Add(new SqlParameter("@IncludeRiskFactor", includeRiskFactor));
             parameters.Add(new SqlParameter("@RateByCount", "True"));
             parameters.Add(new SqlParameter("@DebugPatientList", "False"));
-            parameters.Add(new SqlParameter("@RiskFactorXml", ""));
+            parameters.Add(new SqlParameter("@RiskFactorXml", riskFactorXml));
             parameters.Add(new SqlParameter("@DebugMode", "False"));
 
             var resultsFromService = _unitOfWork.Repository<ContingencyAnalysisItem>()
@@ -278,16 +349,50 @@ namespace PVIMS.API.Controllers
                 PageSize = analyserTermSetResourceParameters.PageSize
             };
 
+            // prepare risk factor xml
+            var riskFactorXml = "";
+            var includeRiskFactor = "False";
+
+            XmlDocument xmlDoc = new XmlDocument();
+            if (analyserTermSetResourceParameters.RiskFactorOptionNames?.Count > 0)
+            {
+                XmlNode rootNode = xmlDoc.CreateElement("Factors", "");
+
+                foreach (var display in analyserTermSetResourceParameters.RiskFactorOptionNames)
+                {
+                    var riskFactor = _riskFactorRepository.Get(r => r.Options.Any(ro => ro.Display == display));
+                    if (riskFactor != null)
+                    {
+                        XmlNode factorNode = xmlDoc.CreateElement("Factor", "");
+
+                        XmlNode factorChildNode = xmlDoc.CreateElement("Name", "");
+                        factorChildNode.InnerText = riskFactor.FactorName;
+                        factorNode.AppendChild(factorChildNode);
+
+                        factorChildNode = xmlDoc.CreateElement("Option", "");
+                        factorChildNode.InnerText = riskFactor.Options.Single(ro => ro.Display == display)?.Display;
+                        factorNode.AppendChild(factorChildNode);
+
+                        rootNode.AppendChild(factorNode);
+                        includeRiskFactor = "True";
+                    }
+                }
+
+                xmlDoc.AppendChild(rootNode);
+
+                riskFactorXml = xmlDoc.InnerXml;
+            }
+
             List<SqlParameter> parameters = new List<SqlParameter>();
             parameters.Add(new SqlParameter("@ConditionId", analyserTermSetResourceParameters.ConditionId.ToString()));
             parameters.Add(new SqlParameter("@CohortId", analyserTermSetResourceParameters.CohortGroupId.ToString()));
             parameters.Add(new SqlParameter("@StartDate", analyserTermSetResourceParameters.SearchFrom.ToString()));
             parameters.Add(new SqlParameter("@FinishDate", analyserTermSetResourceParameters.SearchTo.ToString()));
             parameters.Add(new SqlParameter("@TermID", termId.ToString()));
-            parameters.Add(new SqlParameter("@IncludeRiskFactor", "False"));
+            parameters.Add(new SqlParameter("@IncludeRiskFactor", includeRiskFactor));
             parameters.Add(new SqlParameter("@RateByCount", "True"));
             parameters.Add(new SqlParameter("@DebugPatientList", "True"));
-            parameters.Add(new SqlParameter("@RiskFactorXml", ""));
+            parameters.Add(new SqlParameter("@RiskFactorXml", riskFactorXml));
             parameters.Add(new SqlParameter("@DebugMode", "False"));
 
             var resultsFromService = PagedCollection<ContingencyAnalysisPatient>.Create(_unitOfWork.Repository<ContingencyAnalysisPatient>()

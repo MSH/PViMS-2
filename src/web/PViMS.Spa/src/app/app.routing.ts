@@ -8,13 +8,13 @@ export const rootRouterConfig: Routes = [
   { path: '', 
     component: AuthLayoutComponent, 
     children: [ 
+      { path: 'public', loadChildren: () => import('./views/public/public.module').then(m => m.PublicModule), data: { title: 'Public', breadcrumb: 'PUBLIC'} },
       { path: 'security', loadChildren: () => import('./views/security/security.module').then(m => m.SessionsModule), data: { title: 'Security'} }
     ]
   },
   { path: '', 
     component: AdminLayoutComponent, canActivate: [AuthGuard],
     children: [
-      { path: 'others', loadChildren: () => import('./views/others/others.module').then(m => m.OthersModule), data: { title: 'Others', breadcrumb: 'OTHERS'} },
       { path: 'error', loadChildren: () => import('./views/error/error.module').then(m => m.ErrorModule), data: { title: 'Error', breadcrumb: 'ERROR'} },
       { path: 'clinical', loadChildren: () => import('./views/clinical/clinical.module').then(m => m.ClinicalModule), data: { title: 'Clinical Portal', breadcrumb: 'Clinical Portal'} },
       { path: 'analytical', loadChildren: () => import('./views/analytical/analytical.module').then(m => m.AnalyticalModule), data: { title: 'Analytical Portal', breadcrumb: 'Analytical Portal'} },

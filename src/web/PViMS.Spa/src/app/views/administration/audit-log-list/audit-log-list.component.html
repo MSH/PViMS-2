@@ -20,6 +20,7 @@
                 <mat-option value="UserLogin">{{'User login' | translate }}</mat-option>
                 <mat-option value="SynchronisationSuccessful">{{'Synchronisation successful' | translate }}</mat-option>
                 <mat-option value="SynchronisationError">{{'Synchronisation error' | translate }}</mat-option>
+                <mat-option value="DataValidation">{{'Data validation notification' | translate }}</mat-option>
               </mat-select>
               <mat-error *ngIf="viewModelForm.get('auditType').hasError('required')">
                 {{'This is a required field' | translate}}

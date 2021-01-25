@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <RootNamespace>PVIMS.API</RootNamespace>
+    <UserSecretsId>3b9bc950-c2b8-4c39-a7c0-4d1f1a58718e</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

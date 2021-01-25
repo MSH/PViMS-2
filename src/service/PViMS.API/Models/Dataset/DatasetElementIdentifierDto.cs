@@ -31,6 +31,6 @@ namespace PVIMS.API.Models
         /// The type of field
         /// </summary>
         [DataMember]
-        public string fieldTypeName { get; set; }
+        public string FieldTypeName { get; set; }
     }
 }

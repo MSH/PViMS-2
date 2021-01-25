@@ -12,6 +12,7 @@ using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.API.Services;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Services;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -29,17 +30,20 @@ namespace PVIMS.API.Controllers
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<TerminologyMedDra> _termsRepository;
+        private readonly IMedDraService _medDraService;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
 
         public MeddraTermsController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
+            IMedDraService medDraService,
             IMapper mapper,
             IUrlHelper urlHelper,
             IRepositoryInt<TerminologyMedDra> termsRepository)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
+            _medDraService = medDraService ?? throw new ArgumentNullException(nameof(medDraService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
             _termsRepository = termsRepository ?? throw new ArgumentNullException(nameof(termsRepository));
@@ -127,6 +131,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.commonmeddra.v1+json", "application/vnd.pvims.commonmeddra.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.commonmeddra.v1+json", "application/vnd.pvims.commonmeddra.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MeddraTermIdentifierDto>> GetCommonMeddraTerms(
             [FromQuery] MeddraTermResourceParameters meddraTermResourceParameters)
         {
@@ -154,6 +159,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [RequestHeaderMatchesMediaType(HeaderNames.Accept,
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MeddraTermDetailDto>> GetMeddraTermsByDetail(
             [FromQuery] MeddraTermResourceParameters meddraTermResourceParameters)
         {
@@ -177,7 +183,7 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="meddraFileForImportDto">The attachment payload</param>
         /// <returns></returns>
-        [HttpPut(Name = "Import")]
+        [HttpPost(Name = "Import")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> Import([FromForm] MeddraFileForImportDto meddraFileForImportDto)
         {
@@ -208,14 +214,18 @@ namespace PVIMS.API.Controllers
                         await meddraFileForImportDto.Source.CopyToAsync(fileStream);
                     }
 
+                    var subDirectory = $"{Path.GetTempPath()}\\{generatedDate}";
                     // create a sub directory for zip decompression
-                    Directory.CreateDirectory($"{Path.GetTempPath()}\\{generatedDate}");
+                    Directory.CreateDirectory(subDirectory);
 
                     // uncompress into sub-directory
                     using (var zip = new ZipFile(fileNameAndPath))
                     {
                         zip.ExtractAll($"{Path.GetTempPath()}\\{generatedDate}");
                     }
+
+                    var response = _medDraService.ValidateSourceData(meddraFileForImportDto.Source.FileName, subDirectory);
+                    response += _medDraService.ImportSourceData(meddraFileForImportDto.Source.FileName, subDirectory);
 
                     return Ok();
                 }

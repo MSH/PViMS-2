@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace PVIMS.Core.Entities
 {
@@ -38,5 +40,30 @@ namespace PVIMS.Core.Entities
         public virtual ICollection<DatasetCategoryElement> DatasetCategoryElements { get; set; }
         public virtual ICollection<WorkPlanCareEventDatasetCategory> WorkPlanCareEventDatasetCategories { get; set; }
         public virtual ICollection<DatasetCategoryCondition> Conditions { get; set; }
+
+        public void AddElement(DatasetElement datasetElement)
+        {
+            if (datasetElement == null) { throw new ArgumentNullException(nameof(datasetElement)); };
+
+            if (DatasetCategoryElements.Any(dce => dce.DatasetElement.Id == datasetElement.Id))
+            {
+                throw new Exception("Element has already been added");
+            }
+
+            var datasetCategoryElement = new DatasetCategoryElement()
+            {
+                DatasetCategory = this,
+                Acute = false,
+                Chronic = false,
+                DatasetElement = datasetElement,
+                FieldOrder = 1,
+                FriendlyName = string.Empty,
+                Help = string.Empty,
+                Public = false,
+                System = false
+            };
+
+            DatasetCategoryElements.Add(datasetCategoryElement);
+        }
     }
 }
