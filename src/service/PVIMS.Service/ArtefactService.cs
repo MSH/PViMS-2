@@ -42,8 +42,8 @@ namespace PVIMS.Services
         public ICustomAttributeService _attributeService { get; set; }
         public IPatientService _patientService { get; set; }
 
-        public ArtefactService(IUnitOfWorkInt unitOfWork, 
-            ICustomAttributeService attributeService, 
+        public ArtefactService(IUnitOfWorkInt unitOfWork,
+            ICustomAttributeService attributeService,
             IPatientService patientService,
             IHostingEnvironment environment,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
@@ -1181,7 +1181,7 @@ namespace PVIMS.Services
                 i += 1;
 
                 var patientMedication = _patientMedicationRepository.Get(pm => pm.PatientMedicationGuid == med.ReportInstanceMedicationGuid);
-                if(patientMedication != null)
+                if (patientMedication != null)
                 {
                     IExtendable mcExtended = patientMedication;
 
@@ -1368,7 +1368,7 @@ namespace PVIMS.Services
 
             var weightSeries = _patientService.GetElementValues(patientEvent.Patient.Id, "Weight(kg)", 10);
 
-            if(weightSeries.Length > 0)
+            if (weightSeries.Length > 0)
             {
                 foreach (var weight in weightSeries[0].Series)
                 {
@@ -1541,7 +1541,7 @@ namespace PVIMS.Services
             table.AppendChild<TableRow>(tr);
 
             // Row 2
-            var temp = datasetInstance.GetInstanceValue("Reaction start date");
+            var temp = datasetInstance.GetInstanceValue("Reaction known start date");
             DateTime onsetDate = DateTime.TryParse(temp, out tempdt) ? tempdt : DateTime.MinValue;
 
             temp = datasetInstance.GetInstanceValue("Reaction date of recovery");
@@ -1570,7 +1570,7 @@ namespace PVIMS.Services
             tr.Append(PrepareHeaderCell("Duration", headerWidth));
             if (onsetDate != DateTime.MinValue && recoveryDate != DateTime.MinValue)
             {
-                var rduration = (onsetDate - recoveryDate).Days;
+                var rduration = (recoveryDate - onsetDate).Days;
                 tr.Append(PrepareCell(rduration.ToString() + " days", cellWidth));
             }
             else
@@ -1655,11 +1655,11 @@ namespace PVIMS.Services
 
                 var drugItemValues = datasetInstance.GetInstanceSubValues(sourceProductElement.ElementName, med.ReportInstanceMedicationGuid);
 
-                var startValue = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product start date");
-                var endValue = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product end date");
+                var startValue = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Start Date");
+                var endValue = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug End Date");
                 var dose = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Dose number");
-                var route = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product route of administration");
-                var indication = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product indication");
+                var route = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug route of administration");
+                var indication = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Indication");
 
                 // Row 1
                 var tr = new TableRow();
@@ -1685,8 +1685,8 @@ namespace PVIMS.Services
                 tr.AppendChild<TableRowProperties>(rprops);
 
                 tr.Append(PrepareCell(drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product").InstanceValue, 2500, false));
-                tr.Append(PrepareCell(startValue != null ? startValue.InstanceValue : string.Empty, 1250));
-                tr.Append(PrepareCell(endValue != null ? endValue.InstanceValue : string.Empty, 1250));
+                tr.Append(PrepareCell(startValue != null ? Convert.ToDateTime(startValue.InstanceValue).ToString("yyyy-MM-dd") : string.Empty, 1250));
+                tr.Append(PrepareCell(endValue != null ? Convert.ToDateTime(endValue.InstanceValue).ToString("yyyy-MM-dd") : string.Empty, 1250));
                 tr.Append(PrepareCell(dose != null ? dose.InstanceValue : string.Empty, 1250));
                 tr.Append(PrepareCell(route != null ? route.InstanceValue : string.Empty, 1250));
                 tr.Append(PrepareCell(indication != null ? indication.InstanceValue : string.Empty, 3852, false));
@@ -1800,7 +1800,7 @@ namespace PVIMS.Services
                 tr.AppendChild<TableRowProperties>(rprops);
 
                 tr.Append(PrepareCell(labItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Test Name").InstanceValue, 2500, false));
-                tr.Append(PrepareCell(testDate != null ? testDate.InstanceValue : string.Empty, 2500));
+                tr.Append(PrepareCell(testDate != null ? Convert.ToDateTime(testDate.InstanceValue).ToString("yyyy-MM-dd") : string.Empty, 2500));
                 tr.Append(PrepareCell(testResult != null ? testResult.InstanceValue : string.Empty, 6352, false));
 
                 table.AppendChild<TableRow>(tr);
