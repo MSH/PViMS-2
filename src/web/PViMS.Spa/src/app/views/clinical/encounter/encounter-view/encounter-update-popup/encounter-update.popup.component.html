@@ -14,14 +14,12 @@
                     <mat-label>{{element.datasetElementDisplayName | translate}}</mat-label>
                     <input matInput formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" readonly>
                   </mat-form-field>
-
                   <mat-form-field class="p-8 full-width" *ngIf="element.datasetElementType == 'AlphaNumericTextbox' && !element.datasetElementSystem && element.stringMaxLength <= 100">
                     <input matInput formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" [required]="element.required">
                     <mat-hint *ngIf="element.stringMaxLength != null">
                       {{'Maximum length' | translate}} {{element.stringMaxLength}}
                     </mat-hint>
                   </mat-form-field>
-
                   <mat-form-field class="p-8 full-width" *ngIf="element.datasetElementType == 'AlphaNumericTextbox' && !element.datasetElementSystem && element.stringMaxLength > 100" appearance="outline">
                     <textarea matInput formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" [required]="element.required" rows="8"></textarea>
                     <mat-hint *ngIf="element.datasetElementHelp != ''">
@@ -31,7 +29,6 @@
                       {{'Maximum length' | translate}} {{element.stringMaxLength}}
                     </mat-hint>
                   </mat-form-field>
-  
                   <mat-form-field class="p-8 full-width" *ngIf="element.datasetElementType == 'NumericTextbox' && !element.datasetElementSystem">
                     <input matInput formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" type="number" [required]="element.required">
                     <mat-hint *ngIf="element.numericMinValue != null && element.numericMaxValue != null">
