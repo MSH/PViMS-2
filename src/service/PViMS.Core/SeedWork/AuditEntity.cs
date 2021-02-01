@@ -24,6 +24,9 @@ namespace PVIMS.Core.SeedWork
 
         public DateTime Created { get; protected set; }
         public DateTime? LastUpdated { get; protected set; }
+        public int CreatedById { get; protected set; }
+        public int? UpdatedById { get; protected set; }
+
         public virtual TUser UpdatedBy { get; protected set; }
         public virtual TUser CreatedBy { get; protected set; }
     }
