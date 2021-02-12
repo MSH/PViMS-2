@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using PVIMS.Infrastructure.EntityConfigurations;
-using PVIMS.Core.Entities;
-using PVIMS.Core.SeedWork;
 using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Keyless;
+using PVIMS.Core.SeedWork;
+using PVIMS.Infrastructure.EntityConfigurations;
 
 namespace PVIMS.Infrastructure
 {
@@ -188,6 +189,59 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new FacilityTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new FieldEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new FieldTypeEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new FieldValueEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new HolidayEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new LabResultEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new LabTestEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new LabTestUnitEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new LanguageEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MedDRAGradingEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MedDRAScaleEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MedicationFormEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaColumnEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaColumnTypeEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaDependencyEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaFormEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaPageEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaReportEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaTableEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaTableTypeEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaWidgetEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaWidgetTypeEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new OrgUnitEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new OutcomeEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientClinicalEventEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientConditionEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientFacilityEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientLabTestEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientLanguageEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientMedicationEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientStatusEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientStatusHistoryEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PostDeploymentEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PregnancyEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PriorityEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ProductEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new RefreshTokenEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ReportInstanceEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ReportInstanceMedicationEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new RiskFactorEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new RiskFactorOptionEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new RoleEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new SelectionDataItemEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new SiteContactDetailEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new SystemLogEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new TerminologyIcd10EntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new TerminologyMedDraEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new TreatmentOutcomeEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new UserFacilityEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new UserRoleEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkFlowEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkPlanEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkPlanCareEventEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkPlanCareEventDatasetCategoryEntityTypeConfiguration());
         }
 
         public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default(CancellationToken))
