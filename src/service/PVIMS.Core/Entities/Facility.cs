@@ -1,10 +1,8 @@
+using PVIMS.Core.Entities.Accounts;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(Facility))]
     public class Facility : EntityBase
 	{
 		public Facility()
@@ -13,25 +11,15 @@ namespace PVIMS.Core.Entities
             UserFacilities = new HashSet<UserFacility>();
 		}
 
-		[Required]
-		[StringLength(10)]
-		public string FacilityCode { get; set; }
-
-		[Required]
-		[StringLength(100)]
-		public string FacilityName { get; set; }
-
-        [StringLength(30)]
+        public string FacilityCode { get; set; }
+        public string FacilityName { get; set; }
+        public int FacilityTypeId { get; set; }
         public string TelNumber { get; set; }
-
-        [StringLength(30)]
         public string MobileNumber { get; set; }
-
-        [StringLength(30)]
         public string FaxNumber { get; set; }
+        public int? OrgUnitId { get; set; }
 
 		public virtual FacilityType FacilityType { get; set; }
-        
         public virtual OrgUnit OrgUnit { get; set; }
 
 		public virtual ICollection<PatientFacility> PatientFacilities { get; set; }

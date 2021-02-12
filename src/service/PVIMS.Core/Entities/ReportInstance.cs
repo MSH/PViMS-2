@@ -1,12 +1,10 @@
+using PVIMS.Core.Entities.Accounts;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(ReportInstance))]
     public class ReportInstance : AuditedEntityBase
 	{
         public ReportInstance()
@@ -15,7 +13,7 @@ namespace PVIMS.Core.Entities
             Identifier = "TBD";
 
             Activities = new HashSet<ActivityInstance>();
-            Medications = new HashSet<ReportInstanceMedication>();
+            ReportInstanceMedications = new HashSet<ReportInstanceMedication>();
         }
 
         public ReportInstance(WorkFlow workFlow, User currentUser)
@@ -26,33 +24,24 @@ namespace PVIMS.Core.Entities
             WorkFlow = workFlow;
 
             Activities = new HashSet<ActivityInstance>();
-            Medications = new HashSet<ReportInstanceMedication>();
+            ReportInstanceMedications = new HashSet<ReportInstanceMedication>();
             Activities.Add(InitialiseWithFirstActivity(workFlow, currentUser));
         }
 
-        [Required]
         public Guid ReportInstanceGuid { get; set; }
-
-        [Required]
-        public virtual WorkFlow WorkFlow { get; set; }
-
         public DateTime? Finished { get; set; }
-
+        public int WorkFlowId { get; set; }
         public Guid ContextGuid { get; set; }
-
-        [Required]
         public string Identifier { get; set; }
-
-        [Required]
         public string PatientIdentifier { get; set; }
-
-        [Required]
+        public int? TerminologyMedDraId { get; set; }
         public string SourceIdentifier { get; set; }
 
+        public virtual WorkFlow WorkFlow { get; set; }
         public virtual TerminologyMedDra TerminologyMedDra { get; set; }
 
         public virtual ICollection<ActivityInstance> Activities { get; set; }
-        public virtual ICollection<ReportInstanceMedication> Medications { get; set; }
+        public virtual ICollection<ReportInstanceMedication> ReportInstanceMedications { get; set; }
 
         public void SetIdentifier()
         {
@@ -99,7 +88,6 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        [NotMapped]
         public string DisplayStatus
         {
             get

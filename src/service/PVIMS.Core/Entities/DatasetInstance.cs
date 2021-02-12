@@ -1,16 +1,12 @@
-﻿using PVIMS.Core.ValueTypes;
-using PVIMS.Core.Exceptions;
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using PVIMS.Core.CustomAttributes;
-using System.ComponentModel.DataAnnotations.Schema;
-using PViMS.Core.ValueTypes;
+using PVIMS.Core.Exceptions;
+using PVIMS.Core.ValueTypes;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(DatasetInstance))]
     public class DatasetInstance : AuditedEntityBase
     {
         public DatasetInstance()
@@ -21,17 +17,15 @@ namespace PVIMS.Core.Entities
             DatasetInstanceValues = new HashSet<DatasetInstanceValue>();
         }
 
-        [Required]
-        public virtual Dataset Dataset { get; set; }
-        public Guid DatasetInstanceGuid { get; set; }
-
-        [Required]
-        public int ContextID { get; set; }
-
+        public int ContextId { get; set; }
+        public int DatasetId { get; set; }
+        public int? EncounterTypeWorkPlanId { get; set; }
         public string Tag { get; set; }
+        public Guid DatasetInstanceGuid { get; set; }
+        public DatasetInstanceStatus Status { get; set; }
 
+        public virtual Dataset Dataset { get; set; }
         public virtual EncounterTypeWorkPlan EncounterTypeWorkPlan { get; set; }
-        public virtual DatasetInstanceStatus Status { get; set; }
 
         public virtual ICollection<DatasetInstanceValue> DatasetInstanceValues { get; set; }
 
@@ -227,7 +221,7 @@ namespace PVIMS.Core.Entities
                 case MappingType.AttributeToValue:
                 case MappingType.FirstClassToValue:
                     // Map value to value
-                    var mappedValue = mapping.Values.SingleOrDefault(mv => mv.SourceValue == sourceValue && mv.Active == true);
+                    var mappedValue = mapping.DatasetMappingValues.SingleOrDefault(mv => mv.SourceValue == sourceValue && mv.Active == true);
                     if (mappedValue != null)
                     {
                         formattedValue = mappedValue.DestinationValue;
@@ -323,7 +317,7 @@ namespace PVIMS.Core.Entities
                 case MappingType.AttributeToValue:
                 case MappingType.FirstClassToValue:
                     // Map value to value
-                    var mappedValue = subMapping.Values.SingleOrDefault(mv => mv.SourceValue == sourceValue && mv.Active == true);
+                    var mappedValue = subMapping.DatasetMappingValues.SingleOrDefault(mv => mv.SourceValue == sourceValue && mv.Active == true);
                     if (mappedValue != null)
                     {
                         formattedValue = mappedValue.DestinationValue;

@@ -1,27 +1,21 @@
+using PVIMS.Core.Entities.Accounts;
 using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(PatientStatusHistory))]
     public class PatientStatusHistory : AuditedEntityBase
 	{
-		public DateTime EffectiveDate { get; set; }
-
-		[StringLength(100)]
+        public DateTime EffectiveDate { get; set; }
         public string Comments { get; set; }
-        [DefaultValue(false)]
+        public int PatientId { get; set; }
+        public int PatientStatusId { get; set; }
         public bool Archived { get; set; }
         public DateTime? ArchivedDate { get; set; }
-        [StringLength(200)]
         public string ArchivedReason { get; set; }
-        public int? AuditUser_Id { get; set; }
+        public int? AuditUserId { get; set; }
 
 		public virtual Patient Patient { get; set; }
 		public virtual PatientStatus PatientStatus { get; set; }
         public virtual User AuditUser { get; set; }
-
 	}
 }

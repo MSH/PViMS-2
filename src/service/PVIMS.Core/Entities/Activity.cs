@@ -1,10 +1,8 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using PVIMS.Core.ValueTypes;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(Activity))]
     public class Activity : EntityBase
 	{
         public Activity()
@@ -17,6 +15,7 @@ namespace PVIMS.Core.Entities
 
         public virtual ActivityTypes ActivityType { get; set; }
         public virtual WorkFlow WorkFlow { get; set; }
+
         public virtual ICollection<ActivityExecutionStatus> ExecutionStatuses { get; set; }
     }
 }

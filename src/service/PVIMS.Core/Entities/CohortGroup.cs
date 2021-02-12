@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(CohortGroup))]
     public partial class CohortGroup : EntityBase
     {
         public CohortGroup()
@@ -14,28 +11,17 @@ namespace PVIMS.Core.Entities
             EncounterTypeWorkPlans = new HashSet<EncounterTypeWorkPlan>();
         }
 
-        [Required]
-        [StringLength(50)]
         public string CohortName { get; set; }
-
-        [Required]
-        [StringLength(5)]
         public string CohortCode { get; set; }
-
         public int LastPatientNo { get; set; }
-
         public DateTime StartDate { get; set; }
-
         public DateTime? FinishDate { get; set; }
-
         public int MinEnrolment { get; set; }
-
         public int MaxEnrolment { get; set; }
+        public int? ConditionId { get; set; }
 
         public virtual Condition Condition { get; set; }
-
         public virtual ICollection<CohortGroupEnrolment> CohortGroupEnrolments { get; set; }
-
         public virtual ICollection<EncounterTypeWorkPlan> EncounterTypeWorkPlans { get; set; }
 
         public string DisplayName

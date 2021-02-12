@@ -1,46 +1,29 @@
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using PVIMS.Core.ValueTypes;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(MetaWidget))]
     public class MetaWidget : EntityBase
     {
         public MetaWidget()
         {
-            metawidget_guid = Guid.NewGuid();
+            MetaWidgetGuid = Guid.NewGuid();
 
             WidgetStatus = MetaWidgetStatus.Unpublished;
             WidgetLocation = MetaWidgetLocation.Unassigned;
         }
 
-        [Required]
-        public Guid metawidget_guid { get; set; }
-
-        [Required]
-        [StringLength(50)]
+        public Guid MetaWidgetGuid { get; set; }
         public string WidgetName { get; set; }
-
-        [Required]
-        public virtual MetaWidgetType WidgetType { get; set; }
-
-        [Required]
-        public virtual MetaWidgetStatus WidgetStatus { get; set; }
-
-        [Required]
-        public virtual MetaWidgetLocation WidgetLocation { get; set; }
-
-        [Required]
-        public virtual MetaPage MetaPage { get; set; }
-
-        [StringLength(250)]
         public string WidgetDefinition { get; set; }
-
         public string Content { get; set; }
-
+        public int WidgetTypeId { get; set; }
+        public int MetaPageId { get; set; }
+        public MetaWidgetLocation WidgetLocation { get; set; }
+        public MetaWidgetStatus WidgetStatus { get; set; }
         public string Icon { get; set; }
 
+        public virtual MetaWidgetType WidgetType { get; set; }
+        public virtual MetaPage MetaPage { get; set; }
     }
 }

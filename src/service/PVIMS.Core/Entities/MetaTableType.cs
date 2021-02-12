@@ -1,17 +1,18 @@
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(MetaTableType))]
     public class MetaTableType : EntityBase
     {
-        [Required]
-        public Guid metatabletype_guid { get; set; }
+        public MetaTableType()
+        {
+            MetaTables = new HashSet<MetaTable>();
+        }
 
-        [Required]
-        [StringLength(50)]
+        public Guid MetaTableTypeGuid { get; set; }
         public string Description { get; set; }
+
+        public virtual ICollection<MetaTable> MetaTables { get; set; }
     }
 }

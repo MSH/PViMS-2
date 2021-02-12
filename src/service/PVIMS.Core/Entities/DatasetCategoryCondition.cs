@@ -1,14 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace PVIMS.Core.Entities
+﻿namespace PVIMS.Core.Entities
 {
-    [Table(nameof(DatasetCategoryCondition))]
     public class DatasetCategoryCondition : EntityBase
     {
-        [Required]
+        public int ConditionId { get; set; }
+        public int DatasetCategoryId { get; set; }
+
         public virtual DatasetCategory DatasetCategory { get; set; }
-        [Required]
         public virtual Condition Condition { get; set; }
     }
 }

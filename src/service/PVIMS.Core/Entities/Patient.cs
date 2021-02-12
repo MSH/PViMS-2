@@ -1,22 +1,21 @@
 using PVIMS.Core.CustomAttributes;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Models;
 using PVIMS.Core.Utilities;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(Patient))]
     public class Patient : AuditedEntityBase, IExtendable
 	{
 		public Patient()
 		{
-			Attachments = new HashSet<Attachment>();
-			Encounters = new HashSet<Encounter>();
+            Appointments = new HashSet<Appointment>();
+            Attachments = new HashSet<Attachment>();
+            CohortEnrolments = new HashSet<CohortGroupEnrolment>();
+            Encounters = new HashSet<Encounter>();
 			PatientClinicalEvents = new HashSet<PatientClinicalEvent>();
 			PatientConditions = new HashSet<PatientCondition>();
 			PatientFacilities = new HashSet<PatientFacility>();
@@ -24,34 +23,28 @@ namespace PVIMS.Core.Entities
 			PatientLanguages = new HashSet<PatientLanguage>();
 			PatientMedications = new HashSet<PatientMedication>();
 			PatientStatusHistories = new HashSet<PatientStatusHistory>();
-            Appointments = new HashSet<Appointment>();
-            CohortEnrolments = new HashSet<CohortGroupEnrolment>();
+            Pregnancies = new HashSet<Pregnancy>();
 
             PatientGuid = Guid.NewGuid();
         }
 
-		[Column(TypeName = "date")]
-		public DateTime? DateOfBirth { get; set; }
-
-        [Required]
+        public DateTime? DateOfBirth { get; set; }
         public string FirstName { get; set; }
-        [Required]
         public string Surname { get; set; }
+        public string Notes { get; set; }
+        public Guid PatientGuid { get; set; }
         public string MiddleName { get; set; }
-
-		public string Notes { get; set; }
-		public Guid PatientGuid { get; set; }
-        [DefaultValue(false)]
         public bool Archived { get; set; }
         public DateTime? ArchivedDate { get; set; }
-        [StringLength(200)]
         public string ArchivedReason { get; set; }
-
-        public int? AuditUser_Id { get; set; }
+        public int? AuditUserId { get; set; }
 
         public virtual User AuditUser { get; set; }
-		public virtual ICollection<Attachment> Attachments { get; set; }
-		public virtual ICollection<Encounter> Encounters { get; set; }
+
+        public virtual ICollection<Appointment> Appointments { get; set; }
+        public virtual ICollection<Attachment> Attachments { get; set; }
+        public virtual ICollection<CohortGroupEnrolment> CohortEnrolments { get; set; }
+        public virtual ICollection<Encounter> Encounters { get; set; }
 		public virtual ICollection<PatientClinicalEvent> PatientClinicalEvents { get; set; }
 		public virtual ICollection<PatientCondition> PatientConditions { get; set; }
 		public virtual ICollection<PatientFacility> PatientFacilities { get; set; }
@@ -59,8 +52,7 @@ namespace PVIMS.Core.Entities
 		public virtual ICollection<PatientLanguage> PatientLanguages { get; set; }
 		public virtual ICollection<PatientMedication> PatientMedications { get; set; }
 		public virtual ICollection<PatientStatusHistory> PatientStatusHistories { get; set; }
-        public virtual ICollection<Appointment> Appointments { get; set; }
-        public virtual ICollection<CohortGroupEnrolment> CohortEnrolments { get; set; }
+        public virtual ICollection<Pregnancy> Pregnancies { get; set; }
 
         public int Age
         {
@@ -196,7 +188,6 @@ namespace PVIMS.Core.Entities
             get { return customAttributes; }
         }
 
-        [Column(TypeName = "xml")]
         public string CustomAttributesXmlSerialised
         {
 

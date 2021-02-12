@@ -1,47 +1,40 @@
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(Dataset))]
     public class Dataset : AuditedEntityBase
 	{
 		public Dataset()
 		{
             Created = DateTime.Now;
 			DatasetCategories = new HashSet<DatasetCategory>();
+            DatasetInstances = new HashSet<DatasetInstance>();
             DatasetRules = new HashSet<DatasetRule>();
-		}
+            WorkPlans = new HashSet<WorkPlan>();
+        }
 
-		[Required]
-		[StringLength(50)]
-		public string DatasetName { get; set; }
-		public virtual ContextType ContextType { get; set; }
-
-        [StringLength(10)]
-        public string UID { get; set; }
-
-		[StringLength(100)]
-		public string InitialiseProcess { get; set; }
-
-		[StringLength(100)]
-		public string RulesProcess { get; set; }
-
-		[StringLength(250)]
-		public string Help { get; set; }
-
-        public bool IsSystem { get; set; }
+        public string DatasetName { get; set; }
         public bool Active { get; set; }
+        public string InitialiseProcess { get; set; }
+        public string RulesProcess { get; set; }
+        public string Help { get; set; }
+        public int ContextTypeId { get; set; }
+        public int? EncounterTypeWorkPlanId { get; set; }
+        public string Uid { get; set; }
+        public bool IsSystem { get; set; }
+        public int? DatasetXmlId { get; set; }
 
-        public EncounterTypeWorkPlan EncounterTypeWorkPlan { get; set; }
+		public virtual ContextType ContextType { get; set; }
+        public virtual EncounterTypeWorkPlan EncounterTypeWorkPlan { get; set; }
         public virtual DatasetXml DatasetXml { get; set; }
 
 		public virtual ICollection<DatasetCategory> DatasetCategories { get; set; }
+        public virtual ICollection<DatasetInstance> DatasetInstances { get; set; }
         public virtual ICollection<DatasetRule> DatasetRules { get; set; }
+        public virtual ICollection<WorkPlan> WorkPlans { get; set; }
 
         public DatasetInstance CreateInstance(int contextId, EncounterTypeWorkPlan encounterTypeWorkPlan)
         {
@@ -49,7 +42,7 @@ namespace PVIMS.Core.Entities
             {
                 Dataset = this,
                 EncounterTypeWorkPlan = encounterTypeWorkPlan,
-                ContextID = contextId
+                ContextId = contextId
             };
 
             // Create table elements automatically
