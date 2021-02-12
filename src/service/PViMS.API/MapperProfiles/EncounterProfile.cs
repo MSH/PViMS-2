@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using PVIMS.API.Models;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Models;
 using System.Linq;
 

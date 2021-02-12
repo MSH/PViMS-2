@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using PVIMS.API.Models;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Models;
+using PVIMS.Core.Entities.Keyless;
 using System;
 
 namespace PVIMS.API.MapperProfiles
