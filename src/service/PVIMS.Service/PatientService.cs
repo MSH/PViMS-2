@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
@@ -93,7 +94,7 @@ namespace PVIMS.Services
             var values = new List<SeriesValueListItem>();
             foreach (Encounter encounter in encounters)
             {
-                var datasetInstance = _datasetInstanceRepository.Get(di => di.ContextID == encounter.Id && di.Dataset.ContextType.Id == (int)ContextTypes.Encounter);
+                var datasetInstance = _datasetInstanceRepository.Get(di => di.ContextId == encounter.Id && di.Dataset.ContextType.Id == (int)ContextTypes.Encounter);
                 if(datasetInstance != null)
                 {
                     var value = datasetInstance.GetInstanceValue(elementName);
@@ -133,7 +134,7 @@ namespace PVIMS.Services
             var encounter = patientFromRepo.GetCurrentEncounter();
             if (encounter == null) return null;
 
-            var datasetInstance = _datasetInstanceRepository.Get(di => di.ContextID == encounter.Id && di.Dataset.ContextType.Id == (int)ContextTypes.Encounter);
+            var datasetInstance = _datasetInstanceRepository.Get(di => di.ContextId == encounter.Id && di.Dataset.ContextType.Id == (int)ContextTypes.Encounter);
             if (datasetInstance == null) return null;
 
             var value = datasetInstance.GetInstanceValue(elementName);

@@ -47,7 +47,7 @@ namespace PVIMS.Services
                     },
                     ElementName = "TerminologyMedDra",
                     DefaultValue = string.Empty,
-                    OID = string.Empty,
+                    Oid = string.Empty,
                     System = true
                 };
                 var rule = meddraElement.GetRule(DatasetRuleType.ElementCanoOnlyLinkToSingleDataset);
