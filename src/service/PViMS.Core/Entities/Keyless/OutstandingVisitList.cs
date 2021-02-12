@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PVIMS.Core.Entities
+namespace PVIMS.Core.Entities.Keyless
 {
     public class OutstandingVisitList
     {
