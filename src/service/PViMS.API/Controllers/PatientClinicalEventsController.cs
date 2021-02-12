@@ -14,6 +14,7 @@ using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
@@ -500,7 +501,7 @@ namespace PVIMS.API.Controllers
             dto.SetMedDraTerm = reportInstanceFromRepo.TerminologyMedDra?.DisplayName;
 
             // Meddra medications
-            dto.Medications = _mapper.Map<ICollection<ReportInstanceMedicationDetailDto>>(reportInstanceFromRepo.Medications.Where(m => !String.IsNullOrWhiteSpace(m.WhoCausality) || (!String.IsNullOrWhiteSpace(m.NaranjoCausality))));
+            dto.Medications = _mapper.Map<ICollection<ReportInstanceMedicationDetailDto>>(reportInstanceFromRepo.ReportInstanceMedications.Where(m => !String.IsNullOrWhiteSpace(m.WhoCausality) || (!String.IsNullOrWhiteSpace(m.NaranjoCausality))));
 
             return dto;
         }

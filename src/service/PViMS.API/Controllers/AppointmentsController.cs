@@ -1,8 +1,16 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using AutoMapper;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Services;
@@ -10,18 +18,12 @@ using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using PVIMS.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 
 namespace PVIMS.API.Controllers
 {
@@ -271,7 +273,7 @@ namespace PVIMS.API.Controllers
                 {
                     AppointmentDate = appointmentForCreation.AppointmentDate,
                     Reason = appointmentForCreation.Reason,
-                    DNA = false,
+                    Dna = false,
                     Cancelled = false
                 };
 
@@ -400,14 +402,14 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Appointment date has not passed");
             }
 
-            if (appointmentFromRepo.DNA)
+            if (appointmentFromRepo.Dna)
             {
                 ModelState.AddModelError("Message", "Appointment already marked as DNA");
             }
 
             if (ModelState.IsValid)
             {
-                appointmentFromRepo.DNA = true;
+                appointmentFromRepo.Dna = true;
 
                 _appointmentRepository.Update(appointmentFromRepo);
                 _unitOfWork.Complete();

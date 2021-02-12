@@ -275,7 +275,7 @@ namespace PVIMS.API.Controllers
                 {
                     DatasetElementType = elementType,
                     ElementName = datasetElementForUpdate.ElementName,
-                    OID = datasetElementForUpdate.OID,
+                    Oid = datasetElementForUpdate.OID,
                     DefaultValue = datasetElementForUpdate.DefaultValue,
                     Field = new Field()
                     {
@@ -371,7 +371,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 datasetElementFromRepo.ElementName = datasetElementForUpdate.ElementName;
-                datasetElementFromRepo.OID = datasetElementForUpdate.OID;
+                datasetElementFromRepo.Oid = datasetElementForUpdate.OID;
                 datasetElementFromRepo.DefaultValue = datasetElementForUpdate.DefaultValue;
                 datasetElementFromRepo.System = (datasetElementForUpdate.System == Models.ValueTypes.YesNoValueType.Yes);
                 datasetElementFromRepo.Field.Mandatory = (datasetElementForUpdate.Mandatory == Models.ValueTypes.YesNoValueType.Yes);

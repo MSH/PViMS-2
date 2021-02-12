@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Services;
@@ -9,19 +10,19 @@ using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
+using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Extensions = PVIMS.Core.Utilities.Extensions;
-using PVIMS.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 
 namespace PVIMS.API.Controllers
 {
@@ -436,7 +437,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Core patient table",
                                 FriendlyName = "Patient",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "Core")
                             };
@@ -447,7 +448,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient adverse event history",
                                 FriendlyName = "Patient Adverse Events",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "CoreChild")
                             };
@@ -458,7 +459,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient condition history",
                                 FriendlyName = "Patient Conditions",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType =  _metaTableTypeRepository.Get(mtt => mtt.Description == "CoreChild")
                             };
@@ -469,7 +470,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Current facility",
                                 FriendlyName = "Current Facility",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "History")
                             };
@@ -480,7 +481,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient evaluation history",
                                 FriendlyName = "Patien Lab Tests",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "CoreChild")
                             };
@@ -491,7 +492,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient medication history",
                                 FriendlyName = "Patient Medications",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "CoreChild")
                             };
@@ -502,7 +503,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient encounter history",
                                 FriendlyName = "Patient Encounters",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "Child")
                             };
@@ -513,7 +514,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient cohort enrolments",
                                 FriendlyName = "Cohort Enrolment",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "CoreChild")
                             };
@@ -533,12 +534,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> PatientClinicalEvent
             var referenceTable = _metaTableRepository.Get(mt => mt.TableName == "PatientClinicalEvent");
-            var metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            var metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -549,12 +550,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> PatientCondition
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "PatientCondition");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -565,12 +566,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> PatientFacility
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "PatientFacility");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -581,12 +582,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> PatientLabTest
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "PatientLabTest");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -597,12 +598,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> PatientMedication
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "PatientMedication");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -613,12 +614,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> Encounter
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "Encounter");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -629,12 +630,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency  --> CohortGroupEnrolment
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "CohortGroupEnrolment");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -753,7 +754,7 @@ namespace PVIMS.API.Controllers
                                 IsIdentity = (property.Name == "Id"),
                                 //IsNullable = Nullable.GetUnderlyingType(property.PropertyType) != null,
                                 IsNullable = property.Name == "Id" ? false : true,
-                                metacolumn_guid = Guid.NewGuid(),
+                                MetaColumnGuid = Guid.NewGuid(),
                                 Table = metaTable,
                                 Range = range
                             };
@@ -790,7 +791,7 @@ namespace PVIMS.API.Controllers
                             ColumnType = metaColumnType,
                             IsIdentity = false,
                             IsNullable = true,
-                            metacolumn_guid = Guid.NewGuid(),
+                            MetaColumnGuid = Guid.NewGuid(),
                             Table = metaTable,
                             Range = range
                         };
@@ -834,7 +835,7 @@ namespace PVIMS.API.Controllers
                                 ColumnType = metaColumnType,
                                 IsIdentity = false,
                                 IsNullable = true,
-                                metacolumn_guid = Guid.NewGuid(),
+                                MetaColumnGuid = Guid.NewGuid(),
                                 Table = metaTable,
                                 Range = range
                             };
