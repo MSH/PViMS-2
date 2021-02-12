@@ -12,43 +12,62 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
+            configuration.Property(e => e.Created)
+                .IsRequired()
+                .HasColumnType("datetime");
+
+            configuration.Property(e => e.CreatedById)
+                .IsRequired()
+                .HasColumnName("CreatedBy_Id");
+
+            configuration.Property(e => e.CurrentStatusId)
+                .IsRequired()
+                .HasColumnName("CurrentStatus_Id");
+
+            configuration.Property(e => e.LastUpdated)
+                .HasColumnType("datetime");
+
             configuration.Property(c => c.QualifiedName)
-                .HasMaxLength(50)
-                .IsRequired(true);
+                .IsRequired()
+                .HasMaxLength(50);
 
-            configuration.Property(c => c.Created)
-                .IsRequired(true);
+            configuration.Property(e => e.ReportInstanceId)
+                .IsRequired()
+                .HasColumnName("ReportInstance_Id");
 
-            configuration.Property(c => c.LastUpdated)
-                .IsRequired(false);
-
-            configuration.HasOne(p => p.CreatedBy)
-                .WithMany()
-                .HasForeignKey("CreatedBy_Id");
-
-            configuration.HasOne(p => p.UpdatedBy)
-                .WithMany()
-                .HasForeignKey("UpdatedBy_Id");
-
-            configuration.HasOne(c => c.CurrentStatus)
-                .WithMany()
-                .HasForeignKey("CurrentStatus_Id");
-
-            configuration.HasOne(c => c.ReportInstance)
-                .WithMany()
-                .HasForeignKey("ReportInstance_Id");
+            configuration.Property(e => e.UpdatedById)
+                .HasColumnName("UpdatedBy_Id");
 
             configuration.Property(c => c.Current)
-                .HasDefaultValue(true)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(true);
 
-            configuration.HasMany(c => c.ExecutionEvents)
-               .WithOne()
-               .HasForeignKey("ActivityInstance_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.HasOne(d => d.CreatedBy)
+                .WithMany(p => p.ActivityInstanceCreations)
+                .HasForeignKey(d => d.CreatedById)
+                .HasConstraintName("FK_dbo.ActivityInstance_dbo.User_CreatedBy_Id");
 
-            configuration.HasIndex("QualifiedName", "ReportInstance_Id").IsUnique(true);
+            configuration.HasOne(d => d.CurrentStatus)
+                .WithMany(p => p.ActivityInstances)
+                .HasForeignKey(d => d.CurrentStatusId)
+                .HasConstraintName("FK_dbo.ActivityInstance_dbo.ActivityExecutionStatus_CurrentStatus_Id");
+
+            configuration.HasOne(d => d.ReportInstance)
+                .WithMany(p => p.Activities)
+                .HasForeignKey(d => d.ReportInstanceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.ActivityInstance_dbo.ReportInstance_ReportInstance_Id1");
+
+            configuration.HasOne(d => d.UpdatedBy)
+                .WithMany(p => p.ActivityInstanceUpdates)
+                .HasForeignKey(d => d.UpdatedById)
+                .HasConstraintName("FK_dbo.ActivityInstance_dbo.User_UpdatedBy_Id");
+
+            configuration.HasIndex(new string[] { "QualifiedName", "ReportInstance_Id" } ).IsUnique(true);
+            configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
+            configuration.HasIndex(e => e.CurrentStatusId, "IX_CurrentStatus_Id");
+            configuration.HasIndex(e => e.ReportInstanceId, "IX_ReportInstance_Id");
+            configuration.HasIndex(e => e.UpdatedById, "IX_UpdatedBy_Id");
         }
     }
 }

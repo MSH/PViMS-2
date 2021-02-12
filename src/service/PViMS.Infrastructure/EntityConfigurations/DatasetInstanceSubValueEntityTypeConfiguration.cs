@@ -12,23 +12,35 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
+            configuration.Property(e => e.DatasetElementSubId)
+                .IsRequired()
+                .HasColumnName("DatasetElementSub_Id");
+
+            configuration.Property(e => e.DatasetInstanceValueId)
+                .IsRequired()
+                .HasColumnName("DatasetInstanceValue_Id");
+
             configuration.Property(c => c.ContextValue)
-                .IsRequired(true);
+                .IsRequired();
 
             configuration.Property(c => c.InstanceValue)
-                .IsRequired(true);
+                .IsRequired();
 
-            configuration.HasOne(c => c.DatasetElementSub)
-                .WithMany()
-                .HasForeignKey("DatasetElementSub_Id")
-                .IsRequired(true);
+            configuration.HasOne(d => d.DatasetElementSub)
+                .WithMany(p => p.DatasetInstanceSubValues)
+                .HasForeignKey(d => d.DatasetElementSubId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.DatasetInstanceSubValue_dbo.DatasetElementSub_DatasetElementSub_Id");
 
-            configuration.HasOne(c => c.DatasetInstanceValue)
-                .WithMany()
-                .HasForeignKey("DatasetInstanceValue_Id")
-                .IsRequired(true);
+            configuration.HasOne(d => d.DatasetInstanceValue)
+                .WithMany(p => p.DatasetInstanceSubValues)
+                .HasForeignKey(d => d.DatasetInstanceValueId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.DatasetInstanceSubValue_dbo.DatasetInstanceValue_DatasetInstanceValue_Id");
 
-            configuration.HasIndex("DatasetInstanceValue_Id", "DatasetElementSub_Id").IsUnique(true);
+            configuration.HasIndex(new string[] { "DatasetInstanceValue_Id", "DatasetElementSub_Id" }).IsUnique(true);
+            configuration.HasIndex(e => e.DatasetElementSubId, "IX_DatasetElementSub_Id");
+            configuration.HasIndex(e => e.DatasetInstanceValueId, "IX_DatasetInstanceValue_Id");
         }
     }
 }

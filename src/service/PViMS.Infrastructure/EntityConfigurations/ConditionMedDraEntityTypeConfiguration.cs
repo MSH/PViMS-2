@@ -12,17 +12,29 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.HasOne(c => c.Condition)
-                .WithMany()
-                .HasForeignKey("Condition_Id")
-                .IsRequired(true);
+            configuration.Property(e => e.ConditionId)
+                .IsRequired()
+                .HasColumnName("Condition_Id");
 
-            configuration.HasOne(c => c.TerminologyMedDra)
-                .WithMany()
-                .HasForeignKey("TerminologyMedDra_Id")
-                .IsRequired(true);
+            configuration.Property(e => e.TerminologyMedDraId)
+                .IsRequired()
+                .HasColumnName("TerminologyMedDra_Id");
 
-            configuration.HasIndex("Condition_Id", "TerminologyMedDra_Id").IsUnique(true);
+            configuration.HasOne(d => d.Condition)
+                .WithMany(p => p.ConditionMedDras)
+                .HasForeignKey(d => d.ConditionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.ConditionMedDra_dbo.Condition_Condition_Id");
+
+            configuration.HasOne(d => d.TerminologyMedDra)
+                .WithMany(p => p.ConditionMedDras)
+                .HasForeignKey(d => d.TerminologyMedDraId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.ConditionMedDra_dbo.TerminologyMedDra_TerminologyMedDra_Id");
+
+            configuration.HasIndex(new string[] { "Condition_Id", "TerminologyMedDra_Id" }).IsUnique(true);
+            configuration.HasIndex(e => e.ConditionId, "IX_Condition_Id");
+            configuration.HasIndex(e => e.TerminologyMedDraId, "IX_TerminologyMedDra_Id");
         }
     }
 }

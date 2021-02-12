@@ -12,78 +12,104 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(c => c.EncounterDate)
-                .IsRequired(true);
+            configuration.Property(c => c.ArchivedDate)
+                .HasColumnType("datetime");
 
-            configuration.Property(c => c.Notes)
-                .IsRequired(false);
+            configuration.Property(c => c.ArchivedReason)
+                .HasMaxLength(200);
+
+            configuration.Property(e => e.AuditUserId)
+                .HasColumnName("AuditUser_Id");
+
+            configuration.Property(e => e.Created)
+                .IsRequired()
+                .HasColumnType("datetime");
+
+            configuration.Property(e => e.CreatedById)
+                .IsRequired()
+                .HasColumnName("CreatedBy_Id");
+
+            configuration.Property(c => c.EncounterDate)
+                .IsRequired()
+                .HasColumnType("datetime");
+
+            configuration.Property(e => e.EncounterTypeId)
+                .IsRequired()
+                .HasColumnName("EncounterType_Id");
+
+            configuration.Property(e => e.LastUpdated)
+                .HasColumnType("datetime");
 
             configuration.Property(c => c.EncounterGuid)
-                .IsRequired(true)
+                .IsRequired()
                 .HasDefaultValueSql("newid()");
 
             configuration.Property(c => c.Discharged)
-                .HasDefaultValue(false)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(false);
 
-            configuration.Property(c => c.CustomAttributesXmlSerialised)
-                .IsRequired(false);
+            configuration.Property(e => e.PatientId)
+                .IsRequired()
+                .HasColumnName("Patient_Id");
 
-            configuration.Property(c => c.Created)
-                .IsRequired(true);
+            configuration.Property(e => e.PregnancyId)
+                .HasColumnName("Pregnancy_Id");
 
-            configuration.Property(c => c.LastUpdated)
-                .IsRequired(false);
+            configuration.Property(e => e.PriorityId)
+                .IsRequired()
+                .HasColumnName("Priority_Id");
 
-            configuration.HasOne(c => c.CreatedBy)
-                .WithMany()
-                .HasForeignKey("CreatedBy_Id");
+            configuration.Property(e => e.UpdatedById)
+                .HasColumnName("UpdatedBy_Id");
 
-            configuration.HasOne(c => c.EncounterType)
-                .WithMany()
-                .HasForeignKey("EncounterType_Id")
-                .IsRequired(true);
+            configuration.HasOne(d => d.AuditUser)
+                .WithMany(p => p.Encounters)
+                .HasForeignKey(d => d.AuditUserId)
+                .HasConstraintName("FK_dbo.Encounter_dbo.User_AuditUser_Id");
 
-            configuration.HasOne(c => c.Patient)
-                .WithMany()
-                .HasForeignKey("Patient_Id")
-                .IsRequired(true);
+            configuration.HasOne(d => d.CreatedBy)
+                .WithMany(p => p.EncounterCreations)
+                .HasForeignKey(d => d.CreatedById)
+                .HasConstraintName("FK_dbo.Encounter_dbo.User_CreatedBy_Id");
 
-            configuration.HasOne(c => c.Pregnancy)
-                .WithMany()
-                .HasForeignKey("Pregnancy_Id");
+            configuration.HasOne(d => d.EncounterType)
+                .WithMany(p => p.Encounters)
+                .HasForeignKey(d => d.EncounterTypeId)
+                .HasConstraintName("FK_dbo.Encounter_dbo.EncounterType_EncounterType_Id");
 
-            configuration.HasOne(c => c.Priority)
-                .WithMany()
-                .HasForeignKey("Priority_Id");
+            configuration.HasOne(d => d.Patient)
+                .WithMany(p => p.Encounters)
+                .HasForeignKey(d => d.PatientId)
+                .HasConstraintName("FK_dbo.Encounter_dbo.Patient_Patient_Id");
 
-            configuration.HasOne(p => p.UpdatedBy)
-                .WithMany()
-                .HasForeignKey("UpdatedBy_Id");
+            configuration.HasOne(d => d.Pregnancy)
+                .WithMany(p => p.Encounters)
+                .HasForeignKey(d => d.PregnancyId)
+                .HasConstraintName("FK_dbo.Encounter_dbo.Pregnancy_Pregnancy_Id");
+
+            configuration.HasOne(d => d.Priority)
+                .WithMany(p => p.Encounters)
+                .HasForeignKey(d => d.PriorityId)
+                .HasConstraintName("FK_dbo.Encounter_dbo.Priority_Priority_Id");
+
+            configuration.HasOne(d => d.UpdatedBy)
+                .WithMany(p => p.EncounterUpdates)
+                .HasForeignKey(d => d.UpdatedById)
+                .HasConstraintName("FK_dbo.Encounter_dbo.User_UpdatedBy_Id");
 
             configuration.Property(c => c.Archived)
-                .HasDefaultValue(false)
-                .IsRequired(true);
-
-            configuration.Property(c => c.ArchivedDate)
-                .IsRequired(false);
-
-            configuration.Property(c => c.ArchivedReason)
-                .HasMaxLength(200)
-                .IsRequired(false);
-
-            configuration.HasOne(p => p.AuditUser)
-                .WithMany()
-                .HasForeignKey("AuditUser_Id");
-
-            configuration.HasMany(c => c.Attachments)
-               .WithOne()
-               .HasForeignKey("Encounter_Id")
-               .IsRequired(false)
-               .OnDelete(DeleteBehavior.Cascade);
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.HasIndex("EncounterDate").IsUnique(false);
-            configuration.HasIndex("Patient_Id", "EncounterDate").IsUnique(false);
+            configuration.HasIndex(new string[] { "Patient_Id", "EncounterDate" }).IsUnique(false);
+            configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
+            configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
+            configuration.HasIndex(e => e.EncounterTypeId, "IX_EncounterType_Id");
+            configuration.HasIndex(e => e.PatientId, "IX_Patient_Id");
+            configuration.HasIndex(e => e.PregnancyId, "IX_Pregnancy_Id");
+            configuration.HasIndex(e => e.PriorityId, "IX_Priority_Id");
+            configuration.HasIndex(e => e.UpdatedById, "IX_UpdatedBy_Id");
         }
     }
 }

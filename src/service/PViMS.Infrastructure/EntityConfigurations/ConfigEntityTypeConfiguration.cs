@@ -13,28 +13,40 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
+            configuration.Property(c => c.ConfigValue)
+                .IsRequired(true)
+                .HasMaxLength(100);
+
+            configuration.Property(c => c.Created)
+                .IsRequired()
+                .HasColumnType("datetime");
+
+            configuration.Property(e => e.CreatedById)
+                .IsRequired()
+                .HasColumnName("CreatedBy_Id");
+
+            configuration.Property(c => c.LastUpdated)
+                .HasColumnType("datetime");
+
+            configuration.Property(e => e.UpdatedById)
+                .HasColumnName("UpdatedBy_Id");
+
             configuration.Property(c => c.ConfigType)
                 .HasConversion(x => (int)x, x => (ConfigType)x);
 
-            configuration.Property(c => c.ConfigValue)
-                .HasMaxLength(100)
-                .IsRequired(true);
+            configuration.HasOne(d => d.CreatedBy)
+                .WithMany(p => p.ConfigCreations)
+                .HasForeignKey(d => d.CreatedById)
+                .HasConstraintName("FK_dbo.Config_dbo.User_CreatedBy_Id");
 
-            configuration.Property(c => c.Created)
-                .IsRequired(true);
-
-            configuration.Property(c => c.LastUpdated)
-                .IsRequired(false);
-
-            configuration.HasOne(p => p.CreatedBy)
-                .WithMany()
-                .HasForeignKey("CreatedBy_Id");
-
-            configuration.HasOne(p => p.UpdatedBy)
-                .WithMany()
-                .HasForeignKey("UpdatedBy_Id");
+            configuration.HasOne(d => d.UpdatedBy)
+                .WithMany(p => p.ConfigUpdates)
+                .HasForeignKey(d => d.UpdatedById)
+                .HasConstraintName("FK_dbo.Config_dbo.User_UpdatedBy_Id");
 
             configuration.HasIndex("ConfigType").IsUnique(false);
+            configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
+            configuration.HasIndex(e => e.UpdatedById, "IX_UpdatedBy_Id");
         }
     }
 }

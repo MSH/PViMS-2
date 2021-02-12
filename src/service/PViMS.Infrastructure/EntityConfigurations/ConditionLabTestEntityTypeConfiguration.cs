@@ -12,17 +12,29 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.HasOne(c => c.Condition)
-                .WithMany()
-                .HasForeignKey("Condition_Id")
-                .IsRequired(true);
+            configuration.Property(e => e.ConditionId)
+                .IsRequired()
+                .HasColumnName("Condition_Id");
 
-            configuration.HasOne(c => c.LabTest)
-                .WithMany()
-                .HasForeignKey("LabTest_Id")
-                .IsRequired(true);
+            configuration.Property(e => e.LabTestId)
+                .IsRequired()
+                .HasColumnName("LabTest_Id");
 
-            configuration.HasIndex("Condition_Id", "LabTest_Id").IsUnique(true);
+            configuration.HasOne(d => d.Condition)
+                .WithMany(p => p.ConditionLabTests)
+                .HasForeignKey(d => d.ConditionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.ConditionLabTest_dbo.Condition_Condition_Id");
+
+            configuration.HasOne(d => d.LabTest)
+                .WithMany(p => p.ConditionLabTests)
+                .HasForeignKey(d => d.LabTestId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.ConditionLabTest_dbo.LabTest_LabTest_Id");
+
+            configuration.HasIndex(new string[] { "Condition_Id", "LabTest_Id" }).IsUnique(true);
+            configuration.HasIndex(e => e.ConditionId, "IX_Condition_Id");
+            configuration.HasIndex(e => e.LabTestId, "IX_LabTest_Id");
         }
     }
 }

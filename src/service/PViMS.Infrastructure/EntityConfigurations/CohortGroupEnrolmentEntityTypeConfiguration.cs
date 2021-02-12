@@ -12,36 +12,54 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(c => c.EnroledDate)
-                .IsRequired(true);
-
-            configuration.HasOne(c => c.CohortGroup)
-                .WithMany()
-                .HasForeignKey("CohortGroup_Id")
-                .IsRequired(true);
-
-            configuration.HasOne(c => c.Patient)
-                .WithMany()
-                .HasForeignKey("Patient_Id")
-                .IsRequired(true);
-
-            configuration.Property(c => c.DeenroledDate)
-                .IsRequired(false);
-
-            configuration.Property(c => c.Archived)
-                .HasDefaultValue(false)
-                .IsRequired(true);
-
             configuration.Property(c => c.ArchivedDate)
-                .IsRequired(false);
+                .HasColumnType("datetime");
 
             configuration.Property(c => c.ArchivedReason)
-                .HasMaxLength(200)
-                .IsRequired(false);
+                .HasMaxLength(200);
 
-            configuration.HasOne(p => p.AuditUser)
-                .WithMany()
-                .HasForeignKey("AuditUser_Id");
+            configuration.Property(e => e.AuditUserId)
+                .HasColumnName("AuditUser_Id");
+
+            configuration.Property(e => e.CohortGroupId)
+                .IsRequired()
+                .HasColumnName("CohortGroup_Id");
+
+            configuration.Property(c => c.DeenroledDate)
+                .HasColumnType("datetime");
+
+            configuration.Property(c => c.EnroledDate)
+                .IsRequired()
+                .HasColumnType("datetime");
+
+            configuration.Property(e => e.PatientId)
+                .IsRequired()
+                .HasColumnName("Patient_Id");
+
+            configuration.Property(c => c.Archived)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            configuration.HasOne(d => d.AuditUser)
+                .WithMany(p => p.CohortGroupEnrolments)
+                .HasForeignKey(d => d.AuditUserId)
+                .HasConstraintName("FK_dbo.CohortGroupEnrolment_dbo.User_AuditUser_Id");
+
+            configuration.HasOne(d => d.CohortGroup)
+                .WithMany(p => p.CohortGroupEnrolments)
+                .HasForeignKey(d => d.CohortGroupId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.CohortGroupEnrolment_dbo.CohortGroup_CohortGroup_Id");
+
+            configuration.HasOne(d => d.Patient)
+                .WithMany(p => p.CohortEnrolments)
+                .HasForeignKey(d => d.PatientId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.CohortGroupEnrolment_dbo.Patient_Patient_Id");
+
+            configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
+            configuration.HasIndex(e => e.CohortGroupId, "IX_CohortGroup_Id");
+            configuration.HasIndex(e => e.PatientId, "IX_Patient_Id");
         }
     }
 }

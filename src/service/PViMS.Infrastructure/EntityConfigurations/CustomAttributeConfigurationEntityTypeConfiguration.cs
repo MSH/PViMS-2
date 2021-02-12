@@ -13,48 +13,32 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
+            configuration.Property(c => c.AttributeDetail)
+                .HasMaxLength(150);
+
             configuration.Property(c => c.ExtendableTypeName)
-                .IsRequired(true);
+                .IsRequired();
 
             configuration.Property(c => c.CustomAttributeType)
                 .HasConversion(x => (int)x, x => (CustomAttributeType)x);
 
-            configuration.Property(c => c.Category)
-                .IsRequired(false);
-
-            configuration.Property(c => c.AttributeKey)
-                .IsRequired(true);
-
             configuration.Property(c => c.IsRequired)
-                .HasDefaultValue(false)
-                .IsRequired(true);
-
-            configuration.Property(c => c.StringMaxLength)
-                .IsRequired(false);
-
-            configuration.Property(c => c.NumericMinValue)
-                .IsRequired(false);
-
-            configuration.Property(c => c.NumericMaxValue)
-                .IsRequired(false);
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.Property(c => c.FutureDateOnly)
-                .HasDefaultValue(false)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.Property(c => c.PastDateOnly)
-                .HasDefaultValue(false)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.Property(c => c.IsSearchable)
-                .HasDefaultValue(false)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(false);
 
-            configuration.Property(c => c.AttributeDetail)
-                .HasMaxLength(150)
-                .IsRequired(false);
-
-            configuration.HasIndex("ExtendableTypeName", "CustomAttributeType", "AttributeKey").IsUnique(true);
+            configuration.HasIndex(new string[] { "ExtendableTypeName", "CustomAttributeType", "AttributeKey" }).IsUnique(true);
         }
     }
 }

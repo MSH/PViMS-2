@@ -13,16 +13,15 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(c => c.Description)
-                .HasMaxLength(50)
-                .IsRequired(true);
+                .IsRequired()
+                .HasMaxLength(50);
 
             configuration.Property(c => c.Help)
-                .HasMaxLength(250)
-                .IsRequired(false);
+                .HasMaxLength(250);
 
             configuration.Property(c => c.Chronic)
-                .HasDefaultValue(false)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.HasIndex("Description").IsUnique(true);
         }

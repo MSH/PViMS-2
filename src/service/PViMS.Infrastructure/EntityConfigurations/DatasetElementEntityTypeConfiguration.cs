@@ -12,56 +12,49 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
+            configuration.Property(e => e.DatasetElementTypeId)
+                .IsRequired()
+                .HasColumnName("DatasetElementType_Id");
+
             configuration.Property(c => c.ElementName)
-                .HasMaxLength(100)
-                .IsRequired(true);
+                .IsRequired()
+                .HasMaxLength(100);
 
-            configuration.HasOne(c => c.Field)
-                .WithMany()
-                .HasForeignKey("Field_Id");
+            configuration.Property(e => e.FieldId)
+                .IsRequired()
+                .HasColumnName("Field_Id");
 
-            configuration.HasOne(c => c.DatasetElementType)
-                .WithMany()
-                .HasForeignKey("DatasetElementType_Id");
+            configuration.Property(c => c.Oid)
+                .HasColumnName("OID")
+                .HasMaxLength(50);
 
-            configuration.Property(c => c.OID)
-                .HasMaxLength(50)
-                .IsRequired(false);
-
-            configuration.Property(c => c.DefaultValue)
-                .IsRequired(false);
+            configuration.Property(c => c.Uid)
+                .HasColumnName("UID")
+                .HasMaxLength(10);
 
             configuration.Property(c => c.System)
-                .HasDefaultValue(true)
-                .IsRequired(true);
-
-            configuration.Property(c => c.UID)
-                .HasMaxLength(10)
-                .IsRequired(false);
+                .IsRequired()
+                .HasDefaultValue(true);
 
             configuration.Property(c => c.DatasetElementGuid)
-                .IsRequired(true)
+                .IsRequired()
                 .HasDefaultValueSql("newid()");
 
-            configuration.HasMany(c => c.DatasetCategoryElements)
-               .WithOne()
-               .HasForeignKey("DatasetElement_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.HasOne(d => d.DatasetElementType)
+                .WithMany(p => p.DatasetElements)
+                .HasForeignKey(d => d.DatasetElementTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_dbo.DatasetElement_dbo.DatasetElementType_DatasetElementType_Id");
 
-            configuration.HasMany(c => c.DatasetElementSubs)
-               .WithOne()
-               .HasForeignKey("DatasetElement_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
-
-            configuration.HasMany(c => c.DatasetRules)
-               .WithOne()
-               .HasForeignKey("DatasetElement_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.HasOne(d => d.Field)
+                .WithMany(p => p.DatasetElements)
+                .HasForeignKey(d => d.FieldId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_dbo.DatasetElement_dbo.Field_Field_Id");
 
             configuration.HasIndex("ElementName").IsUnique(true);
+            configuration.HasIndex(e => e.DatasetElementTypeId, "IX_DatasetElementType_Id");
+            configuration.HasIndex(e => e.FieldId, "IX_Field_Id");
         }
     }
 }

@@ -12,40 +12,50 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(c => c.EventDateTime)
-                .IsRequired(true);
-
-            configuration.Property(c => c.Comments)
-                .IsRequired(false);
-
-            configuration.HasOne(c => c.ActivityInstance)
-                .WithMany()
-                .HasForeignKey("ActivityInstance_Id")
-                .IsRequired(true);
-
-            configuration.HasOne(p => p.EventCreatedBy)
-                .WithMany()
-                .HasForeignKey("EventCreatedBy_Id");
-
-            configuration.HasOne(p => p.ExecutionStatus)
-                .WithMany()
-                .HasForeignKey("ExecutionStatus_Id")
-                .IsRequired(true);
-
-            configuration.Property(c => c.ContextDateTime)
-                .IsRequired(false);
+            configuration.Property(e => e.ActivityInstanceId)
+                .IsRequired()
+                .HasColumnName("ActivityInstance_Id");
 
             configuration.Property(c => c.ContextCode)
-                .HasMaxLength(20)
-                .IsRequired(false);
+                .HasMaxLength(20);
 
-            configuration.HasMany(c => c.Attachments)
-               .WithOne()
-               .HasForeignKey("ActivityExecutionStatusEvent_Id")
-               .IsRequired(false)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.Property(c => c.ContextDateTime)
+                .IsRequired()
+                .HasColumnType("datetime");
 
-            configuration.HasIndex("ActivityInstance_Id", "ExecutionStatus_Id").IsUnique(true);
+            configuration.Property(e => e.EventCreatedById)
+                .IsRequired()
+                .HasColumnName("EventCreatedBy_Id");
+
+            configuration.Property(c => c.EventDateTime)
+                .IsRequired()
+                .HasColumnType("datetime");
+
+            configuration.Property(e => e.ExecutionStatusId)
+                .IsRequired()
+                .HasColumnName("ExecutionStatus_Id");
+
+            configuration.HasOne(d => d.ActivityInstance)
+                .WithMany(p => p.ExecutionEvents)
+                .HasForeignKey(d => d.ActivityInstanceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.ActivityExecutionStatusEvent_dbo.ActivityInstance_ActivityInstance_Id");
+
+            configuration.HasOne(d => d.EventCreatedBy)
+                .WithMany(p => p.ExecutionEvents)
+                .HasForeignKey(d => d.EventCreatedById)
+                .HasConstraintName("FK_dbo.ActivityExecutionStatusEvent_dbo.User_EventCreatedBy_Id");
+
+            configuration.HasOne(d => d.ExecutionStatus)
+                .WithMany(p => p.ExecutionEvents)
+                .HasForeignKey(d => d.ExecutionStatusId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.ActivityExecutionStatusEvent_dbo.ActivityExecutionStatus_ExecutionStatus_Id");
+
+            configuration.HasIndex(new string[] { "ActivityInstance_Id", "ExecutionStatus_Id" }).IsUnique(true);
+            configuration.HasIndex(e => e.ActivityInstanceId, "IX_ActivityInstance_Id");
+            configuration.HasIndex(e => e.EventCreatedById, "IX_EventCreatedBy_Id");
+            configuration.HasIndex(e => e.ExecutionStatusId, "IX_ExecutionStatus_Id");
         }
     }
 }

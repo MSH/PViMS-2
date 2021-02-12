@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PViMS.Core.ValueTypes;
 using PVIMS.Core.Entities;
+using PVIMS.Core.ValueTypes;
 
 namespace PVIMS.Infrastructure.EntityConfigurations
 {
@@ -13,41 +13,30 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(c => c.Tag)
-                .IsRequired(false);
+            configuration.Property(e => e.DestinationElementId)
+                .IsRequired()
+                .HasColumnName("DestinationElement_Id");
+
+            configuration.Property(e => e.SourceElementId)
+                .HasColumnName("SourceElement_Id");
 
             configuration.Property(c => c.MappingType)
                 .HasConversion(x => (int)x, x => (MappingType)x);
 
-            configuration.Property(c => c.MappingOption)
-                .IsRequired(false);
+            configuration.HasOne(d => d.DestinationElement)
+                .WithMany(p => p.DestinationMappings)
+                .HasForeignKey(d => d.DestinationElementId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.DatasetMapping_dbo.DatasetCategoryElement_DestinationElement_Id");
 
-            configuration.HasOne(c => c.DestinationElement)
-                .WithMany()
-                .HasForeignKey("DestinationElement_Id")
-                .IsRequired(true);
+            configuration.HasOne(d => d.SourceElement)
+                .WithMany(p => p.SourceMappings)
+                .HasForeignKey(d => d.SourceElementId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.DatasetMapping_dbo.DatasetCategoryElement_SourceElement_Id");
 
-            configuration.HasOne(c => c.SourceElement)
-                .WithMany()
-                .HasForeignKey("SourceElement_Id");
-
-            configuration.Property(c => c.PropertyPath)
-                .IsRequired(false);
-
-            configuration.Property(c => c.Property)
-                .IsRequired(false);
-
-            configuration.HasMany(c => c.Values)
-               .WithOne()
-               .HasForeignKey("Mapping_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
-
-            configuration.HasMany(c => c.SubMappings)
-               .WithOne()
-               .HasForeignKey("Mapping_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.HasIndex(e => e.DestinationElementId, "IX_DestinationElement_Id");
+            configuration.HasIndex(e => e.SourceElementId, "IX_SourceElement_Id");
         }
     }
 }

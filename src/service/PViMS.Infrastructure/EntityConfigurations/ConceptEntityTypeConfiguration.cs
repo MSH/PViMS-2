@@ -13,31 +13,25 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(c => c.ConceptName)
-                .HasMaxLength(1000)
-                .IsRequired(true);
+                .IsRequired(true)
+                .HasMaxLength(1000);
 
             configuration.Property(c => c.Active)
-                .HasDefaultValue(true)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(true);
 
-            configuration.HasOne(c => c.MedicationForm)
-                .WithMany()
-                .HasForeignKey("MedicationForm_Id")
-                .IsRequired(true);
+            configuration.Property(e => e.MedicationFormId)
+                .IsRequired()
+                .HasColumnName("MedicationForm_Id");
 
-            configuration.HasMany(c => c.ConceptIngredients)
-               .WithOne()
-               .HasForeignKey("Concept_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.HasOne(d => d.MedicationForm)
+                .WithMany(p => p.Concepts)
+                .HasForeignKey(d => d.MedicationFormId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_dbo.Concept_dbo.MedicationForm_MedicationForm_Id");
 
-            configuration.HasMany(c => c.Products)
-               .WithOne()
-               .HasForeignKey("Concept_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
-
-            configuration.HasIndex("ConceptName", "MedicationForm_Id").IsUnique(true);
+            configuration.HasIndex(new string[] { "ConceptName", "MedicationForm_Id" }).IsUnique(true);
+            configuration.HasIndex(e => e.MedicationFormId, "IX_MedicationForm_Id");
         }
     }
 }

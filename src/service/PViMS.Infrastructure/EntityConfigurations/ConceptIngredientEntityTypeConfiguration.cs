@@ -12,24 +12,30 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
+            configuration.Property(e => e.ConceptId)
+                .IsRequired()
+                .HasColumnName("Concept_Id");
+
             configuration.Property(c => c.Ingredient)
-                .HasMaxLength(200)
-                .IsRequired(true);
+                .IsRequired()
+                .HasMaxLength(200);
 
             configuration.Property(c => c.Strength)
-                .HasMaxLength(50)
-                .IsRequired(true);
+                .IsRequired()
+                .HasMaxLength(50);
 
             configuration.Property(c => c.Active)
-                .HasDefaultValue(true)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(true);
 
-            configuration.HasOne(c => c.Concept)
-                .WithMany()
-                .HasForeignKey("Concept_Id")
-                .IsRequired(true);
+            configuration.HasOne(d => d.Concept)
+                .WithMany(p => p.ConceptIngredients)
+                .HasForeignKey(d => d.ConceptId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.ConceptIngredient_dbo.Concept_Concept_Id");
 
-            configuration.HasIndex("Concept_Id", "Ingredient", "Strength").IsUnique(true);
+            configuration.HasIndex(new string[] { "Concept_Id", "Ingredient", "Strength" }).IsUnique(true);
+            configuration.HasIndex(e => e.ConceptId, "IX_Concept_Id");
         }
     }
 }

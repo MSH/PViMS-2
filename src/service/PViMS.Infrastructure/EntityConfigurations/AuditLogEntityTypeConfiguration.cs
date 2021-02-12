@@ -13,23 +13,25 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
+            configuration.Property(c => c.ActionDate)
+                .IsRequired()
+                .HasColumnType("datetime");
+
             configuration.Property(c => c.AuditType)
                 .HasConversion(x => (int)x, x => (AuditType)x);
 
-            configuration.Property(c => c.ActionDate)
-                .IsRequired(true);
+            configuration.Property(e => e.UserId)
+                .IsRequired()
+                .HasColumnName("User_Id");
 
-            configuration.Property(c => c.Details)
-                .IsRequired(false);
-
-            configuration.HasOne(c => c.User)
-                .WithMany()
-                .HasForeignKey("User_Id");
-
-            configuration.Property(c => c.Log)
-                .IsRequired(false);
+            configuration.HasOne(d => d.User)
+                .WithMany(p => p.AuditLogs)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.AuditLog_dbo.User_User_Id");
 
             configuration.HasIndex("ActionDate").IsUnique(false);
+            configuration.HasIndex(e => e.UserId, "IX_User_Id");
         }
     }
 }

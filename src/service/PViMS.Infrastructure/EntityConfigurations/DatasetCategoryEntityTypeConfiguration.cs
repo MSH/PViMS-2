@@ -13,8 +13,12 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(c => c.DatasetCategoryName)
-                .HasMaxLength(50)
-                .IsRequired(true);
+                .IsRequired()
+                .HasMaxLength(50);
+
+            configuration.Property(e => e.DatasetId)
+                .IsRequired()
+                .HasColumnName("Dataset_Id");
 
             configuration.Property(c => c.CategoryOrder)
                 .IsRequired(true);
@@ -24,47 +28,40 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasForeignKey("Dataset_Id")
                 .IsRequired(true);
 
-            configuration.Property(c => c.UID)
-                .HasMaxLength(10)
-                .IsRequired(false);
-
-            configuration.Property(c => c.System)
-                .HasDefaultValue(true)
-                .IsRequired(true);
-
-            configuration.Property(c => c.Acute)
-                .HasDefaultValue(false)
-                .IsRequired(true);
-
-            configuration.Property(c => c.Chronic)
-                .HasDefaultValue(false)
-                .IsRequired(true);
-
-            configuration.Property(c => c.Public)
-                .HasDefaultValue(false)
-                .IsRequired(true);
-
             configuration.Property(c => c.FriendlyName)
-                .HasMaxLength(150)
-                .IsRequired(false);
+                .HasMaxLength(150);
 
             configuration.Property(c => c.Help)
-                .HasMaxLength(350)
-                .IsRequired(false);
+                .HasMaxLength(350);
 
-            configuration.HasMany(c => c.DatasetCategoryElements)
-               .WithOne()
-               .HasForeignKey("DatasetCategory_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.Property(c => c.Uid)
+                .HasMaxLength(10)
+                .HasColumnName("UID");
 
-            configuration.HasMany(c => c.Conditions)
-               .WithOne()
-               .HasForeignKey("DatasetCategory_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.Property(c => c.System)
+                .IsRequired()
+                .HasDefaultValue(true);
 
-            configuration.HasIndex("Dataset_Id", "DatasetCategoryName").IsUnique(true);
+            configuration.Property(c => c.Acute)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            configuration.Property(c => c.Chronic)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            configuration.Property(c => c.Public)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            configuration.HasOne(d => d.Dataset)
+                .WithMany(p => p.DatasetCategories)
+                .HasForeignKey(d => d.DatasetId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.DatasetCategory_dbo.Dataset_Dataset_Id1");
+
+            configuration.HasIndex(new string[] { "Dataset_Id", "DatasetCategoryName" }).IsUnique(true);
+            configuration.HasIndex(e => e.DatasetId, "IX_Dataset_Id");
         }
     }
 }

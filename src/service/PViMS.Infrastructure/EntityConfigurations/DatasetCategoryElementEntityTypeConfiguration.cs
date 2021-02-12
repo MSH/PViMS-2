@@ -12,66 +12,58 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(c => c.FieldOrder)
-                .IsRequired(true);
+            configuration.Property(e => e.DatasetCategoryId)
+                .IsRequired()
+                .HasColumnName("DatasetCategory_Id");
 
-            configuration.HasOne(c => c.DatasetCategory)
-                .WithMany()
-                .HasForeignKey("DatasetCategory_Id")
-                .IsRequired(true);
-
-            configuration.HasOne(c => c.DatasetElement)
-                .WithMany()
-                .HasForeignKey("DatasetElement_Id")
-                .IsRequired(true);
-
-            configuration.Property(c => c.Acute)
-                .HasDefaultValue(false)
-                .IsRequired(true);
-
-            configuration.Property(c => c.Chronic)
-                .HasDefaultValue(false)
-                .IsRequired(true);
-
-            configuration.Property(c => c.UID)
-                .HasMaxLength(10)
-                .IsRequired(false);
-
-            configuration.Property(c => c.System)
-                .HasDefaultValue(true)
-                .IsRequired(true);
-
-            configuration.Property(c => c.Public)
-                .HasDefaultValue(false)
-                .IsRequired(true);
+            configuration.Property(e => e.DatasetElementId)
+                .IsRequired()
+                .HasColumnName("DatasetElement_Id");
 
             configuration.Property(c => c.FriendlyName)
-                .HasMaxLength(150)
-                .IsRequired(false);
+                .HasMaxLength(150);
 
             configuration.Property(c => c.Help)
-                .HasMaxLength(350)
-                .IsRequired(false);
+                .HasMaxLength(350);
 
-            configuration.HasMany(c => c.Conditions)
-               .WithOne()
-               .HasForeignKey("DatasetCategoryElement_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.Property(c => c.Uid)
+                .HasMaxLength(10)
+                .HasColumnName("UID");
 
-            configuration.HasMany(c => c.SourceMappings)
-               .WithOne()
-               .HasForeignKey("SourceElement_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.Property(c => c.FieldOrder)
+                .IsRequired();
 
-            configuration.HasMany(c => c.DestinationMappings)
-               .WithOne()
-               .HasForeignKey("DestinationElement_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.Property(c => c.Acute)
+                .IsRequired()
+                .HasDefaultValue(false);
 
-            configuration.HasIndex("DatasetCategory_Id", "DatasetElement_Id").IsUnique(true);
+            configuration.Property(c => c.Chronic)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            configuration.Property(c => c.System)
+                .IsRequired()
+                .HasDefaultValue(true);
+
+            configuration.Property(c => c.Public)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            configuration.HasOne(d => d.DatasetCategory)
+                .WithMany(p => p.DatasetCategoryElements)
+                .HasForeignKey(d => d.DatasetCategoryId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.DatasetCategoryElement_dbo.DatasetCategory_DatasetCategory_Id");
+
+            configuration.HasOne(d => d.DatasetElement)
+                .WithMany(p => p.DatasetCategoryElements)
+                .HasForeignKey(d => d.DatasetElementId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.DatasetCategoryElement_dbo.DatasetElement_DatasetElement_Id");
+
+            configuration.HasIndex(new string[] { "DatasetCategory_Id", "DatasetElement_Id" }).IsUnique(true);
+            configuration.HasIndex(e => e.DatasetCategoryId, "IX_DatasetCategory_Id");
+            configuration.HasIndex(e => e.DatasetElementId, "IX_DatasetElement_Id");
         }
     }
 }

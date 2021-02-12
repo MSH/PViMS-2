@@ -12,57 +12,42 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(c => c.Mandatory)
-                .HasDefaultValue(false)
-                .IsRequired(true);
-
-            configuration.Property(c => c.MaxLength)
-                .IsRequired(false);
-
-            configuration.Property(c => c.RegEx)
-                .HasMaxLength(100)
-                .IsRequired(false);
-
-            configuration.Property(c => c.Decimals)
-                .IsRequired(false);
-
-            configuration.Property(c => c.MaxSize)
-                .HasPrecision(18,2)
-                .IsRequired(false);
-
-            configuration.Property(c => c.MinSize)
-                .HasPrecision(18, 2)
-                .IsRequired(false);
-
             configuration.Property(c => c.Calculation)
-                .HasMaxLength(100)
-                .IsRequired(false);
+                .HasMaxLength(100);
 
-            configuration.Property(c => c.Image)
-                .HasColumnType("Image")
-                .IsRequired(false);
-
-            configuration.Property(c => c.FileSize)
-                .IsRequired(false);
+            configuration.Property(e => e.FieldTypeId)
+                .IsRequired()
+                .HasColumnName("FieldType_Id");
 
             configuration.Property(c => c.FileExt)
-                .HasMaxLength(100)
-                .IsRequired(false);
+                .HasMaxLength(100);
+
+            configuration.Property(c => c.Image)
+                .HasColumnType("image");
+
+            configuration.Property(c => c.MaxSize)
+                .HasColumnType("decimal(18, 2)");
+
+            configuration.Property(c => c.MinSize)
+                .HasColumnType("decimal(18, 2)");
+
+            configuration.Property(c => c.RegEx)
+                .HasMaxLength(100);
+
+            configuration.Property(c => c.Mandatory)
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.Property(c => c.Anonymise)
-                .HasDefaultValue(false)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(false);
 
-            configuration.HasOne(c => c.FieldType)
-                .WithMany()
-                .HasForeignKey("FieldType_Id")
-                .IsRequired(true);
+            configuration.HasOne(d => d.FieldType)
+                .WithMany(p => p.Fields)
+                .HasForeignKey(d => d.FieldTypeId)
+                .HasConstraintName("FK_dbo.Field_dbo.FieldType_FieldType_Id");
 
-            configuration.HasMany(c => c.FieldValues)
-               .WithOne()
-               .HasForeignKey("Field_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.HasIndex(e => e.FieldTypeId, "IX_FieldType_Id");
         }
     }
 }

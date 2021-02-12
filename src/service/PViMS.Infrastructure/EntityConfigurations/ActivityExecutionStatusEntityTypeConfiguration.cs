@@ -38,5 +38,3 @@ namespace PVIMS.Infrastructure.EntityConfigurations
         }
     }
 }
-}
-}

@@ -13,34 +13,16 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(c => c.Description)
-                .HasMaxLength(50)
-                .IsRequired(true);
+                .IsRequired()
+                .HasMaxLength(50);
 
             configuration.Property(c => c.Chronic)
-                .HasDefaultValue(false)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.Property(c => c.Active)
-                .HasDefaultValue(true)
-                .IsRequired(true);
-
-            configuration.HasMany(c => c.ConditionLabTests)
-               .WithOne()
-               .HasForeignKey("Condition_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
-
-            configuration.HasMany(c => c.ConditionMedications)
-               .WithOne()
-               .HasForeignKey("Condition_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
-
-            configuration.HasMany(c => c.ConditionMedDras)
-               .WithOne()
-               .HasForeignKey("Condition_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+                .IsRequired()
+                .HasDefaultValue(true);
 
             configuration.HasIndex("Description").IsUnique(true);
         }

@@ -12,43 +12,44 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(c => c.CohortName)
-                .HasMaxLength(50)
-                .IsRequired(true);
-
             configuration.Property(c => c.CohortCode)
-                .HasMaxLength(5)
-                .IsRequired(true);
+                .IsRequired()
+                .HasMaxLength(5);
+
+            configuration.Property(c => c.CohortName)
+                .IsRequired()
+                .HasMaxLength(50);
 
             configuration.Property(c => c.LastPatientNo)
-                .HasDefaultValue(0)
-                .IsRequired(true);
+                .IsRequired()
+                .HasDefaultValue(0);
 
             configuration.Property(c => c.StartDate)
-                .IsRequired(true);
+                .IsRequired()
+                .HasColumnType("datetime");
 
             configuration.Property(c => c.FinishDate)
-                .IsRequired(false);
+                .IsRequired()
+                .HasColumnType("datetime");
 
             configuration.Property(c => c.MinEnrolment)
-                .HasDefaultValue(0)
-                .IsRequired(true);
+                .IsRequired(true)
+                .HasDefaultValue(0);
 
             configuration.Property(c => c.MaxEnrolment)
-                .HasDefaultValue(0)
-                .IsRequired(true);
+                .IsRequired(true)
+                .HasDefaultValue(0);
 
-            configuration.HasOne(c => c.Condition)
-                .WithMany()
-                .HasForeignKey("Condition_Id")
-                .IsRequired(false);
+            configuration.Property(e => e.ConditionId)
+                .HasColumnName("Condition_Id");
 
-            configuration.HasMany(c => c.CohortGroupEnrolments)
-               .WithOne()
-               .HasForeignKey("CohortGroup_Id")
-               .IsRequired(true)
-               .OnDelete(DeleteBehavior.Cascade);
+            configuration.HasOne(d => d.Condition)
+                .WithMany(p => p.CohortGroups)
+                .HasForeignKey(d => d.ConditionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.CohortGroup_dbo.Condition_Condition_Id");
 
+            configuration.HasIndex(e => e.ConditionId, "IX_Condition_Id");
             configuration.HasIndex("CohortName").IsUnique(true);
             configuration.HasIndex("CohortCode").IsUnique(true);
         }
