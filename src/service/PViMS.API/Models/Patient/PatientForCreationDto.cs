@@ -77,7 +77,7 @@ namespace PVIMS.API.Models
         public string Comments { get; set; }
 
         /// <summary>
-        /// The facility that the patient is being registered against
+        /// Patient custom attributes
         /// </summary>
         public IDictionary<int, string> Attributes { get; set; }
 

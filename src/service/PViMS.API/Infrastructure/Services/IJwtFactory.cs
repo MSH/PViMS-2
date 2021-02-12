@@ -1,5 +1,5 @@
 ﻿using PVIMS.API.Infrastructure.Auth;
-using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
 using System.Threading.Tasks;
 
 namespace PVIMS.API.Infrastructure.Services
