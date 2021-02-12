@@ -1,10 +1,8 @@
 ﻿using PVIMS.Core.SeedWork;
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities.Accounts
 {
-    [Table(nameof(RefreshToken))]
     public class RefreshToken : Entity<int>
     {
         public RefreshToken() : base() { /* Required by EF */ }
@@ -17,14 +15,12 @@ namespace PVIMS.Core.Entities.Accounts
         }
 
         public string Token { get; set; }
-
         public DateTime Expires { get; set; }
+        public string RemoteIpAddress { get; set; }
+        public int UserId { get; set; }
 
         public User User { get; set; }
 
         public bool Active => DateTime.UtcNow <= Expires;
-
-        public string RemoteIpAddress { get; set; }
     }
-
 }

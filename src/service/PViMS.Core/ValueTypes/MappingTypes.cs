@@ -1,4 +1,4 @@
-﻿namespace PViMS.Core.ValueTypes
+﻿namespace PVIMS.Core.ValueTypes
 {
     public enum MappingType
     {
