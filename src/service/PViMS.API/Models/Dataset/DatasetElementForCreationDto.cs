@@ -1,10 +1,11 @@
 ﻿using PVIMS.API.Attributes;
 using PVIMS.API.Models.ValueTypes;
+using PVIMS.Core.ValueTypes;
 using System.ComponentModel.DataAnnotations;
 
 namespace PVIMS.API.Models
 {
-    public class DatasetElementForUpdateDto
+    public class DatasetElementForCreationDto
     {
         /// <summary>
         /// The name of the dataset element
@@ -36,6 +37,24 @@ namespace PVIMS.API.Models
         /// </summary>
         [ValidEnumValue]
         public YesNoValueType Anonymise { get; set; }
+
+        /// <summary>
+        /// Is this a system defined variable
+        /// </summary>
+        [ValidEnumValue]
+        public YesNoValueType System { get; set; }
+
+        /// <summary>
+        /// Single dataset rule
+        /// </summary>
+        [ValidEnumValue]
+        public YesNoValueType SingleDatasetRule { get; set; }
+
+        /// <summary>
+        /// The type of field the element is implementing
+        /// </summary>
+        [ValidEnumValue]
+        public FieldTypes FieldType { get; set; }
 
         /// <summary>
         /// For string based elements, what is the maximum length of this element

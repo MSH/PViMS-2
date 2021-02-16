@@ -13,6 +13,7 @@ using PVIMS.API.Services;
 using PVIMS.Core.Entities;
 using PVIMS.Core.ValueTypes;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -222,42 +223,17 @@ namespace PVIMS.API.Controllers
         /// <summary>
         /// Create a new dataset element
         /// </summary>
-        /// <param name="datasetElementForUpdate">The dataset element payload</param>
+        /// <param name="datasetElementForCreation">The dataset element payload</param>
         /// <returns></returns>
         [HttpPost(Name = "CreateDatasetElement")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [Consumes("application/json")]
         public async Task<IActionResult> CreateDatasetElement(
-            [FromBody] DatasetElementForUpdateDto datasetElementForUpdate)
+            [FromBody] DatasetElementForCreationDto datasetElementForCreation)
         {
-            if (datasetElementForUpdate == null)
-            {
-                ModelState.AddModelError("Message", "Unable to load payload for new request");
-            }
+            ValidateDatasetElementForCreation(datasetElementForCreation);
 
-            if (Regex.Matches(datasetElementForUpdate.ElementName, @"[a-zA-Z() ']").Count < datasetElementForUpdate.ElementName.Length)
-            {
-                ModelState.AddModelError("Message", "Element contains invalid characters (Enter A-Z, a-z, open and Close brackets)");
-            }
-
-            if (Regex.Matches(datasetElementForUpdate.OID, @"[-a-zA-Z0-9 ']").Count < datasetElementForUpdate.OID.Length)
-            {
-                ModelState.AddModelError("Message", "OID contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
-            }
-
-            if (Regex.Matches(datasetElementForUpdate.DefaultValue, @"[-a-zA-Z0-9 ']").Count < datasetElementForUpdate.DefaultValue.Length)
-            {
-                ModelState.AddModelError("Message", "Default value contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
-            }
-
-            if (_unitOfWork.Repository<DatasetElement>().Queryable().
-                Where(l => l.ElementName == datasetElementForUpdate.ElementName)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Item with same name already exists");
-            }
-
-            var fieldType = await _fieldTypeRepository.GetAsync(ft => ft.Description == datasetElementForUpdate.FieldTypeName.ToString());
+            var fieldType = await _fieldTypeRepository.GetAsync(ft => ft.Description == datasetElementForCreation.FieldType.ToString());
             if (fieldType == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate field type");
@@ -268,36 +244,12 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate element type");
             }
 
-            long id = 0;
-
             if (ModelState.IsValid)
             {
-                var newDatasetElement = new DatasetElement()
-                {
-                    DatasetElementType = elementType,
-                    ElementName = datasetElementForUpdate.ElementName,
-                    OID = datasetElementForUpdate.OID,
-                    DefaultValue = datasetElementForUpdate.DefaultValue,
-                    Field = new Field()
-                    {
-                        Anonymise = (datasetElementForUpdate.Anonymise == Models.ValueTypes.YesNoValueType.Yes),
-                        Mandatory = (datasetElementForUpdate.Mandatory == Models.ValueTypes.YesNoValueType.Yes),
-                        FieldType = fieldType,
-                        MaxLength = datasetElementForUpdate.FieldTypeName == FieldTypes.AlphaNumericTextbox ? datasetElementForUpdate.MaxLength : (short?)null,
-                        Decimals = datasetElementForUpdate.FieldTypeName == FieldTypes.NumericTextbox ? datasetElementForUpdate.Decimals : (short?)null,
-                        MinSize = datasetElementForUpdate.FieldTypeName == FieldTypes.NumericTextbox ? datasetElementForUpdate.MinSize : (decimal?)null,
-                        MaxSize = datasetElementForUpdate.FieldTypeName == FieldTypes.NumericTextbox ? datasetElementForUpdate.MaxSize : (decimal?)null
-                    },
-                    System = (datasetElementForUpdate.System == Models.ValueTypes.YesNoValueType.Yes)
-                };
-
-                var rule = newDatasetElement.GetRule(DatasetRuleType.ElementCanoOnlyLinkToSingleDataset);
-                rule.RuleActive = (datasetElementForUpdate.SingleDatasetRule == Models.ValueTypes.YesNoValueType.Yes);
-
+                var newDatasetElement = PrepareDatasetElementForCreation(fieldType, elementType, datasetElementForCreation);
                 _datasetElementRepository.Save(newDatasetElement);
-                id = newDatasetElement.Id;
 
-                var mappedDatasetElement = await GetDatasetElementAsync<DatasetElementIdentifierDto>(id);
+                var mappedDatasetElement = await GetDatasetElementAsync<DatasetElementIdentifierDto>(newDatasetElement.Id);
                 if (mappedDatasetElement == null)
                 {
                     return StatusCode(500, "Unable to locate newly added item");
@@ -311,6 +263,83 @@ namespace PVIMS.API.Controllers
             }
 
             return BadRequest(ModelState);
+        }
+
+        private void ValidateDatasetElementForCreation(DatasetElementForCreationDto datasetElementForCreation)
+        {
+            if (datasetElementForCreation == null)
+            {
+                ModelState.AddModelError("Message", "Unable to load payload for new request");
+            }
+
+            if (Regex.Matches(datasetElementForCreation.ElementName, @"[a-zA-Z() ']").Count < datasetElementForCreation.ElementName.Length)
+            {
+                ModelState.AddModelError("Message", "Element contains invalid characters (Enter A-Z, a-z, open and Close brackets)");
+            }
+
+            if (Regex.Matches(datasetElementForCreation.OID, @"[-a-zA-Z0-9 ']").Count < datasetElementForCreation.OID.Length)
+            {
+                ModelState.AddModelError("Message", "OID contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
+            }
+
+            if (Regex.Matches(datasetElementForCreation.DefaultValue, @"[-a-zA-Z0-9 ']").Count < datasetElementForCreation.DefaultValue.Length)
+            {
+                ModelState.AddModelError("Message", "Default value contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
+            }
+
+            FieldTypes[] validFieldTypesForFieldValues = new[] { FieldTypes.DropDownList, FieldTypes.System };
+            if (datasetElementForCreation.FieldValues.Length > 0 && !validFieldTypesForFieldValues.Contains(datasetElementForCreation.FieldType))
+            {
+                ModelState.AddModelError("Message", "May not specify field values for this type of field");
+            }
+
+            if (_unitOfWork.Repository<DatasetElement>().Queryable().
+                Where(l => l.ElementName == datasetElementForCreation.ElementName)
+                .Count() > 0)
+            {
+                ModelState.AddModelError("Message", "Item with same name already exists");
+            }
+        }
+
+        private DatasetElement PrepareDatasetElementForCreation(FieldType fieldType, DatasetElementType elementType, DatasetElementForCreationDto datasetElementForCreation)
+        {
+            if (fieldType == null)
+            {
+                throw new ArgumentNullException(nameof(fieldType));
+            }
+            if (elementType == null)
+            {
+                throw new ArgumentNullException(nameof(elementType));
+            }
+            if (datasetElementForCreation == null)
+            {
+                throw new ArgumentNullException(nameof(datasetElementForCreation));
+            }
+
+            var newDatasetElement = new DatasetElement()
+            {
+                DatasetElementType = elementType,
+                ElementName = datasetElementForCreation.ElementName,
+                OID = datasetElementForCreation.OID,
+                DefaultValue = datasetElementForCreation.DefaultValue,
+                Field = new Field()
+                {
+                    Anonymise = (datasetElementForCreation.Anonymise == Models.ValueTypes.YesNoValueType.Yes),
+                    Mandatory = (datasetElementForCreation.Mandatory == Models.ValueTypes.YesNoValueType.Yes),
+                    FieldType = fieldType,
+                    MaxLength = datasetElementForCreation.FieldType == FieldTypes.AlphaNumericTextbox ? datasetElementForCreation.MaxLength : (short?)null,
+                    Decimals = datasetElementForCreation.FieldType == FieldTypes.NumericTextbox ? datasetElementForCreation.Decimals : (short?)null,
+                    MinSize = datasetElementForCreation.FieldType == FieldTypes.NumericTextbox ? datasetElementForCreation.MinSize : (decimal?)null,
+                    MaxSize = datasetElementForCreation.FieldType == FieldTypes.NumericTextbox ? datasetElementForCreation.MaxSize : (decimal?)null,
+                    FieldValues = datasetElementForCreation.FieldValues.Select(fv => new FieldValue { Default = false, Other = false, Unknown = false, Value = fv.Value }).ToList()
+                },
+                System = (datasetElementForCreation.System == Models.ValueTypes.YesNoValueType.Yes)
+            };
+
+            var rule = newDatasetElement.GetRule(DatasetRuleType.ElementCanoOnlyLinkToSingleDataset);
+            rule.RuleActive = (datasetElementForCreation.SingleDatasetRule == Models.ValueTypes.YesNoValueType.Yes);
+
+            return newDatasetElement;
         }
 
         /// <summary>
@@ -330,22 +359,50 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
+            var datasetElementFromRepo = await _datasetElementRepository.GetAsync(f => f.Id == id);
+            if (datasetElementFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            ValidateDatasetElementForUpdate(datasetElementForUpdate);
+
+            if (ModelState.IsValid)
+            {
+                PrepareDatasetElementForUpdate(datasetElementFromRepo, datasetElementForUpdate);
+                _datasetElementRepository.Update(datasetElementFromRepo);
+
+                UpdateFieldValues(datasetElementFromRepo, datasetElementForUpdate);
+
+                _unitOfWork.Complete();
+
+                return Ok();
+            }
+
+            return BadRequest(ModelState);
+        }
+
+        private void ValidateDatasetElementForUpdate(DatasetElementForUpdateDto datasetElementForUpdate)
+        {
             if (Regex.Matches(datasetElementForUpdate.ElementName, @"[a-zA-Z() ']").Count < datasetElementForUpdate.ElementName.Length)
             {
                 ModelState.AddModelError("Message", "Element contains invalid characters (Enter A-Z, a-z, open and Close brackets)");
-                return BadRequest(ModelState);
             }
 
             if (Regex.Matches(datasetElementForUpdate.OID, @"[-a-zA-Z0-9 ']").Count < datasetElementForUpdate.OID.Length)
             {
                 ModelState.AddModelError("Message", "OID contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
-                return BadRequest(ModelState);
             }
 
             if (Regex.Matches(datasetElementForUpdate.DefaultValue, @"[-a-zA-Z0-9 ']").Count < datasetElementForUpdate.DefaultValue.Length)
             {
                 ModelState.AddModelError("Message", "Default value contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
-                return BadRequest(ModelState);
+            }
+
+            FieldTypes[] validFieldTypesForFieldValues = new[] { FieldTypes.DropDownList, FieldTypes.System };
+            if (datasetElementForUpdate.FieldValues.Length > 0 && !validFieldTypesForFieldValues.Contains((FieldTypes)datasetElementFromRepo.Field.FieldType.Id))
+            {
+                ModelState.AddModelError("Message", "May not specify field values for this type of field");
             }
 
             if (_unitOfWork.Repository<DatasetElement>().Queryable().
@@ -353,43 +410,87 @@ namespace PVIMS.API.Controllers
                 .Count() > 0)
             {
                 ModelState.AddModelError("Message", "Item with same name already exists");
-                return BadRequest(ModelState);
             }
+        }
 
-            var fieldType = await _fieldTypeRepository.GetAsync(ft => ft.Description == datasetElementForUpdate.FieldTypeName.ToString());
-            if (fieldType == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate field type");
-                return BadRequest(ModelState);
-            }
-
-            var datasetElementFromRepo = await _datasetElementRepository.GetAsync(f => f.Id == id);
+        private void PrepareDatasetElementForUpdate(DatasetElement datasetElementFromRepo, DatasetElementForUpdateDto datasetElementForUpdate)
+        {
             if (datasetElementFromRepo == null)
             {
-                return NotFound();
+                throw new ArgumentNullException(nameof(datasetElementFromRepo));
             }
-
-            if (ModelState.IsValid)
+            if (datasetElementForUpdate == null)
             {
-                datasetElementFromRepo.ElementName = datasetElementForUpdate.ElementName;
-                datasetElementFromRepo.OID = datasetElementForUpdate.OID;
-                datasetElementFromRepo.DefaultValue = datasetElementForUpdate.DefaultValue;
-                datasetElementFromRepo.System = (datasetElementForUpdate.System == Models.ValueTypes.YesNoValueType.Yes);
-                datasetElementFromRepo.Field.Mandatory = (datasetElementForUpdate.Mandatory == Models.ValueTypes.YesNoValueType.Yes);
-                datasetElementFromRepo.Field.Anonymise = (datasetElementForUpdate.Anonymise == Models.ValueTypes.YesNoValueType.Yes);
-                datasetElementFromRepo.Field.MaxLength = datasetElementForUpdate.FieldTypeName == FieldTypes.AlphaNumericTextbox ? datasetElementForUpdate.MaxLength : (short?)null;
-                datasetElementFromRepo.Field.Decimals = datasetElementForUpdate.FieldTypeName == FieldTypes.NumericTextbox ? datasetElementForUpdate.Decimals : (short?)null;
-                datasetElementFromRepo.Field.MinSize = datasetElementForUpdate.FieldTypeName == FieldTypes.NumericTextbox ? datasetElementForUpdate.MinSize : (decimal?)null;
-                datasetElementFromRepo.Field.MaxSize = datasetElementForUpdate.FieldTypeName == FieldTypes.NumericTextbox ? datasetElementForUpdate.MaxSize : (decimal?)null;
-
-                var rule = datasetElementFromRepo.GetRule(DatasetRuleType.ElementCanoOnlyLinkToSingleDataset);
-                rule.RuleActive = datasetElementForUpdate.SingleDatasetRule == Models.ValueTypes.YesNoValueType.Yes;
-
-                _datasetElementRepository.Update(datasetElementFromRepo);
-                _unitOfWork.Complete();
+                throw new ArgumentNullException(nameof(datasetElementForUpdate));
             }
 
-            return Ok();
+            datasetElementFromRepo.ElementName = datasetElementForUpdate.ElementName;
+            datasetElementFromRepo.OID = datasetElementForUpdate.OID;
+            datasetElementFromRepo.DefaultValue = datasetElementForUpdate.DefaultValue;
+            datasetElementFromRepo.Field.Mandatory = (datasetElementForUpdate.Mandatory == Models.ValueTypes.YesNoValueType.Yes);
+            datasetElementFromRepo.Field.Anonymise = (datasetElementForUpdate.Anonymise == Models.ValueTypes.YesNoValueType.Yes);
+            datasetElementFromRepo.Field.MaxLength = (FieldTypes)datasetElementFromRepo.Field.FieldType.Id == FieldTypes.AlphaNumericTextbox ? datasetElementForUpdate.MaxLength : (short?)null;
+            datasetElementFromRepo.Field.Decimals = (FieldTypes)datasetElementFromRepo.Field.FieldType.Id == FieldTypes.NumericTextbox ? datasetElementForUpdate.Decimals : (short?)null;
+            datasetElementFromRepo.Field.MinSize = (FieldTypes)datasetElementFromRepo.Field.FieldType.Id == FieldTypes.NumericTextbox ? datasetElementForUpdate.MinSize : (decimal?)null;
+            datasetElementFromRepo.Field.MaxSize = (FieldTypes)datasetElementFromRepo.Field.FieldType.Id == FieldTypes.NumericTextbox ? datasetElementForUpdate.MaxSize : (decimal?)null;
+        }
+
+        /// <summary>
+        ///  Ensure list of field values is up to date (remove values that are no longer selected, rename existing values and add new values)
+        /// </summary>
+        /// <returns></returns>
+        private void UpdateFieldValues(DatasetElement datasetElementFromRepo, DatasetElementForUpdateDto datasetElementForUpdate)
+        {
+            if (datasetElementFromRepo == null)
+            {
+                throw new ArgumentNullException(nameof(datasetElementFromRepo));
+            }
+            if (datasetElementFromRepo.Field == null)
+            {
+                throw new ArgumentNullException(nameof(datasetElementFromRepo.Field));
+            }
+            if (datasetElementForUpdate == null)
+            {
+                throw new ArgumentNullException(nameof(datasetElementForUpdate));
+            }
+
+            ArrayList deleteCollection = new ArrayList();
+            ArrayList addCollection = new ArrayList();
+
+            // Determine what has been removed
+            foreach (var fieldValue in datasetElementFromRepo.Field.FieldValues)
+            {
+                if (!datasetElementForUpdate.FieldValues.Contains(fieldValue.Value))
+                {
+                    deleteCollection.Add(fieldValue);
+                }
+            }
+
+            // Determine what needs to be added
+            foreach (string fieldValue in datasetElementForUpdate.FieldValues)
+            {
+                if (!datasetElementFromRepo.Field.FieldValues.Any(fv => fv.Value == fieldValue))
+                {
+                    var newFieldValue = new FieldValue()
+                    {
+                        Default = false,
+                        Field = datasetElementFromRepo.Field,
+                        Unknown = false,
+                        Value = fieldValue,
+                        Other = false
+                    };
+                    addCollection.Add(newFieldValue);
+                }
+            }
+
+            foreach (FieldValue fieldValue in deleteCollection)
+            {
+                _fieldValueRepository.Delete(fieldValue);
+            }
+            foreach (FieldValue fieldValue in deleteCollection)
+            {
+                _fieldValueRepository.Save(fieldValue);
+            }
         }
 
         /// <summary>

@@ -71,19 +71,22 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.MinSize, opt => opt.MapFrom(src => src.Field.MinSize))
                 .ForMember(dest => dest.Calculation, opt => opt.MapFrom(src => src.Field.Calculation))
                 .ForMember(dest => dest.Anonymise, opt => opt.MapFrom(src => src.Field.Anonymise ? "Yes" : "No"))
-                .ForMember(dest => dest.FieldTypeName, opt => opt.MapFrom(src => src.Field.FieldType.Description));
+                .ForMember(dest => dest.FieldTypeName, opt => opt.MapFrom(src => src.Field.FieldType.Description))
+                .ForMember(dest => dest.FieldValues, opt => opt.MapFrom(src => src.Field.FieldValues));
 
             CreateMap<EncounterType, EncounterTypeIdentifierDto>()
                 .ForMember(dest => dest.EncounterTypeName, opt => opt.MapFrom(src => src.Description));
             CreateMap<EncounterType, EncounterTypeDetailDto>()
                 .ForMember(dest => dest.EncounterTypeName, opt => opt.MapFrom(src => src.Description));
 
+            CreateMap<FieldValue, FieldValueDto>()
+                .ForMember(dest => dest.FieldValueId, opt => opt.MapFrom(src => src.Id));
+
             CreateMap<WorkPlan, WorkPlanIdentifierDto>()
                 .ForMember(dest => dest.WorkPlanName, opt => opt.MapFrom(src => src.Description));
             CreateMap<WorkPlan, WorkPlanDetailDto>()
                 .ForMember(dest => dest.WorkPlanName, opt => opt.MapFrom(src => src.Description))
                 .ForMember(dest => dest.DatasetName, opt => opt.MapFrom(src => src.Dataset.DatasetName));
-
         }
     }
 }

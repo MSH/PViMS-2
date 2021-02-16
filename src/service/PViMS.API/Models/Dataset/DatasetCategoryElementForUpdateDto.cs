@@ -13,13 +13,13 @@ namespace PVIMS.API.Models
         public long DatasetElementId { get; set; }
 
         /// <summary>
-        /// The friendly name of the dataset category
+        /// The friendly name of the dataset category element
         /// </summary>
         [StringLength(150)]
         public string FriendlyName { get; set; }
 
         /// <summary>
-        /// Additional help for the dataset category
+        /// Additional help for the dataset category element
         /// </summary>
         [StringLength(350)]
         public string Help { get; set; }

@@ -3,7 +3,7 @@
 namespace PVIMS.API.Models
 {
     /// <summary>
-    /// List of dataset categories associated to a dataset instance
+    /// Distinct value list associated to a dataset element
     /// </summary>
     [DataContract()]
     public class GroupValueDto
