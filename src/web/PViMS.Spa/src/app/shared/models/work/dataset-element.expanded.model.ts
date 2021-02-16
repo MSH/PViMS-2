@@ -1,3 +1,5 @@
+import { FieldValueModel } from "./field-value.model";
+
 export interface DatasetElementExpandedWrapperModel {
     value:  DatasetElementExpandedModel[];
     recordCount: number;
@@ -20,4 +22,5 @@ export interface DatasetElementExpandedModel {
     anonymise: string;
     fieldTypeName: string;
     singleDatasetRule: string;
+    fieldValues: FieldValueModel[];
 }
