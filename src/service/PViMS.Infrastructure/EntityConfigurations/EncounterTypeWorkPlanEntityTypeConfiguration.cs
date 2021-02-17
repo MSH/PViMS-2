@@ -40,7 +40,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_dbo.EncounterTypeWorkPlan_dbo.WorkPlan_WorkPlan_Id");
 
-            configuration.HasIndex(new string[] { "CohortGroup_Id", "EncounterType_Id", "WorkPlan_Id" }).IsUnique(true);
+            configuration.HasIndex(e => new { e.CohortGroupId, e.EncounterTypeId, e.WorkPlanId }).IsUnique(true);
             configuration.HasIndex(e => e.CohortGroupId, "IX_CohortGroup_Id");
             configuration.HasIndex(e => e.EncounterTypeId, "IX_EncounterType_Id");
             configuration.HasIndex(e => e.WorkPlanId, "IX_WorkPlan_Id");

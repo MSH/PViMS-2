@@ -77,7 +77,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasForeignKey(d => d.UpdatedById)
                 .HasConstraintName("FK_dbo.PatientStatusHistory_dbo.User_UpdatedBy_Id");
 
-            configuration.HasIndex(new string[] { "Patient_Id", "PatientStatus_Id" }).IsUnique(false);
+            configuration.HasIndex(e => new { e.PatientId, e.PatientStatusId }).IsUnique(false);
             configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
             configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
             configuration.HasIndex(e => e.PatientStatusId, "IX_PatientStatus_Id");

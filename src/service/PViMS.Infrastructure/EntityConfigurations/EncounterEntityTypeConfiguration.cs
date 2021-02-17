@@ -101,8 +101,8 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasDefaultValue(false);
 
-            configuration.HasIndex("EncounterDate").IsUnique(false);
-            configuration.HasIndex(new string[] { "Patient_Id", "EncounterDate" }).IsUnique(false);
+            configuration.HasIndex(e => e.EncounterDate).IsUnique(false);
+            configuration.HasIndex(e => new { e.PatientId, e.EncounterDate }).IsUnique(false);
             configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
             configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
             configuration.HasIndex(e => e.EncounterTypeId, "IX_EncounterType_Id");

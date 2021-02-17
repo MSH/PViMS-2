@@ -32,7 +32,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_dbo.ConditionLabTest_dbo.LabTest_LabTest_Id");
 
-            configuration.HasIndex(new string[] { "Condition_Id", "LabTest_Id" }).IsUnique(true);
+            configuration.HasIndex(e => new { e.ConditionId, e.LabTestId }).IsUnique(true);
             configuration.HasIndex(e => e.ConditionId, "IX_Condition_Id");
             configuration.HasIndex(e => e.LabTestId, "IX_LabTest_Id");
         }

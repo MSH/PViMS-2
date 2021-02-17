@@ -53,7 +53,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_dbo.DatasetElementSub_dbo.Field_Field_Id");
 
-            configuration.HasIndex(new string[] { "DatasetElement_Id", "ElementName" }).IsUnique(true);
+            configuration.HasIndex(e => new { e.DatasetElementId, e.ElementName }).IsUnique(true);
             configuration.HasIndex(e => e.DatasetElementId, "IX_DatasetElement_Id");
             configuration.HasIndex(e => e.FieldId, "IX_Field_Id");
         }

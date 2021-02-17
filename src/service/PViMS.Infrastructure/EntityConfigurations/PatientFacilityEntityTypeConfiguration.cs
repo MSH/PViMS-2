@@ -54,7 +54,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_dbo.PatientFacility_dbo.Patient_Patient_Id");
 
-            configuration.HasIndex(new string[] { "Patient_Id", "Facility_Id" }).IsUnique(false);
+            configuration.HasIndex(e => new { e.PatientId, e.FacilityId }).IsUnique(false);
             configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
             configuration.HasIndex(e => e.FacilityId, "IX_Facility_Id");
             configuration.HasIndex(e => e.PatientId, "IX_Patient_Id");

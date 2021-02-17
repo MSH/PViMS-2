@@ -81,7 +81,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasForeignKey(d => d.UpdatedById)
                 .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.User_UpdatedBy_Id");
 
-            configuration.HasIndex(new string[] { "DatasetXml_Id", "NodeName" }).IsUnique(true);
+            configuration.HasIndex(e => new { e.DatasetXmlId, e.NodeName }).IsUnique(true);
             configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
             configuration.HasIndex(e => e.DatasetElementSubId, "IX_DatasetElementSub_Id");
             configuration.HasIndex(e => e.DatasetElementId, "IX_DatasetElement_Id");

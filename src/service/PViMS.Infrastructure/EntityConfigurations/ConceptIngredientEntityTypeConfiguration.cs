@@ -34,7 +34,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_dbo.ConceptIngredient_dbo.Concept_Concept_Id");
 
-            configuration.HasIndex(new string[] { "Concept_Id", "Ingredient", "Strength" }).IsUnique(true);
+            configuration.HasIndex(e => new { e.ConceptId, e.Ingredient, e.Strength }).IsUnique(true);
             configuration.HasIndex(e => e.ConceptId, "IX_Concept_Id");
         }
     }
