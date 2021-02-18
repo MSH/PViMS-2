@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Keyless;
 
-namespace PVIMS.Infrastructure.EntityConfigurations
+namespace PVIMS.Infrastructure.EntityConfigurations.KeyLess
 {
     class AdverseEventAnnualListViewTypeConfiguration : IEntityTypeConfiguration<AdverseEventAnnualList>
     {
