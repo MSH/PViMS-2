@@ -1795,11 +1795,11 @@ set @dceid = (SELECT @@IDENTITY)
 			VALUES (0, 0, 10, NULL, 8)
 		set @fid = (SELECT @@IDENTITY)
 		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Patient Episode Name MedDRA Version', @fid, @deid, '', 'v20', 1, 1)
+			VALUES ('Patient Episode Name MedDRA Version', @fid, @deid, '', '23.0', 1, 1)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientepisodenamemeddraversion', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientepisodenamemeddraversion', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -1810,7 +1810,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientepisodename', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientepisodename', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -1821,7 +1821,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientmedicalstartdateformat', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientmedicalstartdateformat', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -1832,7 +1832,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientmedicalstartdate', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientmedicalstartdate', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -1849,7 +1849,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientmedicalcontinue', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientmedicalcontinue', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -1860,7 +1860,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientmedicalenddateformat', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientmedicalenddateformat', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -1871,7 +1871,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientmedicalenddate', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientmedicalenddate', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -1882,7 +1882,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientmedicalcomment', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientmedicalcomment', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 /**************************************************
@@ -1917,7 +1917,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientdrugname', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientdrugname', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -1928,7 +1928,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientdrugstartdateformat', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientdrugstartdateformat', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -1939,7 +1939,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientdrugstartdate', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientdrugstartdate', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -1950,7 +1950,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientdrugenddateformat', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientdrugenddateformat', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -1961,18 +1961,18 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientdrugenddate', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientdrugenddate', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
 			VALUES (0, 0, 10, NULL, 8)
 		set @fid = (SELECT @@IDENTITY)
 		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Indication MedDRA Version', @fid, @deid, '', 'v20', 0, 1) 
+			VALUES ('Indication MedDRA Version', @fid, @deid, '', '23.0', 0, 1) 
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientindicationmeddraversion', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientindicationmeddraversion', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -1983,7 +1983,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientdrugindication', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientdrugindication', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -1994,7 +1994,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientdrgreactionmeddraversion', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientdrgreactionmeddraversion', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -2005,7 +2005,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('patientdrugreaction', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('patientdrugreaction', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 /**************************************************
@@ -2053,32 +2053,6 @@ INSERT [dbo].[DatasetMapping] (Tag, MappingType, MappingOption, DestinationEleme
 INSERT [dbo].[DatasetMapping] (Tag, MappingType, MappingOption, DestinationElement_Id, PropertyPath, Property)
 	VALUES ('Active', 2, 'yyyyMMdd', @dceid, '', 'Date of Death')
 
-INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
-	VALUES (0, 0, 10, NULL, 8)
-set @fid = (SELECT @@IDENTITY)
-INSERT [dbo].[DatasetElement] ([ElementName], [Field_Id], [DatasetElementType_Id], [OID], [DefaultValue], [System], [DatasetElementGuid]) 
-	VALUES ('MedDRA version for reported cause(s) of death', @fid, 1, NULL, '23.0', 1, '7160878D-8AE0-477A-84F6-BCE195EC4653')
-set @deid = (SELECT @@IDENTITY)
-INSERT [dbo].[DatasetCategoryElement] ([FieldOrder], [DatasetCategory_Id], [DatasetElement_Id], [Acute], [Chronic]) 
-	select ISNULL(MAX(FieldOrder) + 1, 1), @dscid, @deid, 0, 0 from [DatasetCategoryElement] where [DatasetCategory_Id] = @dscid
--- element node
-INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElement_Id, UpdatedBy_Id, DatasetXml_Id)
-	VALUES ('patientdeathreportmeddraversion', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @deid, 1, @dsxid)
-set @dsxenid = (SELECT @@IDENTITY)
-
-INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
-	VALUES (0, 0, 250, NULL, 3)
-set @fid = (SELECT @@IDENTITY)
-INSERT [dbo].[DatasetElement] ([ElementName], [Field_Id], [DatasetElementType_Id], [OID], [DefaultValue], [System], [DatasetElementGuid]) 
-	VALUES ('Patient Death Report', @fid, 1, NULL, NULL, 0, '6EAB448F-34F0-4B15-86CE-5423BA5EB7CC')
-set @deid = (SELECT @@IDENTITY)
-INSERT [dbo].[DatasetCategoryElement] ([FieldOrder], [DatasetCategory_Id], [DatasetElement_Id], [Acute], [Chronic]) 
-	select ISNULL(MAX(FieldOrder) + 1, 1), @dscid, @deid, 0, 0 from [DatasetCategoryElement] where [DatasetCategory_Id] = @dscid
--- element node
-INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElement_Id, UpdatedBy_Id, DatasetXml_Id)
-	VALUES ('patientdeathreport', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @deid, 1, @dsxid)
-set @dsxenid = (SELECT @@IDENTITY)
-
 INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
 	VALUES (0, 0, 2)
 set @fid = (SELECT @@IDENTITY)
@@ -2107,6 +2081,42 @@ INSERT [dbo].[DatasetMappingValue] (SourceValue, DestinationValue, Active, Mappi
 	SELECT 'Yes', '1=Yes', 1, @dmid UNION
 	SELECT 'No', '2=No', 1, @dmid
 
+-- category node
+INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElement_Id, UpdatedBy_Id, DatasetXml_Id)
+	VALUES ('patientdeathcause', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, NULL, 1, @dsxid)
+set @dsxcnid4 = (SELECT @@IDENTITY)
+
+INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
+	VALUES (0, 0, 10, NULL, 8)
+set @fid = (SELECT @@IDENTITY)
+INSERT [dbo].[DatasetElement] ([ElementName], [Field_Id], [DatasetElementType_Id], [OID], [DefaultValue], [System], [DatasetElementGuid]) 
+	VALUES ('MedDRA version for reported cause(s) of death', @fid, 1, NULL, '23.0', 1, '7160878D-8AE0-477A-84F6-BCE195EC4653')
+set @deid = (SELECT @@IDENTITY)
+INSERT [dbo].[DatasetCategoryElement] ([FieldOrder], [DatasetCategory_Id], [DatasetElement_Id], [Acute], [Chronic]) 
+	select ISNULL(MAX(FieldOrder) + 1, 1), @dscid, @deid, 0, 0 from [DatasetCategoryElement] where [DatasetCategory_Id] = @dscid
+-- element node
+INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElement_Id, UpdatedBy_Id, DatasetXml_Id)
+	VALUES ('patientdeathreportmeddraversion', 2, NULL, GETDATE(), GETDATE(), @dsxcnid4, 1, @deid, 1, @dsxid)
+set @dsxenid = (SELECT @@IDENTITY)
+
+INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
+	VALUES (0, 0, 250, NULL, 3)
+set @fid = (SELECT @@IDENTITY)
+INSERT [dbo].[DatasetElement] ([ElementName], [Field_Id], [DatasetElementType_Id], [OID], [DefaultValue], [System], [DatasetElementGuid]) 
+	VALUES ('Patient Death Report', @fid, 1, NULL, NULL, 0, '6EAB448F-34F0-4B15-86CE-5423BA5EB7CC')
+set @deid = (SELECT @@IDENTITY)
+INSERT [dbo].[DatasetCategoryElement] ([FieldOrder], [DatasetCategory_Id], [DatasetElement_Id], [Acute], [Chronic]) 
+	select ISNULL(MAX(FieldOrder) + 1, 1), @dscid, @deid, 0, 0 from [DatasetCategoryElement] where [DatasetCategory_Id] = @dscid
+-- element node
+INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElement_Id, UpdatedBy_Id, DatasetXml_Id)
+	VALUES ('patientdeathreport', 2, NULL, GETDATE(), GETDATE(), @dsxcnid4, 1, @deid, 1, @dsxid)
+set @dsxenid = (SELECT @@IDENTITY)
+
+-- category node
+INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElement_Id, UpdatedBy_Id, DatasetXml_Id)
+	VALUES ('patientautopsy', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, NULL, 1, @dsxid)
+set @dsxcnid4 = (SELECT @@IDENTITY)
+
 INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
 	VALUES (0, 0, 10, NULL, 8)
 set @fid = (SELECT @@IDENTITY)
@@ -2117,7 +2127,7 @@ INSERT [dbo].[DatasetCategoryElement] ([FieldOrder], [DatasetCategory_Id], [Data
 	select ISNULL(MAX(FieldOrder) + 1, 1), @dscid, @deid, 0, 0 from [DatasetCategoryElement] where [DatasetCategory_Id] = @dscid
 -- element node
 INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElement_Id, UpdatedBy_Id, DatasetXml_Id)
-	VALUES ('patientdetermautopsmeddraversion', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @deid, 1, @dsxid)
+	VALUES ('patientdetermautopsmeddraversion', 2, NULL, GETDATE(), GETDATE(), @dsxcnid4, 1, @deid, 1, @dsxid)
 set @dsxenid = (SELECT @@IDENTITY)
 
 INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -2130,7 +2140,7 @@ INSERT [dbo].[DatasetCategoryElement] ([FieldOrder], [DatasetCategory_Id], [Data
 	select ISNULL(MAX(FieldOrder) + 1, 1), @dscid, @deid, 0, 0 from [DatasetCategoryElement] where [DatasetCategory_Id] = @dscid
 -- element node
 INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElement_Id, UpdatedBy_Id, DatasetXml_Id)
-	VALUES ('patientdetermineautopsy', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @deid, 1, @dsxid)
+	VALUES ('patientdetermineautopsy', 2, NULL, GETDATE(), GETDATE(), @dsxcnid4, 1, @deid, 1, @dsxid)
 set @dsxenid = (SELECT @@IDENTITY)
 
 /**************************************************
@@ -2508,7 +2518,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('testdateformat', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('testdateformat', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -2519,7 +2529,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('testdate', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('testdate', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2534,7 +2544,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('testname', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('testname', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2549,7 +2559,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('testresult', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('testresult', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2564,7 +2574,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('testunit', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('testunit', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2579,7 +2589,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('lowtestrange', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('lowtestrange', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2594,7 +2604,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('hightestrange', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('hightestrange', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2613,7 +2623,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('moreinformation', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('moreinformation', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2667,7 +2677,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugcharacterization', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugcharacterization', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2686,7 +2696,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('medicinalproduct', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('medicinalproduct', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2701,7 +2711,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('obtaindrugcountry', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('obtaindrugcountry', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -2712,7 +2722,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugbatchnumb', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugbatchnumb', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2727,7 +2737,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugauthorizationnumb', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugauthorizationnumb', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -2738,7 +2748,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugauthorizationcountry', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugauthorizationcountry', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -2749,7 +2759,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugauthorizationholder', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugauthorizationholder', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [Decimals], [MaxSize], [MinSize], [FieldType_Id]) 
@@ -2760,7 +2770,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugstructuredosagenumb', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugstructuredosagenumb', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2839,7 +2849,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugstructuredosageunit', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugstructuredosageunit', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -2871,7 +2881,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugseparatedosagenumb', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugseparatedosagenumb', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [Decimals], [MaxSize], [MinSize], [FieldType_Id]) 
@@ -2882,7 +2892,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugintervaldosageunitnumb', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugintervaldosageunitnumb', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -2907,7 +2917,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugintervaldosagedefinition', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugintervaldosagedefinition', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [Decimals], [MaxSize], [MinSize], [FieldType_Id]) 
@@ -2918,7 +2928,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugcumulativedosagenumb', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugcumulativedosagenumb', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [Decimals], [MaxSize], [MinSize], [FieldType_Id]) 
@@ -2929,7 +2939,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugcumulativedosageunit', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugcumulativedosageunit', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -2940,7 +2950,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugdosagetext', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugdosagetext', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -2951,7 +2961,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugdosageform', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugdosageform', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -3096,7 +3106,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugadministrationroute', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugadministrationroute', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -3260,7 +3270,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugparadministration', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugparadministration', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [Decimals], [MaxSize], [MinSize], [FieldType_Id]) 
@@ -3271,7 +3281,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('reactiongestationperiod', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('reactiongestationperiod', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -3290,18 +3300,18 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('reactiongestationperiodunit', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('reactiongestationperiodunit', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 			
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
 			VALUES (0, 0, 10, NULL, 8)
 		set @fid = (SELECT @@IDENTITY)
 		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Drug Indication MedDRA Version', @fid, @deid, '', 'v20', 0, 1) 
+			VALUES ('Drug Indication MedDRA Version', @fid, @deid, '', '23.0', 0, 1) 
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugindicationmeddraversion', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugindicationmeddraversion', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -3312,7 +3322,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugindication', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugindication', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -3327,7 +3337,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugstartdateformat', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugstartdateformat', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -3338,7 +3348,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugstartdate', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugstartdate', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -3353,7 +3363,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugstartperiod', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugstartperiod', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -3378,7 +3388,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugstartperiodunit', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugstartperiodunit', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [Decimals], [MaxSize], [MinSize], [FieldType_Id]) 
@@ -3389,7 +3399,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('druglastperiod', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('druglastperiod', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -3414,7 +3424,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('druglastperiodunit', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('druglastperiodunit', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -3425,7 +3435,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugenddateformat', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugenddateformat', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -3436,7 +3446,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugenddate', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugenddate', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -3451,7 +3461,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugtreatmentduration', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugtreatmentduration', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -3474,7 +3484,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugtreatmentdurationunit', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugtreatmentdurationunit', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -3497,7 +3507,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('actiondrug', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('actiondrug', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 		-- submapping
 		INSERT [dbo].[DatasetMappingSub] (MappingType, MappingOption, DestinationElement_Id, Mapping_Id, SourceElement_Id)
@@ -3526,7 +3536,61 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugrecurreadministration', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugrecurreadministration', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+		set @dsxenid = (SELECT @@IDENTITY)
+
+		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
+			VALUES (0, 0, 250, NULL, 3)
+		set @fid = (SELECT @@IDENTITY)
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
+			VALUES ('Additional Information', @fid, @deid, '', '', 0, 1) 
+		set @desid = (SELECT @@IDENTITY)
+		-- element node
+		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
+			VALUES ('drugadditional', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+		set @dsxenid = (SELECT @@IDENTITY)
+
+		-- category node
+		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElement_Id, UpdatedBy_Id, DatasetXml_Id)
+			VALUES ('activesubstance', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, NULL, 1, @dsxid)
+		set @dsxcnid4 = (SELECT @@IDENTITY)
+
+		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
+			VALUES (0, 0, 250, NULL, 3)
+		set @fid = (SELECT @@IDENTITY)
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
+			VALUES ('Active Substance Name', @fid, @deid, '', '', 0, 2)
+		set @desid = (SELECT @@IDENTITY)
+		-- element node
+		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
+			VALUES ('activesubstancename', 2, NULL, GETDATE(), GETDATE(), @dsxcnid4, 1, @desid, 1, @dsxid)
+		set @dsxenid = (SELECT @@IDENTITY)
+
+		-- category node
+		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElement_Id, UpdatedBy_Id, DatasetXml_Id)
+			VALUES ('drugreactionrelatedness', 2, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, NULL, 1, @dsxid)
+		set @dsxcnid4 = (SELECT @@IDENTITY)
+
+		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
+			VALUES (0, 0, 10, NULL, 8)
+		set @fid = (SELECT @@IDENTITY)
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
+			VALUES ('Drug Reaction Assessment MedDRA Version', @fid, @deid, '', '23.0', 1, 1)
+		set @desid = (SELECT @@IDENTITY)
+		-- element node
+		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
+			VALUES ('drugreactionassesmeddraversion', 2, NULL, GETDATE(), GETDATE(), @dsxcnid4, 1, @desid, 1, @dsxid)
+		set @dsxenid = (SELECT @@IDENTITY)
+
+		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
+			VALUES (0, 0, 250, NULL, 3)
+		set @fid = (SELECT @@IDENTITY)
+		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
+			VALUES ('Drug Reaction Assessment', @fid, @deid, '', '', 0, 2)
+		set @desid = (SELECT @@IDENTITY)
+		-- element node
+		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
+			VALUES ('drugreactionasses', 2, NULL, GETDATE(), GETDATE(), @dsxcnid4, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [FieldType_Id]) 
@@ -3543,7 +3607,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugassessmentsource', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugassessmentsource', 2, NULL, GETDATE(), GETDATE(), @dsxcnid4, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
@@ -3554,18 +3618,7 @@ set @dceid = (SELECT @@IDENTITY)
 		set @desid = (SELECT @@IDENTITY)
 		-- element node
 		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugresult', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
-		set @dsxenid = (SELECT @@IDENTITY)
-
-		INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
-			VALUES (0, 0, 250, NULL, 3)
-		set @fid = (SELECT @@IDENTITY)
-		INSERT [dbo].[DatasetElementSub] ([ElementName], [Field_Id], [DatasetElement_Id], [OID], [DefaultValue], [System], FieldOrder)
-			VALUES ('Additional Information', @fid, @deid, '', '', 0, 1) 
-		set @desid = (SELECT @@IDENTITY)
-		-- element node
-		INSERT [dbo].[DatasetXmlNode] (NodeName, NodeType, NodeValue, Created, LastUpdated, ParentNode_Id, CreatedBy_Id, DatasetElementSub_Id, UpdatedBy_Id, DatasetXml_Id)
-			VALUES ('drugadditional', 3, NULL, GETDATE(), GETDATE(), @dsxcnid3, 1, @desid, 1, @dsxid)
+			VALUES ('drugresult', 2, NULL, GETDATE(), GETDATE(), @dsxcnid4, 1, @desid, 1, @dsxid)
 		set @dsxenid = (SELECT @@IDENTITY)
 
 /**************************************************
