@@ -5,11 +5,12 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.SeedWork;
 using PVIMS.Infrastructure.EntityConfigurations;
+using PVIMS.Infrastructure.EntityConfigurations.KeyLess;
 
 namespace PVIMS.Infrastructure
 {
@@ -149,11 +150,15 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new ActivityExecutionStatusEventEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ActivityInstanceEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AdverseEventAnnualListViewTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new AdverseEventListViewTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new AdverseEventQuarterlyListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AppointmentEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new AppointmentListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AttachmentEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AttachmentTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AuditLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CareEventEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new CausalityNotSetListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CohortGroupEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CohortGroupEnrolmentEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ConceptEntityTypeConfiguration());
@@ -163,6 +168,9 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new ConditionMedDraEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ConditionMedicationEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ConfigEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ContingencyAnalysisItemViewTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ContingencyAnalysisListViewTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ContingencyAnalysisPatientViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CustomAttributeConfigurationEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DatasetEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DatasetCategoryEntityTypeConfiguration());
@@ -182,7 +190,9 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new DatasetXmlEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DatasetXmlAttributeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DatasetXmlNodeEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new DrugListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new EncounterEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new EncounterListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new EncounterTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new EncounterTypeWorkPlanEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new FacilityEntityTypeConfiguration());
@@ -203,6 +213,7 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new MetaDependencyEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new MetaFormEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new MetaPageEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaPatientListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new MetaReportEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new MetaTableEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new MetaTableTypeEntityTypeConfiguration());
@@ -210,13 +221,16 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new MetaWidgetTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new OrgUnitEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new OutcomeEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new OutstandingVisitListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientClinicalEventEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientConditionEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientFacilityEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientLabTestEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientLanguageEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientMedicationEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PatientOnStudyListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientStatusEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientStatusHistoryEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PostDeploymentEntityTypeConfiguration());
