@@ -1634,6 +1634,7 @@ namespace PVIMS.API.Controllers
                 // Causality
                 if (med.WhoCausality != null)
                 {
+                    datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), patientClinicalEvent.SourceDescription, (Guid)newContext);
                     datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Source of Assessment"), "WHO Causality Scale", (Guid)newContext);
                     datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), med.WhoCausality.ToLowerInvariant() == "ignored" ? "" : med.WhoCausality, (Guid)newContext);
                 }
@@ -1641,6 +1642,7 @@ namespace PVIMS.API.Controllers
                 {
                     if (med.NaranjoCausality != null)
                     {
+                        datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), patientClinicalEvent.SourceDescription, (Guid)newContext);
                         datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Source of Assessment"), "Naranjo Causality Scale", (Guid)newContext);
                         datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), med.NaranjoCausality.ToLowerInvariant() == "ignored" ? "" : med.NaranjoCausality, (Guid)newContext);
                     }
