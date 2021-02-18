@@ -107,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\SystemLog.cs" />
+    <Compile Include="Exceptions\DomainServiceExeption.cs" />
     <Compile Include="Models\PatientDetailForUpdate.cs" />
     <Compile Include="Models\SeriesValueList.cs" />
     <Compile Include="Entities\Accounts\RefreshToken.cs" />
