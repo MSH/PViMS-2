@@ -1635,7 +1635,7 @@ namespace PVIMS.API.Controllers
                 if (med.WhoCausality != null)
                 {
                     datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), patientClinicalEvent.SourceDescription, (Guid)newContext);
-                    datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Source of Assessment"), "WHO Causality Scale", (Guid)newContext);
+                    datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Method of Assessment"), "WHO Causality Scale", (Guid)newContext);
                     datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), med.WhoCausality.ToLowerInvariant() == "ignored" ? "" : med.WhoCausality, (Guid)newContext);
                 }
                 else
@@ -1643,7 +1643,7 @@ namespace PVIMS.API.Controllers
                     if (med.NaranjoCausality != null)
                     {
                         datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), patientClinicalEvent.SourceDescription, (Guid)newContext);
-                        datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Source of Assessment"), "Naranjo Causality Scale", (Guid)newContext);
+                        datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Method of Assessment"), "Naranjo Causality Scale", (Guid)newContext);
                         datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), med.NaranjoCausality.ToLowerInvariant() == "ignored" ? "" : med.NaranjoCausality, (Guid)newContext);
                     }
                 }
@@ -1816,14 +1816,16 @@ namespace PVIMS.API.Controllers
                         // Causality
                         if (reportInstanceMedication.WhoCausality != null)
                         {
-                            datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Source of Assessment"), "WHO Causality Scale", (Guid)newContext);
+                            datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), sourceInstance.GetInstanceValue("Description of reaction"), (Guid)newContext);
+                            datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Method of Assessment"), "WHO Causality Scale", (Guid)newContext);
                             datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), reportInstanceMedication.WhoCausality.ToLowerInvariant() == "ignored" ? "" : reportInstanceMedication.WhoCausality, (Guid)newContext);
                         }
                         else
                         {
                             if (reportInstanceMedication.NaranjoCausality != null)
                             {
-                                datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Source of Assessment"), "Naranjo Causality Scale", (Guid)newContext);
+                                datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), sourceInstance.GetInstanceValue("Description of reaction"), (Guid)newContext);
+                                datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Method of Assessment"), "Naranjo Causality Scale", (Guid)newContext);
                                 datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), reportInstanceMedication.NaranjoCausality.ToLowerInvariant() == "ignored" ? "" : reportInstanceMedication.NaranjoCausality, (Guid)newContext);
                             }
                         }
@@ -1937,7 +1939,7 @@ namespace PVIMS.API.Controllers
                     datasetInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "D.5 Sex"), "2=Female");
                 }
             }
-            var death = sourceInstance.GetInstanceValue("Date of Death");
+            var death = sourceInstance.GetInstanceValue("Reaction date of death");
             if (death != string.Empty)
             {
                 datasetInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "D.9.1 Date of Death"), death);
@@ -1945,7 +1947,7 @@ namespace PVIMS.API.Controllers
             }
 
             // E Reaction
-            var evnt = sourceInstance.GetInstanceValue("ADR Description");
+            var evnt = sourceInstance.GetInstanceValue("Description of reaction");
             if (evnt != string.Empty)
             {
                 datasetInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "E.i.1.1a Reaction / Event as Reported by the Primary Source in Native Language"), evnt);
@@ -1965,7 +1967,7 @@ namespace PVIMS.API.Controllers
                 datasetInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "E.i.4 Date of Start of Reaction / Event"), onset);
             }
 
-            var outcome = sourceInstance.GetInstanceValue("ADR Outcome");
+            var outcome = sourceInstance.GetInstanceValue("Outcome of reaction");
             if (outcome != string.Empty)
             {
                 switch (outcome)
