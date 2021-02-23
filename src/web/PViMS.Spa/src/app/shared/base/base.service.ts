@@ -43,11 +43,11 @@ export class BaseService {
         self.lastAction = new Date();
     }
 
-    ping() {
+    public ping() {
       return this.httpClient.get(`${this._baseUrl}/accounts/ping`);
     }
 
-    isAuthenticated() {
+    public isAuthenticated() {
         return this.httpClient.get(`${this._baseUrl}${this.apiController}/Authenticated`);
     }
 
@@ -128,67 +128,79 @@ export class BaseService {
         }));          
     }    
 
-    loadToken() {
-        let self = this;
-        if (!self.hasToken()) {
-            var sessionToken = sessionStorage.getItem("jwttoken");
-            var localToken = localStorage.getItem("jwttoken");
+    private loadToken() {
+      let self = this;
+      if (!self.hasToken()) {
+        var sessionToken = sessionStorage.getItem("jwttoken");
+        var localToken = localStorage.getItem("jwttoken");
 
-            if (sessionToken !== null && localToken !== null) {
-                self.clearStorage();
-            }
-
-            if (sessionToken !== null) {
-                self.storeLocal = false;
-                self.JwtObject = new JwtModel(JSON.parse(sessionToken));
-            } else if (localToken !== null) {
-                self.storeLocal = true;
-                self.JwtObject = new JwtModel(JSON.parse(localToken));
-            }
-
-            self.roles = self.getTokenRoles();
-            self.facilities = self.getTokenFacilities();
+        if (sessionToken !== null && localToken !== null) {
+            self.clearStorage();
         }
+
+        if (sessionToken !== null) {
+            self.storeLocal = false;
+            self.JwtObject = new JwtModel(JSON.parse(sessionToken));
+        } else if (localToken !== null) {
+            self.storeLocal = true;
+            self.JwtObject = new JwtModel(JSON.parse(localToken));
+        }
+
+        self.roles = self.getTokenRoles();
+        self.facilities = self.getTokenFacilities();
+      }
     }
 
-    hasToken(): boolean {
+    public hasToken(): boolean {
         return this.getToken() != undefined;
     }
 
-    getToken(): string {
-        return this.JwtObject.token;
+    public getToken(): string {
+      return this.JwtObject.token;
     }
 
-    getEmail(): string {
-        return this.JwtObject.payload.email;
+    public getEmail(): string {
+      return this.JwtObject.payload.email;
     }
 
-    getName(): string {
-        return this.JwtObject.payload.given_name;
+    public getName(): string {
+      return this.JwtObject.payload.given_name;
     }
 
-    getUsername(): string {
-        return this.JwtObject.payload.sub;
+    public getUsername(): string {
+      return this.JwtObject.payload.sub;
     }
 
-    getUniquename(): number {
+    public getUniquename(): number {
       return +this.JwtObject.payload.unique_name;
     }
 
-    getTokenRoles(): string[] {
-      for (let [key, value] of Object.entries(this.JwtObject.payload)) {
-        if (key === 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role') {
-          if(Array.isArray(value)){
-            return value as string[];
-          }
-          let retValue = [];
-          retValue.push(value);
-          return retValue;
-        }
-      }      
+    public hasRole(role: string) : boolean {
+      if(this.roles == undefined) {
+        return false;
+      }
+      return (this.roles.indexOf(role) > -1);
     }
 
-    getTokenFacilities(): string[] {
+    public getUsertype(): string {
+      return this.JwtObject.payload.ut;
+    }
+
+    public setSessionToken(jwtObject: any) {
+      let self = this;
+      self.storeLocal = false;
+      self.JwtObject = new JwtModel(jwtObject);
+      self.JwtObject.tokenDate = new Date();
+      self.eulaAcceptanceRequired = self.JwtObject.eulaAcceptanceRequired;
+      self.allowDatasetDownload = self.JwtObject.allowDatasetDownload;
+      sessionStorage.setItem("jwttoken", JSON.stringify(jwtObject));
+      self.eventService.broadcast(_events.updated_token_event);
+      self.roles = self.getTokenRoles();
+      self.facilities = self.getTokenFacilities();
+      self.eventService.broadcast(_events.roles_refreshed_event);
+    }
+
+    private getTokenFacilities(): string[] {
       for (let [key, value] of Object.entries(this.JwtObject.payload)) {
         if (key === 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier') {
           if(Array.isArray(value)){
@@ -201,110 +213,102 @@ export class BaseService {
       }      
     }
 
-    hasRole(role: string) : boolean {
-      if(this.roles == undefined) {
-        return false;
-      }
-      return (this.roles.indexOf(role) > -1);
-    }
-
-    getUsertype(): string {
-        return this.JwtObject.payload.ut;
-    }
-
-    setSessionToken(jwtObject: any) {
-        let self = this;
-        self.storeLocal = false;
-        self.JwtObject = new JwtModel(jwtObject);
-        self.JwtObject.tokenDate = new Date();
-        self.eulaAcceptanceRequired = self.JwtObject.eulaAcceptanceRequired;
-        self.allowDatasetDownload = self.JwtObject.allowDatasetDownload;
-        sessionStorage.setItem("jwttoken", JSON.stringify(jwtObject));
-        self.eventService.broadcast(_events.updated_token_event);
-        self.roles = self.getTokenRoles();
-        self.facilities = self.getTokenFacilities();
-        self.eventService.broadcast(_events.roles_refreshed_event);
-    }
-
-    setLocalToken(jwtObject: any) {
-        let self = this;
-        self.storeLocal = true;
-        self.JwtObject = new JwtModel(jwtObject);
-        self.JwtObject.tokenDate = new Date();
-        localStorage.setItem("jwttoken", JSON.stringify(jwtObject));
-        self.eventService.broadcast(_events.updated_token_event);
-        self.roles = self.getTokenRoles();
-        self.facilities = self.getTokenFacilities();
-        self.eventService.broadcast(_events.roles_refreshed_event);
-    }
-
-    updateToken(jwtObject: any) {
-        let self = this;
-        if (self.storeLocal) self.setLocalToken(jwtObject);
-        else self.setSessionToken(jwtObject);
-    }
-
-    removeToken() {
-        let self = this;
-        self.JwtObject = new JwtModel();
-        self.clearStorage();
-        self.storeLocal = false;
-        self.eventService.broadcast(_events.remove_token_event);
-    }
-
-    saveStorage(key: string, object: any): void {
-        let self = this;
-        if (self.storeLocal) localStorage.setItem(key, JSON.stringify(object));
-        else sessionStorage.setItem(key, JSON.stringify(object));
-    }
-
-    readStorage(key: string): any {
-        let self = this;
-        if (self.storeLocal) return JSON.parse(localStorage.getItem(key));
-        else return JSON.parse(sessionStorage.getItem(key));
-    }
-
-    removeStorage(key: string): void {
-        let self = this;
-        if (self.storeLocal) localStorage.removeItem(key);
-        else sessionStorage.removeItem(key);
-    }
-
-    hasStorage(key: string): boolean {
-        let self = this;
-        if (self.storeLocal) return localStorage.getItem(key) !== null;
-        else return sessionStorage.getItem(key) !== null;
-    }
-
-    clearStorage(): void {
-        let self = this;
-        if (self.storeLocal) localStorage.clear();
-        else sessionStorage.clear();
-    }
-
-    refreshToken() {
-        this.eventService.broadcast(_events.refresh_token_event);
-        console.log(this.JwtObject.token);
-        console.log(this.JwtObject.refreshToken);
-        return this.Post(`refreshtoken`, { accessToken: this.JwtObject.token, refreshToken: this.JwtObject.refreshToken });
-    }
-
-    verifyRefreshTokenAction() {
-        let self = this;
-        if (self.hasToken()) {
-            if (new Date() > self.JwtObject.slideDate()) {
-                if (self.refreshingToken) return;
-                self.refreshingToken = true;
-                self.refreshToken()
-                    .pipe(finalize(() => { self.refreshingToken = false; } ))
-                    .subscribe(
-                        result => { self.updateToken(result); },
-                        error => { self.removeToken(); });
-            }
+    private getTokenRoles(): string[] {
+      for (let [key, value] of Object.entries(this.JwtObject.payload)) {
+        if (key === 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role') {
+          if(Array.isArray(value)){
+            return value as string[];
+          }
+          let retValue = [];
+          retValue.push(value);
+          return retValue;
         }
+      }      
     }
 
-    transformModelForDate(model: any) : any {
+    public updateToken(jwtObject: any) {
+      let self = this;
+      if (self.storeLocal) self.setLocalToken(jwtObject);
+      else self.setSessionToken(jwtObject);
+    }
+
+    private setLocalToken(jwtObject: any) {
+      let self = this;
+      self.storeLocal = true;
+      self.JwtObject = new JwtModel(jwtObject);
+      self.JwtObject.tokenDate = new Date();
+      localStorage.setItem("jwttoken", JSON.stringify(jwtObject));
+      self.eventService.broadcast(_events.updated_token_event);
+      self.roles = self.getTokenRoles();
+      self.facilities = self.getTokenFacilities();
+      self.eventService.broadcast(_events.roles_refreshed_event);
+    }
+
+    public removeToken() {
+      let self = this;
+      self.JwtObject = new JwtModel();
+      self.clearStorage();
+      self.storeLocal = false;
+      self.eventService.broadcast(_events.remove_token_event);
+    }
+
+    private saveStorage(key: string, object: any): void {
+      let self = this;
+      if (self.storeLocal) localStorage.setItem(key, JSON.stringify(object));
+      else sessionStorage.setItem(key, JSON.stringify(object));
+    }
+
+    private readStorage(key: string): any {
+      let self = this;
+      if (self.storeLocal) return JSON.parse(localStorage.getItem(key));
+      else return JSON.parse(sessionStorage.getItem(key));
+    }
+
+    private removeStorage(key: string): void {
+      let self = this;
+      if (self.storeLocal) localStorage.removeItem(key);
+      else sessionStorage.removeItem(key);
+    }
+
+    private hasStorage(key: string): boolean {
+      let self = this;
+      if (self.storeLocal) return localStorage.getItem(key) !== null;
+      else return sessionStorage.getItem(key) !== null;
+    }
+
+    private clearStorage(): void {
+      let self = this;
+      if (self.storeLocal) localStorage.clear();
+      else sessionStorage.clear();
+    }
+
+    public refreshToken() {
+      this.eventService.broadcast(_events.refresh_token_event);
+      console.log(this.JwtObject.token);
+      console.log(this.JwtObject.refreshToken);
+      return this.Post(`refreshtoken`, { accessToken: this.JwtObject.token, refreshToken: this.JwtObject.refreshToken });
+    }
+
+    public verifyRefreshTokenAction() {
+      let self = this;
+      if (self.hasToken()) {
+        if (new Date() > self.JwtObject.slideDate()) {
+          if (self.refreshingToken) return;
+          self.refreshingToken = true;
+          self.refreshToken()
+            .pipe(finalize(() => { self.refreshingToken = false; } ))
+            .subscribe(
+              result => { self.updateToken(result); },
+              error => { self.removeToken(); });
+        }
+      }
+    }
+
+    /**
+     * transform all moments in model to an ISO 8601 date format
+     * @param model
+     */    
+    public transformModelForDate(model: any) : any {
       let shallowCopy = Object.assign({}, model);
       Object.keys(shallowCopy).forEach((key, index) => {
         if(moment.isMoment(shallowCopy[key])) {
@@ -317,7 +321,17 @@ export class BaseService {
               attributes[key] = attributes[key].format("YYYY-MM-DD");
             }
           })
-        }
+        };
+        if((Array.isArray(shallowCopy[key]) && shallowCopy[key] != null)) {
+          for (var arrayIndex = 0; arrayIndex < shallowCopy[key].length; arrayIndex++) {
+            let attributes = shallowCopy[key][arrayIndex];
+            Object.keys(attributes).forEach((key, index) => {
+              if(moment.isMoment(attributes[key])) {
+                attributes[key] = attributes[key].format("YYYY-MM-DD");
+              }
+            })
+          }          
+        };
       })
       return shallowCopy;
     }

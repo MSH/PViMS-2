@@ -948,58 +948,48 @@ namespace PVIMS.API.Controllers
                             string name = elements.Key;
                             JToken value = elements.Value;
 
-                            if (value is JObject)
+                            // Do not process elements with no values
+                            if (!String.IsNullOrEmpty(value.ToString()))
                             {
-                                JObject fieldsJObject = JObject.FromObject(value);
-                                foreach (var field in fieldsJObject)
+                                var id = Convert.ToInt32(name);
+                                var datasetElementFromRepo = _datasetElementRepository.Get(de => de.Id == id);
+                                if (datasetElementFromRepo != null)
                                 {
-                                    string fieldName = field.Key;
-                                    JToken fieldValue = field.Value;
-
-                                    // Do not process elements with no values
-                                    if (!String.IsNullOrEmpty(fieldValue.ToString()))
+                                    if (datasetElementFromRepo.Field.FieldType.Description == "Table")
                                     {
-                                        var id = Convert.ToInt32(fieldName);
-                                        var datasetElementFromRepo = _datasetElementRepository.Get(de => de.Id == id);
-                                        if (datasetElementFromRepo != null)
+                                        //if (formValues is JArray)
+                                        JArray tablesJArray = JArray.FromObject(value);
+                                        foreach (JObject arrayContent in tablesJArray.Children<JObject>())
                                         {
-                                            if (datasetElementFromRepo.Field.FieldType.Description == "Table")
-                                            {
-                                                //if (formValues is JArray)
-                                                JArray tablesJArray = JArray.FromObject(fieldValue);
-                                                foreach (JObject arrayContent in tablesJArray.Children<JObject>())
-                                                {
-                                                    var context = Guid.NewGuid();
+                                            var context = Guid.NewGuid();
 
-                                                    foreach (var tableRowValue in arrayContent)
-                                                    {
-                                                        string subName = tableRowValue.Key;
-                                                        JToken subValue = tableRowValue.Value;
-
-                                                        var sid = Convert.ToInt32(subName);
-                                                        var datasetElementSubFromRepo = _datasetElementSubRepository.Get(des => des.Id == sid);
-                                                        try
-                                                        {
-                                                            datasetInstance.SetInstanceSubValue(datasetElementSubFromRepo, subValue.ToString(), context);
-                                                        }
-                                                        catch (Exception ex)
-                                                        {
-                                                            ModelState.AddModelError("Message", ex.Message);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            else
+                                            foreach (var tableRowValue in arrayContent)
                                             {
+                                                string subName = tableRowValue.Key;
+                                                JToken subValue = tableRowValue.Value;
+
+                                                var sid = Convert.ToInt32(subName);
+                                                var datasetElementSubFromRepo = _datasetElementSubRepository.Get(des => des.Id == sid);
                                                 try
                                                 {
-                                                    datasetInstance.SetInstanceValue(datasetElementFromRepo, fieldValue.ToString());
+                                                    datasetInstance.SetInstanceSubValue(datasetElementSubFromRepo, subValue.ToString(), context);
                                                 }
                                                 catch (Exception ex)
                                                 {
                                                     ModelState.AddModelError("Message", ex.Message);
                                                 }
                                             }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        try
+                                        {
+                                            datasetInstance.SetInstanceValue(datasetElementFromRepo, value.ToString());
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            ModelState.AddModelError("Message", ex.Message);
                                         }
                                     }
                                 }

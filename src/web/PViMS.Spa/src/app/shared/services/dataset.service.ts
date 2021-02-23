@@ -112,6 +112,11 @@ export class DatasetService extends BaseService {
   } 
   
   saveSpontaneousInstance(id: number, allModels: any[]): any {
-    return this.Put(`datasets/${id}/instances`, allModels);
+    let shallowModels = [];
+    for (let model of allModels) {
+      let shallowModel = this.transformModelForDate(model.elements);
+      shallowModels.push(shallowModel);
+    }
+    return this.Put(`datasets/${id}/instances`, shallowModels);
   }
 }

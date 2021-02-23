@@ -90,7 +90,6 @@ export class SpontaneousComponent extends BaseComponent implements OnInit, OnDes
     self.datasetService.getSpontaneousDataset()
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        console.log(result);
         self.datasetCategories = result.datasetCategories;
         self.datasetId = result.id;
         
@@ -174,7 +173,6 @@ export class SpontaneousComponent extends BaseComponent implements OnInit, OnDes
       allModels.push(formGroup.value);
     });
 
-    console.log(allModels);
     self.datasetService.saveSpontaneousInstance(self.datasetId, allModels)
       .subscribe(result => {
         self.notify("Report created successfully", "Spontaneous Report");
