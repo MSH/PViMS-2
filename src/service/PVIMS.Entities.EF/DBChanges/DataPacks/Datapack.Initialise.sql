@@ -41,6 +41,13 @@ BEGIN TRAN A1
 	DELETE dms from DatasetMappingSub dms inner join DatasetMapping dm on dms.Mapping_Id = dm.Id inner join DatasetCategoryElement dce on dm.DestinationElement_Id = dce.Id inner join DatasetCategory dc on dce.DatasetCategory_Id = dc.Id WHERE dc.Dataset_Id = @Id
 	DELETE dm from DatasetMapping dm inner join DatasetCategoryElement dce on dm.DestinationElement_Id = dce.Id inner join DatasetCategory dc on dce.DatasetCategory_Id = dc.Id WHERE dc.Dataset_Id = @Id
 
+	-- remove dataset
+	DELETE dce from DatasetCategoryElement dce inner join DatasetCategory dc on dce.DatasetCategory_Id = dc.Id WHERE dc.Dataset_Id = @Id
+	DELETE dcc from DatasetCategoryCondition dcc inner join DatasetCategory dc on dcc.DatasetCategory_Id = dc.Id WHERE dc.Dataset_Id = @Id
+	DELETE DatasetCategory WHERE Dataset_Id = @Id
+	DELETE DatasetRule WHERE Dataset_Id = @Id
+	DELETE Dataset  WHERE Id = @Id
+
 	-- remove dataset elements
 	declare @elements table (id int)
 	insert into @elements (id) select de.Id from DatasetElement de left join DatasetCategoryElement dce on de.Id = dce.DatasetElement_Id where dce.Id is null and de.ElementName not in ('TerminologyMedDra', 'SuspectDrug1_Naranjo', 'SuspectDrug1_WHO', 'SuspectDrug2_Naranjo', 'SuspectDrug2_WHO', 'SuspectDrug3_Naranjo', 'SuspectDrug3_WHO', 'ConcomitantDrug1_Naranjo', 'ConcomitantDrug1_WHO', 'ConcomitantDrug2_Naranjo', 'ConcomitantDrug2_WHO', 'ConcomitantDrug3_Naranjo', 'ConcomitantDrug3_WHO')
@@ -49,13 +56,6 @@ BEGIN TRAN A1
 	DELETE ds FROM DatasetElementSub ds INNER JOIN DatasetElement de ON ds.DatasetElement_Id = de.Id where de.Id in (select id from @elements)
 	DELETE DatasetElement where Id in (select id from @elements)
 	DELETE Field where Id in (select Field_Id from DatasetElement where Id in (select id from @elements))
-
-	-- remove dataset
-	DELETE dce from DatasetCategoryElement dce inner join DatasetCategory dc on dce.DatasetCategory_Id = dc.Id WHERE dc.Dataset_Id = @Id
-	DELETE dcc from DatasetCategoryCondition dcc inner join DatasetCategory dc on dcc.DatasetCategory_Id = dc.Id WHERE dc.Dataset_Id = @Id
-	DELETE DatasetCategory WHERE Dataset_Id = @Id
-	DELETE DatasetRule WHERE Dataset_Id = @Id
-	DELETE Dataset  WHERE Id = @Id
 
 	-- remove xml dataset
 	DELETE dsx from Dataset ds inner join DatasetXml dsx on ds.DatasetXml_Id = dsx.Id WHERE ds.Id = @Id 

@@ -453,7 +453,7 @@ set @dceid = (SELECT @@IDENTITY)
 
 -- Reaction serious details
 INSERT [dbo].[Field] (Mandatory, MaxLength, Decimals, MaxSize, MinSize, Calculation, FileSize, FileExt, Anonymise, FieldType_Id)
-	VALUES (0, NULL, NULL, NULL, NULL, '', NULL, '', 0, 1) 
+	VALUES (0, NULL, NULL, NULL, NULL, '', NULL, '', 0, 3) 
 set @fid = (SELECT @@IDENTITY)
 INSERT [dbo].[FieldValue] (Value, [Default], Other, Unknown, Field_Id)
 	VALUES ('Resulted in death', 0, 0, 0, @fid) 
