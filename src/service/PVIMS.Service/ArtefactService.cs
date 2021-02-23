@@ -482,6 +482,9 @@ namespace PVIMS.Services
         {
             XmlDocument e2bXmlDocument = new XmlDocument();
 
+            XmlDeclaration xmlDeclaration = e2bXmlDocument.CreateXmlDeclaration("1.0", "UTF-8", null);
+            e2bXmlDocument.AppendChild(xmlDeclaration);
+
             XmlDocumentType doctype;
             doctype = e2bXmlDocument.CreateDocumentType("ichicsr", "-//ICHM2//DTD ICH ICSR Vers. 2.1//EN", "ich-icsr-v2.1.dtd", null);
             e2bXmlDocument.AppendChild(doctype);
@@ -510,17 +513,19 @@ namespace PVIMS.Services
                 throw new DomainServiceException(nameof(xmlStructureForDataset), "Unable to locate rootnode");
             }
 
-            e2bXmlDocument.AppendChild(ProcessE2bXmlNode(sourceReport, e2bXmlDocument, rootNode));
+            e2bXmlDocument.AppendChild(ProcessE2bXmlNode(sourceReport, e2bXmlDocument, rootNode)[0]);
 
             return e2bXmlDocument;
         }
 
-        private XmlNode ProcessE2bXmlNode(DatasetInstance sourceReport, XmlDocument e2bXmlDocument, DatasetXmlNode datasetXmlNode, DatasetInstanceSubValue[] subItemValues = null)
+        private XmlNode[] ProcessE2bXmlNode(DatasetInstance sourceReport, XmlDocument e2bXmlDocument, DatasetXmlNode datasetXmlNode, DatasetInstanceSubValue[] subItemValues = null)
         {
             if (datasetXmlNode == null)
             {
                 throw new ArgumentNullException(nameof(datasetXmlNode));
             }
+
+            List<XmlNode> xmlNodes = new List<XmlNode>();
 
             switch (datasetXmlNode.NodeType)
             {
@@ -543,32 +548,33 @@ namespace PVIMS.Services
                     {
                         xmlStandardNode = ProcessAllNodeChildren(sourceReport, e2bXmlDocument, datasetXmlNode, xmlStandardNode, subItemValues);
                     }
-
-                    return xmlStandardNode;
+                    xmlNodes.Add(xmlStandardNode);
+                    break;
 
                 case NodeType.RepeatingNode:
-                    var xmlRepeatingNode = CreateXmlNodeWithAttributes(sourceReport, e2bXmlDocument, datasetXmlNode);
-
                     if (datasetXmlNode.DatasetElement != null)
                     {
+                        
                         var sourceContexts = sourceReport.GetInstanceSubValuesContext(datasetXmlNode.DatasetElement.ElementName);
                         foreach (Guid sourceContext in sourceContexts)
                         {
+                            var xmlRepeatingNode = CreateXmlNodeWithAttributes(sourceReport, e2bXmlDocument, datasetXmlNode);
                             var values = sourceReport.GetInstanceSubValues(datasetXmlNode.DatasetElement.ElementName, sourceContext);
 
                             if (datasetXmlNode.ChildrenNodes.Count > 0)
                             {
                                 xmlRepeatingNode = ProcessAllNodeChildren(sourceReport, e2bXmlDocument, datasetXmlNode, xmlRepeatingNode, values);
                             }
+
+                            xmlNodes.Add(xmlRepeatingNode);
                         }
                     }
-
-                    return xmlRepeatingNode;
+                    break;
 
                 default:
                     break;
             }
-            return null;
+            return xmlNodes.ToArray();
         }
 
         private XmlNode CreateXmlNodeWithAttributes(DatasetInstance sourceReport, XmlDocument e2bXmlDocument, DatasetXmlNode datasetXmlNode)
@@ -688,8 +694,11 @@ namespace PVIMS.Services
 
             foreach (DatasetXmlNode datasetChildXmlNode in datasetXmlNode.ChildrenNodes)
             {
-                var childNode = ProcessE2bXmlNode(sourceReport, e2bXmlDocument, datasetChildXmlNode, subItemValues);
-                parentXmlNode.AppendChild(childNode);
+                var childNodes = ProcessE2bXmlNode(sourceReport, e2bXmlDocument, datasetChildXmlNode, subItemValues);
+                foreach(var childNode in childNodes)
+                {
+                    parentXmlNode.AppendChild(childNode);
+                }
             }
 
             return parentXmlNode;
@@ -735,7 +744,7 @@ namespace PVIMS.Services
                 throw new ArgumentNullException(nameof(artefactModel));
             }
 
-            WriteXMLContentToFile(artefactModel.FullPath, ConvertXMLToFormattedText(e2bXmlDocument));
+            WriteXMLContentToFile(artefactModel.FullPath, ConvertXMLToFormattedText(e2bXmlDocument), e2bXmlDocument);
         }
 
         private string ConvertXMLToFormattedText(XmlDocument sourceDocument)
@@ -751,7 +760,8 @@ namespace PVIMS.Services
                 Indent = true,
                 IndentChars = "  ",
                 NewLineChars = "\r\n",
-                NewLineHandling = NewLineHandling.Replace
+                NewLineHandling = NewLineHandling.Replace,
+                Encoding = Encoding.UTF8
             };
             using (XmlWriter writer = XmlWriter.Create(sb, settings))
             {
@@ -761,7 +771,7 @@ namespace PVIMS.Services
             return sb.ToString();
         }
 
-        private void WriteXMLContentToFile(string fileName, string xmlText)
+        private void WriteXMLContentToFile(string fileName, string xmlText, XmlDocument sourceDocument)
         {
             if (String.IsNullOrWhiteSpace(fileName))
             {
@@ -772,9 +782,10 @@ namespace PVIMS.Services
                 throw new ArgumentNullException(nameof(xmlText));
             }
 
-            StreamWriter file = new StreamWriter(fileName, false, Encoding.UTF8);
-            file.Write(xmlText);
-            file.Close();
+            using (TextWriter streamWriter = new StreamWriter(fileName, false, Encoding.UTF8))
+            {
+                sourceDocument.Save(streamWriter);
+            }
         }
 
         public ArtefactInfoModel CreatePatientSummaryForActiveReport(Guid contextGuid)
