@@ -32,6 +32,12 @@ steps:
     verbose: false
     customCommand: 'run buildAzureTest'
 
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/src/web/PViMS.Spa'
+    Contents: 'web.config'
+    TargetFolder: '$(System.DefaultWorkingDirectory)/src/web/PViMS.Spa/dist'
+
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: '$(System.DefaultWorkingDirectory)/src/web/PViMS.Spa/dist' 
