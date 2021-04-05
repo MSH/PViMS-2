@@ -30,7 +30,7 @@ steps:
     command: custom
     workingDir: src/web/PViMS.Spa
     verbose: false
-    customCommand: 'run buildAzureTest'
+    customCommand: 'run buildMSHTest'
 
 - task: CopyFiles@2
   inputs:
