@@ -17,72 +17,43 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-# - task: NuGetToolInstaller@1
+- task: NuGetToolInstaller@1
 
-# - task: NuGetCommand@2
-#   inputs:
-#     restoreSolution: '$(solution)'
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
 
-# - task: VSBuild@1
+- task: VSBuild@1
+  inputs:
+    solution: '$(solution)'
+    msbuildArgs: '/p:DeployOnBuild=false /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(Build.ArtifactStagingDirectory)\WebApp.zip"'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+# - task: VSTest@2
 #   inputs:
-#     solution: '$(solution)'
-#     msbuildArgs: '/p:DeployOnBuild=false /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(Build.ArtifactStagingDirectory)\WebApp.zip"'
 #     platform: '$(buildPlatform)'
 #     configuration: '$(buildConfiguration)'
 
-# # - task: VSTest@2
-# #   inputs:
-# #     platform: '$(buildPlatform)'
-# #     configuration: '$(buildConfiguration)'
-
-# - task: CopyFiles@2
-#   displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
-#   inputs:
-#     Contents: |
-#       **\PViMS.API\bin\**
-#     TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-# - task: ArchiveFiles@2
-#   inputs:
-#     rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/bin' 
-#     includeRootFolder: false
-#     archiveType: 'zip'
-#     tarCompression: 'gz'
-#     archiveFile: '$(Build.ArtifactStagingDirectory)/WebApp.zip' 
-#     verbose: true
-#     quiet: false
-
-# - task: PublishBuildArtifacts@1
-#   displayName: 'Publish Artifact'
-#   inputs:
-#     PathtoPublish: '$(build.artifactstagingdirectory)'
-#     ArtifactName: 'drop'
-
-- task: UseDotNet@2 
-  displayName: ".NET Core 3.1.x"
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
   inputs:
-    version: '3.1.x'
-    packageType: sdk
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+    Contents: |
+      **\PViMS.API\bin\**
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
-# - task: DotNetCoreCLI@2
-#   displayName: "Test"
-#   inputs:
-#     command: test
-#     projects: '**/*tests/*.csproj'
-#     arguments: '--configuration $(buildConfiguration)'
-
-- task: DotNetCoreCLI@2
-  displayName: "Publish"
+- task: ArchiveFiles@2
   inputs:
-    command: 'publish'
-    publishWebProjects: true
-    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-    zipAfterPublish: true
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/bin' 
+    includeRootFolder: false
+    archiveType: 'zip'
+    tarCompression: 'gz'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/WebApp.zip' 
+    verbose: true
+    quiet: false
 
 - task: PublishBuildArtifacts@1
-  displayName: "Upload Artifacts"
+  displayName: 'Publish Artifact'
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
-    artifactName: 'drop' 
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: 'drop'
