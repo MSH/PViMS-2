@@ -27,7 +27,7 @@ steps:
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=false /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip"'
+    msbuildArgs: '/p:DeployOnBuild=false /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(Build.ArtifactStagingDirectory)\WebApp.zip"'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
@@ -40,16 +40,22 @@ steps:
   displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
   inputs:
     Contents: |
-      **\bin\**
+      **\PViMS.API\bin\**
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: ArchiveFiles@2
-  displayName: 'archive $(Build.BinariesDirectory)'
   inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/bin' 
+    includeRootFolder: false
+    archiveType: 'zip'
+    tarCompression: 'gz'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/WebApp.zip' 
     verbose: true
+    quiet: false
 
 - task: PublishBuildArtifacts@1
-  displayName: 'publish pipeline artifact'
+  displayName: 'Publish Artifact'
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)'
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: 'drop'
 
