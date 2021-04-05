@@ -37,7 +37,8 @@ steps:
 #     configuration: '$(buildConfiguration)'
 
 - task: PublishBuildArtifacts@1
-  displayName: 'publish pipeline artifact'
+  displayName: 'Publish Artifact'
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)'
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: 'drop'
 
