@@ -36,18 +36,6 @@ steps:
 #     platform: '$(buildPlatform)'
 #     configuration: '$(buildConfiguration)'
 
-- task: CopyFiles@2
-  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
-  inputs:
-    Contents: |
-      **\bin\**
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-- task: ArchiveFiles@2
-  displayName: 'archive $(Build.BinariesDirectory)'
-  inputs:
-    verbose: true
-
 - task: PublishBuildArtifacts@1
   displayName: 'publish pipeline artifact'
   inputs:
