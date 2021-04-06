@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace PVIMS.Core.Entities
+﻿namespace PVIMS.Core.Entities
 {
-    [Table(nameof(ConditionLabTest))]
     public class ConditionLabTest : EntityBase
     {
+        public int ConditionId { get; set; }
+        public int LabTestId { get; set; }
+
         public virtual Condition Condition { get; set; }
         public virtual LabTest LabTest { get; set; }
     }

@@ -1,0 +1,38 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PVIMS.Core.Entities;
+
+namespace PVIMS.Infrastructure.EntityConfigurations
+{
+    class ReportInstanceMedicationEntityTypeConfiguration : IEntityTypeConfiguration<ReportInstanceMedication>
+    {
+        public void Configure(EntityTypeBuilder<ReportInstanceMedication> configuration)
+        {
+            configuration.ToTable("ReportInstanceMedication");
+
+            configuration.HasKey(e => e.Id);
+
+            configuration.Property(e => e.NaranjoCausality)
+                .HasMaxLength(30);
+
+            configuration.Property(e => e.ReportInstanceId)
+                .IsRequired()
+                .HasColumnName("ReportInstance_Id");
+
+            configuration.Property(e => e.WhoCausality)
+                .HasMaxLength(30);
+
+            configuration.Property(e => e.ReportInstanceMedicationGuid)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            configuration.HasOne(d => d.ReportInstance)
+                .WithMany(p => p.ReportInstanceMedications)
+                .HasForeignKey(d => d.ReportInstanceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_dbo.ReportInstanceMedication_dbo.ReportInstance_ReportInstance_Id");
+
+            configuration.HasIndex(e => e.ReportInstanceId, "IX_ReportInstance_Id");
+        }
+    }
+}

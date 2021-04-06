@@ -1,27 +1,23 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(OrgUnit))]
     public class OrgUnit : EntityBase
     {
         public OrgUnit()
         {
+            Children = new HashSet<OrgUnit>();
+            Facilities = new HashSet<Facility>();
         }
 
-        [Required]
-        [StringLength(50)]
         public string Name { get; set; }
+        public int? ParentId { get; set; }
+        public int OrgUnitTypeId { get; set; }
 
         public virtual OrgUnit Parent { get; set; }
-
-        [Required]
         public virtual OrgUnitType OrgUnitType { get; set; }
 
-        [InverseProperty("Parent")]
         public virtual ICollection<OrgUnit> Children { get; set; }
-
+        public virtual ICollection<Facility> Facilities { get; set; }
     }
 }

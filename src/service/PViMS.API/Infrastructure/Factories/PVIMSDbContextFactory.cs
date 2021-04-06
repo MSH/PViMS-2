@@ -18,7 +18,7 @@ namespace PVIMS.API.Infrastructure.Factories
 
             var optionsBuilder = new DbContextOptionsBuilder<PVIMSDbContext>();
 
-            optionsBuilder.UseSqlServer(config["ConnectionString"], sqlServerOptionsAction: o => o.MigrationsAssembly("PVIMS.Infrastructure"));
+            optionsBuilder.UseSqlServer(config["ConnectionString"], sqlServerOptionsAction: o => o.MigrationsAssembly("PViMS.Infrastructure"));
 
             return new PVIMSDbContext(optionsBuilder.Options);
         }

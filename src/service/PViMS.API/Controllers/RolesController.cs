@@ -8,12 +8,12 @@ using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.Core.Entities;
-using System;
-using System.Threading.Tasks;
 using Extensions = PVIMS.Core.Utilities.Extensions;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Paging;
+using System;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
 {

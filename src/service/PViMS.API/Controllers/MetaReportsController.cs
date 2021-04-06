@@ -232,7 +232,7 @@ namespace PVIMS.API.Controllers
                     ReportDefinition = metaReportForUpdate.ReportDefinition,
                     Breadcrumb = metaReportForUpdate.Breadcrumb,
                     IsSystem = false,
-                    metareport_guid = Guid.NewGuid(),
+                    MetaReportGuid = Guid.NewGuid(),
                     ReportStatus = metaReportForUpdate.ReportStatus,
                     MetaDefinition = PrepareMetaDefinition(metaReportForUpdate)
                 };
@@ -625,7 +625,7 @@ namespace PVIMS.API.Controllers
             {
                 sql = PrepareListQueryForPublication(metaReportForAttributeUpdate);
             }
-            metaReport.SQLDefinition = sql;
+            metaReport.SqlDefinition = sql;
         }
 
         /// <summary>

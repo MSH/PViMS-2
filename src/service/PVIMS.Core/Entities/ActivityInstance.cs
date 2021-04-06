@@ -1,12 +1,10 @@
+using PVIMS.Core.Entities.Accounts;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(ActivityInstance))]
     public class ActivityInstance : AuditedEntityBase
 	{
         public ActivityInstance()
@@ -21,16 +19,13 @@ namespace PVIMS.Core.Entities
             ExecutionEvents.Add(InitialiseWithFirstExecutionStatus(activity, currentUser));
         }
 
-        [Required]
-        public ReportInstance ReportInstance { get; set; }
-
-        [Required]
-        [StringLength(50)]
         public string QualifiedName { get; set; }
-
+        public int CurrentStatusId { get; set; }
+        public int ReportInstanceId { get; set; }
         public bool Current { get; set; }
 
         public virtual ActivityExecutionStatus CurrentStatus { get; set; }
+        public virtual ReportInstance ReportInstance { get; set; }
 
         public virtual ICollection<ActivityExecutionStatusEvent> ExecutionEvents { get; set; }
 

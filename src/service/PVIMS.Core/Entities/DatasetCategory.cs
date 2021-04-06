@@ -1,45 +1,34 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(DatasetCategory))]
     public class DatasetCategory : EntityBase
     {
         public DatasetCategory()
         {
             DatasetCategoryElements = new HashSet<DatasetCategoryElement>();
             WorkPlanCareEventDatasetCategories = new HashSet<WorkPlanCareEventDatasetCategory>();
-            Conditions = new HashSet<DatasetCategoryCondition>();
+            DatasetCategoryConditions = new HashSet<DatasetCategoryCondition>();
         }
 
-        [Required]
-        [StringLength(50)]
         public string DatasetCategoryName { get; set; }
-
-        [StringLength(150)]
-        public string FriendlyName { get; set; }
-        [StringLength(350)]
-        public string Help { get; set; }
-
-        [StringLength(10)]
-        public string UID { get; set; }
-
+        public short CategoryOrder { get; set; }
+        public int DatasetId { get; set; }
+        public string Uid { get; set; }
         public bool System { get; set; }
-        public bool Public { get; set; }
         public bool Acute { get; set; }
         public bool Chronic { get; set; }
-
-        public short CategoryOrder { get; set; }
+        public bool Public { get; set; }
+        public string FriendlyName { get; set; }
+        public string Help { get; set; }
 
         public virtual Dataset Dataset { get; set; }
 
         public virtual ICollection<DatasetCategoryElement> DatasetCategoryElements { get; set; }
         public virtual ICollection<WorkPlanCareEventDatasetCategory> WorkPlanCareEventDatasetCategories { get; set; }
-        public virtual ICollection<DatasetCategoryCondition> Conditions { get; set; }
+        public virtual ICollection<DatasetCategoryCondition> DatasetCategoryConditions { get; set; }
 
         public void AddElement(DatasetElement datasetElement)
         {

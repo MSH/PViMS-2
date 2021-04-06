@@ -1,17 +1,18 @@
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(MetaColumnType))]
     public class MetaColumnType : EntityBase
     {
-        [Required]
-        public Guid metacolumntype_guid { get; set; }
+        public MetaColumnType()
+        {
+            MetaColumns = new HashSet<MetaColumn>();
+        }
 
-        [Required]
-        [StringLength(50)]
+        public Guid MetaColumnTypeGuid { get; set; }
         public string Description { get; set; }
+
+        public virtual ICollection<MetaColumn> MetaColumns { get; set; }
     }
 }

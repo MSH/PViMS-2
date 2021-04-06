@@ -1,13 +1,10 @@
 using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using PVIMS.Core.CustomAttributes;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Utilities;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(PatientLabTest))]
     public class PatientLabTest : EntityBase, IExtendable
 	{
         public PatientLabTest()
@@ -15,33 +12,23 @@ namespace PVIMS.Core.Entities
             PatientLabTestGuid = Guid.NewGuid();
         }
 
+        public DateTime TestDate { get; set; }
+        public string TestResult { get; set; }
+        public int LabTestId { get; set; }
+        public int PatientId { get; set; }
         public Guid PatientLabTestGuid { get; set; }
-
-		public DateTime TestDate { get; set; }
-
-		[StringLength(50)]
-		public string TestResult { get; set; }
-        [StringLength(20)]
+        public int? TestUnitId { get; set; }
         public string LabValue { get; set; }
-
-        [StringLength(20)]
-        public string ReferenceLower { get; set; }
-        [StringLength(20)]
-        public string ReferenceUpper { get; set; }
-
-		public virtual LabTestUnit TestUnit { get; set; }
-        [DefaultValue(false)]
         public bool Archived { get; set; }
         public DateTime? ArchivedDate { get; set; }
-        [StringLength(200)]
         public string ArchivedReason { get; set; }
-
-        [StringLength(200)]
+        public int? AuditUserId { get; set; }
+        public string ReferenceLower { get; set; }
+        public string ReferenceUpper { get; set; }
         public string LabTestSource { get; set; }
 
-        [Required]
+		public virtual LabTestUnit TestUnit { get; set; }
 		public virtual LabTest LabTest { get; set; }
-        [Required]
 		public virtual Patient Patient { get; set; }
         public virtual User AuditUser { get; set; }
 
@@ -52,7 +39,6 @@ namespace PVIMS.Core.Entities
             get { return customAttributes; }
         }
 
-        [Column(TypeName = "xml")]
         public string CustomAttributesXmlSerialised
         {
 

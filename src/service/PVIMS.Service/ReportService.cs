@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
 using PVIMS.Infrastructure;
-using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Keyless;
 
 namespace PVIMS.Services
 {

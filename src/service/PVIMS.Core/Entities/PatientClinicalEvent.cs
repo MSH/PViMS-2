@@ -1,13 +1,10 @@
 using PVIMS.Core.CustomAttributes;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Utilities;
 using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(PatientClinicalEvent))]
     public class PatientClinicalEvent : EntityBase, IExtendable
 	{
         public PatientClinicalEvent()
@@ -15,26 +12,23 @@ namespace PVIMS.Core.Entities
             PatientClinicalEventGuid = Guid.NewGuid();
         }
 
+        public DateTime? OnsetDate { get; set; }
+        public DateTime? ResolutionDate { get; set; }
+        public int? EncounterId { get; set; }
+        public int PatientId { get; set; }
         public Guid PatientClinicalEventGuid { get; set; }
-
-        [StringLength(500)]
+        public int? SourceTerminologyMedDraId { get; set; }
+        public int? TerminologyMedDraId1 { get; set; }
+        public bool Archived { get; set; }
+        public DateTime? ArchivedDate { get; set; }
+        public string ArchivedReason { get; set; }
+        public int? AuditUserId { get; set; }
         public string SourceDescription { get; set; }
 
         public virtual TerminologyMedDra SourceTerminologyMedDra { get; set; }
 
-		[Column(TypeName = "date")]
-		public DateTime? OnsetDate { get; set; }
-
-		[Column(TypeName = "date")]
-		public DateTime? ResolutionDate { get; set; }
-        [DefaultValue(false)]
-        public bool Archived { get; set; }
-        public DateTime? ArchivedDate { get; set; }
-        [StringLength(200)]
-        public string ArchivedReason { get; set; }
-
-        [Required]
         public virtual Patient Patient { get; set; }
+        public virtual Encounter Encounter { get; set; }
         public virtual User AuditUser { get; set; }
 
         private CustomAttributeSet customAttributes = new CustomAttributeSet();
@@ -72,7 +66,6 @@ namespace PVIMS.Core.Entities
             get { return customAttributes; }
         }
 
-        [Column(TypeName = "xml")]
         public string CustomAttributesXmlSerialised
         {
 

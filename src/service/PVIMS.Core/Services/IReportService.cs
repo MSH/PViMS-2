@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using PVIMS.Core.Entities;
-using PVIMS.Core.Models;
+using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.ValueTypes;
 
 namespace PVIMS.Core.Services

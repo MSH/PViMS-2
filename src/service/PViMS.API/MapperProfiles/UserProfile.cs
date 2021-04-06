@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using PVIMS.API.Models;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
 using System.Linq;
 
 namespace PVIMS.API.MapperProfiles

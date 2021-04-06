@@ -1,16 +1,18 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(MedDRAScale))]
     public class MedDRAScale : EntityBase
 	{
-        [Required]
-        public virtual TerminologyMedDra TerminologyMedDra { get; set; }
+        public MedDRAScale()
+        {
+            Grades = new HashSet<MedDRAGrading>();
+        }
 
-        [Required]
+        public int GradingScaleId { get; set; }
+        public int TerminologyMedDraId { get; set; }
+
+        public virtual TerminologyMedDra TerminologyMedDra { get; set; }
         public virtual SelectionDataItem GradingScale { get; set; }
 
         public virtual ICollection<MedDRAGrading> Grades { get; set; }

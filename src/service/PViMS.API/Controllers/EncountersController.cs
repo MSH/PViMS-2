@@ -1,8 +1,16 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using AutoMapper;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Services;
@@ -11,20 +19,14 @@ using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Models;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using PVIMS.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 
 namespace PVIMS.API.Controllers
 {
@@ -370,7 +372,7 @@ namespace PVIMS.API.Controllers
                 .Include("DatasetInstanceValues.DatasetInstanceSubValues.DatasetElementSub")
                 .Include("DatasetInstanceValues.DatasetElement")
                 .SingleOrDefault(di => di.Dataset.ContextType.Id == contextTypeId
-                        && di.ContextID == id
+                        && di.ContextId == id
                         && di.EncounterTypeWorkPlan.EncounterType.Id == encounterFromRepo.EncounterType.Id);
 
                 if (datasetInstanceFromRepo != null)
@@ -566,7 +568,7 @@ namespace PVIMS.API.Controllers
 
             // Encounter information
             var datasetInstanceFromRepo = _datasetInstanceRepository.Get(di => di.Dataset.ContextType.Id == (int)ContextTypes.Encounter
-                    && di.ContextID == dto.Id
+                    && di.ContextId == dto.Id
                     && di.EncounterTypeWorkPlan.EncounterType.Id == encounterFromRepo.EncounterType.Id);
 
             if (datasetInstanceFromRepo != null)
@@ -628,7 +630,7 @@ namespace PVIMS.API.Controllers
 
             // Encounter information
             var datasetInstanceFromRepo = _datasetInstanceRepository.Get(di => di.Dataset.ContextType.Id == (int)ContextTypes.Encounter
-                    && di.ContextID == dto.Id
+                    && di.ContextId == dto.Id
                     && di.EncounterTypeWorkPlan.EncounterType.Id == encounterFromRepo.EncounterType.Id);
 
             if (datasetInstanceFromRepo != null)
@@ -775,7 +777,7 @@ namespace PVIMS.API.Controllers
             if (datasetCategoryElement.Chronic)
             {
                 // Does patient have chronic condition
-                if (!encounter.Patient.HasCondition(datasetCategoryElement.Conditions.Select(c => c.Condition).ToList()))
+                if (!encounter.Patient.HasCondition(datasetCategoryElement.DatasetCategoryElementConditions.Select(c => c.Condition).ToList()))
                 {
                     return false;
                 }
@@ -791,7 +793,7 @@ namespace PVIMS.API.Controllers
         {
             if (datasetCategory.Chronic)
             {
-                if (!encounter.Patient.HasCondition(datasetCategory.Conditions.Select(c => c.Condition).ToList()))
+                if (!encounter.Patient.HasCondition(datasetCategory.DatasetCategoryConditions.Select(c => c.Condition).ToList()))
                 {
                     return false;
                 }
@@ -809,7 +811,7 @@ namespace PVIMS.API.Controllers
             // Encounter type is chronic then element must have chronic selected and patient must have condition
             if (datasetCategoryElement.Chronic)
             {
-                return !encounter.Patient.HasCondition(datasetCategoryElement.Conditions.Select(c => c.Condition).ToList());
+                return !encounter.Patient.HasCondition(datasetCategoryElement.DatasetCategoryElementConditions.Select(c => c.Condition).ToList());
             }
             else
             {

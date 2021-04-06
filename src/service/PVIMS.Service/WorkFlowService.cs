@@ -1,5 +1,6 @@
 ﻿using PVIMS.Core;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
@@ -58,9 +59,9 @@ namespace PVIMS.Services
             ArrayList modifyCollection = new ArrayList();
             foreach (ReportInstanceMedicationListItem medication in medications)
             {
-                if(reportInstance.Medications != null)
+                if(reportInstance.ReportInstanceMedications != null)
                 {
-                    var exists = reportInstance.Medications.Any(m => m.ReportInstanceMedicationGuid == medication.ReportInstanceMedicationGuid);
+                    var exists = reportInstance.ReportInstanceMedications.Any(m => m.ReportInstanceMedicationGuid == medication.ReportInstanceMedicationGuid);
                     if (exists)
                     {
                         modifyCollection.Add(medication);
@@ -79,13 +80,13 @@ namespace PVIMS.Services
             foreach (ReportInstanceMedicationListItem medication in addCollection)
             {
                 var med = new ReportInstanceMedication() { MedicationIdentifier = medication.MedicationIdentifier, ReportInstance = reportInstance, ReportInstanceMedicationGuid = medication.ReportInstanceMedicationGuid };
-                reportInstance.Medications.Add(med);
+                reportInstance.ReportInstanceMedications.Add(med);
 
                 _unitOfWork.Repository<ReportInstanceMedication>().Save(med);
             }
             foreach (ReportInstanceMedicationListItem medication in modifyCollection)
             {
-                var med = reportInstance.Medications.Single(m => m.ReportInstanceMedicationGuid == medication.ReportInstanceMedicationGuid);
+                var med = reportInstance.ReportInstanceMedications.Single(m => m.ReportInstanceMedicationGuid == medication.ReportInstanceMedicationGuid);
                 med.MedicationIdentifier = medication.MedicationIdentifier;
 
                 _unitOfWork.Repository<ReportInstanceMedication>().Update(med);
@@ -159,7 +160,7 @@ namespace PVIMS.Services
 
             // Full managements of medications list for report instance
             ArrayList deleteCollection = new ArrayList();
-            foreach (ReportInstanceMedication medication in reportInstance.Medications)
+            foreach (ReportInstanceMedication medication in reportInstance.ReportInstanceMedications)
             {
                 var exists = medications.Any(m => m.ReportInstanceMedicationGuid == medication.ReportInstanceMedicationGuid);
                 if (exists) { deleteCollection.Add(medication); };
@@ -167,7 +168,7 @@ namespace PVIMS.Services
 
             foreach (ReportInstanceMedication medication in deleteCollection)
             {
-                reportInstance.Medications.Remove(medication);
+                reportInstance.ReportInstanceMedications.Remove(medication);
                 _unitOfWork.Repository<ReportInstanceMedication>().Delete(medication);
             }
 
@@ -457,7 +458,7 @@ namespace PVIMS.Services
                 = _unitOfWork.Repository<DatasetInstance>()
                 .Queryable()
                 .Where(di => di.Tag == tag
-                    && di.ContextID == evt.Id).SingleOrDefault();
+                    && di.ContextId == evt.Id).SingleOrDefault();
 
             path = _artefactService.CreateE2B(datasetInstance.Id);
 

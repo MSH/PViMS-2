@@ -13,6 +13,7 @@ using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;

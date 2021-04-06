@@ -11,10 +11,13 @@ using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Models;
+using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Entities.Keyless;
+using SelectionDataItem = PVIMS.Core.Entities.SelectionDataItem;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
@@ -24,8 +27,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Extensions = PVIMS.Core.Utilities.Extensions;
-using SelectionDataItem = PVIMS.Core.Entities.SelectionDataItem;
 
 namespace PVIMS.API.Controllers
 {
@@ -686,7 +687,7 @@ namespace PVIMS.API.Controllers
                                 || f.SourceIdentifier.Contains(reportInstanceResourceParameters.SearchTerm) 
                                 || f.TerminologyMedDra.MedDraTerm.Contains(reportInstanceResourceParameters.SearchTerm) 
                                 || f.Identifier.Contains(reportInstanceResourceParameters.SearchTerm) 
-                                || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
+                                || f.ReportInstanceMedications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
             }
 
             var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, "");
@@ -817,7 +818,7 @@ namespace PVIMS.API.Controllers
                                         || f.SourceIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)
                                         || f.TerminologyMedDra.MedDraTerm.Contains(reportInstanceResourceParameters.SearchTerm)
                                         || f.Identifier.Contains(reportInstanceResourceParameters.SearchTerm)
-                                        || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
+                                        || f.ReportInstanceMedications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
                     }
 
                     var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, "");
@@ -1029,7 +1030,7 @@ namespace PVIMS.API.Controllers
                         var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
                             .Queryable()
                             .Where(di => di.Tag == tag
-                                && di.ContextID == evt.Id)
+                                && di.ContextId == evt.Id)
                             .SingleOrDefault();
 
                         if(datasetInstance != null)
@@ -1107,7 +1108,7 @@ namespace PVIMS.API.Controllers
                         var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
                             .Queryable()
                             .Where(di => di.Tag == tag
-                                && di.ContextID == evt.Id)
+                                && di.ContextId == evt.Id)
                             .SingleOrDefault();
 
                         dto.E2BInstance = new DatasetInstanceDto()
@@ -1522,7 +1523,7 @@ namespace PVIMS.API.Controllers
             var encounter = _unitOfWork.Repository<Encounter>().Queryable().FirstOrDefault(e => e.Patient.Id == patientClinicalEvent.Patient.Id && e.Archived == false & e.EncounterDate <= patientClinicalEvent.OnsetDate);
             if (encounter != null)
             {
-                var encounterInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().SingleOrDefault(ds => ds.Dataset.DatasetName == "Chronic Treatment" && ds.ContextID == encounter.Id);
+                var encounterInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().SingleOrDefault(ds => ds.Dataset.DatasetName == "Chronic Treatment" && ds.ContextId == encounter.Id);
                 if (encounterInstance != null)
                 {
                     var weight = encounterInstance.GetInstanceValue("Weight (kg)");
@@ -1583,7 +1584,7 @@ namespace PVIMS.API.Controllers
             string[] validWHOCriteria = { "Possible", "Probable", "Certain" };
 
             var destinationProductElement = _unitOfWork.Repository<DatasetElement>().Queryable().SingleOrDefault(u => u.DatasetElementGuid.ToString() == "E033BDE8-EDC8-43FF-A6B0-DEA6D6FA581C"); // Medicinal Products
-            foreach (ReportInstanceMedication med in reportInstance.Medications)
+            foreach (ReportInstanceMedication med in reportInstance.ReportInstanceMedications)
             {
                 var newContext = Guid.NewGuid();
 

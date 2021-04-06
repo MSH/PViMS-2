@@ -24,6 +24,7 @@ using System.Text;
 using System.Xml;
 
 using FontSize = DocumentFormat.OpenXml.Wordprocessing.FontSize;
+using PVIMS.Core.Entities.Accounts;
 
 namespace PVIMS.Services
 {
@@ -1170,7 +1171,7 @@ namespace PVIMS.Services
             if (reportInstance == null) { return table; };
 
             var i = 0;
-            foreach (ReportInstanceMedication med in reportInstance.Medications)
+            foreach (ReportInstanceMedication med in reportInstance.ReportInstanceMedications)
             {
                 i += 1;
 
@@ -1643,7 +1644,7 @@ namespace PVIMS.Services
             var sourceContexts = datasetInstance.GetInstanceSubValuesContext(sourceProductElement.ElementName);
 
             var i = 0;
-            foreach (ReportInstanceMedication med in reportInstance.Medications)
+            foreach (ReportInstanceMedication med in reportInstance.ReportInstanceMedications)
             {
                 i += 1;
 
@@ -3184,7 +3185,7 @@ namespace PVIMS.Services
                 var id = Convert.ToInt32(((Encounter)obj).Id);
                 var instance = _unitOfWork.Repository<DatasetInstance>()
                     .Queryable()
-                    .SingleOrDefault(di => di.Dataset.DatasetName == "Chronic Treatment" && di.ContextID == id);
+                    .SingleOrDefault(di => di.Dataset.DatasetName == "Chronic Treatment" && di.ContextId == id);
                 foreach (DatasetCategoryElement dce in elements)
                 {
                     var eleOutput = "";

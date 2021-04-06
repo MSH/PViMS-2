@@ -1,13 +1,16 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace PVIMS.Core.Entities
 {
-	[Table(nameof(LabTestUnit))]
 	public class LabTestUnit : EntityBase
 	{
-		[Required]
-		[StringLength(50)]
-		public string Description { get; set; }
-	}
+        public LabTestUnit()
+        {
+            PatientLabTests = new HashSet<PatientLabTest>();
+        }
+
+        public string Description { get; set; }
+
+        public virtual ICollection<PatientLabTest> PatientLabTests { get; set; }
+    }
 }

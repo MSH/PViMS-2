@@ -14,13 +14,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{37E150
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PViMS.API", "Service\PViMS.API\PViMS.API.csproj", "{3447BA39-CA44-4079-8572-3CEF77D774AC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PVIMS.Services", "Service\PVIMS.Service\PVIMS.Services.csproj", "{8D024EAE-DDD2-43CF-9A18-5675301860AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PViMS.Services", "Service\PVIMS.Service\PViMS.Services.csproj", "{8D024EAE-DDD2-43CF-9A18-5675301860AE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PViMS.Core", "service\PViMS.Core\PViMS.Core.csproj", "{FE859B22-9168-465A-9554-BD185CF19801}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{FF9E5DAD-7AFB-4584-A7F8-494991600C80}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PViMS.Infrastructure", "service\PViMS.Persistence\PViMS.Infrastructure.csproj", "{DD42E029-BFA1-4CB3-9275-1EE35FA5A8C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PViMS.Infrastructure", "service\PViMS.Infrastructure\PViMS.Infrastructure.csproj", "{DD42E029-BFA1-4CB3-9275-1EE35FA5A8C4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{1E6528E4-5367-4145-ABC2-11285576F989}"
 EndProject

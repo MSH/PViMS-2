@@ -247,7 +247,7 @@ namespace PVIMS.API.Controllers
                     Breadcrumb = metaPageForUpdate.Breadcrumb,
                     IsSystem = false,
                     MetaDefinition = string.Empty,
-                    metapage_guid = Guid.NewGuid(),
+                    MetaPageGuid = Guid.NewGuid(),
                     IsVisible = (metaPageForUpdate.Visible == Models.ValueTypes.YesNoValueType.Yes)
                 };
 
