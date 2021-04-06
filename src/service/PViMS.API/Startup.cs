@@ -150,7 +150,7 @@ namespace PViMS.API
                 });
 
             app.UseRouting();
-            app.UseCors("AllowSpecificOrigin");
+            app.UseCors("CorsPolicy");
 
             app.UseAuthentication();
 
@@ -254,9 +254,9 @@ namespace PViMS.API
 
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowSpecificOrigin",
+                options.AddPolicy("CorsPolicy",
                     builder => builder
-                    .AllowAnyOrigin()
+                    .SetIsOriginAllowed((host) => true)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials());
