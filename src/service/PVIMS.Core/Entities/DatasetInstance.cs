@@ -197,7 +197,7 @@ namespace PVIMS.Core.Entities
                         {
                             if (!String.IsNullOrWhiteSpace(mapping.MappingOption))
                             {
-                                formattedValue = Convert.ToDateTime(formattedValue).ToString(mapping.MappingOption);
+                                formattedValue = Convert.ToDateTime(formattedValue) == DateTime.MinValue ? "" : Convert.ToDateTime(formattedValue).ToString(mapping.MappingOption);
                             }
                         }
                         else

@@ -62,10 +62,10 @@ export class EncounterService extends BaseService {
     saveEncounter(patientId: number, id: number, model: any): any {
       let shallowModel = this.transformModelForDate(model);
       if(id == 0) {
-        return this.Post(`patients/${patientId}/encounters`, model);
+        return this.Post(`patients/${patientId}/encounters`, shallowModel);
       }
       else {
-        return this.Put(`patients/${patientId}/encounters/${id}`, model);
+        return this.Put(`patients/${patientId}/encounters/${id}`, shallowModel);
       }
     }
 

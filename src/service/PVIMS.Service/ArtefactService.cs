@@ -7,10 +7,8 @@ using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 using Microsoft.AspNetCore.Hosting;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
-using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
-using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.Utilities;
 using PVIMS.Core.ValueTypes;
@@ -22,9 +20,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using VPS.Common.Repositories;
+using VPS.Common.Utilities;
+using VPS.CustomAttributes;
 
+using SelectionDataItem = PVIMS.Core.Entities.SelectionDataItem;
+using CustomAttributeConfiguration = PVIMS.Core.Entities.CustomAttributeConfiguration;
+using FrameworkCustomAttributeConfiguration = VPS.CustomAttributes.CustomAttributeConfiguration;
 using FontSize = DocumentFormat.OpenXml.Wordprocessing.FontSize;
-using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Exceptions;
 
 namespace PVIMS.Services
 {
@@ -46,12 +50,20 @@ namespace PVIMS.Services
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository)
         {
-            _unitOfWork = _unitOfWork ?? throw new ArgumentNullException(nameof(_unitOfWork));
-            _attributeService = attributeService ?? throw new ArgumentNullException(nameof(attributeService));
-            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
-            _environment = environment ?? throw new ArgumentNullException(nameof(environment));
-            _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
-            _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
+            Check.IsNotNull(unitOfWork, "unitOfWork may not be null");
+            Check.IsNotNull(attributeService, "unitOfWork may not be null");
+            Check.IsNotNull(patientService, "unitOfWork may not be null");
+            Check.IsNotNull(reportInstanceRepository, "reportInstanceRepository may not be null");
+            Check.IsNotNull(patientMedicationRepository, "patientMedicationRepository may not be null");
+            Check.IsNotNull(environment, "environment may not be null");
+
+            _unitOfWork = unitOfWork;
+            _environment = environment;
+
+            _attributeService = attributeService;
+            _patientService = patientService;
+            _reportInstanceRepository = reportInstanceRepository;
+            _patientMedicationRepository = patientMedicationRepository;
         }
 
         public ArtefactInfoModel CreateActiveDatasetForDownload(long[] patientIds, long cohortGroupId)
@@ -430,37 +442,350 @@ namespace PVIMS.Services
             return model;
         }
 
-        public ArtefactInfoModel CreateE2B(long datasetInstanceId)
+        public ArtefactInfoModel CreateE2B(long datasetInstanceId = 0)
         {
-            var model = new ArtefactInfoModel();
-            var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmsss");
-
-            model.Path = Path.GetTempPath();
-            model.FileName = $"E2B{datasetInstanceId}_{generatedDate}.xml";
-
-            // Create XML file
-            DatasetInstance datasetInstance = _unitOfWork.Repository<DatasetInstance>()
+            DatasetInstance sourceReport = _unitOfWork.Repository<DatasetInstance>()
                 .Queryable()
                 .SingleOrDefault(ds => ds.Id == datasetInstanceId);
-
-            // Get the corresponding xml
-            DatasetXml dsXml = datasetInstance.Dataset.DatasetXml;
-
-            XmlDocument xmlDoc = new XmlDocument();
-
-            // Get the root note
-            DatasetXmlNode dsXmlRootNode = dsXml.ChildrenNodes.SingleOrDefault(c => c.NodeType == NodeType.RootNode);
-            if (dsXmlRootNode != null)
+            if (sourceReport == null)
             {
-                var preparedNode = ProcessNode(dsXmlRootNode, ref xmlDoc, ref datasetInstance);
-                xmlDoc.AppendChild(preparedNode);
+                throw new ArgumentException(nameof(datasetInstanceId), "Unable to locate dataset instance");
+            }
+            DatasetXml xmlStructureForDataset = sourceReport.Dataset.DatasetXml;
+            if (xmlStructureForDataset == null)
+            {
+                throw new ArgumentException(nameof(xmlStructureForDataset), "Unable to locate dataset XML structure");
             }
 
-            var contentXml = FormatXML(xmlDoc);
+            var e2bXmlDocument = CreateNewE2bXmlDocument();
 
-            WriteXML(model.FullPath, contentXml);
+            e2bXmlDocument = ProcessE2bRootNode(sourceReport, xmlStructureForDataset, e2bXmlDocument);
 
-            return model;
+            var artefactModel = PrepareArtefactModel(datasetInstanceId);
+            SaveFormattedXML(e2bXmlDocument, artefactModel);
+
+            return artefactModel;
+        }
+
+        private ArtefactInfoModel PrepareArtefactModel(long identifier = 0)
+        {
+            var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmsss");
+
+            return new ArtefactInfoModel()
+            {
+                Path = Path.GetTempPath(),
+                FileName = $"E2B{identifier}_{generatedDate}.xml"
+            };
+        }
+
+        private XmlDocument CreateNewE2bXmlDocument()
+        {
+            XmlDocument e2bXmlDocument = new XmlDocument();
+
+            XmlDeclaration xmlDeclaration = e2bXmlDocument.CreateXmlDeclaration("1.0", "UTF-8", null);
+            e2bXmlDocument.AppendChild(xmlDeclaration);
+
+            XmlDocumentType doctype;
+            doctype = e2bXmlDocument.CreateDocumentType("ichicsr", "-//ICHM2//DTD ICH ICSR Vers. 2.1//EN", "ich-icsr-v2.1.dtd", null);
+            e2bXmlDocument.AppendChild(doctype);
+
+            return e2bXmlDocument;
+        }
+
+        private XmlDocument ProcessE2bRootNode(DatasetInstance sourceReport, DatasetXml xmlStructureForDataset, XmlDocument e2bXmlDocument)
+        {
+            if (sourceReport == null)
+            {
+                throw new ArgumentNullException(nameof(sourceReport));
+            }
+            if (xmlStructureForDataset == null)
+            {
+                throw new ArgumentNullException(nameof(xmlStructureForDataset));
+            }
+            if (e2bXmlDocument == null)
+            {
+                throw new ArgumentNullException(nameof(e2bXmlDocument));
+            }
+
+            DatasetXmlNode rootNode = xmlStructureForDataset.ChildrenNodes.SingleOrDefault(c => c.NodeType == NodeType.RootNode);
+            if (rootNode == null)
+            {
+                throw new DomainServiceException(nameof(xmlStructureForDataset), "Unable to locate rootnode");
+            }
+
+            e2bXmlDocument.AppendChild(ProcessE2bXmlNode(sourceReport, e2bXmlDocument, rootNode)[0]);
+
+            return e2bXmlDocument;
+        }
+
+        private XmlNode[] ProcessE2bXmlNode(DatasetInstance sourceReport, XmlDocument e2bXmlDocument, DatasetXmlNode datasetXmlNode, DatasetInstanceSubValue[] subItemValues = null)
+        {
+            if (datasetXmlNode == null)
+            {
+                throw new ArgumentNullException(nameof(datasetXmlNode));
+            }
+
+            List<XmlNode> xmlNodes = new List<XmlNode>();
+
+            switch (datasetXmlNode.NodeType)
+            {
+                case NodeType.RootNode:
+                case NodeType.StandardNode:
+
+                    var xmlStandardNode = CreateXmlNodeWithAttributes(sourceReport, e2bXmlDocument, datasetXmlNode);
+
+                    if (datasetXmlNode.DatasetElement != null)
+                    {
+                        xmlStandardNode = SetXmlNodeValueWithDatasetElement(sourceReport, datasetXmlNode, xmlStandardNode);
+                    }
+
+                    if (datasetXmlNode.DatasetElementSub != null)
+                    {
+                        xmlStandardNode = SetXmlNodeValueWithSubValues(sourceReport, datasetXmlNode, xmlStandardNode, subItemValues);
+                    }
+
+                    if (datasetXmlNode.ChildrenNodes.Count > 0)
+                    {
+                        xmlStandardNode = ProcessAllNodeChildren(sourceReport, e2bXmlDocument, datasetXmlNode, xmlStandardNode, subItemValues);
+                    }
+                    xmlNodes.Add(xmlStandardNode);
+                    break;
+
+                case NodeType.RepeatingNode:
+                    if (datasetXmlNode.DatasetElement != null)
+                    {
+                        
+                        var sourceContexts = sourceReport.GetInstanceSubValuesContext(datasetXmlNode.DatasetElement.ElementName);
+                        foreach (Guid sourceContext in sourceContexts)
+                        {
+                            var xmlRepeatingNode = CreateXmlNodeWithAttributes(sourceReport, e2bXmlDocument, datasetXmlNode);
+                            var values = sourceReport.GetInstanceSubValues(datasetXmlNode.DatasetElement.ElementName, sourceContext);
+
+                            if (datasetXmlNode.ChildrenNodes.Count > 0)
+                            {
+                                xmlRepeatingNode = ProcessAllNodeChildren(sourceReport, e2bXmlDocument, datasetXmlNode, xmlRepeatingNode, values);
+                            }
+
+                            xmlNodes.Add(xmlRepeatingNode);
+                        }
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+            return xmlNodes.ToArray();
+        }
+
+        private XmlNode CreateXmlNodeWithAttributes(DatasetInstance sourceReport, XmlDocument e2bXmlDocument, DatasetXmlNode datasetXmlNode)
+        {
+            if (sourceReport == null)
+            {
+                throw new ArgumentNullException(nameof(sourceReport));
+            }
+            if (e2bXmlDocument == null)
+            {
+                throw new ArgumentNullException(nameof(e2bXmlDocument));
+            }
+
+            XmlNode xmlNode = e2bXmlDocument.CreateElement(datasetXmlNode.NodeName, "");
+            if (datasetXmlNode.NodeAttributes.Count == 0) return xmlNode;
+
+            foreach (DatasetXmlAttribute datasetXmlAttribute in datasetXmlNode.NodeAttributes)
+            {
+                if (datasetXmlAttribute.DatasetElement != null)
+                {
+                    xmlNode.Attributes.Append(CreateXmlAttributeUsingDatasetElement(sourceReport, e2bXmlDocument, datasetXmlAttribute));
+                }
+                else
+                {
+                    XmlAttribute xmlAttribute = e2bXmlDocument.CreateAttribute(datasetXmlAttribute.AttributeName);
+                    xmlAttribute.InnerText = datasetXmlAttribute.AttributeValue;
+                    xmlNode.Attributes.Append(xmlAttribute);
+                }
+            }
+
+            return xmlNode;
+        }
+
+        private XmlNode SetXmlNodeValueWithDatasetElement(DatasetInstance sourceReport, DatasetXmlNode datasetXmlNode, XmlNode xmlNode)
+        {
+            if (sourceReport == null)
+            {
+                throw new ArgumentNullException(nameof(sourceReport));
+            }
+            if (datasetXmlNode == null)
+            {
+                throw new ArgumentNullException(nameof(datasetXmlNode));
+            }
+            if (datasetXmlNode.DatasetElement == null)
+            {
+                throw new ArgumentNullException(nameof(datasetXmlNode.DatasetElement));
+            }
+
+            var value = sourceReport.GetInstanceValue(datasetXmlNode.DatasetElement.ElementName);
+            if (value?.IndexOf("=") > -1)
+            {
+                value = value.Substring(0, value.IndexOf("="));
+            }
+            xmlNode.InnerText = value;
+
+            return xmlNode;
+        }
+
+        private XmlNode SetXmlNodeValueWithSubValues(DatasetInstance sourceReport, DatasetXmlNode datasetXmlNode, XmlNode xmlNode, DatasetInstanceSubValue[] subItemValues)
+        {
+            if (sourceReport == null)
+            {
+                throw new ArgumentNullException(nameof(sourceReport));
+            }
+            if (datasetXmlNode == null)
+            {
+                throw new ArgumentNullException(nameof(datasetXmlNode));
+            }
+            if (datasetXmlNode.DatasetElementSub == null)
+            {
+                throw new ArgumentNullException(nameof(datasetXmlNode.DatasetElementSub));
+            }
+
+            var subvalue = subItemValues?.SingleOrDefault(siv => siv.DatasetElementSub.Id == datasetXmlNode.DatasetElementSub.Id);
+            if (subvalue != null)
+            {
+                var value = subvalue.InstanceValue;
+                if (value.IndexOf("=") > -1)
+                {
+                    value = value.Substring(0, value.IndexOf("="));
+                }
+                xmlNode.InnerText = value;
+            }
+            else
+            {
+                if (!String.IsNullOrWhiteSpace(datasetXmlNode.DatasetElementSub.DefaultValue))
+                {
+                    xmlNode.InnerText = datasetXmlNode.DatasetElementSub.DefaultValue;
+                }
+                else
+                {
+                    xmlNode.InnerText = string.Empty;
+                }
+            }
+
+            return xmlNode;
+        }
+
+        private XmlNode ProcessAllNodeChildren(DatasetInstance sourceReport, XmlDocument e2bXmlDocument, DatasetXmlNode datasetXmlNode, XmlNode parentXmlNode, DatasetInstanceSubValue[] subItemValues = null)
+        {
+            if (sourceReport == null)
+            {
+                throw new ArgumentNullException(nameof(sourceReport));
+            }
+            if (e2bXmlDocument == null)
+            {
+                throw new ArgumentNullException(nameof(e2bXmlDocument));
+            }
+            if (datasetXmlNode == null)
+            {
+                throw new ArgumentNullException(nameof(datasetXmlNode));
+            }
+            if (parentXmlNode == null)
+            {
+                throw new ArgumentNullException(nameof(parentXmlNode));
+            }
+
+            foreach (DatasetXmlNode datasetChildXmlNode in datasetXmlNode.ChildrenNodes)
+            {
+                var childNodes = ProcessE2bXmlNode(sourceReport, e2bXmlDocument, datasetChildXmlNode, subItemValues);
+                foreach(var childNode in childNodes)
+                {
+                    parentXmlNode.AppendChild(childNode);
+                }
+            }
+
+            return parentXmlNode;
+        }
+
+        private XmlAttribute CreateXmlAttributeUsingDatasetElement(DatasetInstance sourceReport, XmlDocument e2bXmlDocument, DatasetXmlAttribute datasetXmlAttribute)
+        {
+            if (sourceReport == null)
+            {
+                throw new ArgumentNullException(nameof(sourceReport));
+            }
+            if (e2bXmlDocument == null)
+            {
+                throw new ArgumentNullException(nameof(e2bXmlDocument));
+            }
+            if (datasetXmlAttribute == null)
+            {
+                throw new ArgumentNullException(nameof(datasetXmlAttribute));
+            }
+            if (datasetXmlAttribute.DatasetElement == null)
+            {
+                throw new ArgumentNullException(nameof(datasetXmlAttribute.DatasetElement));
+            }
+
+            XmlAttribute xmlAttribute = e2bXmlDocument.CreateAttribute(datasetXmlAttribute.AttributeName);
+            var value = sourceReport.GetInstanceValue(datasetXmlAttribute.DatasetElement.ElementName);
+            if (value.IndexOf("=") > -1)
+            {
+                value = value.Substring(0, value.IndexOf("="));
+            }
+            xmlAttribute.InnerText = value;
+            return xmlAttribute;
+        }
+
+        private void SaveFormattedXML(XmlDocument e2bXmlDocument, ArtefactInfoModel artefactModel)
+        {
+            if (e2bXmlDocument == null)
+            {
+                throw new ArgumentNullException(nameof(e2bXmlDocument));
+            }
+            if (artefactModel == null)
+            {
+                throw new ArgumentNullException(nameof(artefactModel));
+            }
+
+            WriteXMLContentToFile(artefactModel.FullPath, ConvertXMLToFormattedText(e2bXmlDocument), e2bXmlDocument);
+        }
+
+        private string ConvertXMLToFormattedText(XmlDocument sourceDocument)
+        {
+            if (sourceDocument == null)
+            {
+                throw new ArgumentNullException(nameof(sourceDocument));
+            }
+
+            StringBuilder sb = new StringBuilder();
+            XmlWriterSettings settings = new XmlWriterSettings
+            {
+                Indent = true,
+                IndentChars = "  ",
+                NewLineChars = "\r\n",
+                NewLineHandling = NewLineHandling.Replace,
+                Encoding = Encoding.UTF8
+            };
+            using (XmlWriter writer = XmlWriter.Create(sb, settings))
+            {
+                sourceDocument.Save(writer);
+            }
+
+            return sb.ToString();
+        }
+
+        private void WriteXMLContentToFile(string fileName, string xmlText, XmlDocument sourceDocument)
+        {
+            if (String.IsNullOrWhiteSpace(fileName))
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+            if (String.IsNullOrWhiteSpace(xmlText))
+            {
+                throw new ArgumentNullException(nameof(xmlText));
+            }
+
+            using (TextWriter streamWriter = new StreamWriter(fileName, false, Encoding.UTF8))
+            {
+                sourceDocument.Save(streamWriter);
+            }
         }
 
         public ArtefactInfoModel CreatePatientSummaryForActiveReport(Guid contextGuid)
@@ -469,10 +794,7 @@ namespace PVIMS.Services
             var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
 
             var patientClinicalEvent = _unitOfWork.Repository<PatientClinicalEvent>().Queryable().Single(pce => pce.PatientClinicalEventGuid == contextGuid);
-            if(patientClinicalEvent == null)
-            {
-                throw new ArgumentException("patientClinicalEvent may not be null");
-            }
+            Check.IsNotNull(patientClinicalEvent, "patientClinicalEvent may not be null");
 
             var extendable = (IExtendable)patientClinicalEvent;
             var extendableValue = _attributeService.GetCustomAttributeValue("PatientClinicalEvent", "Is the adverse event serious?", extendable);
@@ -559,10 +881,7 @@ namespace PVIMS.Services
             var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
 
             var datasetInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().Single(di => di.DatasetInstanceGuid == contextGuid);
-            if(datasetInstance == null)
-            {
-                throw new ArgumentException("datasetInstance may not be null");
-            }
+            Check.IsNotNull(datasetInstance, "datasetInstance may not be null");
 
             var isSerious = !String.IsNullOrWhiteSpace(datasetInstance.GetInstanceValue("Reaction serious details"));
 
@@ -1171,7 +1490,7 @@ namespace PVIMS.Services
             if (reportInstance == null) { return table; };
 
             var i = 0;
-            foreach (ReportInstanceMedication med in reportInstance.ReportInstanceMedications)
+            foreach (ReportInstanceMedication med in reportInstance.Medications)
             {
                 i += 1;
 
@@ -1644,7 +1963,7 @@ namespace PVIMS.Services
             var sourceContexts = datasetInstance.GetInstanceSubValuesContext(sourceProductElement.ElementName);
 
             var i = 0;
-            foreach (ReportInstanceMedication med in reportInstance.ReportInstanceMedications)
+            foreach (ReportInstanceMedication med in reportInstance.Medications)
             {
                 i += 1;
 
@@ -2063,8 +2382,6 @@ namespace PVIMS.Services
         }
 
         #endregion
-
-        #region "Private"
 
         private int CalculateAge(DateTime birthDate, DateTime onsetDate)
         {
@@ -2739,139 +3056,6 @@ namespace PVIMS.Services
         //    return mergeElements;
         //}
 
-        private XmlNode ProcessNode(DatasetXmlNode dsXmlNode, ref XmlDocument xmlDoc, ref DatasetInstance datasetInstance, DatasetInstanceSubValue[] subItemValues = null)
-        {
-            XmlNode parentNode = null;
-
-            switch (dsXmlNode.NodeType)
-            {
-                case NodeType.RootNode:
-                case NodeType.StandardNode:
-                    parentNode = PrepareNode(dsXmlNode, ref xmlDoc, ref datasetInstance);
-
-                    if (dsXmlNode.DatasetElement != null)
-                    {
-                        var value = datasetInstance.GetInstanceValue(dsXmlNode.DatasetElement.ElementName);
-                        if (value?.IndexOf("=") > -1)
-                        {
-                            value = value.Substring(0, value.IndexOf("="));
-                        }
-                        parentNode.InnerText = value;
-                    }
-                    else
-                    {
-                        if (dsXmlNode.ChildrenNodes.Count > 0)
-                        {
-                            foreach (DatasetXmlNode dsTempXmlNode in dsXmlNode.ChildrenNodes)
-                            {
-                                if (dsTempXmlNode.NodeType == NodeType.RepeatingNode)
-                                {
-                                    // Get corresponding table element
-                                    var sourceContexts = datasetInstance.GetInstanceSubValuesContext(dsTempXmlNode.DatasetElement.ElementName);
-                                    foreach (Guid sourceContext in sourceContexts)
-                                    {
-                                        var values = datasetInstance.GetInstanceSubValues(dsTempXmlNode.DatasetElement.ElementName, sourceContext);
-                                        var childNode = ProcessNode(dsTempXmlNode, ref xmlDoc, ref datasetInstance, values);
-                                        parentNode.AppendChild(childNode);
-                                    }
-                                }
-                                else
-                                {
-                                    var childNode = ProcessNode(dsTempXmlNode, ref xmlDoc, ref datasetInstance);
-                                    parentNode.AppendChild(childNode);
-                                }
-                            }
-                        }
-                    }
-                    break;
-
-                case NodeType.RepeatingNode:
-                    // Main table node
-                    parentNode = PrepareNode(dsXmlNode, ref xmlDoc, ref datasetInstance);
-
-                    if (dsXmlNode.ChildrenNodes.Count > 0)
-                    {
-                        foreach (DatasetXmlNode dsTempXmlNode in dsXmlNode.ChildrenNodes)
-                        {
-                            var childNode = PrepareNode(dsTempXmlNode, ref xmlDoc, ref datasetInstance);
-                            var subvalue = subItemValues.SingleOrDefault(siv => siv.DatasetElementSub.Id == dsTempXmlNode.DatasetElementSub.Id);
-                            if (subvalue != null)
-                            {
-                                var value = subvalue.InstanceValue;
-                                if (value.IndexOf("=") > -1)
-                                {
-                                    value = value.Substring(0, value.IndexOf("="));
-                                }
-                                childNode.InnerText = value;
-                            }
-                            parentNode.AppendChild(childNode);
-                        }
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-
-            return parentNode;
-        }
-
-        private XmlNode PrepareNode(DatasetXmlNode dsXmlNode, ref XmlDocument xmlDoc, ref DatasetInstance datasetInstance)
-        {
-            XmlAttribute attrib;
-
-            XmlNode childNode = xmlDoc.CreateElement(dsXmlNode.NodeName, "");
-            foreach (DatasetXmlAttribute dsXmlAttr in dsXmlNode.NodeAttributes)
-            {
-                attrib = xmlDoc.CreateAttribute(dsXmlAttr.AttributeName);
-                if (dsXmlAttr.DatasetElement != null)
-                {
-                    var value = datasetInstance.GetInstanceValue(dsXmlAttr.DatasetElement.ElementName);
-                    if (value.IndexOf("=") > -1)
-                    {
-                        value = value.Substring(0, value.IndexOf("="));
-                    }
-                    attrib.InnerText = value;
-                }
-                else
-                {
-                    attrib.InnerText = dsXmlAttr.AttributeValue;
-                }
-
-                childNode.Attributes.Append(attrib);
-            }
-
-            return childNode;
-        }
-
-        static public string FormatXML(XmlDocument doc)
-        {
-            StringBuilder sb = new StringBuilder();
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Indent = true;
-            settings.IndentChars = "  ";
-            settings.NewLineChars = "\r\n";
-            settings.NewLineHandling = NewLineHandling.Replace;
-            using (XmlWriter writer = XmlWriter.Create(sb, settings))
-            {
-                doc.Save(writer);
-            }
-            return sb.ToString();
-        }
-
-        private void WriteXML(string xmlFileName, string xmlText)
-        {
-            // Write the string to a file.
-            StreamWriter file = new System.IO.StreamWriter(xmlFileName);
-
-            file.Write(xmlText);
-
-            file.Close();
-            file = null;
-        }
-
-        #endregion
-
         #region "Excel Processing"
 
         private void ProcessEntity(Object obj, ref ExcelWorksheet ws, ref int rowCount, ref int colCount, string entityName)
@@ -3185,7 +3369,7 @@ namespace PVIMS.Services
                 var id = Convert.ToInt32(((Encounter)obj).Id);
                 var instance = _unitOfWork.Repository<DatasetInstance>()
                     .Queryable()
-                    .SingleOrDefault(di => di.Dataset.DatasetName == "Chronic Treatment" && di.ContextId == id);
+                    .SingleOrDefault(di => di.Dataset.DatasetName == "Chronic Treatment" && di.ContextID == id);
                 foreach (DatasetCategoryElement dce in elements)
                 {
                     var eleOutput = "";

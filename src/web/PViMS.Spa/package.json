@@ -7,6 +7,7 @@
     "start": "node --max_old_space_size=8192 node_modules/@angular/cli/bin/ng serve -o",
     "serveProd": "ng serve --environment=prod",
     "build": "ng build --prod=true --aot=true --extractCss=true --optimization=true --environment=prod",
+    "buildMSHTest": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=mshTest",
     "buildProd": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=production",
     "test": "ng test",
     "lint": "ng lint",
