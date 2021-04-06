@@ -41,8 +41,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasDefaultValue(false);
 
             configuration.Property(e => e.Active)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.Property(e => e.AllowDatasetDownload)
                 .IsRequired()

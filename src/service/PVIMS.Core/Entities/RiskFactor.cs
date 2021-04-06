@@ -6,6 +6,9 @@ namespace PVIMS.Core.Entities
     {
         public RiskFactor()
         {
+            IsSystem = false;
+            Active = true;
+
             Options = new HashSet<RiskFactorOption>();
         }
 

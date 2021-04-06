@@ -28,8 +28,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasColumnName("SubMapping_Id");
 
             configuration.Property(c => c.Active)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.HasOne(d => d.Mapping)
                 .WithMany(p => p.DatasetMappingValues)

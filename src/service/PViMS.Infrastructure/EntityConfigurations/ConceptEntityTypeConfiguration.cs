@@ -13,12 +13,11 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(c => c.ConceptName)
-                .IsRequired(true)
+                .IsRequired()
                 .HasMaxLength(1000);
 
             configuration.Property(c => c.Active)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.Property(e => e.MedicationFormId)
                 .IsRequired()

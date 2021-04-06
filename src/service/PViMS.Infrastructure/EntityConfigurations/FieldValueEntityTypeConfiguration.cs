@@ -21,16 +21,13 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasColumnName("Field_Id");
 
             configuration.Property(c => c.Default)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.Property(c => c.Other)
-                .IsRequired()
-                .HasDefaultValue(false);
+                .IsRequired();
 
             configuration.Property(c => c.Unknown)
-                .IsRequired()
-                .HasDefaultValue(false);
+                .IsRequired();
 
             configuration.HasOne(d => d.Field)
                 .WithMany(p => p.FieldValues)

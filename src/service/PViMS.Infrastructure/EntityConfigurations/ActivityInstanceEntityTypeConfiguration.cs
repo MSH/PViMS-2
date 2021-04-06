@@ -39,8 +39,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasColumnName("UpdatedBy_Id");
 
             configuration.Property(c => c.Current)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.ActivityInstanceCreations)

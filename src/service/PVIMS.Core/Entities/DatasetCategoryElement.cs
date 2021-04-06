@@ -6,6 +6,11 @@ namespace PVIMS.Core.Entities
 	{
         public DatasetCategoryElement()
         {
+            Acute = false;
+            Chronic = false;
+            Public = false;
+            System = false;
+
             DatasetCategoryElementConditions = new HashSet<DatasetCategoryElementCondition>();
             SourceMappings = new HashSet<DatasetMapping>();
             DestinationMappings = new HashSet<DatasetMapping>();

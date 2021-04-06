@@ -38,8 +38,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired();
 
             configuration.Property(c => c.System)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.HasOne(d => d.DatasetElement)
                 .WithMany(p => p.DatasetElementSubs)

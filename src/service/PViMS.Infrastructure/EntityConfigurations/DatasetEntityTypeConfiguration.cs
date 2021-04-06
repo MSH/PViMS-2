@@ -54,12 +54,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasColumnName("UpdatedBy_Id");
 
             configuration.Property(c => c.Active)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.Property(c => c.IsSystem)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.HasOne(d => d.ContextType)
                 .WithMany(p => p.Datasets)

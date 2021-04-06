@@ -10,10 +10,10 @@ namespace PVIMS.Core.Entities
     {
         public MetaPage()
         {
-            Widgets = new HashSet<MetaWidget>();
-
             IsSystem = false;
             IsVisible = true;
+
+            Widgets = new HashSet<MetaWidget>();
         }
 
         public Guid MetaPageGuid { get; set; }

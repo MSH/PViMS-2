@@ -57,6 +57,8 @@ namespace PVIMS.Core.Entities.Accounts
             SiteContactDetailUpdates = new HashSet<SiteContactDetail>();
             SystemLogCreations = new HashSet<SystemLog>();
             SystemLogUpdates = new HashSet<SystemLog>();
+
+            Active = true;
         }
 
         public string Email { get; set; }

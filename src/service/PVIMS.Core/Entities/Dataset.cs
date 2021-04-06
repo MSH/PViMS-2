@@ -10,6 +10,9 @@ namespace PVIMS.Core.Entities
 		public Dataset()
 		{
             Created = DateTime.Now;
+            Active = true;
+            IsSystem = false;
+
 			DatasetCategories = new HashSet<DatasetCategory>();
             DatasetInstances = new HashSet<DatasetInstance>();
             DatasetRules = new HashSet<DatasetRule>();

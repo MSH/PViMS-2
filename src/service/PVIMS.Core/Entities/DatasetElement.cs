@@ -17,15 +17,15 @@ namespace PVIMS.Core.Entities
 	{
 		public DatasetElement()
 		{
-			DatasetCategoryElements = new HashSet<DatasetCategoryElement>();
+            DatasetElementGuid = Guid.NewGuid();
+            System = false;
+
+            DatasetCategoryElements = new HashSet<DatasetCategoryElement>();
 			DatasetElementSubs = new HashSet<DatasetElementSub>();
             DatasetInstanceValues = new HashSet<DatasetInstanceValue>();
             DatasetRules = new HashSet<DatasetRule>();
             DatasetXmlAttributes = new HashSet<DatasetXmlAttribute>();
             DatasetXmlNodes = new HashSet<DatasetXmlNode>();
-
-            DatasetElementGuid = Guid.NewGuid();
-            System = false;
 		}
 
         public string ElementName { get; set; }

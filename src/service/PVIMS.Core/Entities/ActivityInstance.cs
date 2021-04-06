@@ -9,12 +9,13 @@ namespace PVIMS.Core.Entities
 	{
         public ActivityInstance()
         {
-            ExecutionEvents = new HashSet<ActivityExecutionStatusEvent>();
             Current = true;
+            ExecutionEvents = new HashSet<ActivityExecutionStatusEvent>();
         }
 
         public ActivityInstance(Activity activity, User currentUser)
         {
+            Current = true;
             ExecutionEvents = new HashSet<ActivityExecutionStatusEvent>();
             ExecutionEvents.Add(InitialiseWithFirstExecutionStatus(activity, currentUser));
         }

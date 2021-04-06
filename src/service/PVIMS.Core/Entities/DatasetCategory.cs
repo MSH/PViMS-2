@@ -8,6 +8,11 @@ namespace PVIMS.Core.Entities
     {
         public DatasetCategory()
         {
+            Acute = false;
+            Chronic = false;
+            Public = false;
+            System = false;
+
             DatasetCategoryElements = new HashSet<DatasetCategoryElement>();
             WorkPlanCareEventDatasetCategories = new HashSet<WorkPlanCareEventDatasetCategory>();
             DatasetCategoryConditions = new HashSet<DatasetCategoryCondition>();

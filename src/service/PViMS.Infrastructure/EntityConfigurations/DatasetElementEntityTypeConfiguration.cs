@@ -33,8 +33,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasMaxLength(10);
 
             configuration.Property(c => c.System)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.Property(c => c.DatasetElementGuid)
                 .IsRequired()

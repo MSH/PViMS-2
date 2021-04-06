@@ -6,6 +6,8 @@ namespace PVIMS.Core.Entities
 	{
 		public Concept()
 		{
+			Active = true;
+
 			ConceptIngredients = new HashSet<ConceptIngredient>();
 			ConditionMedications = new HashSet<ConditionMedication>();
 			PatientMedications = new HashSet<PatientMedication>();

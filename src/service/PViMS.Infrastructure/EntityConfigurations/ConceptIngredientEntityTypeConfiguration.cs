@@ -25,8 +25,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasMaxLength(50);
 
             configuration.Property(c => c.Active)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.HasOne(d => d.Concept)
                 .WithMany(p => p.ConceptIngredients)

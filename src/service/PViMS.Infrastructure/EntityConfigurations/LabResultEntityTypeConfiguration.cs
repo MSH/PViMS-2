@@ -17,8 +17,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasMaxLength(50);
 
             configuration.Property(c => c.Active)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.HasIndex("Description").IsUnique(true);
         }

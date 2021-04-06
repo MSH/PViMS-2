@@ -4,6 +4,7 @@ namespace PVIMS.Core.Entities
 	{
 		public ConceptIngredient()
 		{
+			Active = true;
 		}
 
 		public string Ingredient { get; set; }

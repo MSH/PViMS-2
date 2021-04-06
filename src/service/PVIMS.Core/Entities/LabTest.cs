@@ -6,6 +6,8 @@ namespace PVIMS.Core.Entities
 	{
 		public LabTest()
 		{
+			Active = true;
+
 			ConditionLabTests = new HashSet<ConditionLabTest>();
 			PatientLabTests = new HashSet<PatientLabTest>();
 		}

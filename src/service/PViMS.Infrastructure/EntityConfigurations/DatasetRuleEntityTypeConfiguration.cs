@@ -23,8 +23,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasConversion(x => (int)x, x => (DatasetRuleType)x);
 
             configuration.Property(c => c.RuleActive)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.HasOne(d => d.DatasetElement)
                 .WithMany(p => p.DatasetRules)

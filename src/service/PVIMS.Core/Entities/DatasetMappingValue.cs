@@ -2,6 +2,11 @@
 {
     public class DatasetMappingValue : EntityBase
     {
+        public DatasetMappingValue()
+        {
+            Active = true;
+        }
+
         public string SourceValue { get; set; }
         public string DestinationValue { get; set; }
         public bool Active { get; set; }

@@ -6,6 +6,9 @@ namespace PVIMS.Core.Entities
 	{
 		public Condition()
 		{
+            Active = true;
+            Chronic = false;
+
             CohortGroups = new HashSet<CohortGroup>();
             ConditionLabTests = new HashSet<ConditionLabTest>();
             ConditionMedications = new HashSet<ConditionMedication>();

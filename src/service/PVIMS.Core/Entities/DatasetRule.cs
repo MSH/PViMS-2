@@ -4,6 +4,11 @@ namespace PVIMS.Core.Entities
 {
     public partial class DatasetRule : EntityBase
     {
+        public DatasetRule()
+        {
+            RuleActive = true;
+        }
+
         public DatasetRuleType RuleType { get; set; }
         public bool RuleActive { get; set; }
         public int? DatasetId { get; set; }

@@ -27,12 +27,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasMaxLength(50);
 
             configuration.Property(e => e.IsSystem)
-                .IsRequired()
-                .HasDefaultValue(false);
+                .IsRequired();
 
             configuration.Property(e => e.IsVisible)
-                .IsRequired()
-                .HasDefaultValue(true);
+                .IsRequired();
 
             configuration.HasIndex("PageName").IsUnique(true);
         }
