@@ -9,20 +9,28 @@ trigger:
 name: $(Build.DefinitionName)-$(Year:yy).$(Month).$(DayOfYear)$(Rev:.rr)
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
 steps:
+#Restore packages with the .NET Core CLI task
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet restore'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+    includeNuGetOrg: true
+
+# Build project
 - task: DotNetCoreCLI@2
   displayName: "dotnet build solution projects"
   inputs:
     command: 'build'
     projects: '**/*.csproj'
 
+# Publish projects to specified folder
 - task: DotNetCoreCLI@2
   displayName: "publish api project"
   inputs:
