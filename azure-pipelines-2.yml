@@ -4,12 +4,12 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- sprint/4
+- development
 
 name: $(Build.DefinitionName)-$(Year:yy).$(Month).$(DayOfYear)$(Rev:.rr)
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-latest'
 
 variables:
   buildConfiguration: 'Release'
