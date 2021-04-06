@@ -1,28 +1,26 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-	[Table(nameof(Concept))]
 	public class Concept : EntityBase
 	{
 		public Concept()
 		{
 			ConceptIngredients = new HashSet<ConceptIngredient>();
+			ConditionMedications = new HashSet<ConditionMedication>();
+			PatientMedications = new HashSet<PatientMedication>();
 			Products = new HashSet<Product>();
 		}
 
-		[Required]
-		[StringLength(1000)]
 		public string ConceptName { get; set; }
+		public bool Active { get; set; }
+		public int MedicationFormId { get; set; }
 
-		[Required]
 		public virtual MedicationForm MedicationForm { get; set; }
 
-		public bool Active { get; set; }
-
 		public virtual ICollection<ConceptIngredient> ConceptIngredients { get; set; }
+		public virtual ICollection<ConditionMedication> ConditionMedications { get; set; }
+		public virtual ICollection<PatientMedication> PatientMedications { get; set; }
 		public virtual ICollection<Product> Products { get; set; }
 	}
 }

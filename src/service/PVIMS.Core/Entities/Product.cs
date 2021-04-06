@@ -1,29 +1,24 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace PVIMS.Core.Entities
 {
-	[Table(nameof(Product))]
 	public class Product : EntityBase
 	{
 		public Product()
 		{
+			ConditionMedications = new HashSet<ConditionMedication>();
+			PatientMedications = new HashSet<PatientMedication>();
 		}
 
-		[Required]
-		[StringLength(200)]
 		public string ProductName { get; set; }
-
-		[Required]
-		[StringLength(200)]
 		public string Manufacturer { get; set; }
+		public string Description { get; set; }
+		public bool Active { get; set; }
+		public int ConceptId { get; set; }
 
-		[Required]
 		public virtual Concept Concept { get; set; }
 
-		[StringLength(1000)]
-		public string Description { get; set; }
-
-		public bool Active { get; set; }
+		public virtual ICollection<ConditionMedication> ConditionMedications { get; set; }
+		public virtual ICollection<PatientMedication> PatientMedications { get; set; }
 	}
 }

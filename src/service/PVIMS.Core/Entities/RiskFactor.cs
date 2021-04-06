@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(RiskFactor))]
     public class RiskFactor : EntityBase
     {
         public RiskFactor()
@@ -12,14 +9,9 @@ namespace PVIMS.Core.Entities
             Options = new HashSet<RiskFactorOption>();
         }
 
-        [Required]
-        [StringLength(50)]
         public string FactorName { get; set; }
-        [Required]
         public string Criteria { get; set; }
-        [StringLength(20)]
         public string Display { get; set; }
-        
         public bool IsSystem { get; set; }
         public bool Active { get; set; }
 

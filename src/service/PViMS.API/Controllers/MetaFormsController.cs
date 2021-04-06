@@ -1,23 +1,23 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
-using PVIMS.API.Attributes;
-using PVIMS.API.Helpers;
-using PVIMS.API.Models;
-using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
-using PVIMS.Core.Entities;
-using PVIMS.Core.ValueTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
+using PVIMS.API.Helpers;
+using PVIMS.API.Models;
+using PVIMS.API.Models.Parameters;
+using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.ValueTypes;
 using Extensions = PVIMS.Core.Utilities.Extensions;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Paging;
 
 namespace PVIMS.API.Controllers
 {
@@ -64,7 +64,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMetaFormsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaFormDetailDto>> GetMetaFormsByDetail(

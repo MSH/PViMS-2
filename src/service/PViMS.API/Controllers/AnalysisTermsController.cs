@@ -1,23 +1,25 @@
-﻿using System;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Helpers;
+using PVIMS.API.Models;
+using PVIMS.API.Models.Parameters;
+using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Keyless;
+using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Paging;
+using PVIMS.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
-using PVIMS.API.Attributes;
-using PVIMS.API.Helpers;
-using PVIMS.API.Models;
-using PVIMS.API.Models.Parameters;
-using PVIMS.Core.Entities;
-using PVIMS.Core.Models;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
 
 namespace PVIMS.API.Controllers
 {
@@ -35,13 +37,15 @@ namespace PVIMS.API.Controllers
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
         private readonly IUnitOfWorkInt _unitOfWork;
+        private readonly PVIMSDbContext _context;
 
         public AnalysisTermsController(IRepositoryInt<WorkFlow> workFlowRepository,
                 IRepositoryInt<TerminologyMedDra> termsRepository,
                 IRepositoryInt<RiskFactor> riskFactorRepository,
                 IMapper mapper,
                 IUnitOfWorkInt unitOfWork,
-                IUrlHelper urlHelper)
+                IUrlHelper urlHelper,
+                PVIMSDbContext dbContext)
         {
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _termsRepository = termsRepository ?? throw new ArgumentNullException(nameof(termsRepository));
@@ -49,6 +53,7 @@ namespace PVIMS.API.Controllers
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         /// <summary>
@@ -63,7 +68,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<AnalyserTermIdentifierDto>> GetAnalyserTermsByIdentifier(Guid workFlowGuid,
                         [FromQuery] AnalyserTermSetResourceParameters analyserTermSetResourceParameters)
@@ -96,7 +101,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public async Task<ActionResult<AnalyserTermDetailDto>> GetAnalyserTermByDetail(Guid workFlowGuid, int id, 
             [FromQuery] AnalyserTermSetResourceParameters analyserTermSetResourceParameters)
@@ -129,7 +134,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.analyserpatientset.v1+json", "application/vnd.pvims.analyserpatientset.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.analyserpatientset.v1+json", "application/vnd.pvims.analyserpatientset.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<AnalyserPatientDto>> GetAnalyserTermPatients(Guid workFlowGuid, int id, 
                         [FromQuery] AnalyserTermSetResourceParameters analyserTermSetResourceParameters)
@@ -236,9 +241,9 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@RiskFactorXml", riskFactorXml));
             parameters.Add(new SqlParameter("@DebugMode", "False"));
 
-            var resultsFromService = _unitOfWork.Repository<ContingencyAnalysisList>()
-                .ExecuteSql("spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
-                        parameters.ToArray());
+            var resultsFromService = _context.ContingencyAnalysisLists
+                .FromSqlRaw($"spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
+                        parameters.ToArray()).ToList();
 
             if (resultsFromService != null)
             {
@@ -321,9 +326,9 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@RiskFactorXml", riskFactorXml));
             parameters.Add(new SqlParameter("@DebugMode", "False"));
 
-            var resultsFromService = _unitOfWork.Repository<ContingencyAnalysisItem>()
-                .ExecuteSql("spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
-                        parameters.ToArray());
+            var resultsFromService = _context.ContingencyAnalysisItems
+                .FromSqlRaw($"Exec spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
+                        parameters.ToArray()).ToList();
 
             if (resultsFromService != null)
             {
@@ -395,9 +400,10 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@RiskFactorXml", riskFactorXml));
             parameters.Add(new SqlParameter("@DebugMode", "False"));
 
-            var resultsFromService = PagedCollection<ContingencyAnalysisPatient>.Create(_unitOfWork.Repository<ContingencyAnalysisPatient>()
-                .ExecuteSql("spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
-                        parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
+            var resultsFromService = PagedCollection<ContingencyAnalysisPatient>.Create(
+                _context.ContingencyAnalysisPatients
+                    .FromSqlRaw($"Exec spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
+                            parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (resultsFromService != null)
             {

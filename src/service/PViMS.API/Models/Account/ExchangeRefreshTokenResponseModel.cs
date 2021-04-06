@@ -1,4 +1,4 @@
-﻿using PVIMS.API.Auth;
+﻿using PVIMS.API.Infrastructure.Auth;
 
 namespace PVIMS.API.Models.Account
 {

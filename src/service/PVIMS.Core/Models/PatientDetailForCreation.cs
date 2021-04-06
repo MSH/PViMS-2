@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using VPS.CustomAttributes;
+using PVIMS.Core.CustomAttributes;
 
 namespace PVIMS.Core.Models
 {

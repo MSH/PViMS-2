@@ -1,29 +1,23 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
 using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using System.Threading.Tasks;
 using PVIMS.API.Helpers;
 using System.Xml;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Paging;
 
 namespace PVIMS.API.Controllers
 {
@@ -63,7 +57,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMetaReportsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaReportIdentifierDto>> GetMetaReportsByIdentifier(
             [FromQuery] IdResourceParameters metaResourceParameters)
@@ -90,7 +84,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMetaReportsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaReportDetailDto>> GetMetaReportsByDetail(
@@ -120,7 +114,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<MetaReportIdentifierDto>> GetMetaReportByIdentifier(long id)
         {
@@ -142,7 +136,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MetaReportDetailDto>> GetMetaReportByDetail(long id)
@@ -165,7 +159,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MetaReportExpandedDto>> GetMetaReportByExpanded(long id)
@@ -238,7 +232,7 @@ namespace PVIMS.API.Controllers
                     ReportDefinition = metaReportForUpdate.ReportDefinition,
                     Breadcrumb = metaReportForUpdate.Breadcrumb,
                     IsSystem = false,
-                    metareport_guid = Guid.NewGuid(),
+                    MetaReportGuid = Guid.NewGuid(),
                     ReportStatus = metaReportForUpdate.ReportStatus,
                     MetaDefinition = PrepareMetaDefinition(metaReportForUpdate)
                 };
@@ -631,7 +625,7 @@ namespace PVIMS.API.Controllers
             {
                 sql = PrepareListQueryForPublication(metaReportForAttributeUpdate);
             }
-            metaReport.SQLDefinition = sql;
+            metaReport.SqlDefinition = sql;
         }
 
         /// <summary>

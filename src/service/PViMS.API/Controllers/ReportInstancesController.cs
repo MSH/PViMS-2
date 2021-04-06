@@ -3,16 +3,21 @@ using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Models;
+using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Entities.Keyless;
+using SelectionDataItem = PVIMS.Core.Entities.SelectionDataItem;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
@@ -22,11 +27,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using VPS.CustomAttributes;
-using Extensions = PVIMS.Core.Utilities.Extensions;
-using SelectionDataItem = PVIMS.Core.Entities.SelectionDataItem;
 
 namespace PVIMS.API.Controllers
 {
@@ -109,7 +109,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<ReportInstanceIdentifierDto>> GetReportInstanceByIdentifier(Guid workFlowGuid, int id)
         {
@@ -132,7 +132,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<ReportInstanceDetailDto>> GetReportInstanceByDetail(Guid workFlowGuid, int id)
@@ -156,7 +156,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.openxmlformats-officedocument.wordprocessingml.document")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.patientsummary.v1+json")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult> DownloadPatientSummary(Guid workFlowGuid, int id)
@@ -183,7 +183,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("workflow/{workFlowGuid}/reportinstances", Name = "GetReportInstancesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetReportInstancesByDetail(Guid workFlowGuid, 
             [FromQuery] ReportInstanceResourceParameters reportInstanceResourceParameters)
@@ -217,7 +217,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("workflow/{workFlowGuid}/reportinstances", Name = "GetNewReportInstancesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.newreports.v1+json", "application/vnd.pvims.newreports.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.newreports.v1+json", "application/vnd.pvims.newreports.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetNewReportInstancesByDetail(Guid workFlowGuid,
@@ -252,7 +252,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("workflow/{workFlowGuid}/reportinstances", Name = "GetNewReportInstancesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.feedback.v1+json", "application/vnd.pvims.feedback.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.feedback.v1+json", "application/vnd.pvims.feedback.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetFeedbackReportInstancesByDetail(Guid workFlowGuid,
@@ -285,7 +285,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("workflow/{workFlowGuid}/reportinstances/{reportinstanceId}/activity", Name = "GetActivityExecutionStatusEvents")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ActivityExecutionStatusEventDto>>> GetActivityExecutionStatusEvents(Guid workFlowGuid, int reportinstanceId)
         {
@@ -316,7 +316,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("workflow/{workFlowGuid}/reportinstances/{reportinstanceId}/activity/{activityExecutionStatusEventId}/attachments/{id}", Name = "DownloadActivitySingleAttachment")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.attachment.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult> DownloadActivitySingleAttachment(Guid workFlowGuid, int reportinstanceId, int activityExecutionStatusEventId, int  id)
@@ -398,7 +398,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.causalityreport.v1+json", "application/vnd.pvims.causalityreport.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.causalityreport.v1+json", "application/vnd.pvims.causalityreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<LinkedCollectionResourceWrapperDto<CausalityReportDto>>> GetCausalityReport(Guid workFlowGuid, 
@@ -687,7 +687,7 @@ namespace PVIMS.API.Controllers
                                 || f.SourceIdentifier.Contains(reportInstanceResourceParameters.SearchTerm) 
                                 || f.TerminologyMedDra.MedDraTerm.Contains(reportInstanceResourceParameters.SearchTerm) 
                                 || f.Identifier.Contains(reportInstanceResourceParameters.SearchTerm) 
-                                || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
+                                || f.ReportInstanceMedications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
             }
 
             var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, "");
@@ -818,7 +818,7 @@ namespace PVIMS.API.Controllers
                                         || f.SourceIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)
                                         || f.TerminologyMedDra.MedDraTerm.Contains(reportInstanceResourceParameters.SearchTerm)
                                         || f.Identifier.Contains(reportInstanceResourceParameters.SearchTerm)
-                                        || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
+                                        || f.ReportInstanceMedications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
                     }
 
                     var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, "");
@@ -1030,7 +1030,7 @@ namespace PVIMS.API.Controllers
                         var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
                             .Queryable()
                             .Where(di => di.Tag == tag
-                                && di.ContextID == evt.Id)
+                                && di.ContextId == evt.Id)
                             .SingleOrDefault();
 
                         if(datasetInstance != null)
@@ -1108,7 +1108,7 @@ namespace PVIMS.API.Controllers
                         var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
                             .Queryable()
                             .Where(di => di.Tag == tag
-                                && di.ContextID == evt.Id)
+                                && di.ContextId == evt.Id)
                             .SingleOrDefault();
 
                         dto.E2BInstance = new DatasetInstanceDto()
@@ -1523,7 +1523,7 @@ namespace PVIMS.API.Controllers
             var encounter = _unitOfWork.Repository<Encounter>().Queryable().FirstOrDefault(e => e.Patient.Id == patientClinicalEvent.Patient.Id && e.Archived == false & e.EncounterDate <= patientClinicalEvent.OnsetDate);
             if (encounter != null)
             {
-                var encounterInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().SingleOrDefault(ds => ds.Dataset.DatasetName == "Chronic Treatment" && ds.ContextID == encounter.Id);
+                var encounterInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().SingleOrDefault(ds => ds.Dataset.DatasetName == "Chronic Treatment" && ds.ContextId == encounter.Id);
                 if (encounterInstance != null)
                 {
                     var weight = encounterInstance.GetInstanceValue("Weight (kg)");
@@ -1584,7 +1584,7 @@ namespace PVIMS.API.Controllers
             string[] validWHOCriteria = { "Possible", "Probable", "Certain" };
 
             var destinationProductElement = _unitOfWork.Repository<DatasetElement>().Queryable().SingleOrDefault(u => u.DatasetElementGuid.ToString() == "E033BDE8-EDC8-43FF-A6B0-DEA6D6FA581C"); // Medicinal Products
-            foreach (ReportInstanceMedication med in reportInstance.Medications)
+            foreach (ReportInstanceMedication med in reportInstance.ReportInstanceMedications)
             {
                 var newContext = Guid.NewGuid();
 

@@ -1,13 +1,10 @@
+using PVIMS.Core.CustomAttributes;
+using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Utilities;
 using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using VPS.Common.Utilities;
-using VPS.CustomAttributes;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(PatientMedication))]
     public class PatientMedication : EntityBase, IExtendable
 	{
         public PatientMedication()
@@ -15,36 +12,24 @@ namespace PVIMS.Core.Entities
             PatientMedicationGuid = Guid.NewGuid();
         }
 
+        public DateTime DateStart { get; set; }
+        public DateTime? DateEnd { get; set; }
+        public string Dose { get; set; }
+        public string DoseFrequency { get; set; }
+        public string DoseUnit { get; set; }
+        public int PatientId { get; set; }
         public Guid PatientMedicationGuid { get; set; }
-
-		public DateTime DateStart { get; set; }
-		public DateTime? DateEnd { get; set; }
-
-		[StringLength(30)]
-		public string Dose { get; set; }
-
-		[StringLength(30)]
-		public string DoseFrequency { get; set; }
-
-		[StringLength(10)]
-		public string DoseUnit { get; set; }
-        
-        [DefaultValue(false)]
         public bool Archived { get; set; }
-        
         public DateTime? ArchivedDate { get; set; }
-        [StringLength(200)]
         public string ArchivedReason { get; set; }
-
-        [StringLength(200)]
+        public int? AuditUserId { get; set; }
         public string MedicationSource { get; set; }
+        public int ConceptId { get; set; }
+        public int? ProductId { get; set; }
 
         public virtual Concept Concept { get; set; }
         public virtual Product Product { get; set; }
-
-        [Required]
 		public virtual Patient Patient { get; set; }
-
         public virtual User AuditUser { get; set; }
 
         public string DisplayName
@@ -65,7 +50,6 @@ namespace PVIMS.Core.Entities
             get { return customAttributes; }
         }
 
-        [Column(TypeName = "xml")]
         public string CustomAttributesXmlSerialised
         {
 
@@ -93,7 +77,7 @@ namespace PVIMS.Core.Entities
             return customAttributes.GetAttributeValue(attributeKey);
         }
 
-        public void ValidateAndSetAttributeValue<T>(VPS.CustomAttributes.CustomAttributeConfiguration attributeConfig, T attributeValue, string updatedByUser)
+        public void ValidateAndSetAttributeValue<T>(CustomAttributeConfiguration attributeConfig, T attributeValue, string updatedByUser)
         {
             customAttributes.ValidateAndSetAttributeValue(attributeConfig, attributeValue, updatedByUser);
         }

@@ -1,4 +1,4 @@
-﻿using PVIMS.API.Attributes;
+﻿using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Models.ValueTypes;
 using PVIMS.Core.ValueTypes;
 using System.ComponentModel.DataAnnotations;

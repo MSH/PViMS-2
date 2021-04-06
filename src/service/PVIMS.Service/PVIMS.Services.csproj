@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -15,16 +15,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml" Version="2.8.1" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.11.3" />
     <PackageReference Include="EntityFramework" Version="6.4.0" />
-    <PackageReference Include="EPPlus" Version="4.0.5" />
+    <PackageReference Include="EPPlus" Version="5.4.2" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PVIMS.Core\PVIMS.Core.csproj" />
-    <ProjectReference Include="..\PVIMS.Entities.EF\PVIMS.Entities.EF.csproj" />
-    <ProjectReference Include="..\VPS.Framework\VPS.CustomAttributes\VPS.CustomAttributes.csproj" />
+    <ProjectReference Include="..\PViMS.Infrastructure\PViMS.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

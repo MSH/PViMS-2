@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNet.Identity;
 using PVIMS.API.Models.Account;
-using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using VPS.Common.Repositories;
 
 namespace PVIMS.API.Helpers
 {

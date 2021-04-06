@@ -1,18 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using VPS.Common.Domain;
-using VPS.CustomAttributes;
+﻿using PVIMS.Core.CustomAttributes;
+using PVIMS.Core.SeedWork;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(CustomAttributeConfiguration))]
     public class CustomAttributeConfiguration : Entity<int>
     {
         public string ExtendableTypeName { get; set; }
         public CustomAttributeType CustomAttributeType { get; set; }
         public string Category { get; set; }
         public string AttributeKey { get; set; }
-        [StringLength(150)]
         public string AttributeDetail { get; set; }
         public bool IsRequired { get; set; }
         public int? StringMaxLength { get; set; }

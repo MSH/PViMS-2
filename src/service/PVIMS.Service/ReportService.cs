@@ -1,23 +1,21 @@
-﻿using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
-using PVIMS.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using VPS.Common.Repositories;
-using VPS.Common.Utilities;
-using System.Data.SqlClient;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using PVIMS.Core.Services;
+using PVIMS.Core.ValueTypes;
+using PVIMS.Infrastructure;
+using PVIMS.Core.Entities.Keyless;
 
 namespace PVIMS.Services
 {
     public class ReportService : IReportService 
     {
-        private readonly IUnitOfWorkInt _unitOfWork;
+        private readonly PVIMSDbContext _context;
 
-        public ReportService(IUnitOfWorkInt unitOfWork)
+        public ReportService(PVIMSDbContext dbContext)
         {
-            Check.IsNotNull(unitOfWork, "unitOfWork may not be null");
-
-            _unitOfWork = unitOfWork;
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         public ICollection<AdverseEventList> GetAdverseEventItems(DateTime searchFrom, DateTime searchTo, AdverseEventCriteria adverseEventCriteria, AdverseEventStratifyCriteria adverseEventStratifyCriteria)
@@ -194,7 +192,9 @@ namespace PVIMS.Services
                 }
             }
 
-            return _unitOfWork.Repository<AdverseEventList>().ExecuteSql(sql);
+            return _context.AdverseEventLists
+                .FromSqlInterpolated($"Exec spAdverseEventList {searchFrom.ToString("yyyy-MM-dd")}, {searchTo.ToString("yyyy-MM-dd")}")
+                .ToList();
         }
 
         public ICollection<AdverseEventQuarterlyList> GetAdverseEventQuarterlyItems(DateTime searchFrom, DateTime searchTo)
@@ -234,7 +234,9 @@ namespace PVIMS.Services
 	            ORDER BY c.MedDraTerm, c.PeriodYear, c.PeriodQuarter, c.FacilityName
                     ", searchFrom.ToString("yyyy-MM-dd"), searchTo.ToString("yyyy-MM-dd"));
 
-            return _unitOfWork.Repository<AdverseEventQuarterlyList>().ExecuteSql(sql);
+            return _context.AdverseEventQuarterlyLists
+                .FromSqlInterpolated($"Exec spAdverseEventQuarterlyList {searchFrom.ToString("yyyy-MM-dd")}, {searchTo.ToString("yyyy-MM-dd")}")
+                .ToList();
         }
 
         public ICollection<AdverseEventAnnualList> GetAdverseEventAnnualItems(DateTime searchFrom, DateTime searchTo)
@@ -274,7 +276,9 @@ namespace PVIMS.Services
 	            ORDER BY c.MedDraTerm, c.PeriodYear, c.FacilityName
                     ", searchFrom.ToString("yyyy-MM-dd"), searchTo.ToString("yyyy-MM-dd"));
 
-            return _unitOfWork.Repository<AdverseEventAnnualList>().ExecuteSql(sql, new SqlParameter[0]);
+            return _context.AdverseEventAnnualLists
+                .FromSqlInterpolated($"Exec spAdverseEventAnnualList {searchFrom.ToString("yyyy-MM-dd")}, {searchTo.ToString("yyyy-MM-dd")}")
+                .ToList();
         }
 
         public ICollection<CausalityNotSetList> GetCausalityNotSetItems(DateTime searchFrom, DateTime searchTo, CausalityConfigType causalityConfig, int facilityId, CausalityCriteria causalityCriteria)
@@ -307,7 +311,9 @@ namespace PVIMS.Services
 	                AND p.Archived = 0 {2} 
                 ORDER BY pce.OnsetDate asc ", searchFrom.ToString("yyyy-MM-dd"), searchTo.ToString("yyyy-MM-dd"), where);
 
-            return _unitOfWork.Repository<CausalityNotSetList>().ExecuteSql(sql);
+            return _context.CausalityNotSetLists
+                .FromSqlInterpolated($"Exec spCausalityNotSetList {searchFrom.ToString("yyyy-MM-dd")}, {searchTo.ToString("yyyy-MM-dd")}")
+                .ToList();
         }
 
         public ICollection<OutstandingVisitList> GetOutstandingVisitItems(DateTime searchFrom, DateTime searchTo, int facilityId)
@@ -325,7 +331,9 @@ namespace PVIMS.Services
 	                AND NOT EXISTS(SELECT Id FROM Encounter ie WHERE ie.Patient_Id = p.Id AND ie.Archived = 0 AND ie.EncounterDate BETWEEN DATEADD(dd, -3, a.AppointmentDate) AND DATEADD(dd, 3, a.AppointmentDate))
                 ORDER BY a.AppointmentDate desc ", searchFrom.ToString("yyyy-MM-dd"), searchTo.ToString("yyyy-MM-dd"), where);
 
-            return _unitOfWork.Repository<OutstandingVisitList>().ExecuteSql(sql);
+            return _context.OutstandingVisitLists
+                .FromSqlInterpolated($"Exec spOutstandingVisitList {searchFrom.ToString("yyyy-MM-dd")}, {searchTo.ToString("yyyy-MM-dd")}")
+                .ToList();
         }
 
         public ICollection<PatientOnStudyList> GetPatientOnStudyItems(DateTime searchFrom, DateTime searchTo, PatientOnStudyCriteria patientOnStudyCriteria)
@@ -443,7 +451,9 @@ namespace PVIMS.Services
                     break;
             }
 
-            return _unitOfWork.Repository<PatientOnStudyList>().ExecuteSql(sql, new SqlParameter[0]);
+            return _context.PatientOnStudyLists
+                .FromSqlInterpolated($"Exec spPatientOnStudyList {searchFrom.ToString("yyyy-MM-dd")}, {searchTo.ToString("yyyy-MM-dd")}")
+                .ToList();
         }
 
         public ICollection<PatientList> GetPatientListOnStudyItems(DateTime searchFrom, DateTime searchTo, PatientOnStudyCriteria patientOnStudyCriteria, int facilityId)
@@ -487,7 +497,9 @@ namespace PVIMS.Services
                     break;
             }
 
-            return _unitOfWork.Repository<PatientList>().ExecuteSql(sql);
+            return _context.PatientLists
+                .FromSqlInterpolated($"Exec spPatientList {searchFrom.ToString("yyyy-MM-dd")}, {searchTo.ToString("yyyy-MM-dd")}")
+                .ToList();
         }
 
         public ICollection<DrugList> GetPatientsByDrugItems(string searchTerm)
@@ -508,7 +520,9 @@ namespace PVIMS.Services
                 {0} 
                 ORDER BY c.ConceptName", !String.IsNullOrWhiteSpace(searchTerm) ? $"WHERE c.ConceptName LIKE '%{searchTerm.TrimEnd()}%'" : "");
 
-            return _unitOfWork.Repository<DrugList>().ExecuteSql(sql, new SqlParameter[0]);
+            return _context.DrugLists
+                .FromSqlInterpolated($"Exec spDrugList {searchTerm}")
+                .ToList();
         }
 
         public ICollection<PatientList> GetPatientListByDrugItems(int conceptId)
@@ -528,8 +542,9 @@ namespace PVIMS.Services
 			            group by ip.Id, ip.FirstName, ip.Surname, ifa.FacilityName
 		            ) AS s", conceptId);
 
-            return _unitOfWork.Repository<PatientList>().ExecuteSql(sql, new SqlParameter[0]);
+            return _context.PatientLists
+                .FromSqlInterpolated($"Exec spPatientList {conceptId}")
+                .ToList();
         }
-
     }
 }

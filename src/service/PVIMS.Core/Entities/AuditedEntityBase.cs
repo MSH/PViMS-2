@@ -1,4 +1,5 @@
-﻿using VPS.Common.Domain;
+﻿using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.SeedWork;
 
 namespace PVIMS.Core.Entities
 {

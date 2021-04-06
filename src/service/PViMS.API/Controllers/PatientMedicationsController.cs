@@ -8,15 +8,16 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
-using VPS.Common.Repositories;
 
 namespace PVIMS.API.Controllers
 {
@@ -32,8 +33,8 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<Product> _productRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<Config> _configRepository;
-        private readonly IRepositoryInt<Core.Entities.CustomAttributeConfiguration> _customAttributeRepository;
-        private readonly IRepositoryInt<Core.Entities.SelectionDataItem> _selectionDataItemRepository;
+        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
+        private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
@@ -50,8 +51,8 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<Product> productRepository,
             IRepositoryInt<User> userRepository,
             IRepositoryInt<Config> configRepository,
-            IRepositoryInt<Core.Entities.CustomAttributeConfiguration> customAttributeRepository,
-            IRepositoryInt<Core.Entities.SelectionDataItem> selectionDataItemRepository,
+            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
+            IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
             IUnitOfWorkInt unitOfWork,
             ICustomAttributeService customAttributeService,
             IWorkFlowService workFlowService,
@@ -84,7 +85,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<PatientMedicationIdentifierDto>> GetPatientMedicationByIdentifier(long patientId, long id)
         {
@@ -107,7 +108,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<PatientMedicationDetailDto>> GetPatientMedicationByDetail(long patientId, long id)
@@ -397,7 +398,7 @@ namespace PVIMS.API.Controllers
             {
                 return dto;
             }
-            VPS.CustomAttributes.IExtendable patientMedicationExtended = patientMedication;
+            IExtendable patientMedicationExtended = patientMedication;
 
             // Map all custom attributes
             dto.MedicationAttributes = _modelExtensionBuilder.BuildModelExtension(patientMedicationExtended)
@@ -406,7 +407,7 @@ namespace PVIMS.API.Controllers
                     Key = h.AttributeKey,
                     Value = h.TransformValueToString(),
                     Category = h.Category,
-                    SelectionValue = (h.Type == VPS.CustomAttributes.CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
+                    SelectionValue = (h.Type == CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
                 }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
 
             dto.IndicationType = _customAttributeService.GetCustomAttributeValue("PatientMedication", "Type of Indication", patientMedicationExtended);

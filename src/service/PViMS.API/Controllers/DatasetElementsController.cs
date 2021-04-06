@@ -3,13 +3,12 @@ using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -18,9 +17,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Paging;
 
 namespace PVIMS.API.Controllers
 {
@@ -73,7 +72,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetDatasetElementsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<DatasetElementIdentifierDto>> GetDatasetElementsByIdentifier(
             [FromQuery] DatasetElementResourceParameters datasetElementResourceParameters)
@@ -100,7 +99,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetDatasetElementsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<DatasetElementDetailDto>> GetDatasetElementsByDetail(
@@ -129,7 +128,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.groupvalue.v1+json", "application/vnd.pvims.groupvalue.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.groupvalue.v1+json", "application/vnd.pvims.groupvalue.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<List<GroupValueDto>>> GetGroupValues(long id)
@@ -160,7 +159,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<DatasetElementIdentifierDto>> GetDatasetElementByIdentifier(long id)
         {
@@ -182,7 +181,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<DatasetElementDetailDto>> GetDatasetElementByDetail(long id)
@@ -205,7 +204,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<DatasetElementExpandedDto>> GetDatasetElementByExpanded(long id)
@@ -276,7 +275,7 @@ namespace PVIMS.API.Controllers
                 {
                     DatasetElementType = elementType,
                     ElementName = datasetElementForUpdate.ElementName,
-                    OID = datasetElementForUpdate.OID,
+                    Oid = datasetElementForUpdate.OID,
                     DefaultValue = datasetElementForUpdate.DefaultValue,
                     Field = new Field()
                     {
@@ -372,7 +371,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 datasetElementFromRepo.ElementName = datasetElementForUpdate.ElementName;
-                datasetElementFromRepo.OID = datasetElementForUpdate.OID;
+                datasetElementFromRepo.Oid = datasetElementForUpdate.OID;
                 datasetElementFromRepo.DefaultValue = datasetElementForUpdate.DefaultValue;
                 datasetElementFromRepo.System = (datasetElementForUpdate.System == Models.ValueTypes.YesNoValueType.Yes);
                 datasetElementFromRepo.Field.Mandatory = (datasetElementForUpdate.Mandatory == Models.ValueTypes.YesNoValueType.Yes);
