@@ -12,32 +12,36 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
-
 steps:
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
+#Restore packages with the .NET Core CLI task
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet restore'
   inputs:
-    restoreSolution: '$(solution)'
+    command: 'restore'
+    projects: '**/*.csproj'
+    includeNuGetOrg: true
 
-- task: VSBuild@1
+# Build project
+- task: DotNetCoreCLI@2
+  displayName: "dotnet build solution projects"
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=false /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: 'build'
+    projects: '**/*.csproj'
 
-# - task: VSTest@2
-#   inputs:
-#     platform: '$(buildPlatform)'
-#     configuration: '$(buildConfiguration)'
+# Publish projects to specified folder
+- task: DotNetCoreCLI@2
+  displayName: "publish api project"
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: '**/PViMS.API/*.csproj'
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
 
 - task: PublishBuildArtifacts@1
-  displayName: 'publish pipeline artifact'
+  displayName: "Upload Artifacts"
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)'
-
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
+    artifactName: 'drop' 
