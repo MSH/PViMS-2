@@ -77,6 +77,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.AppointmentCreations)
                 .HasForeignKey(d => d.CreatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.Appointment_dbo.User_CreatedBy_Id");
 
             configuration.HasOne(d => d.Patient)
@@ -88,6 +89,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.AppointmentUpdates)
                 .HasForeignKey(d => d.UpdatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.Appointment_dbo.User_UpdatedBy_Id");
 
             configuration.HasIndex("AppointmentDate").IsUnique(false);

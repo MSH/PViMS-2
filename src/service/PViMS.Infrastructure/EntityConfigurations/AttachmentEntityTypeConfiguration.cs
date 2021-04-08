@@ -85,23 +85,25 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.AttachmentCreations)
                 .HasForeignKey(d => d.CreatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.Attachment_dbo.User_CreatedBy_Id");
 
             configuration.HasOne(d => d.Encounter)
                 .WithMany(p => p.Attachments)
                 .HasForeignKey(d => d.EncounterId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.Attachment_dbo.Encounter_Encounter_Id");
 
             configuration.HasOne(d => d.Patient)
                 .WithMany(p => p.Attachments)
                 .HasForeignKey(d => d.PatientId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.Attachment_dbo.Patient_Patient_Id");
 
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.AttachmentUpdates)
                 .HasForeignKey(d => d.UpdatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.Attachment_dbo.User_UpdatedBy_Id");
 
             configuration.HasIndex(e => e.ActivityExecutionStatusEventId, "IX_ActivityExecutionStatusEvent_Id");

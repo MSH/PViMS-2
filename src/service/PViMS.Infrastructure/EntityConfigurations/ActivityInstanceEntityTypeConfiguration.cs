@@ -54,7 +54,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.ReportInstance)
                 .WithMany(p => p.Activities)
                 .HasForeignKey(d => d.ReportInstanceId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.ActivityInstance_dbo.ReportInstance_ReportInstance_Id1");
 
             configuration.HasOne(d => d.UpdatedBy)

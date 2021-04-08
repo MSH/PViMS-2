@@ -50,6 +50,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.PregnancyCreations)
                 .HasForeignKey(d => d.CreatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.Pregnancy_dbo.User_CreatedBy_Id");
 
             configuration.HasOne(d => d.Patient)
@@ -61,6 +62,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.PregnancyUpdates)
                 .HasForeignKey(d => d.UpdatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.Pregnancy_dbo.User_UpdatedBy_Id");
 
             configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");

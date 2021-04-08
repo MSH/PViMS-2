@@ -38,7 +38,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.ActivityInstance)
                 .WithMany(p => p.ExecutionEvents)
                 .HasForeignKey(d => d.ActivityInstanceId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.ActivityExecutionStatusEvent_dbo.ActivityInstance_ActivityInstance_Id");
 
             configuration.HasOne(d => d.EventCreatedBy)

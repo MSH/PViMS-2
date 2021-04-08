@@ -77,7 +77,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.Product)
                 .WithMany(p => p.PatientMedications)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.PatientMedication_dbo.Product_Product_Id");
 
             configuration.HasIndex(e => new { e.PatientId, e.ConceptId, e.ProductId }).IsUnique(false);

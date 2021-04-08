@@ -32,7 +32,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.SourceElement)
                 .WithMany(p => p.SourceMappings)
                 .HasForeignKey(d => d.SourceElementId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.DatasetMapping_dbo.DatasetCategoryElement_SourceElement_Id");
 
             configuration.HasIndex(e => e.DestinationElementId, "IX_DestinationElement_Id");

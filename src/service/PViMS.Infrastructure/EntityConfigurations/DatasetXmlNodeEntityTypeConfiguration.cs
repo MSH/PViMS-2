@@ -50,6 +50,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.DatasetXmlNodeCreations)
                 .HasForeignKey(d => d.CreatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.User_CreatedBy_Id");
 
             configuration.HasOne(d => d.DatasetElement)
@@ -61,7 +62,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.DatasetElementSub)
                 .WithMany(p => p.DatasetXmlNodes)
                 .HasForeignKey(d => d.DatasetElementSubId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.DatasetElementSub_DatasetElementSub_Id");
 
             configuration.HasOne(d => d.DatasetXml)
@@ -73,12 +74,13 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.ParentNode)
                 .WithMany(p => p.ChildrenNodes)
                 .HasForeignKey(d => d.ParentNodeId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.DatasetXmlNode_ParentNode_Id");
 
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.DatasetXmlNodeUpdates)
                 .HasForeignKey(d => d.UpdatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.User_UpdatedBy_Id");
 
             configuration.HasIndex(e => new { e.DatasetXmlId, e.NodeName }).IsUnique(true);

@@ -51,7 +51,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.ParentNode)
                 .WithMany(p => p.NodeAttributes)
                 .HasForeignKey(d => d.ParentNodeId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.DatasetXmlAttribute_dbo.DatasetXmlNode_ParentNode_Id");
 
             configuration.HasOne(d => d.UpdatedBy)

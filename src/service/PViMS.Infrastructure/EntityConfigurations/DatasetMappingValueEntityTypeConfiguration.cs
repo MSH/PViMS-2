@@ -39,7 +39,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.SubMapping)
                 .WithMany(p => p.DatasetMappingValues)
                 .HasForeignKey(d => d.SubMappingId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.DatasetMappingValue_dbo.DatasetMappingSub_SubMapping_Id");
 
             configuration.HasIndex(e => e.MappingId, "IX_Mapping_Id");

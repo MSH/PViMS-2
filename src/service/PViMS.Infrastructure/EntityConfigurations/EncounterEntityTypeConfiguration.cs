@@ -70,6 +70,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.EncounterCreations)
                 .HasForeignKey(d => d.CreatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.Encounter_dbo.User_CreatedBy_Id");
 
             configuration.HasOne(d => d.EncounterType)
@@ -95,6 +96,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.EncounterUpdates)
                 .HasForeignKey(d => d.UpdatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.Encounter_dbo.User_UpdatedBy_Id");
 
             configuration.Property(c => c.Archived)

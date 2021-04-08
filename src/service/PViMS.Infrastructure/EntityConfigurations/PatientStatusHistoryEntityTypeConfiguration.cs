@@ -58,6 +58,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.PatientStatusHistoryCreations)
                 .HasForeignKey(d => d.CreatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.PatientStatusHistory_dbo.User_CreatedBy_Id");
 
             configuration.HasOne(d => d.Patient)
@@ -75,6 +76,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.PatientStatusHistoryUpdates)
                 .HasForeignKey(d => d.UpdatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.PatientStatusHistory_dbo.User_UpdatedBy_Id");
 
             configuration.HasIndex(e => new { e.PatientId, e.PatientStatusId }).IsUnique(false);

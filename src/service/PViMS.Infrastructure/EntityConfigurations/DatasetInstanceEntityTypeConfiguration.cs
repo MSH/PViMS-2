@@ -48,6 +48,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.DatasetInstanceCreations)
                 .HasForeignKey(d => d.CreatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.DatasetInstance_dbo.User_CreatedBy_Id");
 
             configuration.HasOne(d => d.Dataset)
@@ -64,6 +65,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.DatasetInstanceUpdates)
                 .HasForeignKey(d => d.UpdatedById)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.DatasetInstance_dbo.User_UpdatedBy_Id");
 
             configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");

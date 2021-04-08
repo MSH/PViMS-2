@@ -35,13 +35,13 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.ParentTable)
                 .WithMany(p => p.MetaDependencyParentTables)
                 .HasForeignKey(d => d.ParentTableId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.MetaDependency_dbo.MetaTable_ParentTable_Id");
 
             configuration.HasOne(d => d.ReferenceTable)
                 .WithMany(p => p.MetaDependencyReferenceTables)
                 .HasForeignKey(d => d.ReferenceTableId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_dbo.MetaDependency_dbo.MetaTable_ReferenceTable_Id");
 
             configuration.HasIndex(e => e.ParentTableId, "IX_ParentTable_Id");
