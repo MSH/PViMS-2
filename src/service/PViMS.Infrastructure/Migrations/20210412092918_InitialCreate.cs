@@ -2845,12 +2845,6 @@ namespace PViMS.Infrastructure.Migrations
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttachmentType_Description",
-                table: "AttachmentType",
-                column: "Description",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AttachmentType_Key",
                 table: "AttachmentType",
                 column: "Key",

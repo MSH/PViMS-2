@@ -571,9 +571,6 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Description")
-                        .IsUnique();
-
                     b.HasIndex("Key")
                         .IsUnique();
 

@@ -10,7 +10,7 @@ using PVIMS.Infrastructure;
 namespace PViMS.Infrastructure.Migrations
 {
     [DbContext(typeof(PVIMSDbContext))]
-    [Migration("20210408093453_InitialCreate")]
+    [Migration("20210412092918_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -572,9 +572,6 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(4)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Description")
-                        .IsUnique();
 
                     b.HasIndex("Key")
                         .IsUnique();

@@ -20,7 +20,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasMaxLength(4);
 
-            configuration.HasIndex("Description").IsUnique(true);
             configuration.HasIndex("Key").IsUnique(true);
         }
     }
