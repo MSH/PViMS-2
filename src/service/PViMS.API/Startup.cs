@@ -39,6 +39,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PVIMS.API.Infrastructure.Settings;
 using PVIMS.API.Infrastructure.Configs.ExceptionHandler;
+using PVIMS.API;
 
 namespace PViMS.API
 {
@@ -124,7 +125,7 @@ namespace PViMS.API
                 });
             });
 
-            app.UseMiddleware<ExceptionMiddleware>();
+            //app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -335,6 +336,8 @@ namespace PViMS.API
 
         public static IServiceCollection AddCustomConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddOptions();
+            services.Configure<PVIMSSettings>(configuration);
             services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = actionContext =>

@@ -24,37 +24,41 @@ namespace PVIMS.API.Infrastructure
 
             await policy.ExecuteAsync(async () =>
             {
+                var seedData = settings.Value.SeedData;
                 var contentRootPath = env.ContentRootPath;
 
-                using (context)
+                if (seedData)
                 {
-                    context.Database.Migrate();
+                    using (context)
+                    {
+                        context.Database.Migrate();
 
-                    context.Roles.AddRange(PrepareRoles(context));
-                    await context.SaveEntitiesAsync();
+                        context.Roles.AddRange(PrepareRoles(context));
+                        await context.SaveEntitiesAsync();
 
-                    context.Users.AddRange(PrepareAdminUser(context));
-                    await context.SaveEntitiesAsync();
+                        context.Users.AddRange(PrepareAdminUser(context));
+                        await context.SaveEntitiesAsync();
 
-                    context.AttachmentTypes.AddRange(PrepareAttachmentTypes(context));
-                    context.CareEvents.AddRange(PrepareCareEvents(context));
-                    context.Configs.AddRange(PrepareConfigs(context));
-                    context.ContextTypes.AddRange(PrepareContextTypes(context));
-                    context.DatasetElementTypes.AddRange(PrepareDatasetElementTypes(context));
-                    context.FacilityTypes.AddRange(PrepareFacilityTypes(context));
-                    context.FieldTypes.AddRange(PrepareFieldTypes(context));
-                    context.LabResults.AddRange(PrepareLabResults(context));
-                    context.LabTestUnits.AddRange(PrepareLabTestUnits(context));
-                    context.MetaColumnTypes.AddRange(PrepareMetaColumnTypes(context));
-                    context.MetaTableTypes.AddRange(PrepareMetaTableTypes(context));
-                    context.MetaWidgetTypes.AddRange(PrepareMetaWidgetTypes(context));
-                    context.Outcomes.AddRange(PrepareOutcomes(context));
-                    context.PatientStatuses.AddRange(PreparePatientStatus(context));
-                    context.Priorities.AddRange(PreparePriorities(context));
-                    context.SiteContactDetails.AddRange(PrepareSiteContactDetails(context));
-                    context.TreatmentOutcomes.AddRange(PrepareTreatmentOutcomes(context));
+                        context.AttachmentTypes.AddRange(PrepareAttachmentTypes(context));
+                        context.CareEvents.AddRange(PrepareCareEvents(context));
+                        context.Configs.AddRange(PrepareConfigs(context));
+                        context.ContextTypes.AddRange(PrepareContextTypes(context));
+                        context.DatasetElementTypes.AddRange(PrepareDatasetElementTypes(context));
+                        context.FacilityTypes.AddRange(PrepareFacilityTypes(context));
+                        context.FieldTypes.AddRange(PrepareFieldTypes(context));
+                        context.LabResults.AddRange(PrepareLabResults(context));
+                        context.LabTestUnits.AddRange(PrepareLabTestUnits(context));
+                        context.MetaColumnTypes.AddRange(PrepareMetaColumnTypes(context));
+                        context.MetaTableTypes.AddRange(PrepareMetaTableTypes(context));
+                        context.MetaWidgetTypes.AddRange(PrepareMetaWidgetTypes(context));
+                        context.Outcomes.AddRange(PrepareOutcomes(context));
+                        context.PatientStatuses.AddRange(PreparePatientStatus(context));
+                        context.Priorities.AddRange(PreparePriorities(context));
+                        context.SiteContactDetails.AddRange(PrepareSiteContactDetails(context));
+                        context.TreatmentOutcomes.AddRange(PrepareTreatmentOutcomes(context));
 
-                    await context.SaveEntitiesAsync();
+                        await context.SaveEntitiesAsync();
+                    }
                 }
             });
         }
