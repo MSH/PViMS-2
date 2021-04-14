@@ -6,8 +6,7 @@
 trigger:
 - development
 
-name: 
-  $(Build.DefinitionName)-$(Year:yy).$(Month).$(DayOfYear)$(Rev:.rr)
+name: $(Build.DefinitionName)-$(Year:yy).$(Month).$(DayOfYear)$(Rev:.rr)
 
 pool:
   vmImage: ubuntu-latest
