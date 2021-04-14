@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using PVIMS.API;
 using PVIMS.API.Infrastructure;
 using PVIMS.Infrastructure;
+using PVIMS.Infrastructure.Identity;
 using Serilog;
 using System;
 using System.IO;
@@ -31,6 +32,19 @@ namespace PViMS.API
             {
                 Log.Information("Configuring web host ({ApplicationContext})...", AppName);
                 var host = BuildWebHost(configuration, args);
+
+                Log.Information("Applying identity migrations ({ApplicationContext})...", AppName);
+                host.MigrateDbContext<IdentityDbContext>((context, services) =>
+                {
+                    var env = services.GetService<IWebHostEnvironment>();
+                    var settings = services.GetService<IOptions<PVIMSSettings>>();
+
+                    var logger = services.GetService<ILogger<IdentityContextSeed>>();
+
+                    new IdentityContextSeed()
+                        .SeedAsync(context, env, settings, logger)
+                        .Wait();
+                });
 
                 Log.Information("Applying migrations ({ApplicationContext})...", AppName);
                 host.MigrateDbContext<PVIMSDbContext>((context, services) =>

@@ -9,6 +9,7 @@ using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.ValueTypes;
 using PVIMS.Infrastructure;
+using PVIMS.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,10 +34,7 @@ namespace PVIMS.API.Infrastructure
                     {
                         context.Database.Migrate();
 
-                        context.Roles.AddRange(PrepareRoles(context));
-                        await context.SaveEntitiesAsync();
-
-                        context.Users.AddRange(PrepareAdminUser(context));
+                        context.Users.AddRange(PrepareUsers(context));
                         await context.SaveEntitiesAsync();
 
                         context.AttachmentTypes.AddRange(PrepareAttachmentTypes(context));
@@ -56,73 +54,24 @@ namespace PVIMS.API.Infrastructure
                         context.Priorities.AddRange(PreparePriorities(context));
                         context.SiteContactDetails.AddRange(PrepareSiteContactDetails(context));
                         context.TreatmentOutcomes.AddRange(PrepareTreatmentOutcomes(context));
-
                         await context.SaveEntitiesAsync();
                     }
                 }
             });
         }
 
-        private IEnumerable<Role> PrepareRoles(PVIMSDbContext context)
-        {
-            List<Role> roles = new List<Role>();
-
-            if (!context.Roles.Any(ce => ce.Key == "Admin"))
-                roles.Add(new Role { Name = "Administrator", Key = "Admin" } );
-
-            if (!context.Roles.Any(ce => ce.Key == "RegClerk"))
-                roles.Add(new Role { Name = "Registration Clerk", Key = "RegClerk" });
-
-            if (!context.Roles.Any(ce => ce.Key == "DataCap"))
-                roles.Add(new Role { Name = "Data Capturer", Key = "DataCap" });
-
-            if (!context.Roles.Any(ce => ce.Key == "Clinician"))
-                roles.Add(new Role { Name = "Clinician", Key = "Clinician" });
-
-            if (!context.Roles.Any(ce => ce.Key == "Analyst"))
-                roles.Add(new Role { Name = "Analytics", Key = "Analyst" });
-
-            if (!context.Roles.Any(ce => ce.Key == "Reporter"))
-                roles.Add(new Role { Name = "Reporter", Key = "Reporter" });
-
-            if (!context.Roles.Any(ce => ce.Key == "Publisher"))
-                roles.Add(new Role { Name = "Publisher", Key = "Publisher" });
-
-            if (!context.Roles.Any(ce => ce.Key == "ReporterAdmin"))
-                roles.Add(new Role { Name = "Reporter Administrator", Key = "ReporterAdmin" });
-
-            if (!context.Roles.Any(ce => ce.Key == "PublisherAdmin"))
-                roles.Add(new Role { Name = "Publisher Administrator", Key = "PublisherAdmin" });
-
-            return roles;
-        }
-
-        private IEnumerable<User> PrepareAdminUser(PVIMSDbContext context)
+        private IEnumerable<User> PrepareUsers(PVIMSDbContext context)
         {
             List<User> users = new List<User>();
 
             if (!context.Users.Any(ce => ce.UserName == "Admin"))
             {
-                // Password: P@55w0rd1
-                var adminUser = new User
-                {
-                    UserName = "Admin",
-                    FirstName = "Admin",
-                    LastName = "User",
-                    Active = true,
+                users.Add(new User {
                     Email = "admin@mail.com",
-                    PasswordHash = "AGW4fU8+b1lKknBmk1U78xlZwJvxihua6thtRmUJRFZhgFepPm9FfgnXiUMe2SkVEw=="
-                };
-
-                adminUser.Roles.Add(new UserRole { User = adminUser, Role = context.Roles.SingleOrDefault(r => r.Key == "Admin") });
-                adminUser.Roles.Add(new UserRole { User = adminUser, Role = context.Roles.SingleOrDefault(r => r.Key == "DataCap") });
-                adminUser.Roles.Add(new UserRole { User = adminUser, Role = context.Roles.SingleOrDefault(r => r.Key == "Analyst") });
-                adminUser.Roles.Add(new UserRole { User = adminUser, Role = context.Roles.SingleOrDefault(r => r.Key == "Reporter") });
-                adminUser.Roles.Add(new UserRole { User = adminUser, Role = context.Roles.SingleOrDefault(r => r.Key == "Publisher") });
-                adminUser.Roles.Add(new UserRole { User = adminUser, Role = context.Roles.SingleOrDefault(r => r.Key == "ReporterAdmin") });
-                adminUser.Roles.Add(new UserRole { User = adminUser, Role = context.Roles.SingleOrDefault(r => r.Key == "PublisherAdmin") });
-
-                users.Add(adminUser);
+                    LastName = "User",
+                    FirstName = "Admin",
+                    UserName = "Admin",
+                });
             }
 
             return users;
@@ -289,16 +238,16 @@ namespace PVIMS.API.Infrastructure
 
             if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.RegulatoryAuthority))
             {
-                var regulatoryAuthorityContactDetail = new SiteContactDetail { ContactType = ContactType.RegulatoryAuthority, ContactFirstName = "Not", ContactSurname = "Specified", StreetAddress = "None", City = "None", OrganisationName = "None" };
-                regulatoryAuthorityContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                siteContactDetails.Add(regulatoryAuthorityContactDetail);
+                var regulatoryContactDetail = new SiteContactDetail { ContactType = ContactType.RegulatoryAuthority, ContactFirstName = "Not", ContactSurname = "Specified", StreetAddress = "None", City = "None", OrganisationName = "None" };
+                regulatoryContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                siteContactDetails.Add(regulatoryContactDetail);
             }
 
             if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.ReportingAuthority))
             {
-                var reportingAuthorityContactDetail = new SiteContactDetail { ContactType = ContactType.ReportingAuthority, ContactFirstName = "Uppsala", ContactSurname = "Monitoring Centre", StreetAddress = "Bredgrand 7B", City = "Uppsala", State = "None", PostCode = "75320", ContactEmail = "info@who-umc.org", ContactNumber = "18656060", CountryCode = "46", OrganisationName = "UMC" };
-                reportingAuthorityContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                siteContactDetails.Add(reportingAuthorityContactDetail);
+                var reportingContactDetail = new SiteContactDetail { ContactType = ContactType.ReportingAuthority, ContactFirstName = "Uppsala", ContactSurname = "Monitoring Centre", StreetAddress = "Bredgrand 7B", City = "Uppsala", State = "None", PostCode = "75320", ContactEmail = "info@who-umc.org", ContactNumber = "18656060", CountryCode = "46", OrganisationName = "UMC" };
+                reportingContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                siteContactDetails.Add(reportingContactDetail);
             }
 
             return siteContactDetails;
@@ -685,9 +634,9 @@ namespace PVIMS.API.Infrastructure
 
             if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.PharmadexLink))
             {
-                var pharmadexConfig = new Config { ConfigType = ConfigType.PharmadexLink, ConfigValue = "NOT SPECIFIED" };
-                pharmadexConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                configs.Add(pharmadexConfig);
+                var siteConfig = new Config { ConfigType = ConfigType.PharmadexLink, ConfigValue = "NOT SPECIFIED" };
+                siteConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                configs.Add(siteConfig);
             }
 
             return configs;
