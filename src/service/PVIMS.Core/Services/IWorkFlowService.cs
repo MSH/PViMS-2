@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Threading.Tasks;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
 
@@ -10,13 +10,13 @@ namespace PVIMS.Core.Services
     {
         void AddOrUpdateMedicationsForWorkFlowInstance(Guid contextGuid, List<ReportInstanceMedicationListItem> medications);
 
-        void CreateWorkFlowInstance(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier);
+        Task CreateWorkFlowInstanceAsync(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier);
 
         int CheckWorkFlowInstanceCount(string workFlowName);
 
         void DeleteMedicationsFromWorkFlowInstance(Guid contextGuid, List<ReportInstanceMedicationListItem> medications);
 
-        ActivityExecutionStatusEvent ExecuteActivity(Guid contextGuid, string newStatus, string comments, DateTime? contextDate, string contextCode);
+        Task<ActivityExecutionStatusEvent> ExecuteActivityAsync(Guid contextGuid, string newStatus, string comments, DateTime? contextDate, string contextCode);
 
         TerminologyMedDra GetCurrentAdverseReaction(Patient patient);
 

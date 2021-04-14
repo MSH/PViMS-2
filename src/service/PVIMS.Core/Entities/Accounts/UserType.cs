@@ -6,8 +6,6 @@ namespace PVIMS.Core.Entities.Accounts
     {
         [EnumMember(Value = "User")]
         User,
-        [EnumMember(Value = "Admin")]
-        Admin,
         [EnumMember(Value = "SystemAdmin")]
         SystemAdmin
     }

@@ -8,6 +8,7 @@ using PVIMS.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Helpers
 {
@@ -140,7 +141,7 @@ namespace PVIMS.API.Helpers
             }
         }
 
-        public void ProcessFormForCreationOrUpdate()
+        public async Task ProcessFormForCreationOrUpdateAsync()
         {
             if(_validationErrors.Count > 0)
             {
@@ -157,7 +158,7 @@ namespace PVIMS.API.Helpers
             }
             if (_patientDetailForUpdate != null)
             {
-                _patientService.UpdatePatient(_patientDetailForUpdate);
+                await _patientService.UpdatePatientAsync(_patientDetailForUpdate);
             }
         }
 

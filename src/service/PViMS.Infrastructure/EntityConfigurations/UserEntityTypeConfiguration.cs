@@ -12,33 +12,17 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(e => e.CurrentContext)
-                .HasMaxLength(20);
+            configuration.Property(e => e.FirstName)
+                .IsRequired();
 
-            configuration.Property(e => e.Email)
-                .HasMaxLength(256);
+            configuration.Property(e => e.LastName)
+                .IsRequired();
 
-            configuration.Property(e => e.EmailConfirmed)
-                .IsRequired()
-                .HasDefaultValue(false);
+            configuration.Property(e => e.UserName)
+                .IsRequired();
 
             configuration.Property(e => e.EulaAcceptanceDate)
                 .HasColumnType("datetime");
-
-            configuration.Property(e => e.LockoutEndDateUtc)
-                .HasColumnType("datetime");
-
-            configuration.Property(e => e.PhoneNumberConfirmed)
-                .IsRequired()
-                .HasDefaultValue(false);
-
-            configuration.Property(e => e.TwoFactorEnabled)
-                .IsRequired()
-                .HasDefaultValue(false);
-
-            configuration.Property(e => e.LockoutEnabled)
-                .IsRequired()
-                .HasDefaultValue(false);
 
             configuration.Property(e => e.Active)
                 .IsRequired();
@@ -49,13 +33,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.Property(e => e.IdentityId)
                 .IsRequired();
-
-            configuration.Property(e => e.AccessFailedCount)
-                .IsRequired();
-
-            configuration.Property(e => e.UserName)
-                .IsRequired()
-                .HasMaxLength(256);
 
             configuration.Property(c => c.UserType)
                 .HasConversion(x => (int)x, x => (UserType)x);

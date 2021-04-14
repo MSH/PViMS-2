@@ -11,6 +11,7 @@ using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.SeedWork;
 using PVIMS.Infrastructure.EntityConfigurations;
 using PVIMS.Infrastructure.EntityConfigurations.KeyLess;
+using PVIMS.Infrastructure.Identity;
 
 namespace PVIMS.Infrastructure
 {
@@ -104,7 +105,6 @@ namespace PVIMS.Infrastructure
         public virtual DbSet<ReportInstanceMedication> ReportInstanceMedications { get; set; }
         public virtual DbSet<RiskFactor> RiskFactors { get; set; }
         public virtual DbSet<RiskFactorOption> RiskFactorOptions { get; set; }
-        public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<SelectionDataItem> SelectionDataItems { get; set; }
         public virtual DbSet<SiteContactDetail> SiteContactDetails { get; set; }
         public virtual DbSet<SystemLog> SystemLogs { get; set; }
@@ -113,7 +113,6 @@ namespace PVIMS.Infrastructure
         public virtual DbSet<TreatmentOutcome> TreatmentOutcomes { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserFacility> UserFacilities { get; set; }
-        public virtual DbSet<UserRole> UserRoles { get; set; }
         public virtual DbSet<WorkFlow> WorkFlows { get; set; }
         public virtual DbSet<WorkPlan> WorkPlans { get; set; }
         public virtual DbSet<WorkPlanCareEvent> WorkPlanCareEvents { get; set; }
@@ -138,7 +137,8 @@ namespace PVIMS.Infrastructure
         public PVIMSDbContext(DbContextOptions<PVIMSDbContext> options) : base(options) { }
 
         public PVIMSDbContext(DbContextOptions<PVIMSDbContext> options,
-            IHttpContextAccessor httpContextAccessor) : base(options) 
+            IHttpContextAccessor httpContextAccessor) 
+            : base(options) 
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
@@ -242,7 +242,6 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new ReportInstanceMedicationEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new RiskFactorEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new RiskFactorOptionEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new RoleEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SelectionDataItemEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SiteContactDetailEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SystemLogEntityTypeConfiguration());
@@ -251,7 +250,6 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new TreatmentOutcomeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new UserFacilityEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new UserRoleEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new WorkFlowEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new WorkPlanEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new WorkPlanCareEventEntityTypeConfiguration());
@@ -271,12 +269,8 @@ namespace PVIMS.Infrastructure
                     {
                         User currentUser = null;
 
-                        var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-
-                        //if (Users != null)
-                        //{
-                        //    currentUser = _userContext != null ? Users.SingleOrDefault(u => u.UserName == userName) : null;
-                        //}
+                        var userName = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier).Value;
+                        currentUser = String.IsNullOrWhiteSpace(userName) ? Users.SingleOrDefault(u => u.UserName == "Admin") : Users.SingleOrDefault(u => u.UserName == userName);
 
                         changedAuditedEntity.AuditStamp(currentUser);
                     }

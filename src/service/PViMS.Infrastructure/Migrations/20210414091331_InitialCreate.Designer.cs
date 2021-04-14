@@ -10,7 +10,7 @@ using PVIMS.Infrastructure;
 namespace PViMS.Infrastructure.Migrations
 {
     [DbContext(typeof(PVIMSDbContext))]
-    [Migration("20210412092918_InitialCreate")]
+    [Migration("20210414091331_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -19,7 +19,7 @@ namespace PViMS.Infrastructure.Migrations
             modelBuilder
                 .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.2");
+                .HasAnnotation("ProductVersion", "5.0.5");
 
             modelBuilder.Entity("PVIMS.Core.Entities.Accounts.RefreshToken", b =>
                 {
@@ -48,43 +48,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.ToTable("RefreshToken");
                 });
 
-            modelBuilder.Entity("PVIMS.Core.Entities.Accounts.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Key")
-                        .IsUnique();
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Role");
-                });
-
             modelBuilder.Entity("PVIMS.Core.Entities.Accounts.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .UseIdentityColumn();
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
 
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
@@ -94,62 +63,26 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("CurrentContext")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("EulaAcceptanceDate")
                         .HasColumnType("datetime");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("IdentityId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime?>("LockoutEndDateUtc")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("UserType")
                         .HasColumnType("int");
@@ -188,34 +121,6 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDatabaseName("IX_User_Id1");
 
                     b.ToTable("UserFacility");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.Accounts.UserRole", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int")
-                        .HasColumnName("Role_Id");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("User_Id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "RoleId")
-                        .IsUnique();
-
-                    b.HasIndex(new[] { "RoleId" }, "IX_Role_Id");
-
-                    b.HasIndex(new[] { "UserId" }, "IX_User_Id")
-                        .HasDatabaseName("IX_User_Id2");
-
-                    b.ToTable("UserRole");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.Activity", b =>
@@ -607,7 +512,7 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasIndex("ActionDate");
 
                     b.HasIndex(new[] { "UserId" }, "IX_User_Id")
-                        .HasDatabaseName("IX_User_Id3");
+                        .HasDatabaseName("IX_User_Id2");
 
                     b.ToTable("AuditLog");
                 });
@@ -4505,27 +4410,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("PVIMS.Core.Entities.Accounts.UserRole", b =>
-                {
-                    b.HasOne("PVIMS.Core.Entities.Accounts.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
-                        .HasConstraintName("FK_dbo.UserRole_dbo.Role_Role_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "User")
-                        .WithMany("Roles")
-                        .HasForeignKey("UserId")
-                        .HasConstraintName("FK_dbo.UserRole_dbo.User_User_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("PVIMS.Core.Entities.Activity", b =>
                 {
                     b.HasOne("PVIMS.Core.Entities.WorkFlow", "WorkFlow")
@@ -6042,11 +5926,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.Navigation("WorkPlanCareEvent");
                 });
 
-            modelBuilder.Entity("PVIMS.Core.Entities.Accounts.Role", b =>
-                {
-                    b.Navigation("UserRoles");
-                });
-
             modelBuilder.Entity("PVIMS.Core.Entities.Accounts.User", b =>
                 {
                     b.Navigation("ActivityInstanceCreations");
@@ -6134,8 +6013,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.Navigation("ReportInstanceCreations");
 
                     b.Navigation("ReportInstanceUpdates");
-
-                    b.Navigation("Roles");
 
                     b.Navigation("SiteContactDetailCreations");
 

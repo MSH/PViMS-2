@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using PVIMS.Core.SeedWork;
 
 namespace PVIMS.Core.Entities.Accounts
 {
-    public class User : Entity<int>
+    public class User : EntityBase
 	{
         public User()
 		{
@@ -52,30 +51,20 @@ namespace PVIMS.Core.Entities.Accounts
             RefreshTokens = new HashSet<RefreshToken>();
             ReportInstanceCreations = new HashSet<ReportInstance>();
             ReportInstanceUpdates = new HashSet<ReportInstance>();
-            Roles = new HashSet<UserRole>();
             SiteContactDetailCreations = new HashSet<SiteContactDetail>();
             SiteContactDetailUpdates = new HashSet<SiteContactDetail>();
             SystemLogCreations = new HashSet<SystemLog>();
             SystemLogUpdates = new HashSet<SystemLog>();
 
             Active = true;
+            AllowDatasetDownload = false;
         }
 
-        public string Email { get; set; }
-        public bool EmailConfirmed { get; set; }
-        public string PasswordHash { get; set; }
-        public string SecurityStamp { get; set; }
-        public string PhoneNumber { get; set; }
-        public bool PhoneNumberConfirmed { get; set; }
-        public bool TwoFactorEnabled { get; set; }
-        public DateTime? LockoutEndDateUtc { get; set; }
-        public bool LockoutEnabled { get; set; }
-        public int AccessFailedCount { get; set; }
-        public string UserName { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
         public bool Active { get; set; }
-        public string CurrentContext { get; set; }
         public DateTime? EulaAcceptanceDate { get; set; }
         public bool AllowDatasetDownload { get; set; }
         public Guid IdentityId { get; set; }
@@ -128,7 +117,6 @@ namespace PVIMS.Core.Entities.Accounts
         public virtual ICollection<SiteContactDetail> SiteContactDetailUpdates { get; set; }
         public virtual ICollection<SystemLog> SystemLogCreations { get; set; }
         public virtual ICollection<SystemLog> SystemLogUpdates { get; set; }
-        public virtual ICollection<UserRole> Roles { get; set; }
 
         public string FullName
         {
@@ -138,8 +126,8 @@ namespace PVIMS.Core.Entities.Accounts
         public bool HasFacility(int id) =>
             Facilities.Any(uf => uf.Facility.Id == id);
 
-        public bool HasRole(string[] roles) =>
-            Roles.Any(ur => roles.Contains(ur.Role?.Key));
+        //public bool HasRole(string[] roles) =>
+        //    Roles.Any(ur => roles.Contains(ur.Role?.Key));
 
         public bool HasValidRefreshToken(string refreshToken) =>
             RefreshTokens.Any(rt => rt.Token == refreshToken && rt.Active);

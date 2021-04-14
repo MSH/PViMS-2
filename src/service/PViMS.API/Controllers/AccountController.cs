@@ -1,9 +1,9 @@
 ﻿using LinqKit;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Account;
 using PVIMS.Core.Entities;
@@ -13,7 +13,6 @@ using PVIMS.Core.Utilities;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -26,35 +25,29 @@ namespace PVIMS.API.Controllers
     {
         private readonly ITokenFactory _tokenFactory;
         private readonly IJwtFactory _jwtFactory;
-        private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<RefreshToken> _refreshTokenRepository;
         private readonly IRepositoryInt<AuditLog> _auditLogRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly IRepositoryInt<Config> _configRepository;
-        private readonly IUnitOfWorkInt _unitOfWork;
-        private readonly UserInfoManager _userManager;
+        private readonly UserManager<User> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AccountController(ITokenFactory tokenFactory,
             IJwtFactory jwtFactory,
-            IRepositoryInt<User> userRepository,
             IRepositoryInt<RefreshToken> refreshTokenRepository,
             IRepositoryInt<AuditLog> auditLogRepository,
-            IUnitOfWorkInt unitOfWork,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<Config> configRepository,
-            UserInfoManager userManager,
+            UserManager<User> userManager,
             IHttpContextAccessor httpContextAccessor)
         {
             _tokenFactory = tokenFactory ?? throw new ArgumentNullException(nameof(tokenFactory));
             _jwtFactory = jwtFactory ?? throw new ArgumentNullException(nameof(jwtFactory));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _refreshTokenRepository = refreshTokenRepository ?? throw new ArgumentNullException(nameof(refreshTokenRepository));
             _auditLogRepository = auditLogRepository ?? throw new ArgumentNullException(nameof(auditLogRepository));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
@@ -83,57 +76,52 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _userManager.FindAsync(request.UserName, request.Password);
-            if (user != null)
+            var userFromManager = await _userManager.FindByNameAsync(request.UserName);
+            if (userFromManager != null)
             {
-                var userFromRepo = await _userRepository.GetAsync(u => u.UserName == request.UserName);
-                if (userFromRepo.Active)
+                if (await _userManager.CheckPasswordAsync(userFromManager, request.Password))
                 {
-                    var audit = new AuditLog()
+                    if (userFromManager.Active)
                     {
-                        AuditType = AuditType.UserLogin,
-                        User = userFromRepo,
-                        ActionDate = DateTime.Now,
-                        Details = "User logged in to PViMS"
-                    };
-                    _auditLogRepository.Save(audit);
+                        var audit = new AuditLog()
+                        {
+                            AuditType = AuditType.UserLogin,
+                            User = userFromManager,
+                            ActionDate = DateTime.Now,
+                            Details = "User logged in to PViMS"
+                        };
+                        _auditLogRepository.Save(audit);
 
-                    //var isAdmin = IsAdmin(user);
-                    //if (!isAdmin) return RedirectToLocal(returnUrl);
-                    //var pendingScriptsExist = AnyPendingScripts();
+                        //var isAdmin = IsAdmin(user);
+                        //if (!isAdmin) return RedirectToLocal(returnUrl);
+                        //var pendingScriptsExist = AnyPendingScripts();
 
-                    //// Send user to deployment page
-                    //if (pendingScriptsExist)
-                    //{
-                    //    return RedirectToAction("Index", "Deployment");
-                    //}
+                        //// Send user to deployment page
+                        //if (pendingScriptsExist)
+                        //{
+                        //    return RedirectToAction("Index", "Deployment");
+                        //}
 
-                    var refreshToken = _tokenFactory.GenerateToken();
+                        var refreshToken = _tokenFactory.GenerateToken();
 
-                    userFromRepo.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
+                        userFromManager.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
+                        await _userManager.UpdateAsync(userFromManager);
 
-                    _userRepository.Update(userFromRepo);
-                    _unitOfWork.Complete();
-
-                    var userRoles = _unitOfWork.Repository<UserRole>().Queryable()
-                            .Include(i1 => i1.Role)
-                            .Where(r => r.User.Id == userFromRepo.Id)
-                            .OrderBy(r => r.Role.Name)
-                            .ToArray();
-
-                    var userFacilities = _unitOfWork.Repository<UserFacility>().Queryable()
-                            .Include(i1 => i1.Facility)
-                            .Where(f => f.User.Id == userFromRepo.Id)
-                            .OrderBy(f => f.Facility.FacilityName)
-                            .ToArray();
-
-                    return Ok(new LoginResponseDto(await _jwtFactory.GenerateEncodedToken(userFromRepo, userRoles, userFacilities), refreshToken, userFromRepo.EulaAcceptanceDate == null, userFromRepo.AllowDatasetDownload));
+                        return Ok(new LoginResponseDto(await _jwtFactory.GenerateEncodedToken(userFromManager), refreshToken, userFromManager.EulaAcceptanceDate == null, userFromManager.AllowDatasetDownload));
+                    }
+                    else 
+                    {
+                        ModelState.AddModelError("Message", "User is not active.");
+                    }
                 }
-                ModelState.AddModelError("Message", "User is not active.");
+                else
+                {
+                    ModelState.AddModelError("Message", "Invalid password specified.");
+                }
             }
             else
             {
-                ModelState.AddModelError("Message", "Invalid username or password.");
+                ModelState.AddModelError("Message", "Invalid username specified.");
             }
 
             return BadRequest(ModelState);
@@ -156,38 +144,26 @@ namespace PVIMS.API.Controllers
             }
 
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var userFromRepo = _userRepository.Get(u => u.UserName == userName);
+            var userFromManager = await _userManager.FindByNameAsync(userName);
 
-            if (userFromRepo.Active == false)
+            if (userFromManager.Active == false)
             {
                 return StatusCode(401, "User no longer active");
             }
 
-            if (userFromRepo.HasValidRefreshToken(request.RefreshToken))
+            if (userFromManager.HasValidRefreshToken(request.RefreshToken))
             {
-                var userRoles = _unitOfWork.Repository<UserRole>().Queryable()
-                        .Include(i1 => i1.Role)
-                        .Where(r => r.User.Id == userFromRepo.Id)
-                        .OrderBy(r => r.Role.Name)
-                        .ToArray();
 
-                var userFacilities = _unitOfWork.Repository<UserFacility>().Queryable()
-                        .Include(i1 => i1.Facility)
-                        .Where(f => f.User.Id == userFromRepo.Id)
-                        .OrderBy(f => f.Facility.FacilityName)
-                        .ToArray();
-
-                var jwtToken = await _jwtFactory.GenerateEncodedToken(userFromRepo, userRoles, userFacilities);
+                var jwtToken = await _jwtFactory.GenerateEncodedToken(userFromManager);
 
                 // delete existing refresh token
-                _refreshTokenRepository.Delete(userFromRepo.RefreshTokens.Single(a => a.Token == request.RefreshToken));
+                _refreshTokenRepository.Delete(userFromManager.RefreshTokens.Single(a => a.Token == request.RefreshToken));
 
                 // generate refresh token
                 var refreshToken = _tokenFactory.GenerateToken();
-                userFromRepo.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
+                userFromManager.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
 
-                _userRepository.Update(userFromRepo);
-                _unitOfWork.Complete();
+                await _userManager.UpdateAsync(userFromManager);
 
                 return new ExchangeRefreshTokenResponseModel() { AccessToken = jwtToken, RefreshToken = refreshToken };
             }
@@ -207,12 +183,12 @@ namespace PVIMS.API.Controllers
         public async Task<ActionResult<List<NotificationDto>>> GetNotifications()
         {
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var user = _userRepository.Get(u => u.UserName == userName);
+            var userFromManager = await _userManager.FindByNameAsync(userName);
 
             var config = _configRepository.Get(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
             List<NotificationDto> notifications = new List<NotificationDto>();
 
-            if (config != null && user != null)
+            if (config != null && userFromManager != null)
             {
                 if (!String.IsNullOrEmpty(config.ConfigValue))
                 {
@@ -221,11 +197,11 @@ namespace PVIMS.API.Controllers
                     // How many instances within the last alertcount
                     var compareDate = DateTime.Now.AddDays(alertCount * -1);
 
-                    if (await _userManager.IsInRoleAsync(user.Id, Constants.Role.Clinician))
+                    if (await _userManager.IsInRoleAsync(userFromManager, Constants.Role.Clinician))
                     {
                         notifications.AddRange(PrepareNotificationsForClinician(compareDate));
                     }
-                    if (await _userManager.IsInRoleAsync(user.Id, Constants.Role.PVSpecialist))
+                    if (await _userManager.IsInRoleAsync(userFromManager, Constants.Role.PVSpecialist))
                     {
                         notifications.AddRange(PrepareNotificationsForAnalyst(compareDate));
                     }

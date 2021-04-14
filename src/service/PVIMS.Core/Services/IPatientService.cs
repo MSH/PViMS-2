@@ -1,6 +1,7 @@
 ﻿using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace PVIMS.Core.Services
 {
@@ -13,7 +14,7 @@ namespace PVIMS.Core.Services
         bool Exists(List<CustomAttributeParameter> parameters);
         Patient GetPatientUsingAttributes(List<CustomAttributeParameter> parameters);
         int AddPatient(PatientDetailForCreation patientDetail);
-        void UpdatePatient(PatientDetailForUpdate patientDetail);
+        Task UpdatePatientAsync(PatientDetailForUpdate patientDetail);
         int AddEncounter(Patient patient, EncounterDetail encounterDetail);
     }
 }

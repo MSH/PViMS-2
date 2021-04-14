@@ -4,8 +4,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNet.Identity.Owin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -18,15 +18,18 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Microsoft.Owin.Security.DataProtection;
+using PVIMS.API;
 using PVIMS.API.Infrastructure.Auth;
-using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.OperationFilters;
 using PVIMS.API.Infrastructure.Services;
+using PVIMS.API.Infrastructure.Settings;
+using PVIMS.API.Helpers;
 using PVIMS.Core;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Infrastructure;
+using PVIMS.Infrastructure.Identity;
+using PViMS.Infrastructure.Identity.Entities;
 using PVIMS.Infrastructure.Repositories;
 using PVIMS.Services;
 using Swashbuckle.AspNetCore.SwaggerUI;
@@ -37,9 +40,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using PVIMS.API.Infrastructure.Settings;
-using PVIMS.API.Infrastructure.Configs.ExceptionHandler;
-using PVIMS.API;
 
 namespace PViMS.API
 {
@@ -66,24 +66,12 @@ namespace PViMS.API
                 .AddCustomAuthentication(Configuration)
                 .AddDependencies(Configuration);
 
-            var connectionString = Configuration.GetConnectionString("PVIMS");
-
             // Create the container builder.
             var builder = new ContainerBuilder();
 
             builder.RegisterType<TypeExtensionHandler>()
                 .AsImplementedInterfaces()
                 .InstancePerLifetimeScope();
-
-            builder.RegisterType<UserInfoStore>()
-                .AsImplementedInterfaces();
-
-            builder.Register(c => new IdentityFactoryOptions<UserInfoManager>
-            {
-                DataProtectionProvider = new DpapiDataProtectionProvider("PVIMS")
-            });
-
-            builder.RegisterType<UserInfoManager>();
 
             // Register dependencies, populate the services from
             // the collection, and build the container. If you want
@@ -271,7 +259,23 @@ namespace PViMS.API
             services.AddEntityFrameworkSqlServer()
                    .AddDbContext<PVIMSDbContext>(options =>
                    {
-                       options.UseSqlServer(configuration["ConnectionString"]);
+                       options.UseSqlServer(configuration["ConnectionString"],
+                           sqlServerOptionsAction: sqlOptions =>
+                           {
+                               sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                               sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                           });
+                   },
+                       ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
+                   )
+                   .AddDbContext<IdentityDbContext>(options =>
+                   {
+                       options.UseSqlServer(configuration["ConnectionString"],
+                           sqlServerOptionsAction: sqlOptions =>
+                           {
+                               sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                               sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                           });
                    },
                        ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
                    );
@@ -364,16 +368,13 @@ namespace PViMS.API
 
         public static IServiceCollection AddCustomAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            // Register the ConfigurationBuilder instance of AuthSettings
             IConfigurationSection configAuthSettings = configuration.GetSection(nameof(AuthSettings));
             services.Configure<AuthSettings>(configAuthSettings);
 
             var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configAuthSettings[nameof(AuthSettings.SecretKey)]));
 
-            // Get options from app settings
             var jwtAppSettingOptions = configuration.GetSection(nameof(JwtIssuerOptions));
 
-            // Configure JwtIssuerOptions
             services.Configure<JwtIssuerOptions>(options =>
             {
                 options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
@@ -397,7 +398,6 @@ namespace PViMS.API
                 ClockSkew = TimeSpan.Zero
             };
 
-            // Auth & JWT config
             services
                 .AddAuthentication(options =>
                 {
@@ -423,6 +423,29 @@ namespace PViMS.API
                         }
                     };
                 });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(JwtConstants.Strings.JwtClaims.ApiAccess, policy =>
+                    policy.RequireClaim(JwtConstants.Strings.JwtClaimIdentifiers.Rol, JwtConstants.Strings.JwtClaims.ApiAccess));
+            });
+
+            var identityBuilder = services.AddIdentityCore<ApplicationUser>(o =>
+            {
+                // configure identity options
+                o.Password.RequireDigit = true;
+                o.Password.RequireLowercase = true;
+                o.Password.RequireUppercase = true;
+                o.Password.RequireNonAlphanumeric = true;
+                o.Password.RequiredLength = 6;
+            });
+
+            identityBuilder = new IdentityBuilder(identityBuilder.UserType, typeof(IdentityRole<Guid>), identityBuilder.Services);
+            identityBuilder.AddEntityFrameworkStores<IdentityDbContext>().AddDefaultTokenProviders();
+
+            services.AddTransient<IJwtTokenHandler, JwtTokenHandler>();
+            services.AddTransient<ITokenFactory, TokenFactory>();
+            services.AddTransient<IJwtFactory, JwtFactory>();
 
             return services;
         }
@@ -452,9 +475,6 @@ namespace PViMS.API
             services.AddTransient<IArtefactService, ArtefactService>();
             services.AddTransient<IWorkFlowService, WorkFlowService>();
             services.AddTransient<IMedDraService, MedDraService>();
-            services.AddTransient<IJwtTokenHandler, JwtTokenHandler>();
-            services.AddTransient<ITokenFactory, TokenFactory>();
-            services.AddTransient<IJwtFactory, JwtFactory>();
 
             return services;
         }

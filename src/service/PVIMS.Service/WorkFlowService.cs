@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PVIMS.Services
 {
@@ -18,6 +19,9 @@ namespace PVIMS.Services
         private readonly IUnitOfWorkInt _unitOfWork;
 
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
+        private readonly IRepositoryInt<ActivityInstance> _activityInstanceRepository;
+        private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
+        private readonly IRepositoryInt<User> _userRepository;
 
         public IArtefactService _artefactService { get; set; }
         public ICustomAttributeService _attributeService { get; set; }
@@ -29,7 +33,10 @@ namespace PVIMS.Services
             IPatientService patientService, 
             IArtefactService artefactService, 
             UserContext userContext,
-            IRepositoryInt<ReportInstance> reportInstanceRepository)
+            IRepositoryInt<ReportInstance> reportInstanceRepository,
+            IRepositoryInt<ActivityInstance> activityInstanceRepository,
+            IRepositoryInt<WorkFlow> workFlowRepository,
+            IRepositoryInt<User> userRepository)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _attributeService = attributeService ?? throw new ArgumentNullException(nameof(attributeService));
@@ -37,6 +44,9 @@ namespace PVIMS.Services
             _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
+            _activityInstanceRepository = activityInstanceRepository ?? throw new ArgumentNullException(nameof(activityInstanceRepository));
+            _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
         public void AddOrUpdateMedicationsForWorkFlowInstance(Guid contextGuid, List<ReportInstanceMedicationListItem> medications)
@@ -93,24 +103,28 @@ namespace PVIMS.Services
             }
         }
 
-        public void CreateWorkFlowInstance(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier)
+        public async Task CreateWorkFlowInstanceAsync(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier)
         {
             if (String.IsNullOrWhiteSpace(workFlowName))
             {
-                throw new ArgumentNullException(nameof(workFlowName));
+                throw new ArgumentNullException($"{nameof(workFlowName)} Parameter may not be null");
             }
 
             // Ensure instance does not exist for this context
-            var workFlow = _unitOfWork.Repository<WorkFlow>().Queryable().SingleOrDefault(wf => wf.Description == workFlowName);
+            var workFlow = await _workFlowRepository.GetAsync(wf => wf.Description == workFlowName);
             if (workFlow == null)
             {
-                throw new ArgumentException("Unable to locate work flow");
+                throw new KeyNotFoundException($"{nameof(workFlowName)} Unable to locate work flow");
             }
 
-            User currentUser = _unitOfWork.Repository<User>().Queryable().SingleOrDefault(u => u.UserName == _userContext.UserName);
+            var currentUser = await _userRepository.GetAsync(u => u.UserName == _userContext.UserName);
+            if (currentUser == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate current user");
+            }
 
-            ReportInstance reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().SingleOrDefault(ri => ri.ContextGuid == contextGuid);
-            if(reportInstance == null)
+            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid);
+            if (reportInstance == null)
             {
                 reportInstance = new ReportInstance(workFlow, currentUser)
                 {
@@ -118,7 +132,7 @@ namespace PVIMS.Services
                     PatientIdentifier = patientIdentifier,
                     SourceIdentifier = sourceIdentifier
                 };
-                _unitOfWork.Repository<ReportInstance>().Save(reportInstance);
+                await _reportInstanceRepository.SaveAsync(reportInstance);
 
                 reportInstance.SetIdentifier();
 
@@ -175,48 +189,47 @@ namespace PVIMS.Services
             _unitOfWork.Repository<ReportInstance>().Update(reportInstance);
         }
 
-        public ActivityExecutionStatusEvent ExecuteActivity(Guid contextGuid, string newStatus, string comments, DateTime? contextDate, string contextCode)
+        public async Task<ActivityExecutionStatusEvent> ExecuteActivityAsync(Guid contextGuid, string newStatus, string comments, DateTime? contextDate, string contextCode)
         {
             var reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().Single(ri => ri.ContextGuid == contextGuid);
-            var activityInstance = reportInstance.CurrentActivity;
             var newExecutionStatus = GetExecutionStatusForActivity(reportInstance, newStatus);
-            var currentUser = _unitOfWork.Repository<User>().Queryable().SingleOrDefault(u => u.UserName == _userContext.UserName);
+            var currentUser = await _userRepository.GetAsync(u => u.UserName == _userContext.UserName);
 
-            var newEvent = activityInstance.AddNewEvent(newExecutionStatus, currentUser, comments, contextDate, contextCode);
+            var newEvent = reportInstance.CurrentActivity.AddNewEvent(newExecutionStatus, currentUser, comments, contextDate, contextCode);
 
-            _unitOfWork.Repository<ActivityInstance>().Update(activityInstance);
+            _activityInstanceRepository.Update(reportInstance.CurrentActivity);
 
-            if (activityInstance.CurrentStatus.Description == "E2BGENERATED")
+            if (reportInstance.CurrentActivity.CurrentStatus.Description == "E2BGENERATED")
             {
                 CreatePatientSummaryAndLink(reportInstance, newEvent);
                 CreatePatientExtractAndLink(reportInstance, newEvent);
                 CreateE2BExtractAndLink(reportInstance, newEvent);
             }
 
-            if (activityInstance.CurrentStatus.Description == "CONFIRMED")
+            if (reportInstance.CurrentActivity.CurrentStatus.Description == "CONFIRMED")
             {
-                activityInstance.Current = false;
-                _unitOfWork.Repository<ActivityInstance>().Update(activityInstance);
+                reportInstance.CurrentActivity.Current = false;
+                _activityInstanceRepository.Update(reportInstance.CurrentActivity);
 
                 var newActivity = _unitOfWork.Repository<Activity>()
                     .Queryable()
                     .Single(a => a.WorkFlow.Id == reportInstance.WorkFlow.Id && a.QualifiedName == "Set MedDRA and Causality");
                 reportInstance.SetNewActivity(newActivity, currentUser);
 
-                _unitOfWork.Repository<ReportInstance>().Update(reportInstance);
+                _reportInstanceRepository.Update(reportInstance);
             }
 
-            if (activityInstance.CurrentStatus.Description == "CAUSALITYSET")
+            if (reportInstance.CurrentActivity.CurrentStatus.Description == "CAUSALITYSET")
             {
-                activityInstance.Current = false;
-                _unitOfWork.Repository<ActivityInstance>().Update(activityInstance);
+                reportInstance.CurrentActivity.Current = false;
+                _activityInstanceRepository.Update(reportInstance.CurrentActivity);
 
                 var newActivity = _unitOfWork.Repository<Activity>()
                     .Queryable()
                     .Single(a => a.WorkFlow.Id == reportInstance.WorkFlow.Id && a.QualifiedName == "Extract E2B");
                 reportInstance.SetNewActivity(newActivity, currentUser);
 
-                _unitOfWork.Repository<ReportInstance>().Update(reportInstance);
+                _reportInstanceRepository.Update(reportInstance);
             }
 
             _unitOfWork.Complete();

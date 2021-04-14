@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace PVIMS.Services
 {
@@ -210,7 +211,7 @@ namespace PVIMS.Services
         /// Update an existing patient in the repository
         /// </summary>
         /// <param name="patientDetail">The details of the patient to add</param>
-        public void UpdatePatient(PatientDetailForUpdate patientDetail)
+        public async Task UpdatePatientAsync(PatientDetailForUpdate patientDetail)
         {
             var identifier_asm = patientDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == "Medical Record Number")?.Value.ToString();
             var identifierChanged = false;
@@ -289,7 +290,7 @@ namespace PVIMS.Services
             if(identifierChanged)
             {
                 var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                var userFromRepo = _userRepository.Get(u => u.UserName == userName);
+                var userFromRepo = await _userRepository.GetAsync(u => u.UserName == userName);
 
                 var auditLog = new AuditLog()
                 {
@@ -298,7 +299,7 @@ namespace PVIMS.Services
                     ActionDate = DateTime.Now,
                     Details = $"Identifier (name or date of birth) changed for patient {identifier_asm}"
                 };
-                _auditLogRepository.Save(auditLog);
+                await _auditLogRepository.SaveAsync(auditLog);
             }
         }
 

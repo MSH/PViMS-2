@@ -9,11 +9,12 @@ using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using Extensions = PVIMS.Core.Utilities.Extensions;
-using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Paging;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using System.Linq;
 
 namespace PVIMS.API.Controllers
 {
@@ -24,24 +25,24 @@ namespace PVIMS.API.Controllers
     {
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
-        private readonly IRepositoryInt<Role> _roleRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public RolesController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
             IUrlHelper urlHelper,
-            IRepositoryInt<Role> roleRepository,
-            IUnitOfWorkInt unitOfWork)
+            IUnitOfWorkInt unitOfWork,
+            RoleManager<IdentityRole> roleManager)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
-            _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
 
         /// <summary>
@@ -107,16 +108,16 @@ namespace PVIMS.API.Controllers
                 PageSize = baseResourceParameters.PageSize
             };
 
-            var orderby = Extensions.GetOrderBy<Role>(baseResourceParameters.OrderBy, "asc");
+            var orderby = Extensions.GetOrderBy<IdentityRole>(baseResourceParameters.OrderBy, "asc");
 
-            var pagedRolesFromRepo = _roleRepository.List(pagingInfo, null, orderby, "");
-            if (pagedRolesFromRepo != null)
+            var rolesFromManager = _roleManager.Roles.ToList();
+            if (rolesFromManager != null)
             {
                 // Map EF entity to Dto
-                var mappedRoles = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedRolesFromRepo),
+                var mappedRoles = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(rolesFromManager),
                     pagingInfo.PageNumber,
                     pagingInfo.PageSize,
-                    pagedRolesFromRepo.TotalCount);
+                    rolesFromManager.Count);
 
                 // Prepare pagination data for response
                 var paginationMetadata = new
@@ -147,12 +148,12 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetRoleAsync<T>(long id) where T : class
         {
-            var roleFromRepo = await _roleRepository.GetAsync(f => f.Id == id);
+            var roleFromManager = await _roleManager.FindByIdAsync(id.ToString());
 
-            if (roleFromRepo != null)
+            if (roleFromManager != null)
             {
                 // Map EF entity to Dto
-                var mappedRole = _mapper.Map<T>(roleFromRepo);
+                var mappedRole = _mapper.Map<T>(roleFromManager);
 
                 return mappedRole;
             }

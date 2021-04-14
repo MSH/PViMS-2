@@ -164,7 +164,7 @@ namespace PVIMS.API.Controllers
                     };
                     await _auditLogRepository.SaveAsync(auditLog);
 
-                    _formHandler.ProcessFormForCreationOrUpdate();
+                    await _formHandler.ProcessFormForCreationOrUpdateAsync();
                     _unitOfWork.Complete();
 
                     return Ok();

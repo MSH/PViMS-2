@@ -6,22 +6,22 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using LinqKit;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
-using PVIMS.API.Models.Account;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Paging;
+using PViMS.Infrastructure.Identity.Entities;
 
 namespace PVIMS.API.Controllers
 {
@@ -32,32 +32,26 @@ namespace PVIMS.API.Controllers
     {
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<Role> _roleRepository;
-        private readonly IRepositoryInt<UserRole> _userRoleRepository;
         private readonly IRepositoryInt<UserFacility> _userFacilityRepository;
         private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IUrlHelper _urlHelper;
-        private readonly UserInfoManager _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public UsersController(ITypeHelperService typeHelperService,
             IMapper mapper,
             IUrlHelper urlHelper,
             IRepositoryInt<User> userRepository,
-            IRepositoryInt<Role> roleRepository,
-            IRepositoryInt<UserRole> userRoleRepository,
             IRepositoryInt<UserFacility> userFacilityRepository,
             IRepositoryInt<Facility> facilityRepository,
             IUnitOfWorkInt unitOfWork,
-            UserInfoManager userManager)
+            UserManager<ApplicationUser> userManager)
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
-            _userRoleRepository = userRoleRepository ?? throw new ArgumentNullException(nameof(userRoleRepository));
             _userFacilityRepository = userFacilityRepository ?? throw new ArgumentNullException(nameof(userFacilityRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -140,7 +134,8 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            return Ok(GetUserRoles(id));
+            //return Ok(GetUserRoles(id));
+            return Ok();
         }
 
         /// <summary>
@@ -215,34 +210,22 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Item with same name already exists");
             }
 
-            long id = 0;
-
             if (ModelState.IsValid)
             {
-                var user = new UserInfo() { 
+                var newApplicationUser = new ApplicationUser() { 
                     FirstName = userForCreation.FirstName, 
                     LastName = userForCreation.LastName, 
                     UserName = userForCreation.UserName, 
                     Email = userForCreation.Email, 
-                    Password = userForCreation.Password 
                 };
-                IdentityResult result = await _userManager.CreateAsync(user, userForCreation.Password);
+                IdentityResult result = await _userManager.CreateAsync(newApplicationUser, userForCreation.Password);
                 if (result.Succeeded)
                 {
-                    id = user.Id;
-
-                    var roleNames = userForCreation.Roles.ToArray();
-
-                    var roles = _unitOfWork.Repository<Role>().Queryable()
-                        .Where(r => roleNames.Contains(r.Name))
-                        .Select(rk => rk.Key)
-                        .ToArray();
-
-                    IdentityResult roleResult = await _userManager.AddToRolesAsync(user.Id, roles);
+                    IdentityResult roleResult = await _userManager.AddToRolesAsync(newApplicationUser, userForCreation.Roles);
 
                     if (roleResult.Succeeded)
                     {
-                        var userFromRepo = await _userRepository.GetAsync(f => f.Id == id);
+                        var userFromRepo = await _userRepository.GetAsync(f => f.Id == 1);
                         if (userFromRepo == null)
                         {
                             return StatusCode(500, "Unable to locate newly added item");
@@ -274,7 +257,7 @@ namespace PVIMS.API.Controllers
                     {
                         foreach (var error in result.Errors)
                         {
-                            ModelState.AddModelError("Message", error);
+                            ModelState.AddModelError("Message", $"{error.Description} ({error.Code})");
                         }
                     }
                 }
@@ -282,7 +265,7 @@ namespace PVIMS.API.Controllers
                 {
                     foreach (var error in result.Errors)
                     {
-                        ModelState.AddModelError("Message", error);
+                        ModelState.AddModelError("Message", $"{error.Description} ({error.Code})");
                     }
                 }
             }
@@ -351,7 +334,6 @@ namespace PVIMS.API.Controllers
                 userFromRepo.FirstName = userForUpdate.FirstName;
                 userFromRepo.LastName = userForUpdate.LastName;
                 userFromRepo.UserName = userForUpdate.UserName;
-                userFromRepo.Email = userForUpdate.Email;
                 userFromRepo.Active = (userForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
                 userFromRepo.AllowDatasetDownload = (userForUpdate.AllowDatasetDownload == Models.ValueTypes.YesNoValueType.Yes);
 
@@ -391,10 +373,10 @@ namespace PVIMS.API.Controllers
 
             if (ModelState.IsValid)
             {
-                userFromRepo.SecurityStamp = Guid.NewGuid().ToString("D");
+                //userFromRepo.SecurityStamp = Guid.NewGuid().ToString("D");
 
-                String hashedNewPassword = _userManager.PasswordHasher.HashPassword(userForPasswordUpdate.Password);
-                userFromRepo.PasswordHash = hashedNewPassword;
+                //String hashedNewPassword = _userManager.PasswordHasher.HashPassword(userForPasswordUpdate.Password);
+                //userFromRepo.PasswordHash = hashedNewPassword;
                 _userRepository.Update(userFromRepo);
                 _unitOfWork.Complete();
             }
@@ -457,9 +439,6 @@ namespace PVIMS.API.Controllers
 
             if (ModelState.IsValid)
             {
-                var userRoleValues = _unitOfWork.Repository<UserRole>().Queryable().Where(c => c.User.Id == id).ToList();
-                userRoleValues.ForEach(userRole => _userRoleRepository.Delete(userRole));
-
                 var userFacilityValues = _unitOfWork.Repository<UserFacility>().Queryable().Where(c => c.User.Id == id).ToList();
                 userFacilityValues.ForEach(userFacility => _userFacilityRepository.Delete(userFacility));
 
@@ -470,12 +449,6 @@ namespace PVIMS.API.Controllers
             return NoContent();
         }
 
-        /// <summary>
-        /// Get users from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="userResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
         private PagedCollection<T> GetUsers<T>(UserResourceParameters userResourceParameters) where T : class
         {
             var pagingInfo = new PagingInfo()
@@ -525,24 +498,6 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        /// Get user roles from repository and auto map to Dto
-        /// </summary>
-        /// <param name="id">The unique id of the user being interrogated</param>
-        /// <returns></returns>
-        private UserRoleDto[] GetUserRoles(int id)
-        {
-            return _mapper.Map<UserRoleDto[]>(_unitOfWork.Repository<UserRole>().Queryable()
-                            .Include(i1 => i1.Role)
-                            .Where(r => r.User.Id == id).ToArray());
-        }
-
-        /// <summary>
-        /// Get single user from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
         private async Task<T> GetUserAsync<T>(long id) where T : class
         {
             var userFromRepo = await _userRepository.GetAsync(f => f.Id == id);
@@ -550,22 +505,14 @@ namespace PVIMS.API.Controllers
             if (userFromRepo != null)
             {
                 // Map EF entity to Dto
-                var mappedLabTest = _mapper.Map<T>(userFromRepo);
+                var mappedUser = _mapper.Map<T>(userFromRepo);
 
-                return mappedLabTest;
+                return mappedUser;
             }
 
             return null;
         }
 
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="userResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
         private LinkedResourceBaseDto CreateLinksForUsers(
             LinkedResourceBaseDto wrapper,
             UserResourceParameters userResourceParameters,
@@ -614,8 +561,8 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private UserDetailDto CustomUserMap(UserDetailDto dto)
         {
-            dto.Roles = _unitOfWork.Repository<UserRole>().Queryable()
-                .Where(ur => ur.User.Id == dto.Id).Select(s => s.Role.Name).ToArray();
+            //dto.Roles = _unitOfWork.Repository<UserRole>().Queryable()
+            //    .Where(ur => ur.User.Id == dto.Id).Select(s => s.Role.Name).ToArray();
 
             dto.Facilities = _unitOfWork.Repository<UserFacility>().Queryable()
                 .Where(uf => uf.User.Id == dto.Id).Select(s => s.Facility.FacilityName).ToArray();
@@ -631,51 +578,51 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private void UpdateUserRoles(UserForUpdateDto userForUpdate, User userFromRepo)
         {
-            var roleNames = userForUpdate.Roles.ToArray();
+            //var roleNames = userForUpdate.Roles.ToArray();
 
-            var roles = _unitOfWork.Repository<Role>().Queryable()
-                .Where(r => roleNames.Contains(r.Name))
-                .Select(rk => rk.Key)
-                .ToArray();
+            //var roles = _unitOfWork.Repository<Role>().Queryable()
+            //    .Where(r => roleNames.Contains(r.Name))
+            //    .Select(rk => rk.Key)
+            //    .ToArray();
 
-            // Determine what has been removed
-            ArrayList deleteCollection = new ArrayList();
-            ArrayList addCollection = new ArrayList();
-            foreach (var userRole in _unitOfWork.Repository<UserRole>().Queryable()
-                .Include(i1 => i1.Role)
-                .Where(r => r.User.Id == userFromRepo.Id))
-            {
-                if (!roles.Contains(userRole.Role.Key))
-                {
-                    deleteCollection.Add(userRole);
-                }
-            }
+            //// Determine what has been removed
+            //ArrayList deleteCollection = new ArrayList();
+            //ArrayList addCollection = new ArrayList();
+            //foreach (var userRole in _unitOfWork.Repository<UserRole>().Queryable()
+            //    .Include(i1 => i1.Role)
+            //    .Where(r => r.User.Id == userFromRepo.Id))
+            //{
+            //    if (!roles.Contains(userRole.Role.Key))
+            //    {
+            //        deleteCollection.Add(userRole);
+            //    }
+            //}
 
-            // Determine what needs to be added
-            foreach (string role in roles)
-            {
-                UserRole userRole = _unitOfWork.Repository<UserRole>().Queryable()
-                    .SingleOrDefault(ur => ur.User.Id == userFromRepo.Id && ur.Role.Key == role);
-                if (userRole == null)
-                {
-                    var newRole = _roleRepository.Get(r => r.Key == role);
-                    userRole = new UserRole() { 
-                        Role = newRole, 
-                        User = userFromRepo
-                    };
-                    addCollection.Add(userRole);
-                }
-            }
+            //// Determine what needs to be added
+            //foreach (string role in roles)
+            //{
+            //    UserRole userRole = _unitOfWork.Repository<UserRole>().Queryable()
+            //        .SingleOrDefault(ur => ur.User.Id == userFromRepo.Id && ur.Role.Key == role);
+            //    if (userRole == null)
+            //    {
+            //        var newRole = _roleRepository.Get(r => r.Key == role);
+            //        userRole = new UserRole() { 
+            //            Role = newRole, 
+            //            User = userFromRepo
+            //        };
+            //        addCollection.Add(userRole);
+            //    }
+            //}
 
-            foreach (UserRole userRole in deleteCollection)
-            {
-                _userRoleRepository.Delete(userRole);
-            }
+            //foreach (UserRole userRole in deleteCollection)
+            //{
+            //    _userRoleRepository.Delete(userRole);
+            //}
 
-            foreach (UserRole userRole in addCollection)
-            {
-                _userRoleRepository.Save(userRole);
-            }
+            //foreach (UserRole userRole in addCollection)
+            //{
+            //    _userRoleRepository.Save(userRole);
+            //}
         }
 
         /// <summary>

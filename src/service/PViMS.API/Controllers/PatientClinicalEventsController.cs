@@ -208,7 +208,7 @@ namespace PVIMS.API.Controllers
 
                     _patientClinicalEventRepository.Save(patientClinicalEvent);
 
-                    _workFlowService.CreateWorkFlowInstance("New Active Surveilliance Report", 
+                    await _workFlowService.CreateWorkFlowInstanceAsync("New Active Surveilliance Report", 
                         patientClinicalEvent.PatientClinicalEventGuid, 
                         patientFromRepo.FullName, 
                         patientClinicalEvent.SourceTerminologyMedDra.DisplayName);

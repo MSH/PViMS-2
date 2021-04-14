@@ -415,20 +415,6 @@ namespace PViMS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Role",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
-                    Key = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Role", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "SelectionDataItem",
                 columns: table => new
                 {
@@ -500,21 +486,11 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    LockoutEndDateUtc = table.Column<DateTime>(type: "datetime", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Active = table.Column<bool>(type: "bit", nullable: false),
-                    CurrentContext = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     EulaAcceptanceDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     AllowDatasetDownload = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     IdentityId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -1021,32 +997,6 @@ namespace PViMS.Infrastructure.Migrations
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserRole",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Role_Id = table.Column<int>(type: "int", nullable: false),
-                    User_Id = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserRole", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_dbo.UserRole_dbo.Role_Role_Id",
-                        column: x => x.Role_Id,
-                        principalTable: "Role",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_dbo.UserRole_dbo.User_User_Id",
-                        column: x => x.User_Id,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -2856,7 +2806,7 @@ namespace PViMS.Infrastructure.Migrations
                 column: "ActionDate");
 
             migrationBuilder.CreateIndex(
-                name: "IX_User_Id3",
+                name: "IX_User_Id2",
                 table: "AuditLog",
                 column: "User_Id");
 
@@ -3858,18 +3808,6 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Role_Key",
-                table: "Role",
-                column: "Key",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Role_Name",
-                table: "Role",
-                column: "Name",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_SelectionDataItem_AttributeKey",
                 table: "SelectionDataItem",
                 column: "AttributeKey",
@@ -3953,22 +3891,6 @@ namespace PViMS.Infrastructure.Migrations
                 name: "IX_UserFacility_User_Id_Facility_Id",
                 table: "UserFacility",
                 columns: new[] { "User_Id", "Facility_Id" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Role_Id",
-                table: "UserRole",
-                column: "Role_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_User_Id2",
-                table: "UserRole",
-                column: "User_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserRole_User_Id_Role_Id",
-                table: "UserRole",
-                columns: new[] { "User_Id", "Role_Id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -4196,9 +4118,6 @@ namespace PViMS.Infrastructure.Migrations
                 name: "UserFacility");
 
             migrationBuilder.DropTable(
-                name: "UserRole");
-
-            migrationBuilder.DropTable(
                 name: "WorkPlanCareEventDatasetCategory");
 
             migrationBuilder.DropTable(
@@ -4260,9 +4179,6 @@ namespace PViMS.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Facility");
-
-            migrationBuilder.DropTable(
-                name: "Role");
 
             migrationBuilder.DropTable(
                 name: "WorkPlanCareEvent");
