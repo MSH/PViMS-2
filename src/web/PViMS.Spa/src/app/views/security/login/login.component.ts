@@ -54,7 +54,7 @@ export class LoginComponent implements OnInit {
               self.navigationService.determineRouteToLanding();
             }
         }, error => {
-            self.showInfo(error.error.message[0], "");
+          self.handleError(error, "Error logging in");
         });
   }
 
@@ -91,6 +91,34 @@ export class LoginComponent implements OnInit {
     return this.popupService.notify(message, action);
   }
 
+  private handleError(errorObject: any, title: string = "Exception")
+  {
+    let message = "Unknown error experienced. Please contact your system administrator. ";
+    if(errorObject.error) {
+      if(Array.isArray(errorObject.error.Message)) {
+        message = errorObject.error.Message[0];
+      }
+      else {
+        message = errorObject.error.Message;
+      }
+    }
+
+    if(!errorObject.error && errorObject.message) {
+      if(Array.isArray(errorObject.message)) {
+        message = errorObject.message[0];
+      }
+      else {
+        message = errorObject.message;
+      }
+    }
+
+    if(errorObject.ReferenceCode) {
+      message += `Reference Code: ${errorObject.ReferenceCode}`;
+    }
+
+    this.showError(message, title);
+  }
+    
   private showError(errorMessage: any, title: string = "Error") {
     this.popupService.showErrorMessage(errorMessage, title);
   }

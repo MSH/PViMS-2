@@ -78,10 +78,19 @@ export class BaseComponent {
 
     protected handleError(errorObject: any, title: string = "Exception")
     {
-      console.log(errorObject);
+      this.CLog(errorObject, title);
 
-      let message = '';
-      if(errorObject.message) {
+      let message = "Unknown error experienced. Please contact your system administrator. ";
+      if(errorObject.error) {
+        if(Array.isArray(errorObject.error.Message)) {
+          message = errorObject.error.Message[0];
+        }
+        else {
+          message = errorObject.error.Message;
+        }
+      }
+  
+      if(!errorObject.error && errorObject.message) {
         if(Array.isArray(errorObject.message)) {
           message = errorObject.message[0];
         }
@@ -89,15 +98,11 @@ export class BaseComponent {
           message = errorObject.message;
         }
       }
-      else {
-        message = "Unknown error experienced. Please contact your system administrator. ";
-      }
-
+  
       if(errorObject.ReferenceCode) {
         message += `Reference Code: ${errorObject.ReferenceCode}`;
       }
-
-      this.CLog(errorObject, title);
+  
       this.showError(message, title);
     }    
 
