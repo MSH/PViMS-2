@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
@@ -28,7 +30,7 @@ namespace PVIMS.API.Controllers
     /// </summary>
     [Route("api")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class AnalysisTermsController : ControllerBase
     {
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;

@@ -1,33 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
-using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
-using Extensions = PVIMS.Core.Utilities.Extensions;
-using PVIMS.Core.Repositories;
 using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Services;
+using Extensions = PVIMS.Core.Utilities.Extensions;
+using PVIMS.Core.ValueTypes;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/auditlogs")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class AuditLogsController : ControllerBase
     {
         private readonly ITypeHelperService _typeHelperService;

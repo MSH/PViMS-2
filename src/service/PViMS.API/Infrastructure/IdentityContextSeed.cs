@@ -75,6 +75,9 @@ namespace PVIMS.API.Infrastructure
             if (!context.Roles.Any(ce => ce.Name == "PublisherAdmin"))
                 roles.Add(new IdentityRole<Guid> { Name = "PublisherAdmin", NormalizedName = "PUBLISHERADMIN" });
 
+            if (!context.Roles.Any(ce => ce.Name == "ClientApp"))
+                roles.Add(new IdentityRole<Guid> { Name = "ClientApp", NormalizedName = "CLIENTAPP" });
+
             context.Roles.AddRange(roles);
             await context.SaveChangesAsync();
         }
@@ -94,6 +97,7 @@ namespace PVIMS.API.Infrastructure
                     NormalizedEmail = "ADMIN@MAIL.COM",
                     NormalizedUserName = "ADMIN",
                     SecurityStamp = Guid.NewGuid().ToString("D"),
+                    Active = true
                 };
 
                 adminUser.PasswordHash = _passwordHasher.HashPassword(adminUser, "P@55w0rd1");

@@ -40,6 +40,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using PVIMS.API.Infrastructure.Extensions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace PViMS.API
 {
@@ -138,10 +141,10 @@ namespace PViMS.API
 
                 });
 
-            app.UseRouting();
-            app.UseCors("CorsPolicy");
-
             app.UseAuthentication();
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseCors("CorsPolicy");
 
             app.UseEndpoints(endpoints =>
             {
@@ -422,13 +425,23 @@ namespace PViMS.API
                             return Task.CompletedTask;
                         }
                     };
-                });
+                })
+                .AddApiKeySupport(configureOptions => { });
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy(JwtConstants.Strings.JwtClaims.ApiAccess, policy =>
-                    policy.RequireClaim(JwtConstants.Strings.JwtClaimIdentifiers.Rol, JwtConstants.Strings.JwtClaims.ApiAccess));
-            });
+            //services.AddAuthorization(options =>
+            //{
+            //    options.AddPolicy(JwtConstants.Strings.JwtClaims.ApiAccess, policy =>
+            //    {
+            //        policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+            //        policy.RequireAuthenticatedUser();
+            //        policy.RequireClaim(JwtConstants.Strings.JwtClaimIdentifiers.Rol, JwtConstants.Strings.JwtClaims.ApiAccess);
+            //    });
+            //    options.AddPolicy("ApiKey", policy =>
+            //    {
+            //        policy.AuthenticationSchemes.Add(ApiKeyAuthenticationOptions.DefaultScheme);
+            //        policy.RequireAuthenticatedUser();
+            //    });
+            //});
 
             services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(o =>
             {

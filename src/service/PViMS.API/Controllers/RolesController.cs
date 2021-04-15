@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
@@ -12,15 +14,15 @@ using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Paging;
 using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 using System.Linq;
+using System.Threading.Tasks;
+using PVIMS.API.Infrastructure.Auth;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class RolesController : ControllerBase
     {
         private readonly IPropertyMappingService _propertyMappingService;
