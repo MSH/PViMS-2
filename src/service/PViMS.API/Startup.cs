@@ -430,7 +430,7 @@ namespace PViMS.API
                     policy.RequireClaim(JwtConstants.Strings.JwtClaimIdentifiers.Rol, JwtConstants.Strings.JwtClaims.ApiAccess));
             });
 
-            var identityBuilder = services.AddIdentityCore<ApplicationUser>(o =>
+            services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(o =>
             {
                 // configure identity options
                 o.Password.RequireDigit = true;
@@ -438,10 +438,9 @@ namespace PViMS.API
                 o.Password.RequireUppercase = true;
                 o.Password.RequireNonAlphanumeric = true;
                 o.Password.RequiredLength = 6;
-            });
-
-            identityBuilder = new IdentityBuilder(identityBuilder.UserType, typeof(IdentityRole<Guid>), identityBuilder.Services);
-            identityBuilder.AddEntityFrameworkStores<IdentityDbContext>().AddDefaultTokenProviders();
+            })
+                .AddEntityFrameworkStores<IdentityDbContext>()
+                .AddDefaultTokenProviders();
 
             services.AddTransient<IJwtTokenHandler, JwtTokenHandler>();
             services.AddTransient<ITokenFactory, TokenFactory>();
