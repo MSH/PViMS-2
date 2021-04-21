@@ -259,8 +259,7 @@ namespace PViMS.API
 
         public static IServiceCollection AddCustomDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddEntityFrameworkSqlServer()
-                   .AddDbContext<PVIMSDbContext>(options =>
+            services.AddDbContext<PVIMSDbContext>(options =>
                    {
                        options.UseSqlServer(configuration["ConnectionString"],
                            sqlServerOptionsAction: sqlOptions =>
@@ -270,8 +269,8 @@ namespace PViMS.API
                            });
                    },
                        ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
-                   )
-                   .AddDbContext<IdentityDbContext>(options =>
+                   );
+            services.AddDbContext<IdentityDbContext>(options =>
                    {
                        options.UseSqlServer(configuration["ConnectionString"],
                            sqlServerOptionsAction: sqlOptions =>
@@ -336,6 +335,7 @@ namespace PViMS.API
         public static IServiceCollection AddCustomIntegrations(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHttpContextAccessor();
+            services.AddMemoryCache();
             services.AddAutoMapper(typeof(Startup));
 
             return services;
@@ -374,7 +374,7 @@ namespace PViMS.API
             IConfigurationSection configAuthSettings = configuration.GetSection(nameof(AuthSettings));
             services.Configure<AuthSettings>(configAuthSettings);
 
-            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configAuthSettings[nameof(AuthSettings.SecretKey)]));
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configAuthSettings[nameof(AuthSettings.SigningKey)]));
 
             var jwtAppSettingOptions = configuration.GetSection(nameof(JwtIssuerOptions));
 
