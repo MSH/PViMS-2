@@ -472,14 +472,9 @@ namespace PViMS.API
             services.AddScoped<UserContext, UserContext>();
             services.AddScoped<FormHandler, FormHandler>();
 
-            services.AddScoped<IUrlHelper>(implementationFactory =>
-            {
-                var actionContext = implementationFactory.GetService<IActionContextAccessor>().ActionContext;
-                return new UrlHelper(actionContext);
-            });
-
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddTransient<ITypeHelperService, TypeHelperService>();
+            services.AddTransient<ILinkGeneratorService, LinkGeneratorService>();
             services.AddTransient<IReportService, ReportService>();
             services.AddTransient<IInfrastructureService, InfrastructureService>();
             services.AddTransient<ICustomAttributeService, CustomAttributeService>();
