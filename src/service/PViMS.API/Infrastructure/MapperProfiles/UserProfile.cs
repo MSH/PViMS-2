@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using PVIMS.API.Models;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
+using System;
 using System.Linq;
 
 namespace PVIMS.API.MapperProfiles
@@ -15,7 +17,7 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.User.FullName))
                 .ForMember(dest => dest.HasLog, opt => opt.MapFrom(src => !string.IsNullOrWhiteSpace(src.Log)));
 
-            //CreateMap<Role, RoleIdentifierDto>();
+            CreateMap<IdentityRole<Guid>, RoleIdentifierDto>();
 
             CreateMap<User, UserIdentifierDto>();
             CreateMap<User, UserDetailDto>()

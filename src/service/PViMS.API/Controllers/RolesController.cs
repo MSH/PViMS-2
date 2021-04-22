@@ -25,25 +25,19 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class RolesController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
-        private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<IdentityRole<Guid>> _roleManager;
 
-        public RolesController(IPropertyMappingService propertyMappingService,
-            ITypeHelperService typeHelperService,
+        public RolesController(ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
-            IUnitOfWorkInt unitOfWork,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole<Guid>> roleManager)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
 
@@ -93,7 +87,7 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            return Ok(CreateLinksForRole<RoleIdentifierDto>(mappedRole));
+            return Ok(mappedRole);
         }
 
         /// <summary>
@@ -110,7 +104,7 @@ namespace PVIMS.API.Controllers
                 PageSize = baseResourceParameters.PageSize
             };
 
-            var orderby = Extensions.GetOrderBy<IdentityRole>(baseResourceParameters.OrderBy, "asc");
+            var orderby = Extensions.GetOrderBy<IdentityRole<Guid>>(baseResourceParameters.OrderBy, "asc");
 
             var rolesFromManager = _roleManager.Roles.ToList();
             if (rolesFromManager != null)
@@ -132,9 +126,6 @@ namespace PVIMS.API.Controllers
 
                 Response.Headers.Add("X-Pagination",
                     JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedRoles.ForEach(dto => CreateLinksForRole(dto));
 
                 return mappedRoles;
             }
@@ -163,18 +154,5 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private RoleIdentifierDto CreateLinksForRole<T>(T dto)
-        {
-            RoleIdentifierDto identifier = (RoleIdentifierDto)(object)dto;
-
-            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Role", identifier.Id), "self", "GET"));
-
-            return identifier;
-        }
     }
 }
