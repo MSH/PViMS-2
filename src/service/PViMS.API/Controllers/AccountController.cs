@@ -131,7 +131,7 @@ namespace PVIMS.API.Controllers
                         _userRepository.Update(userFromRepo);
                         _unitOfWork.Complete();
 
-                        return Ok(new LoginResponseDto(await _jwtFactory.GenerateEncodedToken(userFromRepo), refreshToken, userFromRepo.EulaAcceptanceDate == null, userFromRepo.AllowDatasetDownload));
+                        return Ok(new LoginResponseDto(await _jwtFactory.GenerateEncodedToken(userFromRepo, await _userManager.GetRolesAsync(userFromManager)), refreshToken, userFromRepo.EulaAcceptanceDate == null, userFromRepo.AllowDatasetDownload));
                     }
                     else 
                     {
@@ -181,7 +181,7 @@ namespace PVIMS.API.Controllers
                 if (userFromRepo.HasValidRefreshToken(request.RefreshToken))
                 {
 
-                    var jwtToken = await _jwtFactory.GenerateEncodedToken(userFromRepo);
+                    var jwtToken = await _jwtFactory.GenerateEncodedToken(userFromRepo, await _userManager.GetRolesAsync(userFromManager));
 
                     // delete existing refresh token
                     _refreshTokenRepository.Delete(userFromRepo.RefreshTokens.Single(a => a.Token == request.RefreshToken));

@@ -24,9 +24,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.Property(e => e.EulaAcceptanceDate)
                 .HasColumnType("datetime");
 
-            configuration.Property(e => e.Active)
-                .IsRequired();
-
             configuration.Property(e => e.AllowDatasetDownload)
                 .IsRequired()
                 .HasDefaultValue(false);

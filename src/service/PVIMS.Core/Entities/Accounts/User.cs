@@ -56,7 +56,6 @@ namespace PVIMS.Core.Entities.Accounts
             SystemLogCreations = new HashSet<SystemLog>();
             SystemLogUpdates = new HashSet<SystemLog>();
 
-            Active = true;
             AllowDatasetDownload = false;
         }
 
@@ -64,7 +63,6 @@ namespace PVIMS.Core.Entities.Accounts
         public string LastName { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
-        public bool Active { get; set; }
         public DateTime? EulaAcceptanceDate { get; set; }
         public bool AllowDatasetDownload { get; set; }
         public Guid IdentityId { get; set; }
