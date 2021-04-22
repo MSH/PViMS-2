@@ -8,6 +8,7 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { finalize } from 'rxjs/operators';
 import { NavigationService } from 'app/shared/services/navigation.service';
 import { AcceptEulaPopupComponent } from '../accept-eula/accept-eula.popup.component';
+import { environment } from 'environments/environment';
 
 @Component({
   selector: 'app-signin',
@@ -43,16 +44,17 @@ export class LoginComponent implements OnInit {
     self.accountService.login(self.viewModelForm.value)
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-            self.accountService.setSessionToken(result as any);
+          this.CLog(result);
+          self.accountService.setSessionToken(result as any);
 
-            if(self.accountService.eulaAcceptanceRequired) {
-              self.openEulaPopUp();
-            }
-            else {
-              self.notify("Successfully authenticated!", "Login");
-              self.navigationService.initialiseMenus();
-              self.navigationService.determineRouteToLanding();
-            }
+          if(self.accountService.eulaAcceptanceRequired) {
+            self.openEulaPopUp();
+          }
+          else {
+            self.notify("Successfully authenticated!", "Login");
+            self.navigationService.initialiseMenus();
+            self.navigationService.determineRouteToLanding();
+          }
         }, error => {
           self.handleError(error, "Error logging in");
         });
@@ -90,6 +92,12 @@ export class LoginComponent implements OnInit {
   private notify(message: string, action: string) {
     return this.popupService.notify(message, action);
   }
+
+  public CLog(object: any, title: string = undefined) {
+    if (!environment.production) {
+        console.log({ title: title, object });
+    }
+  }  
 
   private handleError(errorObject: any, title: string = "Exception")
   {
