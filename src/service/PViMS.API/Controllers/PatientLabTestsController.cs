@@ -18,6 +18,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PVIMS.API.Infrastructure.Services;
 
 namespace PVIMS.API.Controllers
 {
@@ -36,12 +37,12 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PatientLabTestsController(
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             ITypeExtensionHandler modelExtensionBuilder,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientLabTest> patientLabTestRepository,
@@ -54,7 +55,7 @@ namespace PVIMS.API.Controllers
             IHttpContextAccessor httpContextAccessor)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientLabTestRepository = patientLabTestRepository ?? throw new ArgumentNullException(nameof(patientLabTestRepository));
@@ -388,7 +389,7 @@ namespace PVIMS.API.Controllers
         {
             PatientLabTestIdentifierDto identifier = (PatientLabTestIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "PatientLabTest", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("PatientLabTest", identifier.Id), "self", "GET"));
 
             return identifier;
         }

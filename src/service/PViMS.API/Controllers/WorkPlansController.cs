@@ -29,19 +29,19 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<WorkPlan> _workPlanRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public WorkPlansController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<WorkPlan> workPlanRepository,
             IUnitOfWorkInt unitOfWork)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _workPlanRepository = workPlanRepository ?? throw new ArgumentNullException(nameof(workPlanRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
@@ -216,7 +216,7 @@ namespace PVIMS.API.Controllers
         {
             WorkPlanIdentifierDto identifier = (WorkPlanIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "WorkPlan", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("WorkPlan", identifier.Id), "self", "GET"));
 
             return identifier;
         }

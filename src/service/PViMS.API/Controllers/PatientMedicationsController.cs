@@ -20,6 +20,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PVIMS.API.Infrastructure.Services;
 
 namespace PVIMS.API.Controllers
 {
@@ -39,13 +40,13 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly ICustomAttributeService _customAttributeService;
         private readonly IWorkFlowService _workFlowService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PatientMedicationsController(IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             ITypeExtensionHandler modelExtensionBuilder,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository,
@@ -61,7 +62,7 @@ namespace PVIMS.API.Controllers
             IHttpContextAccessor httpContextAccessor)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
@@ -426,7 +427,7 @@ namespace PVIMS.API.Controllers
         {
             PatientMedicationIdentifierDto identifier = (PatientMedicationIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "PatientMedication", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("PatientMedication", identifier.Id), "self", "GET"));
 
             return identifier;
         }

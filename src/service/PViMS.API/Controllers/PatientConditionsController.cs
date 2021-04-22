@@ -41,13 +41,13 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PatientConditionsController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             ITypeExtensionHandler modelExtensionBuilder,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientCondition> patientConditionRepository,
@@ -64,7 +64,7 @@ namespace PVIMS.API.Controllers
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
@@ -447,7 +447,7 @@ namespace PVIMS.API.Controllers
         {
             PatientConditionIdentifierDto identifier = (PatientConditionIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "PatientCondition", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("PatientCondition", identifier.Id), "self", "GET"));
 
             return identifier;
         }

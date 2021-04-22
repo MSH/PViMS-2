@@ -31,11 +31,11 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<MetaWidgetType> _metaWidgetTypeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public MetaPagesController(ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<MetaPage> metaPageRepository,
             IRepositoryInt<MetaWidget> metaWidgetRepository,
             IRepositoryInt<MetaWidgetType> metaWidgetTypeRepository,
@@ -43,7 +43,7 @@ namespace PVIMS.API.Controllers
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _metaPageRepository = metaPageRepository ?? throw new ArgumentNullException(nameof(metaPageRepository));
             _metaWidgetRepository = metaWidgetRepository ?? throw new ArgumentNullException(nameof(metaWidgetRepository));
             _metaWidgetTypeRepository = metaWidgetTypeRepository ?? throw new ArgumentNullException(nameof(metaWidgetTypeRepository));
@@ -760,7 +760,7 @@ namespace PVIMS.API.Controllers
         {
             MetaPageIdentifierDto identifier = (MetaPageIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "MetaPage", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("MetaPage", identifier.Id), "self", "GET"));
 
             return identifier;
         }
@@ -775,7 +775,7 @@ namespace PVIMS.API.Controllers
         {
             MetaWidgetIdentifierDto identifier = (MetaWidgetIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateMetaWidgetResourceUri(_urlHelper, metaPageId, identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateMetaWidgetResourceUri(metaPageId, identifier.Id), "self", "GET"));
 
             return identifier;
         }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
@@ -32,11 +33,11 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IArtefactService _artefactService;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public WorkFlowsController(IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<WorkFlow> workFlowRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<Config> configRepository,
@@ -45,7 +46,7 @@ namespace PVIMS.API.Controllers
             IHttpContextAccessor httpContextAccessor)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
@@ -195,7 +196,7 @@ namespace PVIMS.API.Controllers
         {
             WorkFlowIdentifierDto identifier = (WorkFlowIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "WorkFlow", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("WorkFlow", identifier.Id), "self", "GET"));
 
             return identifier;
         }

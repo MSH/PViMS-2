@@ -63,7 +63,7 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IReportService _reportService;
         private readonly IPatientService _patientService;
         private readonly IWorkFlowService _workFlowService;
@@ -75,7 +75,7 @@ namespace PVIMS.API.Controllers
         public PatientsController(IPropertyMappingService propertyMappingService, 
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             ITypeExtensionHandler modelExtensionBuilder,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<Encounter> encounterRepository,
@@ -109,7 +109,7 @@ namespace PVIMS.API.Controllers
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _encounterRepository = encounterRepository ?? throw new ArgumentNullException(nameof(encounterRepository));
@@ -1136,23 +1136,25 @@ namespace PVIMS.API.Controllers
             PatientResourceParameters patientResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreatePatientsResourceUri(_urlHelper, ResourceUriType.Current, patientResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreatePatientsResourceUri(ResourceUriType.Current, patientResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreatePatientsResourceUri(_urlHelper, ResourceUriType.NextPage, patientResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreatePatientsResourceUri(ResourceUriType.NextPage, patientResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreatePatientsResourceUri(_urlHelper, ResourceUriType.PreviousPage, patientResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreatePatientsResourceUri(ResourceUriType.PreviousPage, patientResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -1171,23 +1173,25 @@ namespace PVIMS.API.Controllers
             PatientMedicationReportResourceParameters patientMedicationReportResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreatePatientMedicationReportResourceUri(_urlHelper, ResourceUriType.Current, patientMedicationReportResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreatePatientMedicationReportResourceUri(ResourceUriType.Current, patientMedicationReportResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreatePatientMedicationReportResourceUri(_urlHelper, ResourceUriType.NextPage, patientMedicationReportResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreatePatientMedicationReportResourceUri(ResourceUriType.NextPage, patientMedicationReportResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreatePatientMedicationReportResourceUri(_urlHelper, ResourceUriType.PreviousPage, patientMedicationReportResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreatePatientMedicationReportResourceUri(ResourceUriType.PreviousPage, patientMedicationReportResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -1206,23 +1210,25 @@ namespace PVIMS.API.Controllers
             PatientTreatmentReportResourceParameters patientTreatmentReportResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreatePatientTreatmentReportResourceUri(_urlHelper, ResourceUriType.Current, patientTreatmentReportResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreatePatientTreatmentReportResourceUri(ResourceUriType.Current, patientTreatmentReportResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreatePatientTreatmentReportResourceUri(_urlHelper, ResourceUriType.NextPage, patientTreatmentReportResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreatePatientTreatmentReportResourceUri(ResourceUriType.NextPage, patientTreatmentReportResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreatePatientTreatmentReportResourceUri(_urlHelper, ResourceUriType.PreviousPage, patientTreatmentReportResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreatePatientTreatmentReportResourceUri(ResourceUriType.PreviousPage, patientTreatmentReportResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -1241,23 +1247,25 @@ namespace PVIMS.API.Controllers
             AdverseEventReportResourceParameters adverseEventReportResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateAdverseEventReportResourceUri(_urlHelper, ResourceUriType.Current, adverseEventReportResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateAdverseEventReportResourceUri(ResourceUriType.Current, adverseEventReportResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateAdverseEventReportResourceUri(_urlHelper, ResourceUriType.NextPage, adverseEventReportResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAdverseEventReportResourceUri(ResourceUriType.NextPage, adverseEventReportResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateAdverseEventReportResourceUri(_urlHelper, ResourceUriType.PreviousPage, adverseEventReportResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAdverseEventReportResourceUri(ResourceUriType.PreviousPage, adverseEventReportResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -1276,23 +1284,25 @@ namespace PVIMS.API.Controllers
             BaseReportResourceParameters baseReportResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateQuarterlyAdverseEventReportResourceUri(_urlHelper, ResourceUriType.Current, baseReportResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.Current, "GetAdverseEventQuarterlyReport", baseReportResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateQuarterlyAdverseEventReportResourceUri(_urlHelper, ResourceUriType.NextPage, baseReportResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.NextPage, "GetAdverseEventQuarterlyReport", baseReportResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateQuarterlyAdverseEventReportResourceUri(_urlHelper, ResourceUriType.PreviousPage, baseReportResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.PreviousPage, "GetAdverseEventQuarterlyReport", baseReportResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -1311,23 +1321,25 @@ namespace PVIMS.API.Controllers
             BaseReportResourceParameters baseReportResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateAnnualAdverseEventReportResourceUri(_urlHelper, ResourceUriType.Current, baseReportResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.Current, "GetAdverseEventAnnualReport", baseReportResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateAnnualAdverseEventReportResourceUri(_urlHelper, ResourceUriType.NextPage, baseReportResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.NextPage, "GetAdverseEventAnnualReport", baseReportResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateAnnualAdverseEventReportResourceUri(_urlHelper, ResourceUriType.PreviousPage, baseReportResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.PreviousPage, "GetAdverseEventAnnualReport", baseReportResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -1342,9 +1354,9 @@ namespace PVIMS.API.Controllers
         {
             PatientIdentifierDto identifier = (PatientIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Patient", identifier.Id), "self", "GET"));
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateNewAppointmentForPatientResourceUri(_urlHelper, identifier.Id), "newAppointment", "POST"));
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateNewEnrolmentForPatientResourceUri(_urlHelper, identifier.Id), "newEnrolment", "POST"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Patient", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateNewAppointmentForPatientResourceUri(identifier.Id), "newAppointment", "POST"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateNewEnrolmentForPatientResourceUri(identifier.Id), "newEnrolment", "POST"));
 
             return identifier;
         }
@@ -1359,7 +1371,7 @@ namespace PVIMS.API.Controllers
         {
             AttachmentIdentifierDto identifier = (AttachmentIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreatePatientAppointmentResourceUri(_urlHelper, "Appointment", patientId, identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreatePatientAppointmentResourceUri(patientId, identifier.Id), "self", "GET"));
 
             return identifier;
         }
@@ -1635,8 +1647,8 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private EnrolmentIdentifierDto CreateLinksForEnrolment(EnrolmentIdentifierDto dto)
         {
-            dto.Links.Add(new LinkDto(CreateResourceUriHelper.CreateEnrolmentForPatientResourceUri(_urlHelper, dto.PatientId, dto.Id), "self", "GET"));
-            dto.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateDeenrolmentForPatientResourceUri(_urlHelper, dto.PatientId, dto.Id), "deenrol", "PUT"));
+            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateEnrolmentForPatientResourceUri(dto.PatientId, dto.Id), "self", "GET"));
+            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDeenrolmentForPatientResourceUri(dto.PatientId, dto.Id), "deenrol", "PUT"));
 
             return dto;
         }
@@ -1648,7 +1660,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private CohortGroupPatientDetailDto CreateLinksForCohortGroup(CohortGroupPatientDetailDto dto)
         {
-            dto.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "CohortGroup", dto.Id), "self", "GET"));
+            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("CohortGroup", dto.Id), "self", "GET"));
 
             return dto;
         }

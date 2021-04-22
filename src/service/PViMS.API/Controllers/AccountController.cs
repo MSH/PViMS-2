@@ -1,8 +1,12 @@
 ﻿using LinqKit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using PViMS.Infrastructure.Identity.Entities;
 using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Account;
@@ -29,7 +33,9 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<AuditLog> _auditLogRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly IRepositoryInt<Config> _configRepository;
-        private readonly UserManager<User> _userManager;
+        private readonly IRepositoryInt<User> _userRepository;
+        private readonly IUnitOfWorkInt _unitOfWork;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AccountController(ITokenFactory tokenFactory,
@@ -38,7 +44,9 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<AuditLog> auditLogRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<Config> configRepository,
-            UserManager<User> userManager,
+            IRepositoryInt<User> userRepository,
+            IUnitOfWorkInt unitOfWork,
+            UserManager<ApplicationUser> userManager,
             IHttpContextAccessor httpContextAccessor)
         {
             _tokenFactory = tokenFactory ?? throw new ArgumentNullException(nameof(tokenFactory));
@@ -47,6 +55,8 @@ namespace PVIMS.API.Controllers
             _auditLogRepository = auditLogRepository ?? throw new ArgumentNullException(nameof(auditLogRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
@@ -57,6 +67,17 @@ namespace PVIMS.API.Controllers
         [HttpGet("ping", Name = "Ping")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult Ping()
+        {
+            return Ok();
+        }
+
+        /// <summary>
+        /// Ping service to check if API endpoint is available (must be authenticated)
+        /// </summary>
+        [HttpGet("pingauth", Name = "PingAuth")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
+        public ActionResult PingAuth()
         {
             return Ok();
         }
@@ -77,16 +98,18 @@ namespace PVIMS.API.Controllers
             }
 
             var userFromManager = await _userManager.FindByNameAsync(request.UserName);
-            if (userFromManager != null)
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == request.UserName);
+            if (userFromManager != null && userFromRepo != null)
             {
                 if (await _userManager.CheckPasswordAsync(userFromManager, request.Password))
                 {
                     if (userFromManager.Active)
                     {
+
                         var audit = new AuditLog()
                         {
                             AuditType = AuditType.UserLogin,
-                            User = userFromManager,
+                            User = userFromRepo,
                             ActionDate = DateTime.Now,
                             Details = "User logged in to PViMS"
                         };
@@ -104,10 +127,11 @@ namespace PVIMS.API.Controllers
 
                         var refreshToken = _tokenFactory.GenerateToken();
 
-                        userFromManager.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
-                        await _userManager.UpdateAsync(userFromManager);
+                        userFromRepo.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
+                        _userRepository.Update(userFromRepo);
+                        _unitOfWork.Complete();
 
-                        return Ok(new LoginResponseDto(await _jwtFactory.GenerateEncodedToken(userFromManager), refreshToken, userFromManager.EulaAcceptanceDate == null, userFromManager.AllowDatasetDownload));
+                        return Ok(new LoginResponseDto(await _jwtFactory.GenerateEncodedToken(userFromRepo), refreshToken, userFromRepo.EulaAcceptanceDate == null, userFromRepo.AllowDatasetDownload));
                     }
                     else 
                     {
@@ -145,27 +169,32 @@ namespace PVIMS.API.Controllers
 
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var userFromManager = await _userManager.FindByNameAsync(userName);
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == userName);
 
-            if (userFromManager.Active == false)
+            if (userFromManager != null && userFromRepo != null)
             {
-                return StatusCode(401, "User no longer active");
-            }
+                if (userFromManager.Active == false)
+                {
+                    return StatusCode(401, "User no longer active");
+                }
 
-            if (userFromManager.HasValidRefreshToken(request.RefreshToken))
-            {
+                if (userFromRepo.HasValidRefreshToken(request.RefreshToken))
+                {
 
-                var jwtToken = await _jwtFactory.GenerateEncodedToken(userFromManager);
+                    var jwtToken = await _jwtFactory.GenerateEncodedToken(userFromRepo);
 
-                // delete existing refresh token
-                _refreshTokenRepository.Delete(userFromManager.RefreshTokens.Single(a => a.Token == request.RefreshToken));
+                    // delete existing refresh token
+                    _refreshTokenRepository.Delete(userFromRepo.RefreshTokens.Single(a => a.Token == request.RefreshToken));
 
-                // generate refresh token
-                var refreshToken = _tokenFactory.GenerateToken();
-                userFromManager.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
+                    // generate refresh token
+                    var refreshToken = _tokenFactory.GenerateToken();
+                    userFromRepo.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
 
-                await _userManager.UpdateAsync(userFromManager);
+                    _userRepository.Update(userFromRepo);
+                    _unitOfWork.Complete();
 
-                return new ExchangeRefreshTokenResponseModel() { AccessToken = jwtToken, RefreshToken = refreshToken };
+                    return new ExchangeRefreshTokenResponseModel() { AccessToken = jwtToken, RefreshToken = refreshToken };
+                }
             }
 
             return StatusCode(404, "User does not have valid refresh token");

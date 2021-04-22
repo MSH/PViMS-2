@@ -29,20 +29,20 @@ namespace PVIMS.API.Controllers
         private readonly ITypeHelperService _typeHelperService;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly RoleManager<IdentityRole> _roleManager;
 
         public RolesController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IUnitOfWorkInt unitOfWork,
             RoleManager<IdentityRole> roleManager)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
@@ -172,7 +172,7 @@ namespace PVIMS.API.Controllers
         {
             RoleIdentifierDto identifier = (RoleIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Role", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Role", identifier.Id), "self", "GET"));
 
             return identifier;
         }

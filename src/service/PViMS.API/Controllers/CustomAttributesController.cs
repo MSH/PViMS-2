@@ -34,19 +34,19 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public CustomAttributesController(ITypeHelperService typeHelperService,
                 IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
                 IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
                 IMapper mapper,
-                IUrlHelper urlHelper)
+                ILinkGeneratorService linkGeneratorService)
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
         }
 
         /// <summary>
@@ -252,26 +252,25 @@ namespace PVIMS.API.Controllers
             CustomAttributeResourceParameters customAttributeResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateCustomAttributesResourceUri(customAttributeResourceParameters,
-               ResourceUriType.Current)
-               , "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateCustomAttributesResourceUri(ResourceUriType.Current, customAttributeResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateCustomAttributesResourceUri(customAttributeResourceParameters,
-                  ResourceUriType.NextPage),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateCustomAttributesResourceUri(ResourceUriType.NextPage, customAttributeResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateCustomAttributesResourceUri(customAttributeResourceParameters,
-                    ResourceUriType.PreviousPage),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateCustomAttributesResourceUri(ResourceUriType.PreviousPage, customAttributeResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -286,64 +285,9 @@ namespace PVIMS.API.Controllers
         {
             CustomAttributeIdentifierDto identifier = (CustomAttributeIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateCustomAttributeResourceUri(identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("CustomAttribute", identifier.Id), "self", "GET"));
 
             return identifier;
-        }
-
-        /// <summary>
-        /// Create a Uri for a single representation
-        /// </summary>
-        private string CreateCustomAttributeResourceUri(long customAttributeConfigurationId)
-        {
-            return _urlHelper.Link("GetCustomAttributeByIdentifier",
-              new { id = customAttributeConfigurationId });
-        }
-
-        /// <summary>
-        /// Create a Uri for a collection based representation
-        /// </summary>
-        private string CreateCustomAttributesResourceUri(
-            CustomAttributeResourceParameters customAttributeResourceParameters,
-            ResourceUriType type)
-        {
-            switch (type)
-            {
-                case ResourceUriType.PreviousPage:
-                    return _urlHelper.Link("GetCustomAttributesByIdentifier",
-                      new
-                      {
-                          orderBy = customAttributeResourceParameters.OrderBy,
-                          ExtendableTypeName = customAttributeResourceParameters.ExtendableTypeName.ToString(),
-                          CustomAttributeType = customAttributeResourceParameters.CustomAttributeType.ToString(),
-                          isSearchable = customAttributeResourceParameters.IsSearchable,
-                          pageNumber = customAttributeResourceParameters.PageNumber - 1,
-                          pageSize = customAttributeResourceParameters.PageSize
-                      });
-                case ResourceUriType.NextPage:
-                    return _urlHelper.Link("GetCustomAttributesByIdentifier",
-                      new
-                      {
-                          orderBy = customAttributeResourceParameters.OrderBy,
-                          ExtendableTypeName = customAttributeResourceParameters.ExtendableTypeName.ToString(),
-                          CustomAttributeType = customAttributeResourceParameters.CustomAttributeType.ToString(),
-                          isSearchable = customAttributeResourceParameters.IsSearchable,
-                          pageNumber = customAttributeResourceParameters.PageNumber + 1,
-                          pageSize = customAttributeResourceParameters.PageSize
-                      });
-                case ResourceUriType.Current:
-                default:
-                    return _urlHelper.Link("GetCustomAttributesByIdentifier",
-                    new
-                    {
-                        orderBy = customAttributeResourceParameters.OrderBy,
-                        ExtendableTypeName = customAttributeResourceParameters.ExtendableTypeName.ToString(),
-                        CustomAttributeType = customAttributeResourceParameters.CustomAttributeType.ToString(),
-                        isSearchable = customAttributeResourceParameters.IsSearchable,
-                        pageNumber = customAttributeResourceParameters.PageNumber,
-                        pageSize = customAttributeResourceParameters.PageSize
-                    });
-            }
         }
 
         /// <summary>

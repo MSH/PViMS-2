@@ -42,14 +42,14 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IReportService _reportService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly PVIMSDbContext _context;
 
         public AppointmentsController(ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<Appointment> appointmentRepository,
             IRepositoryInt<Facility> facilityRepository,
@@ -62,7 +62,7 @@ namespace PVIMS.API.Controllers
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _appointmentRepository = appointmentRepository ?? throw new ArgumentNullException(nameof(appointmentRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
@@ -649,23 +649,25 @@ namespace PVIMS.API.Controllers
             AppointmentResourceParameters appointmentResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateAppointmentsResourceUri(_urlHelper, ResourceUriType.Current, appointmentResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateAppointmentsResourceUri(ResourceUriType.Current, appointmentResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateAppointmentsResourceUri(_urlHelper, ResourceUriType.NextPage, appointmentResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAppointmentsResourceUri(ResourceUriType.NextPage, appointmentResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateAppointmentsResourceUri(_urlHelper, ResourceUriType.PreviousPage, appointmentResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAppointmentsResourceUri(ResourceUriType.PreviousPage, appointmentResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -718,23 +720,25 @@ namespace PVIMS.API.Controllers
             OutstandingVisitResourceParameters outstandingVisitResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateOutstandingVisitReportResourceUri(_urlHelper, ResourceUriType.Current, outstandingVisitResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateOutstandingVisitReportResourceUri(ResourceUriType.Current, outstandingVisitResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateOutstandingVisitReportResourceUri(_urlHelper, ResourceUriType.NextPage, outstandingVisitResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateOutstandingVisitReportResourceUri(ResourceUriType.NextPage, outstandingVisitResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateOutstandingVisitReportResourceUri(_urlHelper, ResourceUriType.PreviousPage, outstandingVisitResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateOutstandingVisitReportResourceUri(ResourceUriType.PreviousPage, outstandingVisitResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;

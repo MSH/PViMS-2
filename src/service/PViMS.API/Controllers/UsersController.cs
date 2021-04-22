@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections;
-using System.Data.Entity;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
@@ -22,12 +18,18 @@ using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Paging;
 using PViMS.Infrastructure.Identity.Entities;
+using System;
+using System.Collections;
+using System.Data.Entity;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class UsersController : ControllerBase
     {
         private readonly ITypeHelperService _typeHelperService;
@@ -36,12 +38,12 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public UsersController(ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<User> userRepository,
             IRepositoryInt<UserFacility> userFacilityRepository,
             IRepositoryInt<Facility> facilityRepository,
@@ -50,7 +52,7 @@ namespace PVIMS.API.Controllers
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _userFacilityRepository = userFacilityRepository ?? throw new ArgumentNullException(nameof(userFacilityRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
@@ -334,7 +336,7 @@ namespace PVIMS.API.Controllers
                 userFromRepo.FirstName = userForUpdate.FirstName;
                 userFromRepo.LastName = userForUpdate.LastName;
                 userFromRepo.UserName = userForUpdate.UserName;
-                userFromRepo.Active = (userForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
+                //userFromRepo.Active = (userForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
                 userFromRepo.AllowDatasetDownload = (userForUpdate.AllowDatasetDownload == Models.ValueTypes.YesNoValueType.Yes);
 
                 _userRepository.Update(userFromRepo);
@@ -518,23 +520,25 @@ namespace PVIMS.API.Controllers
             UserResourceParameters userResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateUsersResourceUri(_urlHelper, ResourceUriType.Current, userResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateUsersResourceUri(ResourceUriType.Current, userResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateUsersResourceUri(_urlHelper, ResourceUriType.NextPage, userResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateUsersResourceUri(ResourceUriType.NextPage, userResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateUsersResourceUri(_urlHelper, ResourceUriType.PreviousPage, userResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateUsersResourceUri(ResourceUriType.PreviousPage, userResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -549,7 +553,7 @@ namespace PVIMS.API.Controllers
         {
             UserIdentifierDto identifier = (UserIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "User", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("User", identifier.Id), "self", "GET"));
 
             return identifier;
         }
