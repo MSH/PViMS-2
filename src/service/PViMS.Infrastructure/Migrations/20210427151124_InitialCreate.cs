@@ -50,16 +50,16 @@ namespace PViMS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ContextTypes",
+                name: "ContextType",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ContextTypes", x => x.Id);
+                    table.PrimaryKey("PK_ContextType", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -320,21 +320,21 @@ namespace PViMS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OrgUnitTypes",
+                name: "OrgUnitType",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ParentId = table.Column<int>(type: "int", nullable: true)
+                    Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Parent_Id = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrgUnitTypes", x => x.Id);
+                    table.PrimaryKey("PK_OrgUnitType", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OrgUnitTypes_OrgUnitTypes_ParentId",
-                        column: x => x.ParentId,
-                        principalTable: "OrgUnitTypes",
+                        name: "FK_dbo.OrgUnitType_dbo.OrgUnitType_Parent_Id",
+                        column: x => x.Parent_Id,
+                        principalTable: "OrgUnitType",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -421,7 +421,7 @@ namespace PViMS.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AttributeKey = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    SelectionKey = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SelectionKey = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -490,7 +490,6 @@ namespace PViMS.Infrastructure.Migrations
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Active = table.Column<bool>(type: "bit", nullable: false),
                     EulaAcceptanceDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     AllowDatasetDownload = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     IdentityId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -696,7 +695,7 @@ namespace PViMS.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_dbo.OrgUnit_dbo.OrgUnitType_OrgUnitType_Id",
                         column: x => x.OrgUnitType_Id,
-                        principalTable: "OrgUnitTypes",
+                        principalTable: "OrgUnitType",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1604,8 +1603,7 @@ namespace PViMS.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Activity_Id = table.Column<int>(type: "int", nullable: false),
-                    FriendlyDescription = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Activity_Id1 = table.Column<int>(type: "int", nullable: false)
+                    FriendlyDescription = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -2046,7 +2044,7 @@ namespace PViMS.Infrastructure.Migrations
                     ActivityInstance_Id = table.Column<int>(type: "int", nullable: false),
                     EventCreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     ExecutionStatus_Id = table.Column<int>(type: "int", nullable: false),
-                    ContextDateTime = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ContextDateTime = table.Column<DateTime>(type: "datetime", nullable: true),
                     ContextCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true)
                 },
                 constraints: table =>
@@ -2256,7 +2254,7 @@ namespace PViMS.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_dbo.Dataset_dbo.ContextType_ContextType_Id",
                         column: x => x.ContextType_Id,
-                        principalTable: "ContextTypes",
+                        principalTable: "ContextType",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -2688,9 +2686,9 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ActivityExecutionStatusEvent_ActivityInstance_Id_ExecutionStatus_Id",
+                name: "IX_ActivityExecutionStatusEvent_EventDateTime_ActivityInstance_Id_ExecutionStatus_Id",
                 table: "ActivityExecutionStatusEvent",
-                columns: new[] { "ActivityInstance_Id", "ExecutionStatus_Id" },
+                columns: new[] { "EventDateTime", "ActivityInstance_Id", "ExecutionStatus_Id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -2944,6 +2942,12 @@ namespace PViMS.Infrastructure.Migrations
                 name: "IX_UpdatedBy_Id3",
                 table: "Config",
                 column: "UpdatedBy_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContextType_Description",
+                table: "ContextType",
+                column: "Description",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CustomAttributeConfiguration_ExtendableTypeName_CustomAttributeType_AttributeKey",
@@ -3511,9 +3515,15 @@ namespace PViMS.Infrastructure.Migrations
                 column: "Parent_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrgUnitTypes_ParentId",
-                table: "OrgUnitTypes",
-                column: "ParentId");
+                name: "IX_OrgUnitType_Description",
+                table: "OrgUnitType",
+                column: "Description",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Parent_Id1",
+                table: "OrgUnitType",
+                column: "Parent_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Outcome_Description",
@@ -3755,12 +3765,6 @@ namespace PViMS.Infrastructure.Migrations
                 column: "Concept_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Product_ProductName",
-                table: "Product",
-                column: "ProductName",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_User_Id",
                 table: "RefreshToken",
                 column: "User_Id");
@@ -3802,17 +3806,18 @@ namespace PViMS.Infrastructure.Migrations
                 column: "RiskFactor_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RiskFactorOption_OptionName",
+                name: "IX_RiskFactorOption_Display",
                 table: "RiskFactorOption",
-                column: "OptionName",
-                unique: true);
+                column: "Display",
+                unique: true,
+                filter: "[Display] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SelectionDataItem_AttributeKey",
+                name: "IX_SelectionDataItem_AttributeKey_SelectionKey",
                 table: "SelectionDataItem",
-                column: "AttributeKey",
+                columns: new[] { "AttributeKey", "SelectionKey" },
                 unique: true,
-                filter: "[AttributeKey] IS NOT NULL");
+                filter: "[AttributeKey] IS NOT NULL AND [SelectionKey] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CreatedBy_Id14",
@@ -3849,21 +3854,9 @@ namespace PViMS.Infrastructure.Migrations
                 filter: "[Name] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Parent_Id1",
+                name: "IX_Parent_Id2",
                 table: "TerminologyMedDra",
                 column: "Parent_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TerminologyMedDra_MedDraCode",
-                table: "TerminologyMedDra",
-                column: "MedDraCode",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TerminologyMedDra_MedDraTerm",
-                table: "TerminologyMedDra",
-                column: "MedDraTerm",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_TreatmentOutcome_Description",
@@ -4235,7 +4228,7 @@ namespace PViMS.Infrastructure.Migrations
                 name: "MedicationForm");
 
             migrationBuilder.DropTable(
-                name: "OrgUnitTypes");
+                name: "OrgUnitType");
 
             migrationBuilder.DropTable(
                 name: "Activity");
@@ -4271,7 +4264,7 @@ namespace PViMS.Infrastructure.Migrations
                 name: "CohortGroup");
 
             migrationBuilder.DropTable(
-                name: "ContextTypes");
+                name: "ContextType");
 
             migrationBuilder.DropTable(
                 name: "DatasetXml");
