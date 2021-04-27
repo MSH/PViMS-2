@@ -42,7 +42,7 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<MetaWidget> _metaWidgetRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly PVIMSDbContext _context;
 
         private List<String> _entities = new List<String>() { 
@@ -60,7 +60,7 @@ namespace PVIMS.API.Controllers
             ITypeHelperService typeHelperService,
             IInfrastructureService infrastructureService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<MetaTable> metaTableRepository,
             IRepositoryInt<MetaTableType> metaTableTypeRepository,
             IRepositoryInt<MetaColumn> metaColumnRepository,
@@ -75,7 +75,7 @@ namespace PVIMS.API.Controllers
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _infrastructureService = infrastructureService ?? throw new ArgumentNullException(nameof(infrastructureService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _metaTableRepository = metaTableRepository ?? throw new ArgumentNullException(nameof(metaTableRepository));
             _metaTableTypeRepository = metaTableTypeRepository ?? throw new ArgumentNullException(nameof(metaTableTypeRepository));
             _metaColumnRepository = metaColumnRepository ?? throw new ArgumentNullException(nameof(metaColumnRepository));
@@ -126,7 +126,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaTableIdentifierDto>> GetMetaTablesByIdentifier(
-            [FromQuery] MetaResourceParameters metaResourceParameters)
+            [FromQuery] IdResourceParameters metaResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<MetaTableIdentifierDto>
                 (metaResourceParameters.OrderBy))
@@ -154,7 +154,7 @@ namespace PVIMS.API.Controllers
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaTableDetailDto>> GetMetaTablesByDetail(
-            [FromQuery] MetaResourceParameters metaResourceParameters)
+            [FromQuery] IdResourceParameters metaResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<MetaTableDetailDto>
                 (metaResourceParameters.OrderBy))
@@ -181,7 +181,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaColumnDetailDto>> GetMetaColumnsByDetail(
-            [FromQuery] MetaResourceParameters metaResourceParameters)
+            [FromQuery] IdResourceParameters metaResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<MetaColumnDetailDto>
                 (metaResourceParameters.OrderBy))
@@ -206,7 +206,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaDependencyDetailDto>> GetMetaDependenciesByDetail(
-            [FromQuery] MetaResourceParameters metaResourceParameters)
+            [FromQuery] IdResourceParameters metaResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<MetaDependencyDetailDto>
                 (metaResourceParameters.OrderBy))
@@ -254,7 +254,7 @@ namespace PVIMS.API.Controllers
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
         /// <param name="metaResourceParameters">Standard parameters for representing resource</param>
         /// <returns></returns>
-        private PagedCollection<T> GetMetaTables<T>(MetaResourceParameters metaResourceParameters) where T : class
+        private PagedCollection<T> GetMetaTables<T>(IdResourceParameters metaResourceParameters) where T : class
         {
             var pagingInfo = new PagingInfo()
             {
@@ -300,7 +300,7 @@ namespace PVIMS.API.Controllers
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
         /// <param name="metaResourceParameters">Standard parameters for representing resource</param>
         /// <returns></returns>
-        private PagedCollection<T> GetMetaColumns<T>(MetaResourceParameters metaResourceParameters) where T : class
+        private PagedCollection<T> GetMetaColumns<T>(IdResourceParameters metaResourceParameters) where T : class
         {
             var pagingInfo = new PagingInfo()
             {
@@ -346,7 +346,7 @@ namespace PVIMS.API.Controllers
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
         /// <param name="metaResourceParameters">Standard parameters for representing resource</param>
         /// <returns></returns>
-        private PagedCollection<T> GetMetaDependencies<T>(MetaResourceParameters metaResourceParameters) where T : class
+        private PagedCollection<T> GetMetaDependencies<T>(IdResourceParameters metaResourceParameters) where T : class
         {
             var pagingInfo = new PagingInfo()
             {
@@ -396,26 +396,28 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private LinkedResourceBaseDto CreateLinksForTables(
             LinkedResourceBaseDto wrapper,
-            MetaResourceParameters metaResourceParameters,
+            IdResourceParameters metaResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateMetaTablesResourceUri(_urlHelper, ResourceUriType.Current, metaResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaTablesByIdentifier", metaResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateMetaTablesResourceUri(_urlHelper, ResourceUriType.NextPage, metaResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaTablesByIdentifier", metaResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateMetaTablesResourceUri(_urlHelper, ResourceUriType.PreviousPage, metaResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaTablesByIdentifier", metaResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;

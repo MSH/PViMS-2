@@ -35,12 +35,12 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<EncounterTypeWorkPlan> _encounterTypeWorkPlanRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public EncounterTypesController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<EncounterType> encounterTypeRepository,
             IRepositoryInt<WorkPlan> workPlanRepository,
             IRepositoryInt<EncounterTypeWorkPlan> encounterTypeWorkPlanRepository,
@@ -49,7 +49,7 @@ namespace PVIMS.API.Controllers
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _encounterTypeRepository = encounterTypeRepository ?? throw new ArgumentNullException(nameof(encounterTypeRepository));
             _workPlanRepository = workPlanRepository ?? throw new ArgumentNullException(nameof(workPlanRepository));
             _encounterTypeWorkPlanRepository = encounterTypeWorkPlanRepository ?? throw new ArgumentNullException(nameof(encounterTypeWorkPlanRepository));
@@ -403,7 +403,7 @@ namespace PVIMS.API.Controllers
         {
             EncounterTypeIdentifierDto identifier = (EncounterTypeIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "EncounterType", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("EncounterType", identifier.Id), "self", "GET"));
 
             return identifier;
         }

@@ -52,14 +52,14 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IPatientService _patientService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly PVIMSDbContext _context;
 
         public EncountersController(IPropertyMappingService propertyMappingService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientCondition> patientConditionRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
@@ -79,7 +79,7 @@ namespace PVIMS.API.Controllers
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
             _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
@@ -720,23 +720,25 @@ namespace PVIMS.API.Controllers
             EncounterResourceParameters encounterResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateEncountersResourceUri(_urlHelper, ResourceUriType.Current, encounterResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateEncountersResourceUri(ResourceUriType.Current, encounterResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateEncountersResourceUri(_urlHelper, ResourceUriType.NextPage, encounterResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateEncountersResourceUri(ResourceUriType.NextPage, encounterResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateEncountersResourceUri(_urlHelper, ResourceUriType.PreviousPage, encounterResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateEncountersResourceUri(ResourceUriType.PreviousPage, encounterResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -752,7 +754,7 @@ namespace PVIMS.API.Controllers
         {
             EncounterIdentifierDto identifier = (EncounterIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateEncounterForPatientResourceUri(_urlHelper, patientId, identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateEncounterForPatientResourceUri(patientId, identifier.Id), "self", "GET"));
 
             //identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateHouseholdMemberForHouseholdResourceUri(_urlHelper, organisationunitId, householdId.ToGuid(), identifier.HouseholdMemberGuid), "update", "PATCH"));
             //identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateRemoveHouseholdMemberForHouseholdResourceUri(_urlHelper, organisationunitId, householdId.ToGuid(), identifier.HouseholdMemberGuid), "marknotcurrent", "DELETE"));

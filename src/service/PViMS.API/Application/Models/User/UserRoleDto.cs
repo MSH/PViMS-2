@@ -15,9 +15,9 @@ namespace PVIMS.API.Models
         public int Id { get; set; }
 
         /// <summary>
-        /// The role key
+        /// The role name
         /// </summary>
         [DataMember]
-        public string Key { get; set; }
+        public string Name { get; set; }
     }
 }

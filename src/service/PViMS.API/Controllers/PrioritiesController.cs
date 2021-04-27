@@ -28,18 +28,18 @@ namespace PVIMS.API.Controllers
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<Priority> _priorityRepository;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public PrioritiesController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Priority> priorityRepository)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _priorityRepository = priorityRepository ?? throw new ArgumentNullException(nameof(priorityRepository));
         }
 
@@ -168,7 +168,7 @@ namespace PVIMS.API.Controllers
         {
             PriorityIdentifierDto identifier = (PriorityIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Priority", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Priority", identifier.Id), "self", "GET"));
 
             return identifier;
         }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
+using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using System;
 using System.Collections.Generic;
@@ -16,38 +16,34 @@ namespace PVIMS.API.Infrastructure.Auth
         private readonly IJwtTokenHandler _jwtTokenHandler;
         private readonly JwtIssuerOptions _jwtOptions;
 
-        public JwtFactory(IJwtTokenHandler jwtTokenHandler, IOptions<JwtIssuerOptions> jwtOptions)
+        public JwtFactory(IJwtTokenHandler jwtTokenHandler, 
+            IOptions<JwtIssuerOptions> jwtOptions)
         {
             _jwtTokenHandler = jwtTokenHandler;
             _jwtOptions = jwtOptions.Value;
+
             ThrowIfInvalidOptions(_jwtOptions);
         }
 
-        public async Task<AccessToken> GenerateEncodedToken(User user, UserRole[] roles, UserFacility[] facilities)
+        public async Task<AccessToken> GenerateEncodedToken(User userFromRepo, IList<string> roles)
         {
-            var identity = GenerateClaimsIdentity(user.IdentityId, user.UserName, user.UserType);
+            var identity = GenerateClaimsIdentity(userFromRepo.IdentityId, userFromRepo.UserName, userFromRepo.UserType);
 
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Sub, userFromRepo.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
                 new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.GivenName, $"{user.FirstName} {user.LastName}"),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, userFromRepo.Email),
+                new Claim(JwtRegisteredClaimNames.GivenName, $"{userFromRepo.FirstName} {userFromRepo.LastName}"),
+                new Claim(JwtRegisteredClaimNames.UniqueName, userFromRepo.Id.ToString()),
                 identity.FindFirst(JwtConstants.Strings.JwtClaimIdentifiers.Rol),
                 identity.FindFirst(JwtConstants.Strings.JwtClaimIdentifiers.Id),
                 identity.FindFirst(JwtConstants.Strings.JwtClaimIdentifiers.UserType)
             };
 
-            foreach(var userRole in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, userRole.Role.Key));
-            }
-            foreach (var userFacility in facilities)
-            {
-                claims.Add(new Claim(ClaimTypes.NameIdentifier, userFacility.Facility.FacilityName));
-            }
+            roles.ForEach(role => claims.Add(new Claim(ClaimTypes.Role, role)));
+            userFromRepo.Facilities.ForEach(dto => claims.Add(new Claim(ClaimTypes.NameIdentifier, dto.Facility.FacilityName)));
 
             // Create the JWT security token and encode it.
             var jwt = new JwtSecurityToken(_jwtOptions.Issuer, _jwtOptions.Audience,

@@ -38,13 +38,13 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IPatientService _patientService;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CohortGroupEnrolmentsController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IUnitOfWorkInt unitOfWork,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<CohortGroup> cohortGroupRepository,
@@ -56,7 +56,7 @@ namespace PVIMS.API.Controllers
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
@@ -450,7 +450,7 @@ namespace PVIMS.API.Controllers
         {
             EnrolmentIdentifierDto identifier = (EnrolmentIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateDeenrolmentForPatientResourceUri(_urlHelper, identifier.PatientId, identifier.Id), "deenrol", "PUT"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDeenrolmentForPatientResourceUri(identifier.PatientId, identifier.Id), "deenrol", "PUT"));
 
             return identifier;
         }

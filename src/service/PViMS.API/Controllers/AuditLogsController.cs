@@ -38,12 +38,12 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IArtefactService _artefactService;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AuditLogsController(ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<AuditLog> auditLogRepository,
             IRepositoryInt<Attachment> attachmentRepository,
             IRepositoryInt<User> userRepository,
@@ -52,7 +52,7 @@ namespace PVIMS.API.Controllers
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _auditLogRepository = auditLogRepository ?? throw new ArgumentNullException(nameof(auditLogRepository));
             _attachmentRepository = attachmentRepository ?? throw new ArgumentNullException(nameof(attachmentRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
@@ -435,23 +435,25 @@ namespace PVIMS.API.Controllers
             AuditLogResourceParameters auditLogResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateAuditLogsResourceUri(_urlHelper, ResourceUriType.Current, auditLogResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateAuditLogsResourceUri(ResourceUriType.Current, auditLogResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateAuditLogsResourceUri(_urlHelper, ResourceUriType.NextPage, auditLogResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAuditLogsResourceUri(ResourceUriType.NextPage, auditLogResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateAuditLogsResourceUri(_urlHelper, ResourceUriType.PreviousPage, auditLogResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAuditLogsResourceUri(ResourceUriType.PreviousPage, auditLogResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -466,7 +468,7 @@ namespace PVIMS.API.Controllers
         {
             AuditLogIdentifierDto identifier = (AuditLogIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "AuditLog", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("AuditLog", identifier.Id), "self", "GET"));
 
             return identifier;
         }

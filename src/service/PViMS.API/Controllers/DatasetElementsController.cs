@@ -40,12 +40,12 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<FieldValue> _fieldValueRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public DatasetElementsController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<DatasetElement> datasetElementRepository,
             IRepositoryInt<FieldType> fieldTypeRepository,
             IRepositoryInt<DatasetElementType> datasetElementTypeRepository,
@@ -57,7 +57,7 @@ namespace PVIMS.API.Controllers
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _datasetElementRepository = datasetElementRepository ?? throw new ArgumentNullException(nameof(datasetElementRepository));
             _datasetRuleRepository = datasetRuleRepository ?? throw new ArgumentNullException(nameof(datasetRuleRepository));
             _fieldTypeRepository = fieldTypeRepository ?? throw new ArgumentNullException(nameof(fieldTypeRepository));
@@ -532,7 +532,7 @@ namespace PVIMS.API.Controllers
         {
             DatasetElementIdentifierDto identifier = (DatasetElementIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "DatasetElement", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("DatasetElement", identifier.Id), "self", "GET"));
 
             return identifier;
         }

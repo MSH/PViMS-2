@@ -39,13 +39,13 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<Product> _productRepository;
         private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IUnitOfWorkInt _unitOfWork;
 
         public ConditionsController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Condition> conditionRepository,
             IRepositoryInt<ConditionLabTest> conditionLabTestRepository,
             IRepositoryInt<ConditionMedication> conditionMedicationRepository,
@@ -59,7 +59,7 @@ namespace PVIMS.API.Controllers
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _conditionRepository = conditionRepository ?? throw new ArgumentNullException(nameof(conditionRepository));
             _conditionLabTestRepository = conditionLabTestRepository ?? throw new ArgumentNullException(nameof(conditionLabTestRepository));
             _conditionMedicationRepository = conditionMedicationRepository ?? throw new ArgumentNullException(nameof(conditionMedicationRepository));
@@ -435,23 +435,25 @@ namespace PVIMS.API.Controllers
             ConditionResourceParameters conditionResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateConditionsResourceUri(_urlHelper, ResourceUriType.Current, conditionResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateConditionsResourceUri(ResourceUriType.Current, conditionResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateConditionsResourceUri(_urlHelper, ResourceUriType.NextPage, conditionResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateConditionsResourceUri(ResourceUriType.NextPage, conditionResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateConditionsResourceUri(_urlHelper, ResourceUriType.PreviousPage, conditionResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateConditionsResourceUri(ResourceUriType.PreviousPage, conditionResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -466,7 +468,7 @@ namespace PVIMS.API.Controllers
         {
             ConditionIdentifierDto identifier = (ConditionIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Condition", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("", identifier.Id), "self", "GET"));
 
             return identifier;
         }

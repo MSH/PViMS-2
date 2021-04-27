@@ -36,8 +36,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_dbo.TerminologyMedDra_dbo.TerminologyMedDra_Parent_Id");
 
-            configuration.HasIndex("MedDraCode").IsUnique(true);
-            configuration.HasIndex("MedDraTerm").IsUnique(true);
             configuration.HasIndex(e => e.ParentId, "IX_Parent_Id");
         }
     }

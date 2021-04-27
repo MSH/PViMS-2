@@ -24,13 +24,6 @@
                 </mat-cell>
             </ng-container>
 
-            <ng-container matColumnDef="key">
-              <mat-header-cell *matHeaderCellDef>{{'Role key' | translate }}</mat-header-cell>
-              <mat-cell *matCellDef="let record">
-                  <p>{{record.key}}</p>
-              </mat-cell>
-            </ng-container>            
-
             <mat-header-row *matHeaderRowDef="viewModel?.mainGrid?.displayedColumns; sticky:true"></mat-header-row>
             <mat-row *matRowDef="let record; columns: viewModel?.mainGrid?.displayedColumns;" matRipple></mat-row>
         </mat-table>

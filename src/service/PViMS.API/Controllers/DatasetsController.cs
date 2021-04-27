@@ -38,12 +38,12 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<ContextType> _contextTypeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IWorkFlowService _workflowService;
 
         public DatasetsController(ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Dataset> datasetRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<DatasetCategory> datasetCategoryRepository,
@@ -56,7 +56,7 @@ namespace PVIMS.API.Controllers
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _datasetCategoryRepository = datasetCategoryRepository ?? throw new ArgumentNullException(nameof(datasetCategoryRepository));
@@ -1307,7 +1307,7 @@ namespace PVIMS.API.Controllers
         {
             DatasetIdentifierDto identifier = (DatasetIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Dataset", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Dataset", identifier.Id), "self", "GET"));
 
             return identifier;
         }
@@ -1337,7 +1337,7 @@ namespace PVIMS.API.Controllers
         {
             DatasetCategoryIdentifierDto identifier = (DatasetCategoryIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateDatasetCategoryResourceUri(_urlHelper, "DatasetCategory", datasetId, identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateDatasetCategoryResourceUri(datasetId, identifier.Id), "self", "GET"));
 
             return identifier;
         }
@@ -1353,7 +1353,7 @@ namespace PVIMS.API.Controllers
         {
             DatasetCategoryElementIdentifierDto identifier = (DatasetCategoryElementIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateDatasetCategoryElementResourceUri(_urlHelper, "DatasetCategoryElement", datasetId, datasetCategoryId, identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateDatasetCategoryElementResourceUri(datasetId, datasetCategoryId, identifier.Id), "self", "GET"));
 
             return identifier;
         }

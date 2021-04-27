@@ -22,6 +22,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
+using PVIMS.API.Infrastructure.Services;
 
 namespace PVIMS.API.Controllers
 {
@@ -37,7 +38,7 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<TerminologyMedDra> _termsRepository;
         private readonly IRepositoryInt<RiskFactor> _riskFactorRepository;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly PVIMSDbContext _context;
 
@@ -46,14 +47,14 @@ namespace PVIMS.API.Controllers
                 IRepositoryInt<RiskFactor> riskFactorRepository,
                 IMapper mapper,
                 IUnitOfWorkInt unitOfWork,
-                IUrlHelper urlHelper,
+                ILinkGeneratorService linkGeneratorService,
                 PVIMSDbContext dbContext)
         {
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _termsRepository = termsRepository ?? throw new ArgumentNullException(nameof(termsRepository));
             _riskFactorRepository = riskFactorRepository ?? throw new ArgumentNullException(nameof(riskFactorRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
@@ -448,23 +449,25 @@ namespace PVIMS.API.Controllers
             AnalyserTermSetResourceParameters analyserTermSetResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateAnalyserTermSetsResourceUri(_urlHelper, workFlowGuid, ResourceUriType.Current, analyserTermSetResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateAnalyserTermSetsResourceUri(workFlowGuid, ResourceUriType.Current, analyserTermSetResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateAnalyserTermSetsResourceUri(_urlHelper, workFlowGuid, ResourceUriType.NextPage, analyserTermSetResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAnalyserTermSetsResourceUri(workFlowGuid, ResourceUriType.NextPage, analyserTermSetResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateAnalyserTermSetsResourceUri(_urlHelper, workFlowGuid, ResourceUriType.PreviousPage, analyserTermSetResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAnalyserTermSetsResourceUri(workFlowGuid, ResourceUriType.PreviousPage, analyserTermSetResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -487,23 +490,25 @@ namespace PVIMS.API.Controllers
             AnalyserTermSetResourceParameters analyserTermSetResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateAnalyserTermPatientsResourceUri(_urlHelper, workFlowGuid, termId, ResourceUriType.Current, analyserTermSetResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateAnalyserTermPatientsResourceUri(workFlowGuid, termId, ResourceUriType.Current, analyserTermSetResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateAnalyserTermPatientsResourceUri(_urlHelper, workFlowGuid, termId, ResourceUriType.NextPage, analyserTermSetResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAnalyserTermPatientsResourceUri(workFlowGuid, termId, ResourceUriType.NextPage, analyserTermSetResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateAnalyserTermPatientsResourceUri(_urlHelper, workFlowGuid, termId, ResourceUriType.PreviousPage, analyserTermSetResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAnalyserTermPatientsResourceUri(workFlowGuid, termId, ResourceUriType.PreviousPage, analyserTermSetResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -569,7 +574,7 @@ namespace PVIMS.API.Controllers
         {
             AnalyserTermIdentifierDto identifier = (AnalyserTermIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "MeddraTerm", identifier.TerminologyMeddraId), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("MeddraTerm", identifier.TerminologyMeddraId), "self", "GET"));
 
             return identifier;
         }

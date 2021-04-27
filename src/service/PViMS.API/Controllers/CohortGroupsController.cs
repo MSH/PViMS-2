@@ -32,11 +32,11 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<Condition> _conditionRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public CohortGroupsController(ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<CohortGroup> cohortGroupRepository,
             IRepositoryInt<CohortGroupEnrolment> cohortGroupEnrolmentRepository,
             IRepositoryInt<Condition> conditionRepository,
@@ -44,7 +44,7 @@ namespace PVIMS.API.Controllers
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
             _cohortGroupEnrolmentRepository = cohortGroupEnrolmentRepository ?? throw new ArgumentNullException(nameof(cohortGroupEnrolmentRepository));
             _conditionRepository = conditionRepository ?? throw new ArgumentNullException(nameof(conditionRepository));
@@ -64,7 +64,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<CohortGroupIdentifierDto>> GetCohortGroupsByIdentifier(
-            [FromQuery] CohortGroupResourceParameters cohortGroupResourceParameters)
+            [FromQuery] IdResourceParameters cohortGroupResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<CohortGroupIdentifierDto>
                 (cohortGroupResourceParameters.OrderBy))
@@ -95,7 +95,7 @@ namespace PVIMS.API.Controllers
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<CohortGroupDetailDto>> GetCohortGroupsByDetail(
-            [FromQuery] CohortGroupResourceParameters cohortGroupResourceParameters)
+            [FromQuery] IdResourceParameters cohortGroupResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<CohortGroupDetailDto>
                 (cohortGroupResourceParameters.OrderBy))
@@ -380,7 +380,7 @@ namespace PVIMS.API.Controllers
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
         /// <param name="cohortGroupResourceParameters">Standard parameters for representing resource</param>
         /// <returns></returns>
-        private PagedCollection<T> GetCohortGroups<T>(CohortGroupResourceParameters cohortGroupResourceParameters) where T : class
+        private PagedCollection<T> GetCohortGroups<T>(IdResourceParameters cohortGroupResourceParameters) where T : class
         {
             var pagingInfo = new PagingInfo()
             {
@@ -429,7 +429,7 @@ namespace PVIMS.API.Controllers
         {
             CohortGroupIdentifierDto identifier = (CohortGroupIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "CohortGroup", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("CohortGroup", identifier.Id), "self", "GET"));
 
             return identifier;
         }
@@ -444,30 +444,31 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private LinkedResourceBaseDto CreateLinksForCohortGroups(
             LinkedResourceBaseDto wrapper,
-            CohortGroupResourceParameters cohortGroupResourceParameters,
+            IdResourceParameters cohortGroupResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateCohortGroupsResourceUri(_urlHelper, ResourceUriType.Current, cohortGroupResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetCohortGroupsByDetail", cohortGroupResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateCohortGroupsResourceUri(_urlHelper, ResourceUriType.NextPage, cohortGroupResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetCohortGroupsByDetail", cohortGroupResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateCohortGroupsResourceUri(_urlHelper, ResourceUriType.PreviousPage, cohortGroupResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetCohortGroupsByDetail", cohortGroupResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
         }
-
     }
 }

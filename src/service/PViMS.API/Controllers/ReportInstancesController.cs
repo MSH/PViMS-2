@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
@@ -32,7 +34,7 @@ namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class ReportInstancesController : ControllerBase
     {
         private readonly IPropertyMappingService _propertyMappingService;
@@ -46,9 +48,8 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<Config> _configRepository;
         private readonly IRepositoryInt<Attachment> _attachmentRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<UserRole> _userRoleRepository;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IReportService _reportService;
         private readonly IWorkFlowService _workFlowService;
         private readonly IInfrastructureService _infrastructureService;
@@ -58,7 +59,7 @@ namespace PVIMS.API.Controllers
 
         public ReportInstancesController(IPropertyMappingService propertyMappingService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<WorkFlow> workFlowRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<ReportInstanceMedication> reportInstanceMedicationRepository,
@@ -69,7 +70,6 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<Config> configRepository,
             IRepositoryInt<Attachment> attachmentRepository,
             IRepositoryInt<User> userRepository,
-            IRepositoryInt<UserRole> userRoleRepository,
             IReportService reportService,
             IInfrastructureService infrastructureService,
             IWorkFlowService workFlowService,
@@ -79,7 +79,7 @@ namespace PVIMS.API.Controllers
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
             _reportInstanceMedicationRepository = reportInstanceMedicationRepository ?? throw new ArgumentNullException(nameof(reportInstanceMedicationRepository));
@@ -90,7 +90,6 @@ namespace PVIMS.API.Controllers
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _attachmentRepository = attachmentRepository ?? throw new ArgumentNullException(nameof(attachmentRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _userRoleRepository = userRoleRepository ?? throw new ArgumentNullException(nameof(userRoleRepository));
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
             _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
@@ -468,7 +467,7 @@ namespace PVIMS.API.Controllers
 
             if (ModelState.IsValid)
             {
-                _workFlowService.ExecuteActivity(reportInstanceFromRepo.ContextGuid, activityChange.NewExecutionStatus, activityChange.Comments, activityChange.ContextDate, activityChange.ContextCode);
+                await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, activityChange.NewExecutionStatus, activityChange.Comments, activityChange.ContextDate, activityChange.ContextCode);
 
                 return Ok();
             }
@@ -517,7 +516,7 @@ namespace PVIMS.API.Controllers
                 _reportInstanceRepository.Update(reportInstanceFromRepo);
                 _unitOfWork.Complete();
 
-                _workFlowService.ExecuteActivity(reportInstanceFromRepo.ContextGuid, "MEDDRASET", "AUTOMATION: MedDRA Term set", null, "");
+                await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "MEDDRASET", "AUTOMATION: MedDRA Term set", null, "");
 
                 return Ok();
             }
@@ -550,11 +549,11 @@ namespace PVIMS.API.Controllers
             {
                 if (workFlowGuid == new Guid("4096D0A3-45F7-4702-BDA1-76AEDE41B986"))
                 {
-                    CreateE2BForSpontaneous(reportInstanceFromRepo);
+                    await CreateE2BForSpontaneousAsync(reportInstanceFromRepo);
                 }
                 else
                 {
-                    CreateE2BForActive(reportInstanceFromRepo);
+                    await CreateE2BForActiveAsync(reportInstanceFromRepo);
                 }    
 
                 return Ok();
@@ -894,23 +893,25 @@ namespace PVIMS.API.Controllers
             ReportInstanceResourceParameters reportInstanceResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateReportInstancesResourceUri(_urlHelper, workFlowGuid, ResourceUriType.Current, reportInstanceResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateReportInstancesResourceUri(workFlowGuid, ResourceUriType.Current, reportInstanceResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateReportInstancesResourceUri(_urlHelper, workFlowGuid, ResourceUriType.NextPage, reportInstanceResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateReportInstancesResourceUri(workFlowGuid, ResourceUriType.NextPage, reportInstanceResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateReportInstancesResourceUri(_urlHelper, workFlowGuid, ResourceUriType.PreviousPage, reportInstanceResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateReportInstancesResourceUri(workFlowGuid, ResourceUriType.PreviousPage, reportInstanceResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -921,32 +922,34 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
         /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="reportInstanceResourceParameters">Standard parameters for representing resource</param>
+        /// <param name="reportInstanceNewResourceParameters">Standard parameters for representing resource</param>
         /// <param name="hasNext">Are there additional pages</param>
         /// <param name="hasPrevious">Are there previous pages</param>
         /// <returns></returns>
         private LinkedResourceBaseDto CreateLinksForNewReportInstances(Guid workFlowGuid,
             LinkedResourceBaseDto wrapper,
-            ReportInstanceNewResourceParameters reportInstanceResourceParameters,
+            ReportInstanceNewResourceParameters reportInstanceNewResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateNewReportInstancesResourceUri(_urlHelper, workFlowGuid, ResourceUriType.Current, reportInstanceResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateNewReportInstancesResourceUri(workFlowGuid, ResourceUriType.Current, reportInstanceNewResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateNewReportInstancesResourceUri(_urlHelper, workFlowGuid, ResourceUriType.NextPage, reportInstanceResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateNewReportInstancesResourceUri(workFlowGuid, ResourceUriType.NextPage, reportInstanceNewResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateNewReportInstancesResourceUri(_urlHelper, workFlowGuid, ResourceUriType.PreviousPage, reportInstanceResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateNewReportInstancesResourceUri(workFlowGuid, ResourceUriType.PreviousPage, reportInstanceNewResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -964,12 +967,8 @@ namespace PVIMS.API.Controllers
 
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var user = _userRepository.Get(u => u.UserName == userName);
-            if (user.Roles.Select(r => r.Role) == null)
-            {
-                throw new Exception("No roles");
-            }
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateReportInstanceResourceUri(_urlHelper, workFlowGuid, identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateReportInstanceResourceUri(workFlowGuid, identifier.Id), "self", "GET"));
 
             var reportInstance = _reportInstanceRepository.Get(r => r.Id == identifier.Id);
             if (reportInstance == null)
@@ -984,14 +983,14 @@ namespace PVIMS.API.Controllers
                 case "Confirm Report Data":
                     if (currentActivityInstance.CurrentStatus.Description == "UNCONFIRMED")
                     {
-                        identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateReportInstanceStatusResourceUri(_urlHelper, workFlowGuid, identifier.Id), "confirm", "PUT"));
-                        identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateReportInstanceStatusResourceUri(_urlHelper, workFlowGuid, identifier.Id), "delete", "PUT"));
+                        identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus", workFlowGuid, identifier.Id), "confirm", "PUT"));
+                        identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus", workFlowGuid, identifier.Id), "delete", "PUT"));
                     }
 
                     break;
 
                 case "Set MedDRA and Causality":
-                    identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateReportInstanceTerminologyResourceUri(_urlHelper, workFlowGuid, identifier.Id), "setmeddra", "PUT"));
+                    identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceTerminology", workFlowGuid, identifier.Id), "setmeddra", "PUT"));
 
                     if (currentActivityInstance.CurrentStatus.Description != "NOTSET")
                     {
@@ -1000,15 +999,15 @@ namespace PVIMS.API.Controllers
 
                         if (configValue == "Both Scales" || configValue == "WHO Scale")
                         {
-                            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateReportInstanceStatusResourceUri(_urlHelper, workFlowGuid, identifier.Id), "whocausalityset", "PUT"));
+                            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus", workFlowGuid, identifier.Id), "whocausalityset", "PUT"));
                         }
 
                         if (configValue == "Both Scales" || configValue == "Naranjo Scale")
                         {
-                            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateReportInstanceStatusResourceUri(_urlHelper, workFlowGuid, identifier.Id), "naranjocausalityset", "PUT"));
+                            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus", workFlowGuid, identifier.Id), "naranjocausalityset", "PUT"));
                         }
 
-                        identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateReportInstanceStatusResourceUri(_urlHelper, workFlowGuid, identifier.Id), "causalityset", "PUT"));
+                        identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus", workFlowGuid, identifier.Id), "causalityset", "PUT"));
                     }
 
                     break;
@@ -1016,11 +1015,11 @@ namespace PVIMS.API.Controllers
                 case "Extract E2B":
                     if (currentActivityInstance.CurrentStatus.Description == "NOTGENERATED" || currentActivityInstance.CurrentStatus.Description == "E2BSUBMITTED")
                     {
-                        identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateE2BInstanceResourceUri(_urlHelper, workFlowGuid, identifier.Id), "createe2b", "PUT"));
+                        identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("CreateE2BInstance", workFlowGuid, identifier.Id), "createe2b", "PUT"));
                     }
                     if (currentActivityInstance.CurrentStatus.Description == "E2BINITIATED")
                     {
-                        identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateReportInstanceStatusResourceUri(_urlHelper, workFlowGuid, identifier.Id), "preparereporte2b", "PUT"));
+                        identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus", workFlowGuid, identifier.Id), "preparereporte2b", "PUT"));
 
                         var evt = currentActivityInstance.ExecutionEvents
                             .OrderByDescending(ee => ee.EventDateTime)
@@ -1035,13 +1034,13 @@ namespace PVIMS.API.Controllers
 
                         if(datasetInstance != null)
                         {
-                            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateDatasetInstanceResourceUri(_urlHelper, datasetInstance.Dataset.Id, datasetInstance.Id), "updatee2b", "PUT"));
+                            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDatasetInstanceResourceUri(datasetInstance.Dataset.Id, datasetInstance.Id), "updatee2b", "PUT"));
                         }
                     }
 
                     if (currentActivityInstance.CurrentStatus.Description == "E2BGENERATED")
                     {
-                        identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateReportInstanceStatusResourceUri(_urlHelper, workFlowGuid, identifier.Id), "confirmsubmissione2b", "PUT"));
+                        identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus", workFlowGuid, identifier.Id), "confirmsubmissione2b", "PUT"));
 
                         var e2bAttachment = currentActivityInstance.ExecutionEvents
                             .OrderByDescending(ee => ee.EventDateTime)
@@ -1049,7 +1048,7 @@ namespace PVIMS.API.Controllers
                             .Attachments.SingleOrDefault(att => att.Description == "E2b");
                         if (e2bAttachment != null)
                         {
-                            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateDownloadActivitySingleAttachmentResourceUri(_urlHelper, workFlowGuid, reportInstance.Id, e2bAttachment.ActivityExecutionStatusEvent.Id, e2bAttachment.Id), "downloadxml", "GET"));
+                            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateDownloadActivitySingleAttachmentResourceUri(workFlowGuid, reportInstance.Id, e2bAttachment.ActivityExecutionStatusEvent.Id, e2bAttachment.Id), "downloadxml", "GET"));
                         }
                     }
 
@@ -1060,9 +1059,10 @@ namespace PVIMS.API.Controllers
             }
 
             var validRoles = new string[] { "RegClerk", "DataCap", "Clinician" };
-            if (reportInstance.WorkFlow.Description == "New Active Surveilliance Report" && _userRoleRepository.Exists(ur => ur.User.Id == user.Id && validRoles.Contains(ur.Role.Key)))
+            //if (reportInstance.WorkFlow.Description == "New Active Surveilliance Report" && _userRoleRepository.Exists(ur => ur.User.Id == user.Id && validRoles.Contains(ur.Role.Key)))
+            if (reportInstance.WorkFlow.Description == "New Active Surveilliance Report")
             {
-                identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Patient", identifier.Id), "viewpatient", "GET"));
+                identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Patient", identifier.Id), "viewpatient", "GET"));
             }
 
             if (reportInstance.WorkFlow.Description == "New Spontaneous Surveilliance Report")
@@ -1070,7 +1070,7 @@ namespace PVIMS.API.Controllers
                 var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
                     .Queryable()
                     .Single(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
-                identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateDatasetInstanceResourceUri(_urlHelper, datasetInstance.Dataset.Id, datasetInstance.Id), "updatespont", "PUT"));
+                identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDatasetInstanceResourceUri(datasetInstance.Dataset.Id, datasetInstance.Id), "updatespont", "PUT"));
             }
 
             return identifier;
@@ -1234,7 +1234,7 @@ namespace PVIMS.API.Controllers
         /// Create E2B dataset instance for an active report
         /// </summary>
         /// <returns></returns>
-        private void CreateE2BForActive(ReportInstance reportInstanceFromRepo)
+        private async Task CreateE2BForActiveAsync(ReportInstance reportInstanceFromRepo)
         {
             DatasetInstance datasetInstance = null;
 
@@ -1253,7 +1253,7 @@ namespace PVIMS.API.Controllers
                 .SingleOrDefault(p => p.PatientClinicalEventGuid == reportInstanceFromRepo.ContextGuid);
 
             // Add activity and link E2B to new element
-            var evt = _workFlowService.ExecuteActivity(reportInstanceFromRepo.ContextGuid, "E2BINITIATED", "AUTOMATION: E2B dataset created", null, "");
+            var evt = await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "E2BINITIATED", "AUTOMATION: E2B dataset created", null, "");
 
             if (dataset != null && patientClinicalEvent != null)
             {
@@ -1292,7 +1292,7 @@ namespace PVIMS.API.Controllers
         /// Create E2B dataset instance for a spontaneous report
         /// </summary>
         /// <returns></returns>
-        private void CreateE2BForSpontaneous(ReportInstance reportInstanceFromRepo)
+        private async Task CreateE2BForSpontaneousAsync(ReportInstance reportInstanceFromRepo)
         {
             DatasetInstance datasetInstance = null;
 
@@ -1316,7 +1316,7 @@ namespace PVIMS.API.Controllers
             if (dataset != null && sourceInstance != null)
             {
                 // Add activity and link E2B to new element
-                var evt = _workFlowService.ExecuteActivity(reportInstanceFromRepo.ContextGuid, "E2BINITIATED", "AUTOMATION: E2B dataset created", null, "");
+                var evt = await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "E2BINITIATED", "AUTOMATION: E2B dataset created", null, "");
 
                 datasetInstance = dataset.CreateInstance(evt.Id, null);
                 datasetInstance.Tag = "Spontaneous";
@@ -2333,27 +2333,28 @@ namespace PVIMS.API.Controllers
             CausalityReportResourceParameters causalityReportResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateCausalityReportResourceUri(_urlHelper, ResourceUriType.Current, workFlowGuid, causalityReportResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateCausalityReportResourceUri(workFlowGuid, ResourceUriType.Current, causalityReportResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateCausalityReportResourceUri(_urlHelper, ResourceUriType.NextPage, workFlowGuid, causalityReportResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateCausalityReportResourceUri(workFlowGuid, ResourceUriType.NextPage, causalityReportResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateCausalityReportResourceUri(_urlHelper, ResourceUriType.PreviousPage, workFlowGuid, causalityReportResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateCausalityReportResourceUri(workFlowGuid, ResourceUriType.PreviousPage, causalityReportResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
         }
-
     }
 }

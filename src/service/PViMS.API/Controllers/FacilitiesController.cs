@@ -33,12 +33,12 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<FacilityType> _facilityTypeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public FacilitiesController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Facility> facilityRepository,
             IRepositoryInt<FacilityType> facilityTypeRepository,
             IUnitOfWorkInt unitOfWork)
@@ -46,7 +46,7 @@ namespace PVIMS.API.Controllers
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
             _facilityTypeRepository = facilityTypeRepository ?? throw new ArgumentNullException(nameof(facilityTypeRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -533,23 +533,25 @@ namespace PVIMS.API.Controllers
             FacilityResourceParameters facilityResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateFacilitiesResourceUri(_urlHelper, ResourceUriType.Current, facilityResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateFacilitiesResourceUri(ResourceUriType.Current, facilityResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateFacilitiesResourceUri(_urlHelper, ResourceUriType.NextPage, facilityResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateFacilitiesResourceUri(ResourceUriType.NextPage, facilityResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateFacilitiesResourceUri(_urlHelper, ResourceUriType.PreviousPage, facilityResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateFacilitiesResourceUri(ResourceUriType.PreviousPage, facilityResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -564,10 +566,8 @@ namespace PVIMS.API.Controllers
         {
             FacilityIdentifierDto identifier = (FacilityIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Facility", identifier.Id), "self", "GET"));
-
-            // Add delete ink if available on this facility
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateDeleteResourceUri(_urlHelper, "Facility", identifier.Id), "self", "DELETE"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Facility", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateDeleteResourceUri("Facility", identifier.Id), "self", "DELETE"));
 
             return identifier;
         }

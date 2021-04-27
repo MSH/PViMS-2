@@ -34,12 +34,12 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<MedicationForm> _medicationFormRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public ConceptsController(IPropertyMappingService propertyMappingService, 
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Product> productRepository,
             IRepositoryInt<Concept> conceptRepository,
             IRepositoryInt<MedicationForm> medicationFormRepository,
@@ -48,7 +48,7 @@ namespace PVIMS.API.Controllers
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _conceptRepository = conceptRepository ?? throw new ArgumentNullException(nameof(conceptRepository));
             _medicationFormRepository = medicationFormRepository ?? throw new ArgumentNullException(nameof(medicationFormRepository));
@@ -868,23 +868,25 @@ namespace PVIMS.API.Controllers
             ConceptResourceParameters conceptResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateConceptsResourceUri(_urlHelper, ResourceUriType.Current, conceptResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateConceptsResourceUri(ResourceUriType.Current, conceptResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateConceptsResourceUri(_urlHelper, ResourceUriType.NextPage, conceptResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateConceptsResourceUri(ResourceUriType.NextPage, conceptResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateConceptsResourceUri(_urlHelper, ResourceUriType.PreviousPage, conceptResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateConceptsResourceUri(ResourceUriType.PreviousPage, conceptResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -903,23 +905,25 @@ namespace PVIMS.API.Controllers
             ProductResourceParameters productResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateProductsResourceUri(_urlHelper, ResourceUriType.Current, productResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateProductsResourceUri(ResourceUriType.Current, productResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateProductsResourceUri(_urlHelper, ResourceUriType.NextPage, productResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateProductsResourceUri(ResourceUriType.NextPage, productResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateProductsResourceUri(_urlHelper, ResourceUriType.PreviousPage, productResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateProductsResourceUri(ResourceUriType.PreviousPage, productResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -934,7 +938,7 @@ namespace PVIMS.API.Controllers
         {
             ProductIdentifierDto identifier = (ProductIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Product", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Product", identifier.Id), "self", "GET"));
 
             return identifier;
         }
@@ -948,10 +952,9 @@ namespace PVIMS.API.Controllers
         {
             ConceptIdentifierDto identifier = (ConceptIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Concept", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Concept", identifier.Id), "self", "GET"));
 
             return identifier;
         }
-
     }
 }

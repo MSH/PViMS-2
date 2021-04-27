@@ -53,9 +53,6 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("int")
                         .UseIdentityColumn();
 
-                    b.Property<bool>("Active")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("AllowDatasetDownload")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -161,10 +158,6 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasColumnName("Activity_Id");
 
-                    b.Property<int>("Activity_Id")
-                        .HasColumnType("int")
-                        .HasColumnName("Activity_Id1");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -203,7 +196,6 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime?>("ContextDateTime")
-                        .IsRequired()
                         .HasColumnType("datetime");
 
                     b.Property<int>("EventCreatedById")
@@ -219,7 +211,7 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ActivityInstanceId", "ExecutionStatusId")
+                    b.HasIndex("EventDateTime", "ActivityInstanceId", "ExecutionStatusId")
                         .IsUnique();
 
                     b.HasIndex(new[] { "ActivityInstanceId" }, "IX_ActivityInstance_Id");
@@ -873,11 +865,16 @@ namespace PViMS.Infrastructure.Migrations
                         .UseIdentityColumn();
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ContextTypes");
+                    b.HasIndex("Description")
+                        .IsUnique();
+
+                    b.ToTable("ContextType");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.CustomAttributeConfiguration", b =>
@@ -3065,16 +3062,23 @@ namespace PViMS.Infrastructure.Migrations
                         .UseIdentityColumn();
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int?>("ParentId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("Parent_Id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("Description")
+                        .IsUnique();
 
-                    b.ToTable("OrgUnitTypes");
+                    b.HasIndex(new[] { "ParentId" }, "IX_Parent_Id")
+                        .HasDatabaseName("IX_Parent_Id1");
+
+                    b.ToTable("OrgUnitType");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.Outcome", b =>
@@ -3825,9 +3829,6 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductName")
-                        .IsUnique();
-
                     b.HasIndex(new[] { "ConceptId" }, "IX_Concept_Id")
                         .HasDatabaseName("IX_Concept_Id3");
 
@@ -3996,8 +3997,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OptionName")
-                        .IsUnique();
+                    b.HasIndex("Display")
+                        .IsUnique()
+                        .HasFilter("[Display] IS NOT NULL");
 
                     b.HasIndex(new[] { "RiskFactorId" }, "IX_RiskFactor_Id");
 
@@ -4015,16 +4017,16 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SelectionKey")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AttributeKey")
+                    b.HasIndex("AttributeKey", "SelectionKey")
                         .IsUnique()
-                        .HasFilter("[AttributeKey] IS NOT NULL");
+                        .HasFilter("[AttributeKey] IS NOT NULL AND [SelectionKey] IS NOT NULL");
 
                     b.ToTable("SelectionDataItem");
                 });
@@ -4231,14 +4233,8 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedDraCode")
-                        .IsUnique();
-
-                    b.HasIndex("MedDraTerm")
-                        .IsUnique();
-
                     b.HasIndex(new[] { "ParentId" }, "IX_Parent_Id")
-                        .HasDatabaseName("IX_Parent_Id1");
+                        .HasDatabaseName("IX_Parent_Id2");
 
                     b.ToTable("TerminologyMedDra");
                 });
@@ -5446,7 +5442,8 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.OrgUnitType", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentId")
+                        .HasConstraintName("FK_dbo.OrgUnitType_dbo.OrgUnitType_Parent_Id");
 
                     b.Navigation("Parent");
                 });

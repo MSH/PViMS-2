@@ -33,20 +33,20 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<TerminologyMedDra> _termsRepository;
         private readonly IMedDraService _medDraService;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public MeddraTermsController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMedDraService medDraService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<TerminologyMedDra> termsRepository)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _medDraService = medDraService ?? throw new ArgumentNullException(nameof(medDraService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _termsRepository = termsRepository ?? throw new ArgumentNullException(nameof(termsRepository));
         }
 
@@ -382,7 +382,7 @@ namespace PVIMS.API.Controllers
         {
             MeddraTermIdentifierDto identifier = (MeddraTermIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "MeddraTerm", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("MeddraTerm", identifier.Id), "self", "GET"));
 
             return identifier;
         }

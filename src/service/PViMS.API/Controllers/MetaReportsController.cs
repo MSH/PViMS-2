@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Services;
@@ -26,24 +27,24 @@ namespace PVIMS.API.Controllers
     public class MetaReportsController : ControllerBase
     {
         private readonly ITypeHelperService _typeHelperService;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IRepositoryInt<MetaReport> _metaReportRepository;
         private readonly IRepositoryInt<MetaTable> _metaTableRepository;
         private readonly IRepositoryInt<MetaColumn> _metaColumnRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
 
         public MetaReportsController(ITypeHelperService typeHelperService,
+            ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            IUrlHelper urlHelper,
             IRepositoryInt<MetaReport> metaReportRepository,
             IRepositoryInt<MetaTable> metaTableRepository,
             IRepositoryInt<MetaColumn> metaColumnTypeRepository,
             IUnitOfWorkInt unitOfWork)
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
             _metaReportRepository = metaReportRepository ?? throw new ArgumentNullException(nameof(metaReportRepository));
             _metaTableRepository = metaTableRepository ?? throw new ArgumentNullException(nameof(metaTableRepository));
             _metaColumnRepository = metaColumnTypeRepository ?? throw new ArgumentNullException(nameof(metaColumnTypeRepository));
@@ -472,7 +473,7 @@ namespace PVIMS.API.Controllers
         {
             MetaReportIdentifierDto identifier = (MetaReportIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "MetaReport", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("MetaReport", identifier.Id), "self", "GET"));
 
             return identifier;
         }
@@ -1006,23 +1007,25 @@ namespace PVIMS.API.Controllers
             IdResourceParameters metaResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateMetaReportsResourceUri(_urlHelper, ResourceUriType.Current, metaResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaReportsByIdentifier", metaResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateMetaReportsResourceUri(_urlHelper, ResourceUriType.NextPage, metaResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaReportsByIdentifier", metaResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateMetaReportsResourceUri(_urlHelper, ResourceUriType.PreviousPage, metaResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaReportsByIdentifier", metaResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;

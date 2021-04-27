@@ -168,6 +168,7 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new ConditionMedDraEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ConditionMedicationEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ConfigEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ContextTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ContingencyAnalysisItemViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ContingencyAnalysisListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ContingencyAnalysisPatientViewTypeConfiguration());
@@ -220,6 +221,7 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new MetaWidgetEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new MetaWidgetTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new OrgUnitEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new OrgUnitTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new OutcomeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new OutstandingVisitListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientEntityTypeConfiguration());
