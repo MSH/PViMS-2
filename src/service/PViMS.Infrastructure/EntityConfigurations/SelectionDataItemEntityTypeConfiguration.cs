@@ -12,7 +12,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.HasIndex("AttributeKey").IsUnique(true);
+            configuration.HasIndex(new string[] { "AttributeKey", "SelectionKey" }).IsUnique(true);
         }
     }
 }

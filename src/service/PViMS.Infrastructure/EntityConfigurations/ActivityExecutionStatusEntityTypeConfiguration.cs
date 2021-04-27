@@ -22,11 +22,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.Property(c => c.FriendlyDescription)
                 .HasMaxLength(100);
 
-            configuration.HasOne(c => c.Activity)
-                .WithMany()
-                .HasForeignKey("Activity_Id")
-                .IsRequired(true);
-
             configuration.HasOne(d => d.Activity)
                 .WithMany(p => p.ExecutionStatuses)
                 .HasForeignKey(d => d.ActivityId)

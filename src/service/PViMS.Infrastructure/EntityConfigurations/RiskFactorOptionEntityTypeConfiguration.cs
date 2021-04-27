@@ -33,7 +33,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_dbo.RiskFactorOption_dbo.RiskFactor_RiskFactor_Id");
 
-            configuration.HasIndex("OptionName").IsUnique(true);
+            configuration.HasIndex("Display").IsUnique(true);
             configuration.HasIndex(e => e.RiskFactorId, "IX_RiskFactor_Id");
         }
     }

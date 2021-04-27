@@ -20,7 +20,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasMaxLength(20);
 
             configuration.Property(c => c.ContextDateTime)
-                .IsRequired()
                 .HasColumnType("datetime");
 
             configuration.Property(e => e.EventCreatedById)
@@ -52,7 +51,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_dbo.ActivityExecutionStatusEvent_dbo.ActivityExecutionStatus_ExecutionStatus_Id");
 
-            configuration.HasIndex(e => new { e.ActivityInstanceId, e.ExecutionStatusId }).IsUnique(true);
+            configuration.HasIndex(e => new { e.EventDateTime, e.ActivityInstanceId, e.ExecutionStatusId }).IsUnique(true);
             configuration.HasIndex(e => e.ActivityInstanceId, "IX_ActivityInstance_Id");
             configuration.HasIndex(e => e.EventCreatedById, "IX_EventCreatedBy_Id");
             configuration.HasIndex(e => e.ExecutionStatusId, "IX_ExecutionStatus_Id");
