@@ -1,3 +1,4 @@
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities.Accounts;
 using System;
 
@@ -18,10 +19,10 @@ namespace PVIMS.Core.Entities
         public int? AuditUserId { get; set; }
         public int? ActivityExecutionStatusEventId { get; set; }
 
-		public virtual AttachmentType AttachmentType { get; set; }
+        public virtual AttachmentType AttachmentType { get; set; }
 		public virtual Encounter Encounter { get; set; }
 		public virtual Patient Patient { get; set; }
-        public virtual ActivityExecutionStatusEvent ActivityExecutionStatusEvent { get; set; }
         public virtual User AuditUser { get; set; }
+        public virtual ActivityExecutionStatusEvent ActivityExecutionStatusEvent { get; set; }
     }
 }

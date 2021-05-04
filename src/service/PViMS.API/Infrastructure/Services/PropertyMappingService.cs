@@ -1,4 +1,5 @@
 ﻿using PVIMS.API.Models;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PVIMS.Core.Aggregates.ReportInstanceAggregate;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -51,6 +52,10 @@ namespace PVIMS.Core.Entities.Accounts
             RefreshTokens = new HashSet<RefreshToken>();
             ReportInstanceCreations = new HashSet<ReportInstance>();
             ReportInstanceUpdates = new HashSet<ReportInstance>();
+            ReportInstanceTaskCreations = new HashSet<ReportInstanceTask>();
+            ReportInstanceTaskUpdates = new HashSet<ReportInstanceTask>();
+            ReportInstanceTaskCommentCreations = new HashSet<ReportInstanceTaskComment>();
+            ReportInstanceTaskCommentUpdates = new HashSet<ReportInstanceTaskComment>();
             SiteContactDetailCreations = new HashSet<SiteContactDetail>();
             SiteContactDetailUpdates = new HashSet<SiteContactDetail>();
             SystemLogCreations = new HashSet<SystemLog>();
@@ -111,6 +116,10 @@ namespace PVIMS.Core.Entities.Accounts
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
         public virtual ICollection<ReportInstance> ReportInstanceCreations { get; set; }
         public virtual ICollection<ReportInstance> ReportInstanceUpdates { get; set; }
+        public virtual ICollection<ReportInstanceTask> ReportInstanceTaskCreations { get; set; }
+        public virtual ICollection<ReportInstanceTask> ReportInstanceTaskUpdates { get; set; }
+        public virtual ICollection<ReportInstanceTaskComment> ReportInstanceTaskCommentCreations { get; set; }
+        public virtual ICollection<ReportInstanceTaskComment> ReportInstanceTaskCommentUpdates { get; set; }
         public virtual ICollection<SiteContactDetail> SiteContactDetailCreations { get; set; }
         public virtual ICollection<SiteContactDetail> SiteContactDetailUpdates { get; set; }
         public virtual ICollection<SystemLog> SystemLogCreations { get; set; }

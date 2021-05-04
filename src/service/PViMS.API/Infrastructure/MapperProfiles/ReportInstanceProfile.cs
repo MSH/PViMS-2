@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using PVIMS.API.Models;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Keyless;
 using System;
