@@ -11,6 +11,7 @@ using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
@@ -23,13 +24,11 @@ using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -39,16 +38,18 @@ namespace PVIMS.API.Controllers
     public class ReportInstancesController : ControllerBase
     {
         private readonly IPropertyMappingService _propertyMappingService;
-        private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
+        private readonly IRepositoryInt<ActivityExecutionStatusEvent> _activityExecutionStatusEventRepository;
+        private readonly IRepositoryInt<Attachment> _attachmentRepository;
+        private readonly IRepositoryInt<Config> _configRepository;
+        private readonly IRepositoryInt<Dataset> _datasetRepository;
+        private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
+        private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
+        private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly IRepositoryInt<ReportInstanceMedication> _reportInstanceMedicationRepository;
-        private readonly IRepositoryInt<ActivityExecutionStatusEvent> _activityExecutionStatusEventRepository;
-        private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
-        private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
-        private readonly IRepositoryInt<Config> _configRepository;
-        private readonly IRepositoryInt<Attachment> _attachmentRepository;
         private readonly IRepositoryInt<User> _userRepository;
+        private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IReportService _reportService;
@@ -61,16 +62,18 @@ namespace PVIMS.API.Controllers
         public ReportInstancesController(IPropertyMappingService propertyMappingService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
-            IRepositoryInt<WorkFlow> workFlowRepository,
-            IRepositoryInt<ReportInstance> reportInstanceRepository,
-            IRepositoryInt<ReportInstanceMedication> reportInstanceMedicationRepository,
             IRepositoryInt<ActivityExecutionStatusEvent> activityExecutionStatusEventRepository,
+            IRepositoryInt<Attachment> attachmentRepository,
+            IRepositoryInt<Config> configRepository,
+            IRepositoryInt<Dataset> datasetRepository,
+            IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository,
+            IRepositoryInt<ReportInstance> reportInstanceRepository,
+            IRepositoryInt<ReportInstanceMedication> reportInstanceMedicationRepository,
             IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
-            IRepositoryInt<Config> configRepository,
-            IRepositoryInt<Attachment> attachmentRepository,
             IRepositoryInt<User> userRepository,
+            IRepositoryInt<WorkFlow> workFlowRepository,
             IReportService reportService,
             IInfrastructureService infrastructureService,
             IWorkFlowService workFlowService,
@@ -89,6 +92,8 @@ namespace PVIMS.API.Controllers
             _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
             _terminologyMeddraRepository = terminologyMeddraRepository ?? throw new ArgumentNullException(nameof(terminologyMeddraRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
+            _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
+            _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _attachmentRepository = attachmentRepository ?? throw new ArgumentNullException(nameof(attachmentRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
@@ -1261,19 +1266,16 @@ namespace PVIMS.API.Controllers
             DatasetInstance datasetInstance = null;
 
             // Determine which E2B dataset to use
-            var datasetName = _configRepository.Get(c => c.ConfigType == ConfigType.E2BVersion).ConfigValue;
-            var dataset = _unitOfWork.Repository<Dataset>()
-                .Queryable()
-                .Include("DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType")
-                .Include("DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType")
-                .SingleOrDefault(d => d.DatasetName == datasetName);
+            var config = await _configRepository.GetAsync(c => c.ConfigType == ConfigType.E2BVersion);
+            if (config == null)
+            {
+                throw new KeyNotFoundException(nameof(config));
+            }
+            var datasetName = config.ConfigValue;
 
-            // Load source element
-            var patientClinicalEvent = _unitOfWork.Repository<PatientClinicalEvent>()
-                .Queryable()
-                .Include("Patient")
-                .SingleOrDefault(p => p.PatientClinicalEventGuid == reportInstanceFromRepo.ContextGuid);
-
+            var dataset = await _datasetRepository.GetAsync(d => d.DatasetName == datasetName, new string[] { "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType", "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType" });
+            var patientClinicalEvent = await _patientClinicalEventRepository.GetAsync(p => p.PatientClinicalEventGuid == reportInstanceFromRepo.ContextGuid, new string[] { "Patient" });
+            
             // Add activity and link E2B to new element
             var evt = await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "E2BINITIATED", "AUTOMATION: E2B dataset created", null, "");
 
@@ -1281,6 +1283,7 @@ namespace PVIMS.API.Controllers
             {
                 datasetInstance = dataset.CreateInstance(evt.Id, null);
                 datasetInstance.Tag = "Active";
+                
                 _unitOfWork.Repository<DatasetInstance>().Save(datasetInstance);
 
                 // Default values
@@ -1322,18 +1325,15 @@ namespace PVIMS.API.Controllers
             var user = _userRepository.Get(u => u.UserName == userName);
 
             // Determine which E2B dataset to use
-            var datasetName = _configRepository.Get(c => c.ConfigType == ConfigType.E2BVersion).ConfigValue;
-            var dataset = _unitOfWork.Repository<Dataset>()
-                .Queryable()
-                .Include("DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType")
-                .Include("DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType")
-                .SingleOrDefault(d => d.DatasetName == datasetName);
+            var config = await _configRepository.GetAsync(c => c.ConfigType == ConfigType.E2BVersion);
+            if (config == null)
+            {
+                throw new KeyNotFoundException(nameof(config));
+            }
+            var datasetName = config.ConfigValue;
 
-            // Load source element
-            var sourceInstance = _unitOfWork.Repository<DatasetInstance>()
-                .Queryable()
-                .Include("Dataset")
-                .SingleOrDefault(ds => ds.DatasetInstanceGuid == reportInstanceFromRepo.ContextGuid);
+            var dataset = await _datasetRepository.GetAsync(d => d.DatasetName == datasetName, new string[] { "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType", "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType" });
+            var sourceInstance = await _datasetInstanceRepository.GetAsync(ds => ds.DatasetInstanceGuid == reportInstanceFromRepo.ContextGuid, new string[] { "Dataset" });
 
             if (dataset != null && sourceInstance != null)
             {

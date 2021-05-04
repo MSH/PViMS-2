@@ -20,7 +20,6 @@ using PVIMS.Core.Paging;
 using PViMS.Infrastructure.Identity.Entities;
 using System;
 using System.Collections;
-using System.Data.Entity;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -342,7 +341,7 @@ namespace PVIMS.API.Controllers
                 _userRepository.Update(userFromRepo);
 
                 UpdateUserRoles(userForUpdate, userFromRepo);
-                UpdateUserFacilities(userForUpdate, userFromRepo);
+                await UpdateUserFacilitiesAsync(userForUpdate, userFromRepo);
 
                 _unitOfWork.Complete();
             }
@@ -635,7 +634,7 @@ namespace PVIMS.API.Controllers
         /// <param name="userForUpdate">The payload containing the list of facilities</param>
         /// <param name="userFromRepo">The user entity that is being updated</param>
         /// <returns></returns>
-        private void UpdateUserFacilities(UserForUpdateDto userForUpdate, User userFromRepo)
+        private async Task UpdateUserFacilitiesAsync(UserForUpdateDto userForUpdate, User userFromRepo)
         {
             var facilityNames = userForUpdate.Facilities.ToArray();
 
@@ -647,9 +646,9 @@ namespace PVIMS.API.Controllers
             // Determine what has been removed
             ArrayList deleteCollection = new ArrayList();
             ArrayList addCollection = new ArrayList();
-            foreach (var userFacility in _unitOfWork.Repository<UserFacility>().Queryable()
-                .Include(i1 => i1.Facility)
-                .Where(r => r.User.Id == userFromRepo.Id))
+            var userFacilities = await _userFacilityRepository.ListAsync(r => r.User.Id == userFromRepo.Id, null, new string[] { "Facility" });
+
+            foreach (var userFacility in userFacilities)
             {
                 if (!facilities.Contains(userFacility.Facility.FacilityName))
                 {
