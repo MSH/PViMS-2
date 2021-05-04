@@ -20,8 +20,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Application\NewFolder\**" />
+    <Content Remove="Application\NewFolder\**" />
+    <EmbeddedResource Remove="Application\NewFolder\**" />
+    <None Remove="Application\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Dapper" Version="2.0.90" />
     <PackageReference Include="DotNetZip" Version="1.15.0" />
     <PackageReference Include="LinqKit.Core" Version="1.1.17" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
@@ -60,6 +68,13 @@
     <None Update="StaticFiles\SIAPS_USAID_Small.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Application\Behaviors\" />
+    <Folder Include="Application\Commands\" />
+    <Folder Include="Application\DomainEventHandlers\" />
+    <Folder Include="Application\Validations\" />
   </ItemGroup>
 
 </Project>
