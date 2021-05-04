@@ -1,13 +1,12 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace PVIMS.API.Models
+namespace PVIMS.API.Application.Queries.ReportInstance
 {
     /// <summary>
     /// A activity history value representation containing audit details of all activities
     /// </summary>
     [DataContract()]
-    public class ActivityExecutionStatusEventDto : LinkedResourceBaseDto
+    public class ReportInstanceEventDto
     {
         /// <summary>
         /// The unique identifier of the status event
@@ -56,35 +55,5 @@ namespace PVIMS.API.Models
         /// </summary>
         [DataMember]
         public string Comments { get; set; }
-
-        /// <summary>
-        /// The date the E2B extract receipt was confirmed
-        /// </summary>
-        [DataMember]
-        public string ReceiptDate { get; set; }
-
-        /// <summary>
-        /// A code for the E2B extract receipt
-        /// </summary>
-        [DataMember]
-        public string ReceiptCode { get; set; }
-
-        /// <summary>
-        /// The unique identifier of the patient summary attachment
-        /// </summary>
-        [DataMember]
-        public int PatientSummaryFileId { get; set; }
-
-        /// <summary>
-        /// The unique identifier of the patient extract attachment
-        /// </summary>
-        [DataMember]
-        public int PatientExtractFileId { get; set; }
-
-        /// <summary>
-        /// The unique identifier of the xml file attachment
-        /// </summary>
-        [DataMember]
-        public int E2bXmlFileId { get; set; }
     }
 }

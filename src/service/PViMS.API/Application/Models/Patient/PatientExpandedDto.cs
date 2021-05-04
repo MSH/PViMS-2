@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PVIMS.API.Application.Queries.ReportInstance;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace PVIMS.API.Models
@@ -73,6 +74,6 @@ namespace PVIMS.API.Models
         /// Activity per clinical event
         /// </summary>
         [DataMember]
-        public ICollection<ActivityExecutionStatusEventDto> Activity { get; set; } = new List<ActivityExecutionStatusEventDto>();
+        public ICollection<ReportInstanceEventDto> Activity { get; set; } = new List<ReportInstanceEventDto>();
     }
 }
