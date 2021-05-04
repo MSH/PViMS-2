@@ -30,6 +30,7 @@ using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Infrastructure;
+using PVIMS.API.Application.Queries.ReportInstance;
 
 namespace PVIMS.API.Controllers
 {
@@ -61,6 +62,7 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
+        private readonly IReportInstanceQueries _reportInstanceQueries;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
@@ -97,6 +99,7 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<User> userRepository,
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
+            IReportInstanceQueries reportInstanceQueries,
             IReportService reportService,
             IPatientService patientService,
             IWorkFlowService workFlowService,
@@ -131,6 +134,7 @@ namespace PVIMS.API.Controllers
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
+            _reportInstanceQueries = reportInstanceQueries ?? throw new ArgumentNullException(nameof(reportInstanceQueries));
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
@@ -294,7 +298,7 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            return Ok(CreateLinksForPatient<PatientExpandedDto>(CustomPatientMap(mappedPatient)));
+            return Ok(CreateLinksForPatient<PatientExpandedDto>(await CustomPatientMapAsync(mappedPatient)));
         }
 
         /// <summary>
@@ -1412,9 +1416,9 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
         /// <returns></returns>
-        private PatientExpandedDto CustomPatientMap(PatientExpandedDto dto)
+        private async Task<PatientExpandedDto> CustomPatientMapAsync(PatientExpandedDto dto)
         {
-            var patient = _patientRepository.Get(p => p.Id == dto.Id);
+            var patient = await _patientRepository.GetAsync(p => p.Id == dto.Id);
             IExtendable patientExtended = patient;
 
             if (patient == null)
@@ -1475,24 +1479,8 @@ namespace PVIMS.API.Controllers
             dto.ConditionGroups = groupArray;
 
             // Activity
-            var activityItems = _workFlowService.GetExecutionStatusEventsForPatientView(patient);
-            foreach(var activity in activityItems)
-            {
-                if(activity.ActivityItems.Count > 0)
-                {
-                    var activityItem = activity.ActivityItems.First();
-                    dto.Activity.Add(new ActivityExecutionStatusEventDto()
-                    {
-                        PatientClinicalEventId = activity.PatientClinicalEvent.Id,
-                        AdverseEvent = activity.PatientClinicalEvent.SourceDescription,
-                        ExecutedDate = activityItem.ExecutedDate,
-                        Activity = activityItem.Activity,
-                        ExecutionEvent = activityItem.ExecutionStatus,
-                        ExecutedBy = activityItem.ExecutedBy,
-                        Comments = activityItem.Comments,
-                    });
-                }
-            }
+            var activity = await _reportInstanceQueries.GetExecutionStatusEventsForPatientViewAsync(patient.Id);
+            dto.Activity = activity.ToList();
 
             return dto;
         }

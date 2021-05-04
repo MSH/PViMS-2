@@ -3,10 +3,12 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using A = DocumentFormat.OpenXml.Drawing;
 using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
+using FontSize = DocumentFormat.OpenXml.Wordprocessing.FontSize;
 using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 using Microsoft.AspNetCore.Hosting;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
@@ -24,17 +26,16 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
-
-using SelectionDataItem = PVIMS.Core.Entities.SelectionDataItem;
-using CustomAttributeConfiguration = PVIMS.Core.Entities.CustomAttributeConfiguration;
-using FontSize = DocumentFormat.OpenXml.Wordprocessing.FontSize;
+using System.Threading.Tasks;
 
 namespace PVIMS.Services
 {
     public class ArtefactService : IArtefactService
     {
         private readonly IUnitOfWorkInt _unitOfWork;
+        private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
+        private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
 
         private readonly IHostingEnvironment _environment;
@@ -46,13 +47,17 @@ namespace PVIMS.Services
             ICustomAttributeService attributeService,
             IPatientService patientService,
             IHostingEnvironment environment,
+            IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
+            IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _attributeService = attributeService ?? throw new ArgumentNullException(nameof(attributeService));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+            _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
+            _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
             _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
@@ -322,7 +327,7 @@ namespace PVIMS.Services
             return model;
         }
 
-        public ArtefactInfoModel CreateDatasetInstanceForDownload(long datasetInstanceId)
+        public async Task<ArtefactInfoModel> CreateDatasetInstanceForDownloadAsync(long datasetInstanceId)
         {
             var model = new ArtefactInfoModel();
             var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
@@ -354,10 +359,11 @@ namespace PVIMS.Services
                 }
 
                 // Write content
-                // Get instance
-                DatasetInstance datasetInstance = _unitOfWork.Repository<DatasetInstance>()
-                    .Queryable()
-                    .SingleOrDefault(di => di.Id == datasetInstanceId);
+                var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.Id == datasetInstanceId);
+                if (datasetInstance == null)
+                {
+                    throw new KeyNotFoundException(nameof(datasetInstance));
+                }
 
                 var count = 1;
                 // Loop through and render main table
@@ -433,16 +439,15 @@ namespace PVIMS.Services
             return model;
         }
 
-        public ArtefactInfoModel CreateE2B(long datasetInstanceId = 0)
+        public async Task<ArtefactInfoModel> CreateE2BAsync(long datasetInstanceId = 0)
         {
-            DatasetInstance sourceReport = _unitOfWork.Repository<DatasetInstance>()
-                .Queryable()
-                .SingleOrDefault(ds => ds.Id == datasetInstanceId);
+            var sourceReport = await _datasetInstanceRepository.GetAsync(ds => ds.Id == datasetInstanceId);
             if (sourceReport == null)
             {
-                throw new ArgumentException(nameof(datasetInstanceId), "Unable to locate dataset instance");
+                throw new KeyNotFoundException(nameof(datasetInstanceId));
             }
-            DatasetXml xmlStructureForDataset = sourceReport.Dataset.DatasetXml;
+
+            var xmlStructureForDataset = sourceReport.Dataset.DatasetXml;
             if (xmlStructureForDataset == null)
             {
                 throw new ArgumentException(nameof(xmlStructureForDataset), "Unable to locate dataset XML structure");
@@ -501,7 +506,7 @@ namespace PVIMS.Services
             DatasetXmlNode rootNode = xmlStructureForDataset.ChildrenNodes.SingleOrDefault(c => c.NodeType == NodeType.RootNode);
             if (rootNode == null)
             {
-                throw new DomainServiceException(nameof(xmlStructureForDataset), "Unable to locate rootnode");
+                throw new DomainException($"{nameof(xmlStructureForDataset)} Unable to locate rootnode");
             }
 
             e2bXmlDocument.AppendChild(ProcessE2bXmlNode(sourceReport, e2bXmlDocument, rootNode)[0]);
@@ -779,12 +784,12 @@ namespace PVIMS.Services
             }
         }
 
-        public ArtefactInfoModel CreatePatientSummaryForActiveReport(Guid contextGuid)
+        public async Task<ArtefactInfoModel> CreatePatientSummaryForActiveReportAsync(Guid contextGuid)
         {
             var model = new ArtefactInfoModel();
             var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
 
-            var patientClinicalEvent = _unitOfWork.Repository<PatientClinicalEvent>().Queryable().Single(pce => pce.PatientClinicalEventGuid == contextGuid);
+            var patientClinicalEvent = await _patientClinicalEventRepository.GetAsync(pce => pce.PatientClinicalEventGuid == contextGuid);
             if (patientClinicalEvent == null)
             {
                 throw new KeyNotFoundException(nameof(patientClinicalEvent));
@@ -869,12 +874,12 @@ namespace PVIMS.Services
             return model;
         }
 
-        public ArtefactInfoModel CreatePatientSummaryForSpontaneousReport(Guid contextGuid)
+        public async Task<ArtefactInfoModel> CreatePatientSummaryForSpontaneousReportAsync(Guid contextGuid)
         {
             var model = new ArtefactInfoModel();
             var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
 
-            var datasetInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().Single(di => di.DatasetInstanceGuid == contextGuid);
+            var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.DatasetInstanceGuid == contextGuid);
             if (datasetInstance == null)
             {
                 throw new KeyNotFoundException(nameof(datasetInstance));
@@ -1487,7 +1492,7 @@ namespace PVIMS.Services
             if (reportInstance == null) { return table; };
 
             var i = 0;
-            foreach (ReportInstanceMedication med in reportInstance.ReportInstanceMedications)
+            foreach (ReportInstanceMedication med in reportInstance.Medications)
             {
                 i += 1;
 
@@ -1960,7 +1965,7 @@ namespace PVIMS.Services
             var sourceContexts = datasetInstance.GetInstanceSubValuesContext(sourceProductElement.ElementName);
 
             var i = 0;
-            foreach (ReportInstanceMedication med in reportInstance.ReportInstanceMedications)
+            foreach (ReportInstanceMedication med in reportInstance.Medications)
             {
                 i += 1;
 

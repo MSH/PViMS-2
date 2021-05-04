@@ -205,7 +205,8 @@ namespace PVIMS.API.Controllers
                     _modelExtensionBuilder.UpdateExtendable(patientMedication, medicationDetail.CustomAttributes, "Admin");
 
                     _patientMedicationRepository.Save(patientMedication);
-                    AddOrUpdateMedicationsToReportInstance(patientMedication);
+                    await AddOrUpdateMedicationsToReportInstanceAsync(patientMedication);
+                    
                     _unitOfWork.Complete();
 
                     var mappedPatientMedication = _mapper.Map<PatientMedicationIdentifierDto>(patientMedication);
@@ -306,7 +307,8 @@ namespace PVIMS.API.Controllers
                     _modelExtensionBuilder.UpdateExtendable(medicationFromRepo, medicationDetail.CustomAttributes, "Admin");
 
                     _patientMedicationRepository.Update(medicationFromRepo);
-                    AddOrUpdateMedicationsToReportInstance(medicationFromRepo);
+                    await AddOrUpdateMedicationsToReportInstanceAsync(medicationFromRepo);
+
                     _unitOfWork.Complete();
 
                     return Ok();
@@ -570,7 +572,7 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="patientMedication">The medication to be updated</param>
         /// <returns></returns>
-        private void AddOrUpdateMedicationsToReportInstance(PatientMedication patientMedication)
+        private async Task AddOrUpdateMedicationsToReportInstanceAsync(PatientMedication patientMedication)
         {
             var weeks = 0;
             var config = _configRepository.Get(c => c.ConfigType == ConfigType.MedicationOnsetCheckPeriodWeeks);
@@ -604,7 +606,7 @@ namespace PVIMS.API.Controllers
 
             foreach (var evt in events)
             {
-                _workFlowService.AddOrUpdateMedicationsForWorkFlowInstance(evt.PatientClinicalEventGuid, instanceMedications);
+                await _workFlowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(evt.PatientClinicalEventGuid, instanceMedications);
             }
         }
     }

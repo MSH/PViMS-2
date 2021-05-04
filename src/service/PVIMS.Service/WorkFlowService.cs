@@ -1,4 +1,5 @@
 ﻿using PVIMS.Core;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Models;
@@ -18,10 +19,15 @@ namespace PVIMS.Services
     {
         private readonly IUnitOfWorkInt _unitOfWork;
 
-        private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
+        private readonly IRepositoryInt<Activity> _activityRepository;
         private readonly IRepositoryInt<ActivityInstance> _activityInstanceRepository;
-        private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
+        private readonly IRepositoryInt<ActivityExecutionStatusEvent> _activityExecutionStatusEventRepository;
+        private readonly IRepositoryInt<Config> _configRepository;
+        private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
+        private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
+        private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly IRepositoryInt<User> _userRepository;
+        private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
 
         public IArtefactService _artefactService { get; set; }
         public ICustomAttributeService _attributeService { get; set; }
@@ -33,8 +39,13 @@ namespace PVIMS.Services
             IPatientService patientService, 
             IArtefactService artefactService, 
             UserContext userContext,
-            IRepositoryInt<ReportInstance> reportInstanceRepository,
+            IRepositoryInt<Activity> activityRepository,
             IRepositoryInt<ActivityInstance> activityInstanceRepository,
+            IRepositoryInt<DatasetInstance> datasetInstanceRepository,
+            IRepositoryInt<ActivityExecutionStatusEvent> activityExecutionStatusEventRepository,
+            IRepositoryInt<Config> configRepository,
+            IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
+            IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<WorkFlow> workFlowRepository,
             IRepositoryInt<User> userRepository)
         {
@@ -43,13 +54,18 @@ namespace PVIMS.Services
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
-            _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
+            _activityRepository = activityRepository ?? throw new ArgumentNullException(nameof(activityRepository));
             _activityInstanceRepository = activityInstanceRepository ?? throw new ArgumentNullException(nameof(activityInstanceRepository));
+            _activityExecutionStatusEventRepository = activityExecutionStatusEventRepository ?? throw new ArgumentNullException(nameof(activityExecutionStatusEventRepository));
+            _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
+            _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
+            _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
+            _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
-        public void AddOrUpdateMedicationsForWorkFlowInstance(Guid contextGuid, List<ReportInstanceMedicationListItem> medications)
+        public async Task AddOrUpdateMedicationsForWorkFlowInstanceAsync(Guid contextGuid, List<ReportInstanceMedicationListItem> medications)
         {
             if(medications == null)
             {
@@ -57,50 +73,25 @@ namespace PVIMS.Services
             }
             if (medications.Count == 0) { return; };
 
-            ReportInstance reportInstance = _unitOfWork.Repository<ReportInstance>()
-                .Queryable()
-                .SingleOrDefault(ri => ri.ContextGuid == contextGuid);
+            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid);
             if (reportInstance == null) {
                 throw new ArgumentException("contextGuid may not be null");
             };
 
-            // Full managements of medications list for report instance
-            ArrayList addCollection = new ArrayList();
-            ArrayList modifyCollection = new ArrayList();
             foreach (ReportInstanceMedicationListItem medication in medications)
             {
-                if(reportInstance.ReportInstanceMedications != null)
+                if (reportInstance.HasMedication(medication.ReportInstanceMedicationGuid))
                 {
-                    var exists = reportInstance.ReportInstanceMedications.Any(m => m.ReportInstanceMedicationGuid == medication.ReportInstanceMedicationGuid);
-                    if (exists)
-                    {
-                        modifyCollection.Add(medication);
-                    }
-                    else
-                    {
-                        addCollection.Add(medication);
-                    }
+                    reportInstance.SetMedicationIdentifier(medication.ReportInstanceMedicationGuid, medication.MedicationIdentifier);
                 }
                 else
                 {
-                    addCollection.Add(medication);
+                    reportInstance.AddMedication(medication.MedicationIdentifier, medication.ReportInstanceMedicationGuid);
                 }
             }
 
-            foreach (ReportInstanceMedicationListItem medication in addCollection)
-            {
-                var med = new ReportInstanceMedication() { MedicationIdentifier = medication.MedicationIdentifier, ReportInstance = reportInstance, ReportInstanceMedicationGuid = medication.ReportInstanceMedicationGuid };
-                reportInstance.ReportInstanceMedications.Add(med);
-
-                _unitOfWork.Repository<ReportInstanceMedication>().Save(med);
-            }
-            foreach (ReportInstanceMedicationListItem medication in modifyCollection)
-            {
-                var med = reportInstance.ReportInstanceMedications.Single(m => m.ReportInstanceMedicationGuid == medication.ReportInstanceMedicationGuid);
-                med.MedicationIdentifier = medication.MedicationIdentifier;
-
-                _unitOfWork.Repository<ReportInstanceMedication>().Update(med);
-            }
+            _reportInstanceRepository.Update(reportInstance);
+            _unitOfWork.Complete();
         }
 
         public async Task CreateWorkFlowInstanceAsync(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier)
@@ -126,67 +117,14 @@ namespace PVIMS.Services
             var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid);
             if (reportInstance == null)
             {
-                reportInstance = new ReportInstance(workFlow, currentUser)
-                {
-                    ContextGuid = contextGuid,
-                    PatientIdentifier = patientIdentifier,
-                    SourceIdentifier = sourceIdentifier
-                };
+                reportInstance = new ReportInstance(workFlow, currentUser, contextGuid, patientIdentifier, sourceIdentifier);
                 await _reportInstanceRepository.SaveAsync(reportInstance);
 
-                reportInstance.SetIdentifier();
+                reportInstance.SetSystemIdentifier();
 
                 _unitOfWork.Repository<ReportInstance>().Update(reportInstance);
                 _unitOfWork.Complete();
             }
-        }
-
-        public int CheckWorkFlowInstanceCount(string workFlowName)
-        {
-            var config = _unitOfWork.Repository<Config>().Queryable().Where(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount).SingleOrDefault();
-            if (config != null)
-            {
-                if (!String.IsNullOrEmpty(config.ConfigValue))
-                {
-                    var alertCount = Convert.ToInt32(config.ConfigValue);
-
-                    // How many instances within the last alertcount
-                    var compDate = DateTime.Now.AddDays(alertCount * -1);
-                    return _unitOfWork.Repository<ReportInstance>().Queryable().Where(rp => rp.WorkFlow.Description == workFlowName && rp.Created >= compDate && rp.Finished == null).Count();
-                }
-            }
-            return 0;
-        }
-
-        public void DeleteMedicationsFromWorkFlowInstance(Guid contextGuid, List<ReportInstanceMedicationListItem> medications)
-        {
-            if (medications == null)
-            {
-                throw new ArgumentNullException(nameof(medications));
-            }
-            if (medications.Count == 0) { return; };
-
-            ReportInstance reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().Single(ri => ri.ContextGuid == contextGuid);
-            if (reportInstance == null)
-            {
-                throw new ArgumentException("contextGuid may not be null");
-            };
-
-            // Full managements of medications list for report instance
-            ArrayList deleteCollection = new ArrayList();
-            foreach (ReportInstanceMedication medication in reportInstance.ReportInstanceMedications)
-            {
-                var exists = medications.Any(m => m.ReportInstanceMedicationGuid == medication.ReportInstanceMedicationGuid);
-                if (exists) { deleteCollection.Add(medication); };
-            }
-
-            foreach (ReportInstanceMedication medication in deleteCollection)
-            {
-                reportInstance.ReportInstanceMedications.Remove(medication);
-                _unitOfWork.Repository<ReportInstanceMedication>().Delete(medication);
-            }
-
-            _unitOfWork.Repository<ReportInstance>().Update(reportInstance);
         }
 
         public async Task<ActivityExecutionStatusEvent> ExecuteActivityAsync(Guid contextGuid, string newStatus, string comments, DateTime? contextDate, string contextCode)
@@ -201,33 +139,27 @@ namespace PVIMS.Services
 
             if (reportInstance.CurrentActivity.CurrentStatus.Description == "E2BGENERATED")
             {
-                CreatePatientSummaryAndLink(reportInstance, newEvent);
-                CreatePatientExtractAndLink(reportInstance, newEvent);
-                CreateE2BExtractAndLink(reportInstance, newEvent);
+                await CreatePatientSummaryAndLinkToExecutionEventAsync(reportInstance, newEvent);
+                await CreatePatientExtractAndLinkToExecutionEventAsync(reportInstance, newEvent);
+                await CreateE2BExtractAndLinkToExecutionEventAsync(reportInstance, newEvent);
             }
 
             if (reportInstance.CurrentActivity.CurrentStatus.Description == "CONFIRMED")
             {
-                reportInstance.CurrentActivity.Current = false;
-                _activityInstanceRepository.Update(reportInstance.CurrentActivity);
+                reportInstance.SetCurrentActivityToOld();
 
-                var newActivity = _unitOfWork.Repository<Activity>()
-                    .Queryable()
-                    .Single(a => a.WorkFlow.Id == reportInstance.WorkFlow.Id && a.QualifiedName == "Set MedDRA and Causality");
-                reportInstance.SetNewActivity(newActivity, currentUser);
+                var newActivity = _activityRepository.Get(a => a.WorkFlow.Id == reportInstance.WorkFlowId && a.QualifiedName == "Set MedDRA and Causality");
+                reportInstance.AddActivity(newActivity, currentUser);
 
                 _reportInstanceRepository.Update(reportInstance);
             }
 
             if (reportInstance.CurrentActivity.CurrentStatus.Description == "CAUSALITYSET")
             {
-                reportInstance.CurrentActivity.Current = false;
-                _activityInstanceRepository.Update(reportInstance.CurrentActivity);
+                reportInstance.SetCurrentActivityToOld();
 
-                var newActivity = _unitOfWork.Repository<Activity>()
-                    .Queryable()
-                    .Single(a => a.WorkFlow.Id == reportInstance.WorkFlow.Id && a.QualifiedName == "Extract E2B");
-                reportInstance.SetNewActivity(newActivity, currentUser);
+                var newActivity = _activityRepository.Get(a => a.WorkFlow.Id == reportInstance.WorkFlowId && a.QualifiedName == "Extract E2B");
+                reportInstance.AddActivity(newActivity, currentUser);
 
                 _reportInstanceRepository.Update(reportInstance);
             }
@@ -259,90 +191,11 @@ namespace PVIMS.Services
 
             var activity = _unitOfWork.Repository<Activity>()
                 .Queryable()
-                .Single(a => a.QualifiedName == activityInstance.QualifiedName && a.WorkFlow.Id == reportInstance.WorkFlow.Id);
+                .Single(a => a.QualifiedName == activityInstance.QualifiedName && a.WorkFlow.Id == reportInstance.WorkFlowId);
 
             return _unitOfWork.Repository<ActivityExecutionStatus>()
                 .Queryable()
                 .Any(aes => aes.Activity.Id == activity.Id && aes.Description == validateStatus);
-        }
-
-        public List<ActivityExecutionStatusForPatient> GetExecutionStatusEventsForPatientView(Patient patient)
-        {
-            var clinicalEvents =
-                _unitOfWork.Repository<PatientClinicalEvent>()
-                    .Queryable()
-                    .Where(pce => pce.Patient.Id == patient.Id && pce.Archived == false);
-
-            List<ActivityExecutionStatusForPatient> results = new List<ActivityExecutionStatusForPatient>();
-
-            foreach (var clinicalEvent in clinicalEvents)
-            {
-                var reportInstance = _unitOfWork.Repository<ReportInstance>()
-                    .Queryable()
-                    .SingleOrDefault(ri => ri.ContextGuid == clinicalEvent.PatientClinicalEventGuid);
-                if(reportInstance != null)
-                {
-                    var result = new ActivityExecutionStatusForPatient();
-                    result.PatientClinicalEvent = clinicalEvent;
-
-                    var items = _unitOfWork.Repository<ActivityExecutionStatusEvent>()
-                        .Queryable()
-                        .Where(aese => aese.ActivityInstance.ReportInstance.Id == reportInstance.Id)
-                        .OrderByDescending(aese => aese.EventDateTime)
-                        .Take(1);
-                    foreach (ActivityExecutionStatusEvent item in items)
-                    {
-                        var activityItem = new ActivityExecutionStatusForPatient.ActivityExecutionStatusInfo()
-                        {
-                            Activity = item.ActivityInstance?.QualifiedName,
-                            ExecutedDate = item.EventDateTime.ToString(),
-                            ExecutedBy = item.EventCreatedBy?.FullName,
-                            ExecutionStatus = item.ExecutionStatus?.FriendlyDescription,
-                            Comments = item.Comments
-                        };
-                        result.ActivityItems.Add(activityItem);
-                    };
-
-                    results.Add(result);
-                }
-            }
-
-            return results;
-        }
-
-        public List<ActivityExecutionStatusForPatient> GetExecutionStatusEventsForEventView(PatientClinicalEvent clinicalEvent)
-        {
-            List<ActivityExecutionStatusForPatient> results = new List<ActivityExecutionStatusForPatient>();
-
-            var reportInstance = _unitOfWork.Repository<ReportInstance>()
-                .Queryable()
-                .SingleOrDefault(ri => ri.ContextGuid == clinicalEvent.PatientClinicalEventGuid);
-            if (reportInstance != null)
-            {
-                var result = new ActivityExecutionStatusForPatient();
-                result.PatientClinicalEvent = clinicalEvent;
-
-                var items = _unitOfWork.Repository<ActivityExecutionStatusEvent>()
-                    .Queryable()
-                    .Where(aese => aese.ActivityInstance.ReportInstance.Id == reportInstance.Id)
-                    .OrderByDescending(aese => aese.EventDateTime);
-                foreach (ActivityExecutionStatusEvent item in items)
-                {
-                    var activityItem = new ActivityExecutionStatusForPatient.ActivityExecutionStatusInfo()
-                    {
-                        Activity = item.ActivityInstance?.QualifiedName,
-                        ExecutedDate = item.EventDateTime.ToString(),
-                        ExecutedBy = item.EventCreatedBy?.FullName,
-                        ExecutionStatus = item.ExecutionStatus?.FriendlyDescription,
-                        Comments = item.Comments
-                    };
-                    result.ActivityItems.Add(activityItem);
-                };
-
-                results.Add(result);
-            }
-
-            return results;
         }
 
         public TerminologyMedDra GetTerminologyMedDraForReportInstance(Guid contextGuid)
@@ -377,129 +230,130 @@ namespace PVIMS.Services
                 throw new ArgumentException("reportInstance work flow may not be null");
             }
 
-            reportInstance.PatientIdentifier = patientIdentifier;
-            reportInstance.SourceIdentifier = sourceIdentifier;
+            reportInstance.SetEventIdentifiers(patientIdentifier, sourceIdentifier);
 
             _reportInstanceRepository.Update(reportInstance);
         }
 
-        private void CreatePatientSummaryAndLink(ReportInstance reportInstance, ActivityExecutionStatusEvent newEvent)
+        private async Task CreatePatientSummaryAndLinkToExecutionEventAsync(ReportInstance reportInstance, ActivityExecutionStatusEvent executionEvent)
         {
-            var model = reportInstance.WorkFlow.Description == "New Active Surveilliance Report" ? _artefactService.CreatePatientSummaryForActiveReport(reportInstance.ContextGuid) : _artefactService.CreatePatientSummaryForSpontaneousReport(reportInstance.ContextGuid);
-
-            // Create patient summary and link to event
-            Attachment att;
-            AttachmentType attType = _unitOfWork.Repository<AttachmentType>().Queryable().Single(at => at.Key == "docx");
-            FileStream tempFile = File.OpenRead(model.FullPath);
-
-            if (tempFile.Length > 0)
+            if (reportInstance == null)
             {
-                BinaryReader rdr = new BinaryReader(tempFile);
-                byte[] buffer = rdr.ReadBytes((int)tempFile.Length);
-
-                // Create the attachment
-                att = new Attachment
-                {
-                    ActivityExecutionStatusEvent = newEvent,
-                    Description = "PatientSummary",
-                    FileName = Path.GetFileName(model.FileName),
-                    AttachmentType = attType,
-                    Size = tempFile.Length,
-                    Content = buffer
-                };
-                newEvent.Attachments.Add(att);
-
-                _unitOfWork.Repository<Attachment>().Save(att);
+                throw new ArgumentNullException(nameof(reportInstance));
             }
-            tempFile.Close();
-            tempFile = null;
+
+            if (executionEvent == null)
+            {
+                throw new ArgumentNullException(nameof(executionEvent));
+            }
+
+            var artefactModel = reportInstance.WorkFlow.Description == "New Active Surveilliance Report" ? 
+                await _artefactService.CreatePatientSummaryForActiveReportAsync(reportInstance.ContextGuid) : 
+                await _artefactService.CreatePatientSummaryForSpontaneousReportAsync(reportInstance.ContextGuid);
+
+            using (var tempFile = File.OpenRead(artefactModel.FullPath))
+            {
+                if (tempFile.Length > 0)
+                {
+                    BinaryReader rdr = new BinaryReader(tempFile);
+                    executionEvent.AddAttachment(Path.GetFileName(artefactModel.FileName),
+                        _unitOfWork.Repository<AttachmentType>().Queryable().Single(at => at.Key == "docx"),
+                        tempFile.Length,
+                        rdr.ReadBytes((int)tempFile.Length), 
+                        "PatientSummary");
+
+                    _activityExecutionStatusEventRepository.Update(executionEvent);
+                    _unitOfWork.Complete();
+                }
+            }
         }
 
-        private void CreatePatientExtractAndLink(ReportInstance reportInstance, ActivityExecutionStatusEvent newEvent)
+        private async Task CreatePatientExtractAndLinkToExecutionEventAsync(ReportInstance reportInstance, ActivityExecutionStatusEvent executionEvent)
         {
-            ArtefactInfoModel path = null;
+            if (reportInstance == null)
+            {
+                throw new ArgumentNullException(nameof(reportInstance));
+            }
+
+            if (executionEvent == null)
+            {
+                throw new ArgumentNullException(nameof(executionEvent));
+            }
+
+            ArtefactInfoModel artefactModel = null;
             if (reportInstance.WorkFlow.Description == "New Active Surveilliance Report")
             {
-                var clinicalEvt = _unitOfWork.Repository<PatientClinicalEvent>().Queryable().Single(pce => pce.PatientClinicalEventGuid == reportInstance.ContextGuid);
-                path = _artefactService.CreateActiveDatasetForDownload(new long[] { clinicalEvt.Patient.Id }, 0);
+                var clinicalEvent = await _patientClinicalEventRepository.GetAsync(pce => pce.PatientClinicalEventGuid == reportInstance.ContextGuid);
+                if(clinicalEvent == null)
+                {
+                    throw new KeyNotFoundException(nameof(clinicalEvent));
+                }
+
+                artefactModel = _artefactService.CreateActiveDatasetForDownload(new long[] { clinicalEvent.Patient.Id }, 0);
             }
             else
             {
-                var sourceInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().Single(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
-                path = _artefactService.CreateDatasetInstanceForDownload(sourceInstance.Id);
-            }
-
-            // Create patient summary and link to event
-            Attachment att;
-            AttachmentType attType = _unitOfWork.Repository<AttachmentType>().Queryable().Single(at => at.Key == "xlsx");
-            FileStream tempFile = File.OpenRead(path.FullPath);
-
-            if (tempFile.Length > 0)
-            {
-                BinaryReader rdr = new BinaryReader(tempFile);
-                byte[] buffer = rdr.ReadBytes((int)tempFile.Length);
-
-                // Create the attachment
-                att = new Attachment
+                var sourceInstance = await _datasetInstanceRepository.GetAsync(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
+                if (sourceInstance == null)
                 {
-                    ActivityExecutionStatusEvent = newEvent,
-                    Description = "PatientExtract",
-                    FileName = Path.GetFileName(path.FileName),
-                    AttachmentType = attType,
-                    Size = tempFile.Length,
-                    Content = buffer
-                };
-                newEvent.Attachments.Add(att);
+                    throw new KeyNotFoundException(nameof(sourceInstance));
+                }
 
-                _unitOfWork.Repository<Attachment>().Save(att);
+                artefactModel = await _artefactService.CreateDatasetInstanceForDownloadAsync(sourceInstance.Id);
             }
-            tempFile.Close();
-            tempFile = null;
+
+            using (var tempFile = File.OpenRead(artefactModel.FullPath))
+            {
+                if (tempFile.Length > 0)
+                {
+                    BinaryReader rdr = new BinaryReader(tempFile);
+                    executionEvent.AddAttachment(Path.GetFileName(artefactModel.FileName),
+                        _unitOfWork.Repository<AttachmentType>().Queryable().Single(at => at.Key == "xlsx"),
+                        tempFile.Length,
+                        rdr.ReadBytes((int)tempFile.Length),
+                        "PatientExtract");
+
+                    _activityExecutionStatusEventRepository.Update(executionEvent);
+                    _unitOfWork.Complete();
+                }
+            }
         }
 
-        private void CreateE2BExtractAndLink(ReportInstance reportInstance, ActivityExecutionStatusEvent newEvent)
+        private async Task CreateE2BExtractAndLinkToExecutionEventAsync(ReportInstance reportInstance, ActivityExecutionStatusEvent executionEvent)
         {
-            ArtefactInfoModel path = null;
+            if (reportInstance == null)
+            {
+                throw new ArgumentNullException(nameof(reportInstance));
+            }
+
+            if (executionEvent == null)
+            {
+                throw new ArgumentNullException(nameof(executionEvent));
+            }
 
             var activityInstance = reportInstance.CurrentActivity;
 
-            DatasetInstance datasetInstance = null;
             var evt = activityInstance.ExecutionEvents.OrderByDescending(ee => ee.EventDateTime).First(ee => ee.ExecutionStatus.Description == "E2BINITIATED");
             var tag = (reportInstance.WorkFlow.Description == "New Active Surveilliance Report") ? "Active" : "Spontaneous";
 
-            datasetInstance
-                = _unitOfWork.Repository<DatasetInstance>()
-                .Queryable()
-                .Where(di => di.Tag == tag
-                    && di.ContextId == evt.Id).SingleOrDefault();
+            var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.Tag == tag && di.ContextId == evt.Id);
+            var artefactModel = await _artefactService.CreateE2BAsync(datasetInstance.Id);
 
-            path = _artefactService.CreateE2B(datasetInstance.Id);
-
-            Attachment att;
-            AttachmentType attType = _unitOfWork.Repository<AttachmentType>().Queryable().Single(at => at.Key == "xml");
-            FileStream tempFile = File.OpenRead(path.FullPath);
-
-            if (tempFile.Length > 0)
+            using (var tempFile = File.OpenRead(artefactModel.FullPath))
             {
-                BinaryReader rdr = new BinaryReader(tempFile);
-                byte[] buffer = rdr.ReadBytes((int)tempFile.Length);
-
-                // Create the attachment
-                att = new Attachment
+                if (tempFile.Length > 0)
                 {
-                    ActivityExecutionStatusEvent = newEvent,
-                    Description = "E2b",
-                    FileName = Path.GetFileName(path.FileName),
-                    AttachmentType = attType,
-                    Size = tempFile.Length,
-                    Content = buffer
-                };
-                newEvent.Attachments.Add(att);
+                    BinaryReader rdr = new BinaryReader(tempFile);
+                    executionEvent.AddAttachment(Path.GetFileName(artefactModel.FileName),
+                        _unitOfWork.Repository<AttachmentType>().Queryable().Single(at => at.Key == "xml"),
+                        tempFile.Length,
+                        rdr.ReadBytes((int)tempFile.Length),
+                        "E2b");
 
-                _unitOfWork.Repository<Attachment>().Save(att);
+                    _activityExecutionStatusEventRepository.Update(executionEvent);
+                    _unitOfWork.Complete();
+                }
             }
-            tempFile.Close();
-            tempFile = null;
         }
 
         private ActivityExecutionStatus GetExecutionStatusForActivity(ReportInstance reportInstance, string getStatus)
