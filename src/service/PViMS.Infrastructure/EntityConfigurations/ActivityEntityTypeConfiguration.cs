@@ -27,8 +27,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(c => c.WorkFlow)
                 .WithMany(p => p.Activities)
                 .HasForeignKey(c => c.WorkFlowId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.Activity_dbo.WorkFlow_WorkFlow_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasIndex(e => new { e.QualifiedName, e.WorkFlowId }).IsUnique(true);
             configuration.HasIndex(e => e.WorkFlowId, "IX_WorkFlow_Id");

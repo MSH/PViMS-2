@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
@@ -33,6 +34,7 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<Config> _configRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IArtefactService _artefactService;
+        private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -43,6 +45,7 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<Config> configRepository,
             IRepositoryInt<User> userRepository,
+            IUnitOfWorkInt unitOfWork,
             IArtefactService artefactService,
             IHttpContextAccessor httpContextAccessor)
         {
@@ -52,6 +55,7 @@ namespace PVIMS.API.Controllers
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
@@ -98,7 +102,7 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            return Ok(CreateLinksForWorkFlow<WorkFlowDetailDto>(CustomWorkFlowMap(mappedWorkFlow)));
+            return Ok(CreateLinksForWorkFlow<WorkFlowDetailDto>(await CustomWorkFlowMapAsync(mappedWorkFlow)));
         }
 
         /// <summary>
@@ -168,9 +172,9 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
         /// <returns></returns>
-        private WorkFlowDetailDto CustomWorkFlowMap(WorkFlowDetailDto dto)
+        private async Task<WorkFlowDetailDto> CustomWorkFlowMapAsync(WorkFlowDetailDto dto)
         {
-            var workFlowFromRepo = _workFlowRepository.Get(f => f.Id == dto.Id);
+            var workFlowFromRepo = await _workFlowRepository.GetAsync(wf => wf.Id == dto.Id, new string[] { "Activities" });
             if (workFlowFromRepo == null)
             {
                 return dto;

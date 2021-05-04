@@ -13,11 +13,17 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
     {
         public Guid ReportInstanceGuid { get; private set; }
         public DateTime? Finished { get; private set; }
+        
         public int WorkFlowId { get; private set; }
+        public virtual WorkFlow WorkFlow { get; set; }
+
         public Guid ContextGuid { get; private set; }
         public string Identifier { get; private set; }
         public string PatientIdentifier { get; private set; }
+
         public int? TerminologyMedDraId { get; private set; }
+        public virtual TerminologyMedDra TerminologyMedDra { get; set; }
+
         public string SourceIdentifier { get; private set; }
 
         private List<ActivityInstance> _activities;
@@ -33,6 +39,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         {
             _activities = new List<ActivityInstance>();
             _medications = new List<ReportInstanceMedication>();
+            _tasks = new List<ReportInstanceTask>();
         }
 
         public ReportInstance(WorkFlow workFlow, User currentUser, Guid contextGuid, string patientIdentifier, string sourceIdentifier)
@@ -49,9 +56,6 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
             InitialiseWithFirstActivity(workFlow, currentUser);
         }
-
-        public virtual WorkFlow WorkFlow { get; set; }
-        public virtual TerminologyMedDra TerminologyMedDra { get; set; }
 
         public void AddActivity(Activity activity, User currentUser)
         {
