@@ -41,18 +41,16 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.MetaPage)
                 .WithMany(p => p.Widgets)
                 .HasForeignKey(d => d.MetaPageId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.MetaWidget_dbo.MetaPage_MetaPage_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.WidgetType)
                 .WithMany(p => p.MetaWidgets)
                 .HasForeignKey(d => d.WidgetTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.MetaWidget_dbo.MetaWidgetType_WidgetType_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             configuration.HasIndex("WidgetName").IsUnique(true);
-            configuration.HasIndex(e => e.MetaPageId, "IX_MetaPage_Id");
-            configuration.HasIndex(e => e.WidgetTypeId, "IX_WidgetType_Id");
+            configuration.HasIndex(e => e.MetaPageId);
+            configuration.HasIndex(e => e.WidgetTypeId);
         }
     }
 }

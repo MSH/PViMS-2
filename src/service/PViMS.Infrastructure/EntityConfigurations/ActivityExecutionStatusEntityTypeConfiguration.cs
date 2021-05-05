@@ -25,11 +25,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.Activity)
                 .WithMany(p => p.ExecutionStatuses)
                 .HasForeignKey(d => d.ActivityId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.ActivityExecutionStatus_dbo.Activity_Activity_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasIndex(e => new { e.Description, e.ActivityId }).IsUnique(true);
-            configuration.HasIndex(e => e.ActivityId, "IX_Activity_Id");
+            configuration.HasIndex(e => e.ActivityId);
         }
     }
 }

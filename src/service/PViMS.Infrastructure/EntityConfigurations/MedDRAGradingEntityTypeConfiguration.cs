@@ -27,10 +27,9 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.Scale)
                 .WithMany(p => p.Grades)
                 .HasForeignKey(d => d.ScaleId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.MedDRAGrading_dbo.MedDRAScale_Scale_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.ScaleId, "IX_Scale_Id");
+            configuration.HasIndex(e => e.ScaleId);
         }
     }
 }

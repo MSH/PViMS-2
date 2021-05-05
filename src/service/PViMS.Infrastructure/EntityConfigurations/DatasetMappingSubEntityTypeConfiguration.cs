@@ -30,24 +30,21 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.DestinationElement)
                 .WithMany(p => p.DatasetMappingSubDestinationElements)
                 .HasForeignKey(d => d.DestinationElementId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.DatasetMappingSub_dbo.DatasetElementSub_DestinationElement_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.Mapping)
                 .WithMany(p => p.SubMappings)
                 .HasForeignKey(d => d.MappingId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.DatasetMappingSub_dbo.DatasetMapping_Mapping_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasOne(d => d.SourceElement)
                 .WithMany(p => p.DatasetMappingSubSourceElements)
                 .HasForeignKey(d => d.SourceElementId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.DatasetMappingSub_dbo.DatasetElementSub_SourceElement_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
-            configuration.HasIndex(e => e.DestinationElementId, "IX_DestinationElement_Id");
-            configuration.HasIndex(e => e.MappingId, "IX_Mapping_Id");
-            configuration.HasIndex(e => e.SourceElementId, "IX_SourceElement_Id");
+            configuration.HasIndex(e => e.DestinationElementId);
+            configuration.HasIndex(e => e.MappingId);
+            configuration.HasIndex(e => e.SourceElementId);
         }
     }
 }

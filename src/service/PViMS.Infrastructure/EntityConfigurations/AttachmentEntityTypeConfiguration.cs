@@ -15,9 +15,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.Property(e => e.ActivityExecutionStatusEventId)
                 .HasColumnName("ActivityExecutionStatusEvent_Id");
 
-            configuration.Property(e => e.ArchivedDate)
-                .HasColumnType("datetime");
-
             configuration.Property(c => c.ArchivedReason)
                 .HasMaxLength(200);
 
@@ -32,8 +29,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired();
 
             configuration.Property(e => e.Created)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.CreatedById)
                 .IsRequired()
@@ -48,9 +44,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.Property(c => c.FileName)
                 .IsRequired()
                 .HasMaxLength(50);
-
-            configuration.Property(e => e.LastUpdated)
-                .HasColumnType("datetime");
 
             configuration.Property(e => e.PatientId)
                 .HasColumnName("Patient_Id");
@@ -68,51 +61,44 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.ActivityExecutionStatusEvent)
                 .WithMany(p => p.Attachments)
                 .HasForeignKey(d => d.ActivityExecutionStatusEventId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.Attachment_dbo.ActivityExecutionStatusEvent_ActivityExecutionStatusEvent_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.AttachmentType)
                 .WithMany(p => p.Attachments)
                 .HasForeignKey(d => d.AttachmentTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.Attachment_dbo.AttachmentType_AttachmentType_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             configuration.HasOne(d => d.AuditUser)
                 .WithMany(p => p.Attachments)
-                .HasForeignKey(d => d.AuditUserId)
-                .HasConstraintName("FK_dbo.Attachment_dbo.User_AuditUser_Id");
+                .HasForeignKey(d => d.AuditUserId);
 
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.AttachmentCreations)
                 .HasForeignKey(d => d.CreatedById)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.Attachment_dbo.User_CreatedBy_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasOne(d => d.Encounter)
                 .WithMany(p => p.Attachments)
                 .HasForeignKey(d => d.EncounterId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.Attachment_dbo.Encounter_Encounter_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasOne(d => d.Patient)
                 .WithMany(p => p.Attachments)
                 .HasForeignKey(d => d.PatientId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.Attachment_dbo.Patient_Patient_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.AttachmentUpdates)
                 .HasForeignKey(d => d.UpdatedById)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.Attachment_dbo.User_UpdatedBy_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
-            configuration.HasIndex(e => e.ActivityExecutionStatusEventId, "IX_ActivityExecutionStatusEvent_Id");
-            configuration.HasIndex(e => e.AttachmentTypeId, "IX_AttachmentType_Id");
-            configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
-            configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
-            configuration.HasIndex(e => e.EncounterId, "IX_Encounter_Id");
-            configuration.HasIndex(e => e.PatientId, "IX_Patient_Id");
-            configuration.HasIndex(e => e.UpdatedById, "IX_UpdatedBy_Id");
+            configuration.HasIndex(e => e.ActivityExecutionStatusEventId);
+            configuration.HasIndex(e => e.AttachmentTypeId);
+            configuration.HasIndex(e => e.AuditUserId);
+            configuration.HasIndex(e => e.CreatedById);
+            configuration.HasIndex(e => e.EncounterId);
+            configuration.HasIndex(e => e.PatientId);
+            configuration.HasIndex(e => e.UpdatedById);
         }
     }
 }

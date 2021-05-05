@@ -13,8 +13,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(e => e.Created)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.CreatedById)
                 .IsRequired()
@@ -24,24 +23,19 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasMaxLength(50);
 
-            configuration.Property(e => e.LastUpdated)
-                .HasColumnType("datetime");
-
             configuration.Property(e => e.UpdatedById)
                 .HasColumnName("UpdatedBy_Id");
 
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.DatasetXmlCreations)
-                .HasForeignKey(d => d.CreatedById)
-                .HasConstraintName("FK_dbo.DatasetXml_dbo.User_CreatedBy_Id");
+                .HasForeignKey(d => d.CreatedById);
 
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.DatasetXmlUpdates)
-                .HasForeignKey(d => d.UpdatedById)
-                .HasConstraintName("FK_dbo.DatasetXml_dbo.User_UpdatedBy_Id");
+                .HasForeignKey(d => d.UpdatedById);
 
-            configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
-            configuration.HasIndex(e => e.UpdatedById, "IX_UpdatedBy_Id");
+            configuration.HasIndex(e => e.CreatedById);
+            configuration.HasIndex(e => e.UpdatedById);
         }
     }
 }

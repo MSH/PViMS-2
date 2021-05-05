@@ -26,11 +26,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.MedicationForm)
                 .WithMany(p => p.Concepts)
                 .HasForeignKey(d => d.MedicationFormId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.Concept_dbo.MedicationForm_MedicationForm_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             configuration.HasIndex(e => new { e.ConceptName, e.MedicationFormId }).IsUnique(true);
-            configuration.HasIndex(e => e.MedicationFormId, "IX_MedicationForm_Id");
+            configuration.HasIndex(e => e.MedicationFormId);
         }
     }
 }

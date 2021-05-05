@@ -13,21 +13,14 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(e => e.Created)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.CreatedById)
                 .IsRequired()
                 .HasColumnName("CreatedBy_Id");
 
-            configuration.Property(e => e.Finished)
-                .HasColumnType("datetime");
-
             configuration.Property(e => e.Identifier)
                 .IsRequired();
-
-            configuration.Property(e => e.LastUpdated)
-                .HasColumnType("datetime");
 
             configuration.Property(e => e.PatientIdentifier)
                 .IsRequired();

@@ -29,10 +29,9 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.ReportInstance)
                 .WithMany(p => p.Medications)
                 .HasForeignKey(d => d.ReportInstanceId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.ReportInstanceMedication_dbo.ReportInstance_ReportInstance_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.ReportInstanceId, "IX_ReportInstance_Id");
+            configuration.HasIndex(e => e.ReportInstanceId);
         }
     }
 }

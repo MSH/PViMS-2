@@ -21,11 +21,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.Parent)
                 .WithMany(p => p.Children)
-                .HasForeignKey(d => d.ParentId)
-                .HasConstraintName("FK_dbo.OrgUnitType_dbo.OrgUnitType_Parent_Id");
+                .HasForeignKey(d => d.ParentId);
 
             configuration.HasIndex("Description").IsUnique(true);
-            configuration.HasIndex(e => e.ParentId, "IX_Parent_Id");
+            configuration.HasIndex(e => e.ParentId);
         }
     }
 }

@@ -25,12 +25,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasDefaultValue(0);
 
             configuration.Property(c => c.StartDate)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(c => c.FinishDate)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(c => c.MinEnrolment)
                 .IsRequired(true)
@@ -46,10 +44,9 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.Condition)
                 .WithMany(p => p.CohortGroups)
                 .HasForeignKey(d => d.ConditionId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.CohortGroup_dbo.Condition_Condition_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.ConditionId, "IX_Condition_Id");
+            configuration.HasIndex(e => e.ConditionId);
             configuration.HasIndex("CohortName").IsUnique(true);
             configuration.HasIndex("CohortCode").IsUnique(true);
         }

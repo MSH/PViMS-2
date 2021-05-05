@@ -13,11 +13,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(c => c.AppointmentDate)
-                .IsRequired()
-                .HasColumnType("datetime");
-
-            configuration.Property(e => e.ArchivedDate)
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.ArchivedReason)
                 .HasMaxLength(200);
@@ -29,8 +25,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasMaxLength(250);
 
             configuration.Property(e => e.Created)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.CreatedById)
                 .IsRequired()
@@ -40,9 +35,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasColumnName("DNA")
                 .HasDefaultValue(false);
-
-            configuration.Property(e => e.LastUpdated)
-                .HasColumnType("datetime");
 
             configuration.Property(e => e.PatientId)
                 .IsRequired()
@@ -63,40 +55,33 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasDefaultValue(false);
 
-            configuration.Property(c => c.ArchivedDate)
-                .HasColumnType("datetime");
-
             configuration.Property(c => c.ArchivedReason)
                 .HasMaxLength(200);
 
             configuration.HasOne(d => d.AuditUser)
                 .WithMany(p => p.Appointments)
-                .HasForeignKey(d => d.AuditUserId)
-                .HasConstraintName("FK_dbo.Appointment_dbo.User_AuditUser_Id");
+                .HasForeignKey(d => d.AuditUserId);
 
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.AppointmentCreations)
                 .HasForeignKey(d => d.CreatedById)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.Appointment_dbo.User_CreatedBy_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasOne(d => d.Patient)
                 .WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.PatientId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.Appointment_dbo.Patient_Patient_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.AppointmentUpdates)
                 .HasForeignKey(d => d.UpdatedById)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.Appointment_dbo.User_UpdatedBy_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasIndex("AppointmentDate").IsUnique(false);
-            configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
-            configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
-            configuration.HasIndex(e => e.PatientId, "IX_Patient_Id");
-            configuration.HasIndex(e => e.UpdatedById, "IX_UpdatedBy_Id");
+            configuration.HasIndex(e => e.AuditUserId);
+            configuration.HasIndex(e => e.CreatedById);
+            configuration.HasIndex(e => e.PatientId);
+            configuration.HasIndex(e => e.UpdatedById);
         }
     }
 }

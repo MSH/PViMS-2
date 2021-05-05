@@ -33,10 +33,9 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.Parent)
                 .WithMany(p => p.Children)
                 .HasForeignKey(d => d.ParentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.TerminologyMedDra_dbo.TerminologyMedDra_Parent_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
-            configuration.HasIndex(e => e.ParentId, "IX_Parent_Id");
+            configuration.HasIndex(e => e.ParentId);
         }
     }
 }

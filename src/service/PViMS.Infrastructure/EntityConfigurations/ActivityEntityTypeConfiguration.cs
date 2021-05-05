@@ -30,7 +30,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasIndex(e => new { e.QualifiedName, e.WorkFlowId }).IsUnique(true);
-            configuration.HasIndex(e => e.WorkFlowId, "IX_WorkFlow_Id");
+            configuration.HasIndex(e => e.WorkFlowId);
         }
     }
 }

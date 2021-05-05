@@ -12,9 +12,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(e => e.ArchivedDate)
-                .HasColumnType("datetime");
-
             configuration.Property(e => e.ArchivedReason)
                 .HasMaxLength(200);
 
@@ -28,12 +25,12 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.Property(e => e.CustomAttributesXmlSerialised)
                 .HasColumnType("xml");
 
-            configuration.Property(e => e.DateEnd)
-                .HasColumnType("datetime");
+            configuration.Property(e => e.EndDate)
+                .HasColumnType("date");
 
-            configuration.Property(e => e.DateStart)
+            configuration.Property(e => e.StartDate)
                 .IsRequired()
-                .HasColumnType("datetime");
+                .HasColumnType("date");
 
             configuration.Property(e => e.Dose)
                 .HasMaxLength(30);
@@ -60,31 +57,27 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.AuditUser)
                 .WithMany(p => p.PatientMedications)
-                .HasForeignKey(d => d.AuditUserId)
-                .HasConstraintName("FK_dbo.PatientMedication_dbo.User_AuditUser_Id");
+                .HasForeignKey(d => d.AuditUserId);
 
             configuration.HasOne(d => d.Concept)
                 .WithMany(p => p.PatientMedications)
                 .HasForeignKey(d => d.ConceptId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.PatientMedication_dbo.Concept_Concept_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.Patient)
                 .WithMany(p => p.PatientMedications)
                 .HasForeignKey(d => d.PatientId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.PatientMedication_dbo.Patient_Patient_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.Product)
                 .WithMany(p => p.PatientMedications)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.PatientMedication_dbo.Product_Product_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasIndex(e => new { e.PatientId, e.ConceptId, e.ProductId }).IsUnique(false);
-            configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
-            configuration.HasIndex(e => e.ConceptId, "IX_Concept_Id");
-            configuration.HasIndex(e => e.PatientId, "IX_Patient_Id");
-            configuration.HasIndex(e => e.ProductId, "IX_Product_Id");
+            configuration.HasIndex(e => e.AuditUserId);
+            configuration.HasIndex(e => e.ConceptId);
+            configuration.HasIndex(e => e.PatientId);
+            configuration.HasIndex(e => e.ProductId);
         }
     }
 }

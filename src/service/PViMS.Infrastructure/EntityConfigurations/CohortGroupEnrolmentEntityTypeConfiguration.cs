@@ -12,9 +12,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(c => c.ArchivedDate)
-                .HasColumnType("datetime");
-
             configuration.Property(c => c.ArchivedReason)
                 .HasMaxLength(200);
 
@@ -25,12 +22,8 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasColumnName("CohortGroup_Id");
 
-            configuration.Property(c => c.DeenroledDate)
-                .HasColumnType("datetime");
-
             configuration.Property(c => c.EnroledDate)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.PatientId)
                 .IsRequired()
@@ -42,24 +35,21 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.AuditUser)
                 .WithMany(p => p.CohortGroupEnrolments)
-                .HasForeignKey(d => d.AuditUserId)
-                .HasConstraintName("FK_dbo.CohortGroupEnrolment_dbo.User_AuditUser_Id");
+                .HasForeignKey(d => d.AuditUserId);
 
             configuration.HasOne(d => d.CohortGroup)
                 .WithMany(p => p.CohortGroupEnrolments)
                 .HasForeignKey(d => d.CohortGroupId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.CohortGroupEnrolment_dbo.CohortGroup_CohortGroup_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.Patient)
                 .WithMany(p => p.CohortEnrolments)
                 .HasForeignKey(d => d.PatientId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.CohortGroupEnrolment_dbo.Patient_Patient_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
-            configuration.HasIndex(e => e.CohortGroupId, "IX_CohortGroup_Id");
-            configuration.HasIndex(e => e.PatientId, "IX_Patient_Id");
+            configuration.HasIndex(e => e.AuditUserId);
+            configuration.HasIndex(e => e.CohortGroupId);
+            configuration.HasIndex(e => e.PatientId);
         }
     }
 }

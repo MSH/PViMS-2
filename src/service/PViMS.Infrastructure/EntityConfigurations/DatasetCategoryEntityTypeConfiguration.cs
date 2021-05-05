@@ -53,11 +53,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.Dataset)
                 .WithMany(p => p.DatasetCategories)
                 .HasForeignKey(d => d.DatasetId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.DatasetCategory_dbo.Dataset_Dataset_Id1");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasIndex(new string[] { "Dataset_Id", "DatasetCategoryName" }).IsUnique(true);
-            configuration.HasIndex(e => e.DatasetId, "IX_Dataset_Id");
+            configuration.HasIndex(e => e.DatasetId);
         }
     }
 }

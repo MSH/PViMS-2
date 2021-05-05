@@ -17,8 +17,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasMaxLength(100);
 
             configuration.Property(e => e.HolidayDate)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.HasIndex("HolidayDate").IsUnique(true);
         }
