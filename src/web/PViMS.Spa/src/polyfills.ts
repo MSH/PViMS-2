@@ -57,12 +57,8 @@ import 'zone.js/dist/zone';  // Included with Angular CLI.
 // import './vendor/pace/pace.min.js';
 // // Charts
 import './vendor/Chart.min.js';
-// // User tour
-import 'hopscotch';
 // // Rich Text Editor
 // import 'quill';
-
-import '../node_modules/hammerjs/hammer.js';
 
 /**
  * Date, currency, decimal and percent pipes.

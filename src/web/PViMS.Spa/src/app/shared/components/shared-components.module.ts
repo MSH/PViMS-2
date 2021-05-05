@@ -5,7 +5,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
-import { SearchModule } from '../search/search.module';
 import { SharedPipesModule } from '../pipes/shared-pipes.module';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { SharedDirectivesModule } from '../directives/shared-directives.module';
@@ -172,7 +171,6 @@ const components = [
     FlexLayoutModule,
     ReactiveFormsModule,
     PerfectScrollbarModule,
-    SearchModule,
     SharedPipesModule,
     SharedDirectivesModule,
     SharedMaterialModule
