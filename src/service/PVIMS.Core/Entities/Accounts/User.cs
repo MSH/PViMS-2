@@ -47,8 +47,6 @@ namespace PVIMS.Core.Entities.Accounts
             PatientStatusHistoryCreations = new HashSet<PatientStatusHistory>();
             PatientStatusHistoryUpdates = new HashSet<PatientStatusHistory>();
             Patients = new HashSet<Patient>();
-            PregnancyCreations = new HashSet<Pregnancy>();
-            PregnancyUpdates = new HashSet<Pregnancy>();
             RefreshTokens = new HashSet<RefreshToken>();
             ReportInstanceCreations = new HashSet<ReportInstance>();
             ReportInstanceUpdates = new HashSet<ReportInstance>();
@@ -111,8 +109,6 @@ namespace PVIMS.Core.Entities.Accounts
         public virtual ICollection<PatientStatusHistory> PatientStatusHistoryCreations { get; set; }
         public virtual ICollection<PatientStatusHistory> PatientStatusHistoryUpdates { get; set; }
         public virtual ICollection<Patient> Patients { get; set; }
-        public virtual ICollection<Pregnancy> PregnancyCreations { get; set; }
-        public virtual ICollection<Pregnancy> PregnancyUpdates { get; set; }
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
         public virtual ICollection<ReportInstance> ReportInstanceCreations { get; set; }
         public virtual ICollection<ReportInstance> ReportInstanceUpdates { get; set; }
