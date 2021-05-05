@@ -48,7 +48,7 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
         deps: [HttpClient]
       }
     }),
-    RouterModule.forRoot(rootRouterConfig, { useHash: false, onSameUrlNavigation: 'reload' }),
+    RouterModule.forRoot(rootRouterConfig, { useHash: false, onSameUrlNavigation: 'reload', relativeLinkResolution: 'legacy' }),
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
     UserIdleModule.forRoot({idle: 600, timeout: 300, ping: 120})
   ],
