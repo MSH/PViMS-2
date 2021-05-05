@@ -33,7 +33,6 @@
     "@ngx-translate/http-loader": "3.0.1",
     "@swimlane/ngx-charts": "^12.1.0",
     "@swimlane/ngx-datatable": "15.0.2",
-    "angular-in-memory-web-api": "0.8.0",
     "angular-user-idle": "^2.2.5",
     "chart.js": "2.5.0",
     "classlist.js": "1.1.20150312",
