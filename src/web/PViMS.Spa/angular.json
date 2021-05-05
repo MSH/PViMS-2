@@ -25,7 +25,9 @@
             "styles": [
               "src/assets/styles/app.scss"
             ],
-            "scripts": ["node_modules/exceljs/dist/exceljs.min.js"]
+            "scripts": [
+              "node_modules/exceljs/dist/exceljs.min.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -160,5 +162,8 @@
     "@schematics/angular:directive": {
       "prefix": "app"
     }
+  },
+  "cli": {
+    "analytics": "62a095a9-4090-4fbe-ad1b-cf7f6017a88d"
   }
 }
