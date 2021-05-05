@@ -34,7 +34,7 @@ export class ConceptSelectPopupComponent extends BasePopupComponent implements O
     super(_router, _location, popupService, accountService);    
   }
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     this.itemForm = this._formBuilder.group({

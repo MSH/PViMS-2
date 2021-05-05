@@ -34,7 +34,7 @@ export class WhoPopupComponent extends BasePopupComponent implements OnInit, Aft
     value: string;
   }[];
 
-  @ViewChild('mainTabGroup', { static: false }) mainTabGroup: MatTabGroup;
+  @ViewChild('mainTabGroup') mainTabGroup: MatTabGroup;
   
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: WhoPopupData,

@@ -105,7 +105,7 @@ export class ActiveAnalyserComponent extends BaseComponent implements OnInit, Af
   percentage: number;
   showProgress: boolean;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
     
   setStep(index: number) {
     this.step = index;

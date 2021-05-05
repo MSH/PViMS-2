@@ -16,8 +16,8 @@ import { environment } from 'environments/environment';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  @ViewChild(MatProgressBar, {static: false}) progressBar: MatProgressBar;
-  @ViewChild(MatButton, {static: false}) submitButton: MatButton;
+  @ViewChild(MatProgressBar) progressBar: MatProgressBar;
+  @ViewChild(MatButton) submitButton: MatButton;
 
   viewModelForm: FormGroup;
 

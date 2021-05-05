@@ -57,7 +57,7 @@ export class DatasetCategoryElementListComponent extends BaseComponent implement
   viewModelForm: FormGroup;
   newElementForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
     
   ngOnInit(): void {
     const self = this;

@@ -53,8 +53,8 @@ export class FacilityListComponent extends BaseComponent implements OnInit, Afte
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridSort', { static: false }) mainGridSort: MatSort;
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridSort') mainGridSort: MatSort;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

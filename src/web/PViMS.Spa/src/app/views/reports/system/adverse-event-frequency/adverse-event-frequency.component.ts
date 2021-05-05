@@ -74,7 +74,7 @@ export class AdverseEventFrequencyComponent extends BaseComponent implements OnI
 
   metaDate: string = '';
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

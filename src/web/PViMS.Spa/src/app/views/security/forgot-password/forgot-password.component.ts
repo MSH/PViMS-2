@@ -7,8 +7,8 @@ import { MatProgressBar, MatButton } from '@angular/material';
 })
 export class ForgotPasswordComponent implements OnInit {
   userEmail;
-  @ViewChild(MatProgressBar, {static: false}) progressBar: MatProgressBar;
-  @ViewChild(MatButton, {static: false}) submitButton: MatButton;
+  @ViewChild(MatProgressBar) progressBar: MatProgressBar;
+  @ViewChild(MatButton) submitButton: MatButton;
   constructor() { }
 
   ngOnInit() {

@@ -60,8 +60,8 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
 
   formList: MetaFormDetailModel[] = [];
 
-  @ViewChild('mainGridSort', { static: false }) mainGridSort: MatSort;
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridSort') mainGridSort: MatSort;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

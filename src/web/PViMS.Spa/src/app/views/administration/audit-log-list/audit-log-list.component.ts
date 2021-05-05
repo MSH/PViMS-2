@@ -71,7 +71,7 @@ export class AuditLogListComponent extends BaseComponent implements OnInit, Afte
 
   facilityList: FacilityIdentifierModel[] = [];
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

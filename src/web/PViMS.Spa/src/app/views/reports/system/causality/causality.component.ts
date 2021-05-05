@@ -68,7 +68,7 @@ export class CausalityComponent extends BaseComponent implements OnInit, AfterVi
 
   facilityList: FacilityIdentifierModel[] = [];
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

@@ -34,7 +34,7 @@ export class NaranjoPopupComponent extends BasePopupComponent implements OnInit,
     value: string;
   }[];
 
-  @ViewChild('mainTabGroup', { static: false }) mainTabGroup: MatTabGroup;
+  @ViewChild('mainTabGroup') mainTabGroup: MatTabGroup;
   
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: NaranjoPopupData,

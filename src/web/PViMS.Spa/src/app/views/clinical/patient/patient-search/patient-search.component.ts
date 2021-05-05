@@ -68,7 +68,7 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
   facilityList: string[] = [];
   customAttributeList: CustomAttributeIdentifierModel[] = [];
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

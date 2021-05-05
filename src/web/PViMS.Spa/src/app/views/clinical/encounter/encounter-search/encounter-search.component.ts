@@ -71,7 +71,7 @@ export class EncounterSearchComponent extends BaseComponent implements OnInit, A
   facilityList: string[] = [];
   customAttributeList: CustomAttributeIdentifierModel[] = [];
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

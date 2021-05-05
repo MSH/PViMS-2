@@ -51,9 +51,9 @@ export class ReportMetaViewComponent extends BaseComponent implements OnInit, Af
   viewModel: ViewModel = new ViewModel();;
   viewModelForm: FormGroup;
 
-  @ViewChild('tableGridPaginator', { static: false }) tableGridPaginator: MatPaginator;
-  @ViewChild('columnGridPaginator', { static: false }) columnGridPaginator: MatPaginator;
-  @ViewChild('dependencyGridPaginator', { static: false }) dependencyGridPaginator: MatPaginator;
+  @ViewChild('tableGridPaginator') tableGridPaginator: MatPaginator;
+  @ViewChild('columnGridPaginator') columnGridPaginator: MatPaginator;
+  @ViewChild('dependencyGridPaginator') dependencyGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

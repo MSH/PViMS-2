@@ -68,7 +68,7 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
   searchContext: '' | 'New' | 'Term' = '';
   selectedTab = 0;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
   
   ngOnInit(): void {
     const self = this;

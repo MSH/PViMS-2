@@ -70,7 +70,7 @@ export class AdverseEventComponent extends BaseComponent implements OnInit, Afte
 
   metaDate: string = '';
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

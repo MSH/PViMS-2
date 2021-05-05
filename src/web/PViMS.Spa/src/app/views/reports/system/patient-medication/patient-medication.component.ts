@@ -58,7 +58,7 @@ export class PatientMedicationComponent extends BaseComponent implements OnInit,
 
   metaDate: string = '';
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

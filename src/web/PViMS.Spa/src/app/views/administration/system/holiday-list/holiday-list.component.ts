@@ -47,7 +47,7 @@ export class HolidayListComponent extends BaseComponent implements OnInit, After
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
   
   ngOnInit(): void {
     const self = this;

@@ -53,7 +53,7 @@ export class CohortEnrolmentListComponent extends BaseComponent implements OnIni
   viewGridModel: ViewGridModel = new ViewGridModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

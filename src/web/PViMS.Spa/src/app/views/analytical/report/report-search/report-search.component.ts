@@ -97,7 +97,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
   criteriaList: CriteriaListModel[] = [];
   workFlow: WorkFlowDetailModel;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;
