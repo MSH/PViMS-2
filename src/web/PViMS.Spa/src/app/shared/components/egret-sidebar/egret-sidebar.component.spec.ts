@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { EgretSidebarComponent } from './egret-sidebar.component';
 
@@ -6,7 +6,7 @@ describe('EgretSidebarComponent', () => {
   let component: EgretSidebarComponent;
   let fixture: ComponentFixture<EgretSidebarComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ EgretSidebarComponent ]
     })
