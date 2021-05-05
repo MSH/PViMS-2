@@ -1,8 +1,9 @@
-import { ElementRef, EventEmitter, Output } from '@angular/core';
+import { ElementRef, EventEmitter, Output, Directive } from '@angular/core';
 import { MatTableDataSource, MatSort, MatPaginator } from '@angular/material';
 import { fromEvent } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
+@Directive()
 export class GridModel<T> {
     constructor(displayColumns: string[]) {
         this.updateDisplayedColumns(displayColumns);
