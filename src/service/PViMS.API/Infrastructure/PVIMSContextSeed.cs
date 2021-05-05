@@ -73,6 +73,16 @@ namespace PVIMS.API.Infrastructure
                     UserName = "Admin",
                 });
             }
+            if (!context.Users.Any(ce => ce.UserName == "chesad"))
+            {
+                users.Add(new User
+                {
+                    Email = "cdesano@mtapsprogram.org",
+                    LastName = "Desano",
+                    FirstName = "Chesa",
+                    UserName = "chesad",
+                });
+            }
 
             return users;
         }
