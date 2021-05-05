@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 import { PatientService } from 'app/shared/services/patient.service';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { AppointmentPopupComponent } from './appointment-popup/appointment.popup.component';
 import { _routes } from 'app/config/routes';

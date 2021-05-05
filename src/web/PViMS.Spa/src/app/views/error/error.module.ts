@@ -7,7 +7,7 @@ import { Error404Component } from './404/error.404.component';
 import { Error500Component } from './500/error.500.component';
 import { ErrorGeneralComponent } from './general/error.general.component';
 import { _paths } from '../../config/paths';
-import { MatIconModule } from '@angular/material';
+import { MatIconModule } from '@angular/material/icon';
 import { Error501Component } from './501/error.501.component';
 import { SharedModule } from 'app/shared/shared.module';
 

@@ -22,7 +22,7 @@ import { MetaFormService } from 'app/shared/services/meta-form.service';
 import { _routes } from 'app/config/routes';
 import { Form } from 'app/shared/indexed-db/appdb';
 import { FacilityIdentifierModel } from 'app/shared/models/facility/facility.identifier.model';
-import { MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { FormBConditionsPopupComponent } from './form-b-conditions-popup/form-b-conditions.popup.component';
 import { FormBLabsPopupComponent } from './form-b-labs-popup/form-b-labs.popup.component';
 import { FormBMedicationsPopupComponent } from './form-b-medications-popup/form-b-medications.popup.component';

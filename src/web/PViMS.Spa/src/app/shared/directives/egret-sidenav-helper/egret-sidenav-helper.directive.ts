@@ -10,7 +10,7 @@ import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 import { MatchMediaService } from "app/shared/services/match-media.service";
 import { EgretSidenavHelperService } from "./egret-sidenav-helper.service";
-import { MatSidenav } from "@angular/material";
+import { MatSidenav } from "@angular/material/sidenav";
 import { MediaObserver } from "@angular/flex-layout";
 
 @Directive({

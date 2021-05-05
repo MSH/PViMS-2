@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA, MatTabGroup } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatTabGroup } from '@angular/material/tabs';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';

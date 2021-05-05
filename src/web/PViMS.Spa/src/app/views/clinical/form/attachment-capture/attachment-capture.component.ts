@@ -2,7 +2,7 @@ import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
 import { Location } from '@angular/common';
 import { Subject, Observable } from 'rxjs';
 import { WebcamImage, WebcamInitError, WebcamUtil } from 'ngx-webcam';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { MetaFormService } from 'app/shared/services/meta-form.service';
 import { PopupService } from 'app/shared/services/popup.service';

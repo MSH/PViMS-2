@@ -1,7 +1,7 @@
 import { Directive, Host, Self, Optional, OnDestroy, OnInit } from '@angular/core';
 import { MediaChange, MediaObserver } from "@angular/flex-layout";
 import { Subscription } from "rxjs";
-import { MatSidenav } from '@angular/material';
+import { MatSidenav } from '@angular/material/sidenav';
 
 
 @Directive({

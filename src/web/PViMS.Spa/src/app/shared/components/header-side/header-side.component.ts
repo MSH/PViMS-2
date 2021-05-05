@@ -5,7 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { AccountService } from 'app/shared/services/account.service';
 import { Router } from '@angular/router';
 import { _routes } from 'app/config/routes';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { UserProfilePopupComponent } from 'app/views/security/user-profile/user-profile.popup.component';
 import { PwaService } from 'app/shared/services/pwa.service';
 import { AboutPopupComponent } from '../about/about.popup.component';

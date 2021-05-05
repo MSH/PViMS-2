@@ -10,7 +10,7 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { EncounterService } from 'app/shared/services/encounter.service';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AppLoaderService } from 'app/shared/services/app-loader/app-loader.service';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { PatientDetailModel } from 'app/shared/models/patient/patient.detail.model';

@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { PopupService } from 'app/shared/services/popup.service';
 import { _routes } from 'app/config/routes';

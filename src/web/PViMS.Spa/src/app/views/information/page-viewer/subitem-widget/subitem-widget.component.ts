@@ -9,7 +9,7 @@ import { EventService } from 'app/shared/services/event.service';
 import { MetaPageService } from 'app/shared/services/meta-page.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { MediaObserver } from '@angular/flex-layout';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MetaWidgetDetailModel } from 'app/shared/models/meta/meta-widget.detail.model';
 import { WidgetConfigurePopupComponent } from '../widget-configure-popup/widget-configure.popup.component';
 import { egretAnimations } from 'app/shared/animations/egret-animations';

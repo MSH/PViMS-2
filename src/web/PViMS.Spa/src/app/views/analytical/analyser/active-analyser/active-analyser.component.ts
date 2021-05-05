@@ -28,7 +28,7 @@ import { RiskFactorDetailModel } from 'app/shared/models/risk-factor/risk-factor
 import { AnalysisService } from 'app/shared/services/analysis.service';
 import { AnalyserTermIdentifierModel } from 'app/shared/models/analysis/analyser-term.identifier.model';
 import { SeriesValueListModel } from 'app/shared/models/dataset/series-value-list.model';
-import { MatPaginator } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
 import { WorkFlowService } from 'app/shared/services/work-flow.service';
 import { ProgressStatusEnum, ProgressStatus } from 'app/shared/models/program-status.model';
 import { HttpEventType } from '@angular/common/http';

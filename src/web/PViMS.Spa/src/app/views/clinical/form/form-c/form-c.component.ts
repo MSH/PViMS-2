@@ -25,7 +25,7 @@ import { ConceptService } from 'app/shared/services/concept.service';
 import { FacilityIdentifierModel } from 'app/shared/models/facility/facility.identifier.model';
 import { takeUntil } from 'rxjs/operators';
 import { FormCompletePopupComponent } from '../form-complete-popup/form-complete.popup.component';
-import { MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 
 const moment =  _moment;
 
