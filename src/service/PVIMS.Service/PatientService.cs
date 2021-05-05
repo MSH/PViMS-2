@@ -468,7 +468,7 @@ namespace PVIMS.Services
                     Patient = patient,
                     ConditionSource = condition.ConditionSource,
                     TerminologyMedDra = terminologyMedDra,
-                    DateStart = Convert.ToDateTime(condition.DateStart),
+                    OnsetDate = Convert.ToDateTime(condition.OnsetDate),
                     TreatmentOutcome = treatmentOutcome
                 };
 
@@ -541,8 +541,8 @@ namespace PVIMS.Services
                 {
                     Patient = patient,
                     MedicationSource = medication.MedicationSource,
-                    DateStart = medication.DateStart,
-                    DateEnd = medication.DateEnd,
+                    StartDate = medication.DateStart,
+                    EndDate = medication.DateEnd,
                     Dose = medication.Dose,
                     DoseFrequency = medication.DoseFrequency,
                 };

@@ -10,14 +10,17 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         : AuditedEntityBase
 	{
         public string QualifiedName { get; private set; }
+
         public int CurrentStatusId { get; private set; }
+        public virtual ActivityExecutionStatus CurrentStatus { get; private set; }
+
         public bool Current { get; private set; }
+        
         public int ReportInstanceId { get; private set; }
+        public virtual ReportInstance ReportInstance { get; private set; }
 
         private readonly List<ActivityExecutionStatusEvent> _executionEvents;
         public IReadOnlyCollection<ActivityExecutionStatusEvent> ExecutionEvents => _executionEvents;
-
-        public virtual ReportInstance ReportInstance { get; private set; }
 
         protected ActivityInstance()
         {
@@ -32,8 +35,6 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             Current = true;
             InitialiseWithFirstExecutionStatus(activity, currentUser);
         }
-
-        public virtual ActivityExecutionStatus CurrentStatus { get; private set; }
 
         private void InitialiseWithFirstExecutionStatus(Activity activity, User currentUser)
         {

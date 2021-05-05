@@ -35,8 +35,8 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.ConceptId, opt => opt.MapFrom(src => src.Concept.Id))
                 .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Product.Id))
                 .ForMember(dest => dest.Medication, opt => opt.MapFrom(src => src.Product != null ? $"{src.Concept.ConceptName} ({src.Concept.MedicationForm.Description}) ({src.Product.ProductName})" : $"{src.Concept.ConceptName} ({src.Concept.MedicationForm.Description})"))
-                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.DateStart.ToString("yyyy-MM-dd")))
-                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.DateEnd.HasValue ? Convert.ToDateTime(src.DateEnd).ToString("yyyy-MM-dd") : ""));
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate.ToString("yyyy-MM-dd")))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate.HasValue ? src.EndDate.Value.ToString("yyyy-MM-dd") : ""));
         }
     }
 }

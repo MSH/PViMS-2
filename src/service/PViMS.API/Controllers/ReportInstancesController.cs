@@ -262,7 +262,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.feedback.v1+json", "application/vnd.pvims.feedback.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetFeedbackReportInstancesByDetail(Guid workFlowGuid,
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>>> GetFeedbackReportInstancesByDetail(Guid workFlowGuid,
             [FromQuery] ReportInstanceNewResourceParameters reportInstanceResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<ReportInstanceDetailDto, ReportInstance>
@@ -271,7 +271,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedReportsWithLinks = GetFeedbackReportInstances<ReportInstanceDetailDto>(workFlowGuid, reportInstanceResourceParameters);
+            var mappedReportsWithLinks = await GetFeedbackReportInstancesAsync<ReportInstanceDetailDto>(workFlowGuid, reportInstanceResourceParameters);
 
             // Add custom mappings to report instances
             mappedReportsWithLinks.ForEach(dto => CustomReportInstanceMap(dto));
@@ -709,7 +709,7 @@ namespace PVIMS.API.Controllers
                                 || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
             }
 
-            var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, "");
+            var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "Activities.CurrentStatus" });
             if (pagedReportsFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -806,7 +806,7 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
         /// <returns></returns>
-        private PagedCollection<T> GetFeedbackReportInstances<T>(Guid workFlowGuid, ReportInstanceNewResourceParameters reportInstanceResourceParameters) where T : class
+        private async Task<PagedCollection<T>> GetFeedbackReportInstancesAsync<T>(Guid workFlowGuid, ReportInstanceNewResourceParameters reportInstanceResourceParameters) where T : class
         {
             var config = _configRepository.Get(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
             if (config != null)
@@ -990,7 +990,7 @@ namespace PVIMS.API.Controllers
 
             identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateReportInstanceResourceUri(workFlowGuid, identifier.Id), "self", "GET"));
 
-            var reportInstance = _reportInstanceRepository.Get(r => r.Id == identifier.Id);
+            var reportInstance = _reportInstanceRepository.Get(r => r.Id == identifier.Id, new string[] { "WorkFlow", "Activities.ExecutionEvents" });
             if (reportInstance == null)
             {
                 return identifier;
@@ -1090,10 +1090,11 @@ namespace PVIMS.API.Controllers
 
             if (reportInstance.WorkFlow.Description == "New Spontaneous Surveilliance Report")
             {
-                var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
-                    .Queryable()
-                    .Single(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
-                identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDatasetInstanceResourceUri(datasetInstance.Dataset.Id, datasetInstance.Id), "updatespont", "PUT"));
+                var datasetInstance = _datasetInstanceRepository.Get(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
+                if (datasetInstance != null)
+                {
+                    identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDatasetInstanceResourceUri(datasetInstance.Dataset.Id, datasetInstance.Id), "updatespont", "PUT"));
+                }
             }
 
             return identifier;
@@ -1106,13 +1107,13 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private ReportInstanceDetailDto CustomReportInstanceMap(ReportInstanceDetailDto dto)
         {
-            var reportInstance = _reportInstanceRepository.Get(r => r.Id == dto.Id);
+            var reportInstance = _reportInstanceRepository.Get(r => r.Id == dto.Id, new string[] { "Activities.ExecutionEvents" });
             if (reportInstance == null)
             {
                 return dto;
             }
 
-            var patientClinicalEvent = _patientClinicalEventRepository.Get(p => p.PatientClinicalEventGuid == dto.ContextGuid);
+            var patientClinicalEvent = _patientClinicalEventRepository.Get(p => p.PatientClinicalEventGuid == dto.ContextGuid, new string[] { "Patient" });
             dto.PatientId = patientClinicalEvent != null ? patientClinicalEvent.Patient.Id : 0;
             dto.PatientClinicalEventId = patientClinicalEvent != null ? patientClinicalEvent.Id : 0;
 
@@ -1128,17 +1129,18 @@ namespace PVIMS.API.Controllers
                             .First(ee => ee.ExecutionStatus.Id == currentActivityInstance.CurrentStatus.Id);
                         var tag = (reportInstance.WorkFlow.Description == "New Active Surveilliance Report") ? "Active" : "Spontaneous";
 
-                        var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
-                            .Queryable()
-                            .Where(di => di.Tag == tag
-                                && di.ContextId == evt.Id)
-                            .SingleOrDefault();
-
-                        dto.E2BInstance = new DatasetInstanceDto()
+                        if (evt != null)
                         {
-                            DatasetId = datasetInstance.Dataset.Id,
-                            DatasetInstanceId = datasetInstance.Id
-                        };
+                            var datasetInstance = _datasetInstanceRepository.Get(di => di.Tag == tag && di.ContextId == evt.Id, new string[] { "Dataset" });
+                            if (datasetInstance != null)
+                            {
+                                dto.E2BInstance = new DatasetInstanceDto()
+                                {
+                                    DatasetId = datasetInstance.Dataset.Id,
+                                    DatasetInstanceId = datasetInstance.Id
+                                };
+                            }
+                        }
                     }
 
                     if (currentActivityInstance.CurrentStatus.Description == "E2BGENERATED")
@@ -1166,15 +1168,15 @@ namespace PVIMS.API.Controllers
 
             if(reportInstance.WorkFlow.Description == "New Spontaneous Surveilliance Report")
             {
-                var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
-                    .Queryable()
-                    .Single(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
-
-                dto.SpontaneousInstance = new DatasetInstanceDto()
+                var datasetInstance = _datasetInstanceRepository.Get(di => di.DatasetInstanceGuid == reportInstance.ContextGuid, new string[] { "Dataset" });
+                if(datasetInstance != null)
                 {
-                    DatasetId = datasetInstance.Dataset.Id,
-                    DatasetInstanceId = datasetInstance.Id
-                };
+                    dto.SpontaneousInstance = new DatasetInstanceDto()
+                    {
+                        DatasetId = datasetInstance.Dataset.Id,
+                        DatasetInstanceId = datasetInstance.Id
+                    };
+                }
             }
 
             // Add custom mappings to Medications
@@ -1632,14 +1634,14 @@ namespace PVIMS.API.Controllers
                 var form = patientMedication?.Concept?.MedicationForm.Description;
                 datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Dosage Form"), form, (Guid)newContext);
 
-                var startdate = patientMedication.DateStart;
+                var startdate = patientMedication.StartDate;
                 datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Start Date"), startdate.ToString("yyyyMMdd"), (Guid)newContext);
 
-                var enddate = patientMedication.DateEnd;
-                if (enddate != null) { datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug End Date"), Convert.ToDateTime(enddate).ToString("yyyyMMdd"), (Guid)newContext); };
-
-                if (startdate != null && enddate != null)
+                var enddate = patientMedication.EndDate;
+                if (enddate.HasValue)
                 {
+                    datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug End Date"), Convert.ToDateTime(enddate).ToString("yyyyMMdd"), (Guid)newContext);
+
                     var rduration = (Convert.ToDateTime(enddate) - Convert.ToDateTime(startdate)).Days;
                     datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Treatment Duration"), rduration.ToString(), (Guid)newContext);
                     datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Treatment Duration Unit"), "804=Day", (Guid)newContext);
@@ -2333,8 +2335,8 @@ namespace PVIMS.API.Controllers
                     return dto;
                 }
 
-                dto.StartDate = medication.DateStart.ToString("yyyy-MM-dd");
-                dto.EndDate = medication.DateEnd.HasValue ? Convert.ToDateTime(medication.DateEnd).ToString("yyyy-MM-dd") : "";
+                dto.StartDate = medication.StartDate.ToString("yyyy-MM-dd");
+                dto.EndDate = medication.EndDate.HasValue ? medication.EndDate.Value.ToString("yyyy-MM-dd") : "";
             }
 
             return dto;

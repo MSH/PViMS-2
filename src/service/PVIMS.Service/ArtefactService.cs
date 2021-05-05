@@ -1299,7 +1299,7 @@ namespace PVIMS.Services
 
             // Conditions
             var i = 0;
-            foreach (PatientCondition pc in patientEvent.Patient.PatientConditions.Where(pc => pc.DateStart <= patientEvent.OnsetDate).OrderByDescending(c => c.DateStart))
+            foreach (PatientCondition pc in patientEvent.Patient.PatientConditions.Where(pc => pc.OnsetDate <= patientEvent.OnsetDate).OrderByDescending(c => c.OnsetDate))
             {
                 i += 1;
                 // Row 1
@@ -1322,7 +1322,7 @@ namespace PVIMS.Services
                 tr.AppendChild<TableRowProperties>(rprops);
 
                 tr.Append(PrepareHeaderCell("Start Date", headerWidth));
-                tr.Append(PrepareCell(pc.DateStart.ToString("yyyy-MM-dd"), cellWidth, false));
+                tr.Append(PrepareCell(pc.OnsetDate.ToString("yyyy-MM-dd"), cellWidth, false));
 
                 table.AppendChild<TableRow>(tr);
 
@@ -1502,7 +1502,7 @@ namespace PVIMS.Services
                     IExtendable mcExtended = patientMedication;
 
                     // Row 1
-                    var endDate = patientMedication.DateEnd.HasValue ? Convert.ToDateTime(patientMedication.DateEnd).ToString("yyyy-MM-dd") : "";
+                    var endDate = patientMedication.EndDate.HasValue ? patientMedication.EndDate.Value.ToString("yyyy-MM-dd") : "";
                     var tr = new TableRow();
                     TableRowProperties rprops = new TableRowProperties(
                         new TableRowHeight() { Val = rowHeight }
@@ -1526,7 +1526,7 @@ namespace PVIMS.Services
                     tr.AppendChild<TableRowProperties>(rprops);
 
                     tr.Append(PrepareCell(patientMedication.DisplayName, 2500, false));
-                    tr.Append(PrepareCell(patientMedication.DateStart.ToString("yyyy-MM-dd"), 1250));
+                    tr.Append(PrepareCell(patientMedication.StartDate.ToString("yyyy-MM-dd"), 1250));
                     tr.Append(PrepareCell(endDate, 1250));
                     tr.Append(PrepareCell(patientMedication.Dose, 1250));
                     tr.Append(PrepareCell(_attributeService.GetCustomAttributeValue("PatientMedication", "Route", mcExtended), 1250));

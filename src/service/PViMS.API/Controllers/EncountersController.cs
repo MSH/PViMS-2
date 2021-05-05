@@ -688,8 +688,8 @@ namespace PVIMS.API.Controllers
                         ConditionGroup = cm.Condition.Description,
                         Status = tempCondition.OutcomeDate != null ? "Case Closed" : "Case Open",
                         PatientConditionId = tempCondition.Id,
-                        StartDate = tempCondition.DateStart.ToString("yyyy-MM-dd"),
-                        Detail = String.Format("{0} started on {1}", tempCondition.TerminologyMedDra.DisplayName, tempCondition.DateStart.ToString("yyyy-MM-dd"))
+                        StartDate = tempCondition.OnsetDate.ToString("yyyy-MM-dd"),
+                        Detail = $"{tempCondition.TerminologyMedDra.DisplayName} started on {tempCondition.OnsetDate.ToString("yyyy-MM-dd")}"
                     };
                     groupArray.Add(group);
                 }

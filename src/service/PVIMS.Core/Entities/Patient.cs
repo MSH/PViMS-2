@@ -23,7 +23,6 @@ namespace PVIMS.Core.Entities
 			PatientLanguages = new HashSet<PatientLanguage>();
 			PatientMedications = new HashSet<PatientMedication>();
 			PatientStatusHistories = new HashSet<PatientStatusHistory>();
-            Pregnancies = new HashSet<Pregnancy>();
 
             PatientGuid = Guid.NewGuid();
         }
@@ -52,7 +51,6 @@ namespace PVIMS.Core.Entities
 		public virtual ICollection<PatientLanguage> PatientLanguages { get; set; }
 		public virtual ICollection<PatientMedication> PatientMedications { get; set; }
 		public virtual ICollection<PatientStatusHistory> PatientStatusHistories { get; set; }
-        public virtual ICollection<Pregnancy> Pregnancies { get; set; }
 
         public int Age
         {
@@ -258,7 +256,7 @@ namespace PVIMS.Core.Entities
 
         public PatientCondition AddOrUpdatePatientCondition(long id,
             TerminologyMedDra sourceTerm, 
-            DateTime dateStart, 
+            DateTime onsetDate, 
             DateTime? outComeDate, 
             Outcome outcome, 
             TreatmentOutcome treatmentOutcome, 
@@ -274,7 +272,7 @@ namespace PVIMS.Core.Entities
                 {
                     ConditionSource = conditionSource,
                     TerminologyMedDra = sourceTerm,
-                    DateStart = dateStart,
+                    OnsetDate = onsetDate,
                     OutcomeDate = outComeDate,
                     Outcome = outcome,
                     TreatmentOutcome = treatmentOutcome,
@@ -292,7 +290,7 @@ namespace PVIMS.Core.Entities
                 }
 
                 patientCondition.ConditionSource = conditionSource;
-                patientCondition.DateStart = dateStart;
+                patientCondition.OnsetDate = onsetDate;
                 patientCondition.OutcomeDate = outComeDate;
                 patientCondition.Outcome = outcome;
                 patientCondition.TreatmentOutcome = treatmentOutcome;
@@ -347,9 +345,9 @@ namespace PVIMS.Core.Entities
             else
             {
                 return PatientConditions.Where(pc => pc.Archived == false && pc.TerminologyMedDra != null)
-                    .Where(pc => pc.DateStart <= date 
+                    .Where(pc => pc.OnsetDate <= date 
                         && pc.TerminologyMedDra.ConditionMedDras.Any(cm => cm.Condition.Description == condition))
-                    .OrderByDescending(pc => pc.DateStart)
+                    .OrderByDescending(pc => pc.OnsetDate)
                     .FirstOrDefault();
             }
         }
@@ -431,10 +429,10 @@ namespace PVIMS.Core.Entities
             if (patientConditionId > 0)
             {
                 return PatientConditions
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.Id != patientConditionId
                                 && pc.TerminologyMedDra.Id == sourceTerminologyMedDraId
-                                && pc.DateStart <= startDate
+                                && pc.OnsetDate <= startDate
                                 && pc.OutcomeDate == null
                                 && pc.Archived == false)
                         .Any();
@@ -442,9 +440,9 @@ namespace PVIMS.Core.Entities
             else
             {
                 return PatientConditions
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.TerminologyMedDra.Id == sourceTerminologyMedDraId
-                                && pc.DateStart <= startDate
+                                && pc.OnsetDate <= startDate
                                 && pc.OutcomeDate == null
                                 && pc.Archived == false)
                         .Any();
@@ -456,10 +454,10 @@ namespace PVIMS.Core.Entities
             if (patientConditionId > 0)
             {
                 return PatientConditions
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.Id != patientConditionId
                                 && pc.TerminologyMedDra.Id == sourceTerminologyMedDraId
-                                && startDate >= pc.DateStart 
+                                && startDate >= pc.OnsetDate
                                 && startDate <= pc.OutcomeDate
                                 && pc.Archived == false)
                         .Any();
@@ -467,9 +465,9 @@ namespace PVIMS.Core.Entities
             else
             {
                 return PatientConditions
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.TerminologyMedDra.Id == sourceTerminologyMedDraId
-                                && startDate >= pc.DateStart 
+                                && startDate >= pc.OnsetDate
                                 && startDate <= pc.OutcomeDate
                                 && pc.Archived == false)
                         .Any();
@@ -481,19 +479,19 @@ namespace PVIMS.Core.Entities
             if (patientConditionId > 0)
             {
                 return PatientConditions
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.Id != patientConditionId
                                 && pc.TerminologyMedDra.Id == sourceTerminologyMedDraId
-                                && startDate < pc.DateStart
+                                && startDate < pc.OnsetDate
                                 && pc.Archived == false)
                         .Any();
             }
             else
             {
                 return PatientConditions
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.TerminologyMedDra.Id == sourceTerminologyMedDraId
-                                && startDate < pc.DateStart
+                                && startDate < pc.OnsetDate
                                 && pc.Archived == false)
                         .Any();
             }
@@ -504,10 +502,10 @@ namespace PVIMS.Core.Entities
             if (patientConditionId > 0)
             {
                 return PatientConditions
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.Id != patientConditionId
                                 && pc.TerminologyMedDra.Id == sourceTerminologyMedDraId
-                                && pc.DateStart <= outcomeDate 
+                                && pc.OnsetDate <= outcomeDate 
                                 && pc.OutcomeDate == null
                                 && pc.Archived == false)
                         .Any();
@@ -515,9 +513,9 @@ namespace PVIMS.Core.Entities
             else
             {
                 return PatientConditions
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.TerminologyMedDra.Id == sourceTerminologyMedDraId
-                                && pc.DateStart <= outcomeDate
+                                && pc.OnsetDate <= outcomeDate
                                 && pc.OutcomeDate == null
                                 && pc.Archived == false)
                         .Any();
@@ -529,10 +527,10 @@ namespace PVIMS.Core.Entities
             if (patientConditionId > 0)
             {
                 return PatientConditions
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.Id != patientConditionId
                                 && pc.TerminologyMedDra.Id == sourceTerminologyMedDraId
-                                && outcomeDate >= pc.DateStart 
+                                && outcomeDate >= pc.OnsetDate
                                 && outcomeDate <= pc.OutcomeDate 
                                 && pc.Archived == false)
                         .Any();
@@ -540,9 +538,9 @@ namespace PVIMS.Core.Entities
             else
             {
                 return PatientConditions
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.TerminologyMedDra.Id == sourceTerminologyMedDraId
-                                && outcomeDate >= pc.DateStart
+                                && outcomeDate >= pc.OnsetDate
                                 && outcomeDate <= pc.OutcomeDate
                                 && pc.Archived == false)
                         .Any();
@@ -677,21 +675,21 @@ namespace PVIMS.Core.Entities
             if (patientMedicationId > 0)
             {
                 return PatientMedications
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.StartDate)
                         .Where(pc => pc.Id != patientMedicationId
                                 && pc.Concept?.Id == conceptId
-                                && pc.DateStart <= startDate 
-                                && pc.DateEnd == null 
+                                && pc.StartDate <= startDate 
+                                && pc.EndDate == null 
                                 && pc.Archived == false)
                         .Any();
             }
             else
             {
                 return PatientMedications
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.StartDate)
                         .Where(pc => pc.Concept?.Id == conceptId
-                                && pc.DateStart <= startDate
-                                && pc.DateEnd == null
+                                && pc.StartDate <= startDate
+                                && pc.EndDate == null
                                 && pc.Archived == false)
                         .Any();
             }
@@ -702,21 +700,21 @@ namespace PVIMS.Core.Entities
             if (patientMedicationId > 0)
             {
                 return PatientMedications
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.StartDate)
                         .Where(pc => pc.Id != patientMedicationId
                                 && pc.Concept?.Id == conceptId
-                                && startDate >= pc.DateStart 
-                                && startDate <= pc.DateEnd 
+                                && startDate >= pc.StartDate
+                                && startDate <= pc.EndDate 
                                 && pc.Archived == false)
                         .Any();
             }
             else
             {
                 return PatientMedications
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.StartDate)
                         .Where(pc => pc.Concept?.Id == conceptId
-                                && startDate >= pc.DateStart
-                                && startDate <= pc.DateEnd
+                                && startDate >= pc.StartDate
+                                && startDate <= pc.EndDate
                                 && pc.Archived == false)
                         .Any();
             }
@@ -727,19 +725,19 @@ namespace PVIMS.Core.Entities
             if (patientMedicationId > 0)
             {
                 return PatientMedications
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.StartDate)
                         .Where(pc => pc.Id != patientMedicationId
                                 && pc.Concept?.Id == conceptId
-                                && startDate < pc.DateStart 
+                                && startDate < pc.StartDate
                                 && pc.Archived == false)
                         .Any();
             }
             else
             {
                 return PatientMedications
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.StartDate)
                         .Where(pc => pc.Concept?.Id == conceptId
-                                && startDate < pc.DateStart
+                                && startDate < pc.StartDate
                                 && pc.Archived == false)
                         .Any();
             }
@@ -750,21 +748,21 @@ namespace PVIMS.Core.Entities
             if (patientMedicationId > 0)
             {
                 return PatientMedications
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.StartDate)
                         .Where(pc => pc.Id != patientMedicationId
                                 && pc.Concept?.Id == conceptId 
-                                && pc.DateStart <= endDate 
-                                && pc.DateEnd == null 
+                                && pc.StartDate <= endDate 
+                                && pc.EndDate == null 
                                 && pc.Archived == false)
                         .Any();
             }
             else
             {
                 return PatientMedications
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.StartDate)
                         .Where(pc => pc.Concept?.Id == conceptId
-                                && pc.DateStart <= endDate
-                                && pc.DateEnd == null
+                                && pc.StartDate <= endDate
+                                && pc.EndDate == null
                                 && pc.Archived == false)
                         .Any();
             }
@@ -775,21 +773,21 @@ namespace PVIMS.Core.Entities
             if (patientMedicationId > 0)
             {
                 return PatientMedications
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.StartDate)
                         .Where(pc => pc.Id != patientMedicationId
                                 && pc.Concept?.Id == conceptId 
-                                && endDate >= pc.DateStart 
-                                && endDate <= pc.DateEnd 
+                                && endDate >= pc.StartDate
+                                && endDate <= pc.EndDate 
                                 && pc.Archived == false)
                         .Any();
             }
             else
             {
                 return PatientMedications
-                        .OrderBy(pc => pc.DateStart)
+                        .OrderBy(pc => pc.StartDate)
                         .Where(pc => pc.Concept?.Id == conceptId
-                                && endDate >= pc.DateStart
-                                && endDate <= pc.DateEnd
+                                && endDate >= pc.StartDate
+                                && endDate <= pc.EndDate
                                 && pc.Archived == false)
                         .Any();
             }

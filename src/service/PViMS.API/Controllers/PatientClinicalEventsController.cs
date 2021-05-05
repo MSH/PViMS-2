@@ -232,8 +232,8 @@ namespace PVIMS.API.Controllers
                     // Prepare medications
                     List<ReportInstanceMedicationListItem> medications = new List<ReportInstanceMedicationListItem>();
                     foreach (var med in patientFromRepo.PatientMedications.Where(m => m.Archived == false 
-                            && (m.DateEnd == null && m.DateStart.AddDays(weeks * -7) <= patientClinicalEvent.OnsetDate) 
-                            || (m.DateEnd != null && m.DateStart.AddDays(weeks * -7) <= patientClinicalEvent.OnsetDate && Convert.ToDateTime(m.DateEnd).AddDays(weeks * 7) >= patientClinicalEvent.OnsetDate))
+                            && (m.EndDate == null && m.StartDate.AddDays(weeks * -7) <= patientClinicalEvent.OnsetDate) 
+                            || (m.EndDate != null && m.StartDate.AddDays(weeks * -7) <= patientClinicalEvent.OnsetDate && Convert.ToDateTime(m.EndDate).AddDays(weeks * 7) >= patientClinicalEvent.OnsetDate))
                         .OrderBy(m => m.Concept.ConceptName))
                     {
                         var item = new ReportInstanceMedicationListItem()

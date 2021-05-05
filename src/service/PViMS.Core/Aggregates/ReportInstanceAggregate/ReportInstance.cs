@@ -12,7 +12,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         : AuditedEntityBase, IAggregateRoot
     {
         public Guid ReportInstanceGuid { get; private set; }
-        public DateTime? Finished { get; private set; }
+        public DateTime? FinishedDate { get; private set; }
         
         public int WorkFlowId { get; private set; }
         public virtual WorkFlow WorkFlow { get; set; }

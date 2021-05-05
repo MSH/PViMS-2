@@ -1470,8 +1470,8 @@ namespace PVIMS.API.Controllers
                         ConditionGroup = cm.Condition.Description,
                         Status = tempCondition.OutcomeDate != null ? "Case Closed" : "Case Open",
                         PatientConditionId = tempCondition.Id,
-                        StartDate = tempCondition.DateStart.ToString("yyyy-MM-dd"),
-                        Detail = String.Format("{0} started on {1}", tempCondition.TerminologyMedDra.DisplayName, tempCondition.DateStart.ToString("yyyy-MM-dd"))
+                        StartDate = tempCondition.OnsetDate.ToString("yyyy-MM-dd"),
+                        Detail = String.Format("{0} started on {1}", tempCondition.TerminologyMedDra.DisplayName, tempCondition.OnsetDate.ToString("yyyy-MM-dd"))
                     };
                     groupArray.Add(group);
                 }
@@ -1498,7 +1498,7 @@ namespace PVIMS.API.Controllers
             dto.CohortGroupEnrolment = mappedCohortGroupEnrolment != null ? CreateLinksForEnrolment(mappedCohortGroupEnrolment) : null;
 
             // Condition start date
-            dto.ConditionStartDate = patient.GetConditionForGroupAndDate(dto.Condition, DateTime.Today)?.DateStart.ToString("yyyy-MM-dd");
+            dto.ConditionStartDate = patient.GetConditionForGroupAndDate(dto.Condition, DateTime.Today)?.OnsetDate.ToString("yyyy-MM-dd");
 
             // Cohort group links
             return CreateLinksForCohortGroup(dto);
@@ -2047,7 +2047,7 @@ namespace PVIMS.API.Controllers
 
             conditionDetail.MeddraTermId = termSource.Id;
             conditionDetail.ConditionSource = termSource.MedDraTerm;
-            conditionDetail.DateStart = patientForCreation.StartDate;
+            conditionDetail.OnsetDate = patientForCreation.StartDate;
             conditionDetail.OutcomeDate = patientForCreation.OutcomeDate;
 
             patientDetail.Conditions.Add(conditionDetail);
