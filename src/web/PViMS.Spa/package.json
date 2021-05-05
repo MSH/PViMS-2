@@ -31,7 +31,6 @@
     "@angular/service-worker": "10.2.5",
     "@ngx-translate/core": "10.0.1",
     "@ngx-translate/http-loader": "3.0.1",
-    "@swimlane/ngx-datatable": "15.0.2",
     "angular-user-idle": "^2.2.5",
     "classlist.js": "1.1.20150312",
     "core-js": "2.4.1",
