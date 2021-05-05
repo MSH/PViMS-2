@@ -98,7 +98,6 @@ namespace PVIMS.Infrastructure
         public virtual DbSet<PatientStatus> PatientStatuses { get; set; }
         public virtual DbSet<PatientStatusHistory> PatientStatusHistories { get; set; }
         public virtual DbSet<PostDeployment> PostDeployments { get; set; }
-        public virtual DbSet<Pregnancy> Pregnancies { get; set; }
         public virtual DbSet<Priority> Priorities { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -236,7 +235,6 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new PatientStatusEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientStatusHistoryEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PostDeploymentEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new PregnancyEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PriorityEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ProductEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenEntityTypeConfiguration());
