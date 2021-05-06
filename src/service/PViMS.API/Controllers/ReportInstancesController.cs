@@ -11,6 +11,7 @@ using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
@@ -23,7 +24,6 @@ using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -38,16 +38,18 @@ namespace PVIMS.API.Controllers
     public class ReportInstancesController : ControllerBase
     {
         private readonly IPropertyMappingService _propertyMappingService;
-        private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
+        private readonly IRepositoryInt<ActivityExecutionStatusEvent> _activityExecutionStatusEventRepository;
+        private readonly IRepositoryInt<Attachment> _attachmentRepository;
+        private readonly IRepositoryInt<Config> _configRepository;
+        private readonly IRepositoryInt<Dataset> _datasetRepository;
+        private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
+        private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
+        private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly IRepositoryInt<ReportInstanceMedication> _reportInstanceMedicationRepository;
-        private readonly IRepositoryInt<ActivityExecutionStatusEvent> _activityExecutionStatusEventRepository;
-        private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
-        private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
-        private readonly IRepositoryInt<Config> _configRepository;
-        private readonly IRepositoryInt<Attachment> _attachmentRepository;
         private readonly IRepositoryInt<User> _userRepository;
+        private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IReportService _reportService;
@@ -60,16 +62,18 @@ namespace PVIMS.API.Controllers
         public ReportInstancesController(IPropertyMappingService propertyMappingService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
-            IRepositoryInt<WorkFlow> workFlowRepository,
-            IRepositoryInt<ReportInstance> reportInstanceRepository,
-            IRepositoryInt<ReportInstanceMedication> reportInstanceMedicationRepository,
             IRepositoryInt<ActivityExecutionStatusEvent> activityExecutionStatusEventRepository,
+            IRepositoryInt<Attachment> attachmentRepository,
+            IRepositoryInt<Config> configRepository,
+            IRepositoryInt<Dataset> datasetRepository,
+            IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository,
+            IRepositoryInt<ReportInstance> reportInstanceRepository,
+            IRepositoryInt<ReportInstanceMedication> reportInstanceMedicationRepository,
             IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
-            IRepositoryInt<Config> configRepository,
-            IRepositoryInt<Attachment> attachmentRepository,
             IRepositoryInt<User> userRepository,
+            IRepositoryInt<WorkFlow> workFlowRepository,
             IReportService reportService,
             IInfrastructureService infrastructureService,
             IWorkFlowService workFlowService,
@@ -88,6 +92,8 @@ namespace PVIMS.API.Controllers
             _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
             _terminologyMeddraRepository = terminologyMeddraRepository ?? throw new ArgumentNullException(nameof(terminologyMeddraRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
+            _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
+            _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _attachmentRepository = attachmentRepository ?? throw new ArgumentNullException(nameof(attachmentRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
@@ -166,7 +172,9 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            var model = workFlowGuid == new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219") ? _artefactService.CreatePatientSummaryForActiveReport(reportInstanceFromRepo.ContextGuid) : _artefactService.CreatePatientSummaryForSpontaneousReport(reportInstanceFromRepo.ContextGuid);
+            var model = workFlowGuid == new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219") ? 
+                await _artefactService.CreatePatientSummaryForActiveReportAsync(reportInstanceFromRepo.ContextGuid) : 
+                await _artefactService.CreatePatientSummaryForSpontaneousReportAsync(reportInstanceFromRepo.ContextGuid);
 
             return PhysicalFile(model.FullPath, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
         }
@@ -254,7 +262,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.feedback.v1+json", "application/vnd.pvims.feedback.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetFeedbackReportInstancesByDetail(Guid workFlowGuid,
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>>> GetFeedbackReportInstancesByDetail(Guid workFlowGuid,
             [FromQuery] ReportInstanceNewResourceParameters reportInstanceResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<ReportInstanceDetailDto, ReportInstance>
@@ -263,7 +271,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedReportsWithLinks = GetFeedbackReportInstances<ReportInstanceDetailDto>(workFlowGuid, reportInstanceResourceParameters);
+            var mappedReportsWithLinks = await GetFeedbackReportInstancesAsync<ReportInstanceDetailDto>(workFlowGuid, reportInstanceResourceParameters);
 
             // Add custom mappings to report instances
             mappedReportsWithLinks.ForEach(dto => CustomReportInstanceMap(dto));
@@ -326,7 +334,13 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            var attachmentFromRepo = await _attachmentRepository.GetAsync(f => f.ActivityExecutionStatusEvent.Id == activityExecutionStatusEventId && f.Id == id);
+            var activityExecutionStatusEvent = await _activityExecutionStatusEventRepository.GetAsync(f => f.Id == activityExecutionStatusEventId);
+            if (activityExecutionStatusEvent == null)
+            {
+                return NotFound();
+            }
+
+            var attachmentFromRepo = activityExecutionStatusEvent.Attachments.SingleOrDefault(f => f.Id == id);
             if (attachmentFromRepo == null)
             {
                 return NotFound();
@@ -580,13 +594,19 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var reportInstanceMedicationFromRepo = await _reportInstanceMedicationRepository.GetAsync(f => f.ReportInstance.WorkFlow.WorkFlowGuid == workFlowGuid && f.ReportInstance.Id == reportInstanceId && f.Id == id);
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == reportInstanceId);
+            if (reportInstanceFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            var reportInstanceMedicationFromRepo = reportInstanceFromRepo.Medications.SingleOrDefault(m => m.Id == id);
             if (reportInstanceMedicationFromRepo == null)
             {
                 return NotFound();
             }
 
-            if (!_workFlowService.ValidateExecutionStatusForCurrentActivity(reportInstanceMedicationFromRepo.ReportInstance.ContextGuid, "CAUSALITYSET"))
+            if (!_workFlowService.ValidateExecutionStatusForCurrentActivity(reportInstanceFromRepo.ContextGuid, "CAUSALITYSET"))
             {
                 ModelState.AddModelError("Message", "Invalid status for activity");
             }
@@ -595,11 +615,11 @@ namespace PVIMS.API.Controllers
             {
                 if(causalityForUpdate.CausalityConfigType == CausalityConfigType.NaranjoScale)
                 {
-                    reportInstanceMedicationFromRepo.NaranjoCausality = causalityForUpdate.Causality;
+                    reportInstanceMedicationFromRepo.SetNaranjoCausality(causalityForUpdate.Causality);
                 }
                 if (causalityForUpdate.CausalityConfigType == CausalityConfigType.WHOScale)
                 {
-                    reportInstanceMedicationFromRepo.WhoCausality = causalityForUpdate.Causality;
+                    reportInstanceMedicationFromRepo.SetWhoCausality(causalityForUpdate.Causality);
                 }
 
                 _reportInstanceMedicationRepository.Update(reportInstanceMedicationFromRepo);
@@ -686,10 +706,10 @@ namespace PVIMS.API.Controllers
                                 || f.SourceIdentifier.Contains(reportInstanceResourceParameters.SearchTerm) 
                                 || f.TerminologyMedDra.MedDraTerm.Contains(reportInstanceResourceParameters.SearchTerm) 
                                 || f.Identifier.Contains(reportInstanceResourceParameters.SearchTerm) 
-                                || f.ReportInstanceMedications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
+                                || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
             }
 
-            var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, "");
+            var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "Activities.CurrentStatus" });
             if (pagedReportsFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -786,7 +806,7 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
         /// <returns></returns>
-        private PagedCollection<T> GetFeedbackReportInstances<T>(Guid workFlowGuid, ReportInstanceNewResourceParameters reportInstanceResourceParameters) where T : class
+        private async Task<PagedCollection<T>> GetFeedbackReportInstancesAsync<T>(Guid workFlowGuid, ReportInstanceNewResourceParameters reportInstanceResourceParameters) where T : class
         {
             var config = _configRepository.Get(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
             if (config != null)
@@ -817,7 +837,7 @@ namespace PVIMS.API.Controllers
                                         || f.SourceIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)
                                         || f.TerminologyMedDra.MedDraTerm.Contains(reportInstanceResourceParameters.SearchTerm)
                                         || f.Identifier.Contains(reportInstanceResourceParameters.SearchTerm)
-                                        || f.ReportInstanceMedications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
+                                        || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
                     }
 
                     var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, "");
@@ -863,7 +883,7 @@ namespace PVIMS.API.Controllers
         {
             var orderby = Extensions.GetOrderBy<ActivityExecutionStatusEvent>("EventDateTime", "asc");
 
-            // FIlter list
+            // Filter list
             var predicate = PredicateBuilder.New<ActivityExecutionStatusEvent>(true);
             predicate = predicate.And(f => f.ActivityInstance.ReportInstance.WorkFlow.WorkFlowGuid == workFlowGuid && f.ActivityInstance.ReportInstance.Id == reportinstanceId);
 
@@ -970,7 +990,7 @@ namespace PVIMS.API.Controllers
 
             identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateReportInstanceResourceUri(workFlowGuid, identifier.Id), "self", "GET"));
 
-            var reportInstance = _reportInstanceRepository.Get(r => r.Id == identifier.Id);
+            var reportInstance = _reportInstanceRepository.Get(r => r.Id == identifier.Id, new string[] { "WorkFlow", "Activities.ExecutionEvents" });
             if (reportInstance == null)
             {
                 return identifier;
@@ -1042,13 +1062,16 @@ namespace PVIMS.API.Controllers
                     {
                         identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus", workFlowGuid, identifier.Id), "confirmsubmissione2b", "PUT"));
 
-                        var e2bAttachment = currentActivityInstance.ExecutionEvents
+                        var executionEvent = currentActivityInstance.ExecutionEvents
                             .OrderByDescending(ee => ee.EventDateTime)
-                            .First(ee => ee.ExecutionStatus.Description == "E2BGENERATED")
-                            .Attachments.SingleOrDefault(att => att.Description == "E2b");
-                        if (e2bAttachment != null)
+                            .First(ee => ee.ExecutionStatus.Description == "E2BGENERATED");
+                        if (executionEvent != null)
                         {
-                            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateDownloadActivitySingleAttachmentResourceUri(workFlowGuid, reportInstance.Id, e2bAttachment.ActivityExecutionStatusEvent.Id, e2bAttachment.Id), "downloadxml", "GET"));
+                            var e2bAttachment = executionEvent.Attachments.SingleOrDefault(att => att.Description == "E2b");
+                            if (e2bAttachment != null)
+                            {
+                                identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateDownloadActivitySingleAttachmentResourceUri(workFlowGuid, reportInstance.Id, executionEvent.Id, e2bAttachment.Id), "downloadxml", "GET"));
+                            }
                         }
                     }
 
@@ -1067,10 +1090,11 @@ namespace PVIMS.API.Controllers
 
             if (reportInstance.WorkFlow.Description == "New Spontaneous Surveilliance Report")
             {
-                var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
-                    .Queryable()
-                    .Single(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
-                identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDatasetInstanceResourceUri(datasetInstance.Dataset.Id, datasetInstance.Id), "updatespont", "PUT"));
+                var datasetInstance = _datasetInstanceRepository.Get(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
+                if (datasetInstance != null)
+                {
+                    identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDatasetInstanceResourceUri(datasetInstance.Dataset.Id, datasetInstance.Id), "updatespont", "PUT"));
+                }
             }
 
             return identifier;
@@ -1083,13 +1107,13 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private ReportInstanceDetailDto CustomReportInstanceMap(ReportInstanceDetailDto dto)
         {
-            var reportInstance = _reportInstanceRepository.Get(r => r.Id == dto.Id);
+            var reportInstance = _reportInstanceRepository.Get(r => r.Id == dto.Id, new string[] { "Activities.ExecutionEvents" });
             if (reportInstance == null)
             {
                 return dto;
             }
 
-            var patientClinicalEvent = _patientClinicalEventRepository.Get(p => p.PatientClinicalEventGuid == dto.ContextGuid);
+            var patientClinicalEvent = _patientClinicalEventRepository.Get(p => p.PatientClinicalEventGuid == dto.ContextGuid, new string[] { "Patient" });
             dto.PatientId = patientClinicalEvent != null ? patientClinicalEvent.Patient.Id : 0;
             dto.PatientClinicalEventId = patientClinicalEvent != null ? patientClinicalEvent.Id : 0;
 
@@ -1105,29 +1129,34 @@ namespace PVIMS.API.Controllers
                             .First(ee => ee.ExecutionStatus.Id == currentActivityInstance.CurrentStatus.Id);
                         var tag = (reportInstance.WorkFlow.Description == "New Active Surveilliance Report") ? "Active" : "Spontaneous";
 
-                        var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
-                            .Queryable()
-                            .Where(di => di.Tag == tag
-                                && di.ContextId == evt.Id)
-                            .SingleOrDefault();
-
-                        dto.E2BInstance = new DatasetInstanceDto()
+                        if (evt != null)
                         {
-                            DatasetId = datasetInstance.Dataset.Id,
-                            DatasetInstanceId = datasetInstance.Id
-                        };
+                            var datasetInstance = _datasetInstanceRepository.Get(di => di.Tag == tag && di.ContextId == evt.Id, new string[] { "Dataset" });
+                            if (datasetInstance != null)
+                            {
+                                dto.E2BInstance = new DatasetInstanceDto()
+                                {
+                                    DatasetId = datasetInstance.Dataset.Id,
+                                    DatasetInstanceId = datasetInstance.Id
+                                };
+                            }
+                        }
                     }
 
                     if (currentActivityInstance.CurrentStatus.Description == "E2BGENERATED")
                     {
-                        var e2bAttachment = currentActivityInstance.ExecutionEvents
+                        var executionEvent = currentActivityInstance.ExecutionEvents
                             .OrderByDescending(ee => ee.EventDateTime)
-                            .First(ee => ee.ExecutionStatus.Description == "E2BGENERATED")
-                            .Attachments.SingleOrDefault(att => att.Description == "E2b");
-                        if (e2bAttachment != null)
+                            .First(ee => ee.ExecutionStatus.Description == "E2BGENERATED");
+
+                        if (executionEvent != null)
                         {
-                            dto.ActivityExecutionStatusEventId = e2bAttachment.ActivityExecutionStatusEvent.Id;
-                            dto.AttachmentId = e2bAttachment.Id;
+                            var e2bAttachment = executionEvent.Attachments.SingleOrDefault(att => att.Description == "E2b");
+                            if (e2bAttachment != null)
+                            {
+                                dto.ActivityExecutionStatusEventId = executionEvent.Id;
+                                dto.AttachmentId = e2bAttachment.Id;
+                            }
                         }
                     }
 
@@ -1139,15 +1168,15 @@ namespace PVIMS.API.Controllers
 
             if(reportInstance.WorkFlow.Description == "New Spontaneous Surveilliance Report")
             {
-                var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
-                    .Queryable()
-                    .Single(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
-
-                dto.SpontaneousInstance = new DatasetInstanceDto()
+                var datasetInstance = _datasetInstanceRepository.Get(di => di.DatasetInstanceGuid == reportInstance.ContextGuid, new string[] { "Dataset" });
+                if(datasetInstance != null)
                 {
-                    DatasetId = datasetInstance.Dataset.Id,
-                    DatasetInstanceId = datasetInstance.Id
-                };
+                    dto.SpontaneousInstance = new DatasetInstanceDto()
+                    {
+                        DatasetId = datasetInstance.Dataset.Id,
+                        DatasetInstanceId = datasetInstance.Id
+                    };
+                }
             }
 
             // Add custom mappings to Medications
@@ -1239,19 +1268,16 @@ namespace PVIMS.API.Controllers
             DatasetInstance datasetInstance = null;
 
             // Determine which E2B dataset to use
-            var datasetName = _configRepository.Get(c => c.ConfigType == ConfigType.E2BVersion).ConfigValue;
-            var dataset = _unitOfWork.Repository<Dataset>()
-                .Queryable()
-                .Include("DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType")
-                .Include("DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType")
-                .SingleOrDefault(d => d.DatasetName == datasetName);
+            var config = await _configRepository.GetAsync(c => c.ConfigType == ConfigType.E2BVersion);
+            if (config == null)
+            {
+                throw new KeyNotFoundException(nameof(config));
+            }
+            var datasetName = config.ConfigValue;
 
-            // Load source element
-            var patientClinicalEvent = _unitOfWork.Repository<PatientClinicalEvent>()
-                .Queryable()
-                .Include("Patient")
-                .SingleOrDefault(p => p.PatientClinicalEventGuid == reportInstanceFromRepo.ContextGuid);
-
+            var dataset = await _datasetRepository.GetAsync(d => d.DatasetName == datasetName, new string[] { "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType", "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType" });
+            var patientClinicalEvent = await _patientClinicalEventRepository.GetAsync(p => p.PatientClinicalEventGuid == reportInstanceFromRepo.ContextGuid, new string[] { "Patient" });
+            
             // Add activity and link E2B to new element
             var evt = await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "E2BINITIATED", "AUTOMATION: E2B dataset created", null, "");
 
@@ -1259,6 +1285,7 @@ namespace PVIMS.API.Controllers
             {
                 datasetInstance = dataset.CreateInstance(evt.Id, null);
                 datasetInstance.Tag = "Active";
+                
                 _unitOfWork.Repository<DatasetInstance>().Save(datasetInstance);
 
                 // Default values
@@ -1300,18 +1327,15 @@ namespace PVIMS.API.Controllers
             var user = _userRepository.Get(u => u.UserName == userName);
 
             // Determine which E2B dataset to use
-            var datasetName = _configRepository.Get(c => c.ConfigType == ConfigType.E2BVersion).ConfigValue;
-            var dataset = _unitOfWork.Repository<Dataset>()
-                .Queryable()
-                .Include("DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType")
-                .Include("DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType")
-                .SingleOrDefault(d => d.DatasetName == datasetName);
+            var config = await _configRepository.GetAsync(c => c.ConfigType == ConfigType.E2BVersion);
+            if (config == null)
+            {
+                throw new KeyNotFoundException(nameof(config));
+            }
+            var datasetName = config.ConfigValue;
 
-            // Load source element
-            var sourceInstance = _unitOfWork.Repository<DatasetInstance>()
-                .Queryable()
-                .Include("Dataset")
-                .SingleOrDefault(ds => ds.DatasetInstanceGuid == reportInstanceFromRepo.ContextGuid);
+            var dataset = await _datasetRepository.GetAsync(d => d.DatasetName == datasetName, new string[] { "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType", "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType" });
+            var sourceInstance = await _datasetInstanceRepository.GetAsync(ds => ds.DatasetInstanceGuid == reportInstanceFromRepo.ContextGuid, new string[] { "Dataset" });
 
             if (dataset != null && sourceInstance != null)
             {
@@ -1584,7 +1608,7 @@ namespace PVIMS.API.Controllers
             string[] validWHOCriteria = { "Possible", "Probable", "Certain" };
 
             var destinationProductElement = _unitOfWork.Repository<DatasetElement>().Queryable().SingleOrDefault(u => u.DatasetElementGuid.ToString() == "E033BDE8-EDC8-43FF-A6B0-DEA6D6FA581C"); // Medicinal Products
-            foreach (ReportInstanceMedication med in reportInstance.ReportInstanceMedications)
+            foreach (ReportInstanceMedication med in reportInstance.Medications)
             {
                 var newContext = Guid.NewGuid();
 
@@ -1610,14 +1634,14 @@ namespace PVIMS.API.Controllers
                 var form = patientMedication?.Concept?.MedicationForm.Description;
                 datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Dosage Form"), form, (Guid)newContext);
 
-                var startdate = patientMedication.DateStart;
+                var startdate = patientMedication.StartDate;
                 datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Start Date"), startdate.ToString("yyyyMMdd"), (Guid)newContext);
 
-                var enddate = patientMedication.DateEnd;
-                if (enddate != null) { datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug End Date"), Convert.ToDateTime(enddate).ToString("yyyyMMdd"), (Guid)newContext); };
-
-                if (startdate != null && enddate != null)
+                var enddate = patientMedication.EndDate;
+                if (enddate.HasValue)
                 {
+                    datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug End Date"), Convert.ToDateTime(enddate).ToString("yyyyMMdd"), (Guid)newContext);
+
                     var rduration = (Convert.ToDateTime(enddate) - Convert.ToDateTime(startdate)).Days;
                     datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Treatment Duration"), rduration.ToString(), (Guid)newContext);
                     datasetInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Treatment Duration Unit"), "804=Day", (Guid)newContext);
@@ -2311,8 +2335,8 @@ namespace PVIMS.API.Controllers
                     return dto;
                 }
 
-                dto.StartDate = medication.DateStart.ToString("yyyy-MM-dd");
-                dto.EndDate = medication.DateEnd.HasValue ? Convert.ToDateTime(medication.DateEnd).ToString("yyyy-MM-dd") : "";
+                dto.StartDate = medication.StartDate.ToString("yyyy-MM-dd");
+                dto.EndDate = medication.EndDate.HasValue ? medication.EndDate.Value.ToString("yyyy-MM-dd") : "";
             }
 
             return dto;

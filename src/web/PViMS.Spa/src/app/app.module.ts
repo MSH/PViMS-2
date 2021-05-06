@@ -1,8 +1,7 @@
 import { NgModule, ErrorHandler } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { BrowserModule, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
+import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { GestureConfig } from '@angular/material';
 import { 
   PerfectScrollbarModule, 
   PERFECT_SCROLLBAR_CONFIG, 
@@ -49,7 +48,7 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
         deps: [HttpClient]
       }
     }),
-    RouterModule.forRoot(rootRouterConfig, { useHash: false, onSameUrlNavigation: 'reload' }),
+    RouterModule.forRoot(rootRouterConfig, { useHash: false, onSameUrlNavigation: 'reload', relativeLinkResolution: 'legacy' }),
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
     UserIdleModule.forRoot({idle: 600, timeout: 300, ping: 120})
   ],
@@ -60,7 +59,6 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     DatePipe,
     { provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorExtension, multi: true },
     { provide: ErrorHandler, useClass: ErrorHandlerService },
-    { provide: HAMMER_GESTURE_CONFIG, useClass: GestureConfig },
     { provide: PERFECT_SCROLLBAR_CONFIG, useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG },
   ],
   bootstrap: [AppComponent]

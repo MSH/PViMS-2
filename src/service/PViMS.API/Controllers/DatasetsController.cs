@@ -1030,7 +1030,7 @@ namespace PVIMS.API.Controllers
                             medications.Add(item);
                         }
                     }
-                    _workflowService.AddOrUpdateMedicationsForWorkFlowInstance(datasetInstance.DatasetInstanceGuid, medications);
+                    await _workflowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(datasetInstance.DatasetInstanceGuid, medications);
 
                     _unitOfWork.Complete();
 

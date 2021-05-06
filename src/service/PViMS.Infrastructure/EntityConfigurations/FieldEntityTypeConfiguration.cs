@@ -44,10 +44,9 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.FieldType)
                 .WithMany(p => p.Fields)
-                .HasForeignKey(d => d.FieldTypeId)
-                .HasConstraintName("FK_dbo.Field_dbo.FieldType_FieldType_Id");
+                .HasForeignKey(d => d.FieldTypeId);
 
-            configuration.HasIndex(e => e.FieldTypeId, "IX_FieldType_Id");
+            configuration.HasIndex(e => e.FieldTypeId);
         }
     }
 }

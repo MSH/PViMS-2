@@ -10,6 +10,7 @@ using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Account;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Repositories;

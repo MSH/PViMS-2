@@ -8,7 +8,8 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
@@ -52,7 +53,7 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

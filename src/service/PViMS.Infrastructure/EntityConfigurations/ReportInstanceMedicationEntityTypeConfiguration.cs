@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PVIMS.Core.Entities;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 
 namespace PVIMS.Infrastructure.EntityConfigurations
 {
@@ -27,12 +27,11 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasMaxLength(30);
 
             configuration.HasOne(d => d.ReportInstance)
-                .WithMany(p => p.ReportInstanceMedications)
+                .WithMany(p => p.Medications)
                 .HasForeignKey(d => d.ReportInstanceId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.ReportInstanceMedication_dbo.ReportInstance_ReportInstance_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.ReportInstanceId, "IX_ReportInstance_Id");
+            configuration.HasIndex(e => e.ReportInstanceId);
         }
     }
 }

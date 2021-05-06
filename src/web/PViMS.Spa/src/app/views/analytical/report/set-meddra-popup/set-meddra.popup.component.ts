@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject, ViewEncapsulation, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA, MatPaginator } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
@@ -42,7 +43,7 @@ export class SetMeddraPopupComponent extends BasePopupComponent implements OnIni
     super(_router, _location, popupService, accountService);    
   }
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     this.itemForm = this._formBuilder.group({

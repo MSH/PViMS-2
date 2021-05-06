@@ -20,11 +20,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.Dataset)
                 .WithMany(p => p.WorkPlans)
-                .HasForeignKey(d => d.DatasetId)
-                .HasConstraintName("FK_dbo.WorkPlan_dbo.Dataset_Dataset_Id");
+                .HasForeignKey(d => d.DatasetId);
 
             configuration.HasIndex("Description").IsUnique(true);
-            configuration.HasIndex(e => e.DatasetId, "IX_Dataset_Id");
+            configuration.HasIndex(e => e.DatasetId);
         }
     }
 }

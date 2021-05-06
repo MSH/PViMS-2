@@ -32,7 +32,7 @@ interface IAdjustScreenOptions {
   providedIn: "root"
 })
 export class LayoutService {
-  public layoutConf: ILayoutConf;
+  public layoutConf: ILayoutConf = {};
   layoutConfSubject = new BehaviorSubject<ILayoutConf>(this.layoutConf);
   layoutConf$ = this.layoutConfSubject.asObservable();
   public isMobile: boolean;

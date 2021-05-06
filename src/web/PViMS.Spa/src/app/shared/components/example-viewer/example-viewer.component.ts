@@ -31,7 +31,7 @@ export class EgretExampleViewerComponent implements OnInit, AfterViewInit, OnDes
     return this._exampleId;
   }
 
-  @ViewChild('exampleContainer', {read: ViewContainerRef, static: false}) exampleContainer: ViewContainerRef
+  @ViewChild('exampleContainer', { read: ViewContainerRef }) exampleContainer: ViewContainerRef
 
   constructor(
     private cfr: ComponentFactoryResolver

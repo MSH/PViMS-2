@@ -43,6 +43,7 @@ using System.Threading.Tasks;
 using PVIMS.API.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using PVIMS.API.Application.Queries.ReportInstance;
 
 namespace PViMS.API
 {
@@ -93,6 +94,10 @@ namespace PViMS.API
                 .OnActivating(u => u.Instance.Start());
 
             builder.RegisterGeneric(typeof(EntityFrameworkRepository<>)).As(typeof(IRepositoryInt<>));
+
+            builder.Register(c => new ReportInstanceQueries(Configuration["ConnectionString"]))
+                .As<IReportInstanceQueries>()
+                .InstancePerLifetimeScope();
 
             builder.Populate(services);
             this.ApplicationContainer = builder.Build();

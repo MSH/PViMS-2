@@ -11,7 +11,7 @@ namespace PVIMS.Core.Models
 
         public string ConditionSource { get; set; }
 
-        public DateTime DateStart { get; set; }
+        public DateTime OnsetDate { get; set; }
 
         public DateTime? OutcomeDate { get; set; }
 

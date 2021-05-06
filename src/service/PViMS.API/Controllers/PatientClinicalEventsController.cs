@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PVIMS.API.Application.Queries.ReportInstance;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.API.Helpers;
 using PVIMS.API.Models;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
@@ -40,6 +41,7 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
+        private readonly IReportInstanceQueries _reportInstanceQueries;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
@@ -60,6 +62,7 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<User> userRepository,
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
+            IReportInstanceQueries reportInstanceQueries,
             IWorkFlowService workFlowService,
             IUnitOfWorkInt unitOfWork,
             ICustomAttributeService customAttributeService,
@@ -78,6 +81,7 @@ namespace PVIMS.API.Controllers
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
+            _reportInstanceQueries = reportInstanceQueries ?? throw new ArgumentNullException(nameof(reportInstanceQueries));
             _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _customAttributeService = customAttributeService ?? throw new ArgumentNullException(nameof(customAttributeService));
@@ -152,7 +156,7 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            return Ok(CreateLinksForPatientClinicalEvent<PatientClinicalEventExpandedDto>(CustomPatientClinicalEventMap(mappedPatientClinicalEvent)));
+            return Ok(CreateLinksForPatientClinicalEvent<PatientClinicalEventExpandedDto>(await CustomPatientClinicalEventMapAsync(mappedPatientClinicalEvent)));
         }
 
         /// <summary>
@@ -228,8 +232,8 @@ namespace PVIMS.API.Controllers
                     // Prepare medications
                     List<ReportInstanceMedicationListItem> medications = new List<ReportInstanceMedicationListItem>();
                     foreach (var med in patientFromRepo.PatientMedications.Where(m => m.Archived == false 
-                            && (m.DateEnd == null && m.DateStart.AddDays(weeks * -7) <= patientClinicalEvent.OnsetDate) 
-                            || (m.DateEnd != null && m.DateStart.AddDays(weeks * -7) <= patientClinicalEvent.OnsetDate && Convert.ToDateTime(m.DateEnd).AddDays(weeks * 7) >= patientClinicalEvent.OnsetDate))
+                            && (m.EndDate == null && m.StartDate.AddDays(weeks * -7) <= patientClinicalEvent.OnsetDate) 
+                            || (m.EndDate != null && m.StartDate.AddDays(weeks * -7) <= patientClinicalEvent.OnsetDate && Convert.ToDateTime(m.EndDate).AddDays(weeks * 7) >= patientClinicalEvent.OnsetDate))
                         .OrderBy(m => m.Concept.ConceptName))
                     {
                         var item = new ReportInstanceMedicationListItem()
@@ -239,7 +243,7 @@ namespace PVIMS.API.Controllers
                         };
                         medications.Add(item);
                     }
-                    _workFlowService.AddOrUpdateMedicationsForWorkFlowInstance(patientClinicalEvent.PatientClinicalEventGuid, medications);
+                    await _workFlowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(patientClinicalEvent.PatientClinicalEventGuid, medications);
 
                     _unitOfWork.Complete();
 
@@ -451,7 +455,7 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
         /// <returns></returns>
-        private PatientClinicalEventExpandedDto CustomPatientClinicalEventMap(PatientClinicalEventExpandedDto dto)
+        private async Task<PatientClinicalEventExpandedDto> CustomPatientClinicalEventMapAsync(PatientClinicalEventExpandedDto dto)
         {
             var patientClinicalEventFromRepo = _patientClinicalEventRepository.Get(p => p.Id == dto.Id);
             if (patientClinicalEventFromRepo == null)
@@ -473,25 +477,8 @@ namespace PVIMS.API.Controllers
             dto.ReportDate = _customAttributeService.GetCustomAttributeValue("PatientClinicalEvent", "Date of Report", patientClinicalEventExtended);
             dto.IsSerious = _customAttributeService.GetCustomAttributeValue("PatientClinicalEvent", "Is the adverse event serious?", patientClinicalEventExtended);
 
-            // Activity
-            var activityItems = _workFlowService.GetExecutionStatusEventsForEventView(patientClinicalEventFromRepo);
-            foreach (var activity in activityItems)
-            {
-                if (activity.ActivityItems.Count > 0)
-                {
-                    foreach(var activityItem in activity.ActivityItems)
-                    {
-                        dto.Activity.Add(new ActivityExecutionStatusEventDto()
-                        {
-                            ExecutedDate = activityItem.ExecutedDate,
-                            Activity = activityItem.Activity,
-                            ExecutedBy = activityItem.ExecutedBy,
-                            ExecutionEvent = activityItem.ExecutionStatus,
-                            Comments = activityItem.Comments,
-                        });
-                    }
-                }
-            }
+            var activity = await _reportInstanceQueries.GetExecutionStatusEventsForEventViewAsync(patientClinicalEventFromRepo.Id);
+            dto.Activity = activity.ToList();
 
             var reportInstanceFromRepo = _reportInstanceRepository.Get(ri => ri.ContextGuid == patientClinicalEventFromRepo.PatientClinicalEventGuid);
             if(reportInstanceFromRepo == null)
@@ -503,7 +490,7 @@ namespace PVIMS.API.Controllers
             dto.SetMedDraTerm = reportInstanceFromRepo.TerminologyMedDra?.DisplayName;
 
             // Meddra medications
-            dto.Medications = _mapper.Map<ICollection<ReportInstanceMedicationDetailDto>>(reportInstanceFromRepo.ReportInstanceMedications.Where(m => !String.IsNullOrWhiteSpace(m.WhoCausality) || (!String.IsNullOrWhiteSpace(m.NaranjoCausality))));
+            dto.Medications = _mapper.Map<ICollection<ReportInstanceMedicationDetailDto>>(reportInstanceFromRepo.Medications.Where(m => !String.IsNullOrWhiteSpace(m.WhoCausality) || (!String.IsNullOrWhiteSpace(m.NaranjoCausality))));
 
             return dto;
         }

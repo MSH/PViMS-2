@@ -8,7 +8,8 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { Subscription } from 'rxjs';
-import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { GridModel } from 'app/shared/models/grid.model';
 import { EncounterService } from 'app/shared/services/encounter.service';
 import { takeUntil, finalize } from 'rxjs/operators';
@@ -71,7 +72,7 @@ export class EncounterSearchComponent extends BaseComponent implements OnInit, A
   facilityList: string[] = [];
   customAttributeList: CustomAttributeIdentifierModel[] = [];
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

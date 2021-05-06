@@ -34,15 +34,11 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasMaxLength(10);
 
             configuration.Property(e => e.Created)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.CreatedById)
                 .IsRequired()
                 .HasColumnName("CreatedBy_Id");
-
-            configuration.Property(e => e.LastUpdated)
-                .HasColumnType("datetime");
 
             configuration.Property(e => e.OrganisationName)
                 .IsRequired()
@@ -63,16 +59,14 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.SiteContactDetailCreations)
-                .HasForeignKey(d => d.CreatedById)
-                .HasConstraintName("FK_dbo.SiteContactDetail_dbo.User_CreatedBy_Id");
+                .HasForeignKey(d => d.CreatedById);
 
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.SiteContactDetailUpdates)
-                .HasForeignKey(d => d.UpdatedById)
-                .HasConstraintName("FK_dbo.SiteContactDetail_dbo.User_UpdatedBy_Id");
+                .HasForeignKey(d => d.UpdatedById);
 
-            configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
-            configuration.HasIndex(e => e.UpdatedById, "IX_UpdatedBy_Id");
+            configuration.HasIndex(e => e.CreatedById);
+            configuration.HasIndex(e => e.UpdatedById);
         }
     }
 }

@@ -23,7 +23,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasMaxLength(200);
                 
-            configuration.HasIndex(e => e.ScriptFileName, "IX_ScriptFileName").IsUnique();
+            configuration.HasIndex(e => e.ScriptFileName).IsUnique();
         }
     }
 }

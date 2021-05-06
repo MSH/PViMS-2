@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, OnDestroy, ViewEncapsulation, AfterViewIn
 import { Location } from '@angular/common';
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { MatPaginator } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventService } from 'app/shared/services/event.service';
 import { AccountService } from 'app/shared/services/account.service';
@@ -71,7 +71,7 @@ export class AuditLogListComponent extends BaseComponent implements OnInit, Afte
 
   facilityList: FacilityIdentifierModel[] = [];
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

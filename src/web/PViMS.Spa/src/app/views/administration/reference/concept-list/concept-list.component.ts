@@ -8,7 +8,8 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { ConceptService } from 'app/shared/services/concept.service';
-import { MatDialog, MatPaginator, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
@@ -52,7 +53,7 @@ export class ConceptListComponent extends BaseComponent implements OnInit, After
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

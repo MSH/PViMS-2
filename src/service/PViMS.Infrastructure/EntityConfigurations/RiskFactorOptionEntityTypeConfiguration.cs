@@ -30,11 +30,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.RiskFactor)
                 .WithMany(p => p.Options)
                 .HasForeignKey(d => d.RiskFactorId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.RiskFactorOption_dbo.RiskFactor_RiskFactor_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasIndex("Display").IsUnique(true);
-            configuration.HasIndex(e => e.RiskFactorId, "IX_RiskFactor_Id");
+            configuration.HasIndex(e => e.RiskFactorId);
         }
     }
 }

@@ -7,7 +7,7 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { MetaPageExpandedModel } from 'app/shared/models/meta/meta-page.expanded.model';

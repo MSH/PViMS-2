@@ -180,7 +180,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var conditionStartDate = patientFromRepo.GetConditionForGroupAndDate(cohortGroupFromRepo.Condition.Description, DateTime.Today).DateStart;
+            var conditionStartDate = patientFromRepo.GetConditionForGroupAndDate(cohortGroupFromRepo.Condition.Description, DateTime.Today).OnsetDate;
             if (enroledDate < conditionStartDate.Date)
             {
                 ModelState.AddModelError("Message", "Enrolment Date should be after or the same date as the condition start date");

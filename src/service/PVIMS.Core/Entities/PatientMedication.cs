@@ -12,8 +12,8 @@ namespace PVIMS.Core.Entities
             PatientMedicationGuid = Guid.NewGuid();
         }
 
-        public DateTime DateStart { get; set; }
-        public DateTime? DateEnd { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public string Dose { get; set; }
         public string DoseFrequency { get; set; }
         public string DoseUnit { get; set; }

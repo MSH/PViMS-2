@@ -33,17 +33,15 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.Mapping)
                 .WithMany(p => p.DatasetMappingValues)
                 .HasForeignKey(d => d.MappingId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.DatasetMappingValue_dbo.DatasetMapping_Mapping_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.SubMapping)
                 .WithMany(p => p.DatasetMappingValues)
                 .HasForeignKey(d => d.SubMappingId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.DatasetMappingValue_dbo.DatasetMappingSub_SubMapping_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
-            configuration.HasIndex(e => e.MappingId, "IX_Mapping_Id");
-            configuration.HasIndex(e => e.SubMappingId, "IX_SubMapping_Id");
+            configuration.HasIndex(e => e.MappingId);
+            configuration.HasIndex(e => e.SubMappingId);
         }
     }
 }

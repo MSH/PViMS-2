@@ -39,7 +39,7 @@ namespace PVIMS.Infrastructure.Repositories
 
         public ICollection<TEntity> List(Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
-            params string[] relatedEntitiesToEagerlyLoad)
+            params string[] includeExpressions)
         {
             IQueryable<TEntity> query = dbSet;
 
@@ -48,9 +48,9 @@ namespace PVIMS.Infrastructure.Repositories
                 query = query.Where(filter);
             }
 
-            foreach (var relatedEntityToEagerlyLoad in relatedEntitiesToEagerlyLoad.Where(s => !string.IsNullOrEmpty(s)))
+            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
             {
-                query.Include(relatedEntityToEagerlyLoad);
+                query = query.Include(include);
             }
 
             if (orderBy != null)
@@ -63,7 +63,7 @@ namespace PVIMS.Infrastructure.Repositories
 
         public async Task<ICollection<TEntity>> ListAsync(Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
-            params string[] relatedEntitiesToEagerlyLoad)
+            params string[] includeExpressions)
         {
             IQueryable<TEntity> query = dbSet;
 
@@ -72,9 +72,9 @@ namespace PVIMS.Infrastructure.Repositories
                 query = query.Where(filter);
             }
 
-            foreach (var relatedEntityToEagerlyLoad in relatedEntitiesToEagerlyLoad.Where(s => !string.IsNullOrEmpty(s)))
+            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
             {
-                query.Include(relatedEntityToEagerlyLoad);
+                query = query.Include(include);
             }
 
             if (orderBy != null)
@@ -87,7 +87,7 @@ namespace PVIMS.Infrastructure.Repositories
 
         public ICollection<TEntity> List<TProperty>(Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
-            Expression<Func<TEntity, TProperty>> relatedEntitiesToEagerlyLoad)
+            Expression<Func<TEntity, TProperty>> includeExpressions)
         {
             IQueryable<TEntity> query = dbSet;
 
@@ -96,7 +96,7 @@ namespace PVIMS.Infrastructure.Repositories
                 query = query.Where(filter);
             }
 
-            query.Include(relatedEntitiesToEagerlyLoad);
+            query = query.Include(includeExpressions);
 
             if (orderBy != null)
             {
@@ -108,7 +108,7 @@ namespace PVIMS.Infrastructure.Repositories
 
         public async Task<ICollection<TEntity>> ListAsync<TProperty>(Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
-            Expression<Func<TEntity, TProperty>> relatedEntitiesToEagerlyLoad)
+            Expression<Func<TEntity, TProperty>> includeExpressions)
         {
             IQueryable<TEntity> query = dbSet;
 
@@ -117,7 +117,7 @@ namespace PVIMS.Infrastructure.Repositories
                 query = query.Where(filter);
             }
 
-            query.Include(relatedEntitiesToEagerlyLoad);
+            query = query.Include(includeExpressions);
 
             if (orderBy != null)
             {
@@ -130,7 +130,7 @@ namespace PVIMS.Infrastructure.Repositories
         public PagedCollection<TEntity> List(IPagingInfo pagingInfo,
             Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
-            params string[] relatedEntitiesToEagerlyLoad)
+            params string[] includeExpressions)
         {
             IQueryable<TEntity> queryBeforePaging = dbSet;
 
@@ -139,9 +139,9 @@ namespace PVIMS.Infrastructure.Repositories
                 queryBeforePaging = queryBeforePaging.Where(filter);
             }
 
-            foreach (var relatedEntityToEagerlyLoad in relatedEntitiesToEagerlyLoad.Where(s => !string.IsNullOrEmpty(s)))
+            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
             {
-                queryBeforePaging.Include(relatedEntityToEagerlyLoad);
+                queryBeforePaging = queryBeforePaging.Include(include);
             }
 
             var count = queryBeforePaging.Count();
@@ -161,7 +161,7 @@ namespace PVIMS.Infrastructure.Repositories
         public PagedCollection<TEntity> List<TProperty>(IPagingInfo pagingInfo,
             Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
-            Expression<Func<TEntity, TProperty>> relatedEntitiesToEagerlyLoad)
+            Expression<Func<TEntity, TProperty>> includeExpressions)
         {
             IQueryable<TEntity> queryBeforePaging = dbSet;
 
@@ -170,7 +170,7 @@ namespace PVIMS.Infrastructure.Repositories
                 queryBeforePaging = queryBeforePaging.Where(filter);
             }
 
-            queryBeforePaging.Include(relatedEntitiesToEagerlyLoad);
+            queryBeforePaging = queryBeforePaging.Include(includeExpressions);
 
             var count = queryBeforePaging.Count();
 
@@ -198,25 +198,25 @@ namespace PVIMS.Infrastructure.Repositories
             return await query.SingleOrDefaultAsync(filter);
         }
 
-        public async Task<TEntity> GetAsync(object entityId, string[] relatedEntitiesToEagerlyLoad)
+        public async Task<TEntity> GetAsync(object entityId, string[] includeExpressions)
         {
-            IQueryable<TEntity> query = dbSet;
+            var query = Queryable();
 
-            foreach (var relatedEntityToEagerlyLoad in relatedEntitiesToEagerlyLoad.Where(s => !string.IsNullOrEmpty(s)))
+            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
             {
-                query.Include(relatedEntityToEagerlyLoad);
+                query = query.Include(include);
             }
 
             return await query.SingleOrDefaultAsync(q => q.Id == (long)entityId);
         }
 
-        public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> filter, string[] relatedEntitiesToEagerlyLoad)
+        public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> filter, string[] includeExpressions)
         {
-            IQueryable<TEntity> query = dbSet;
+            var query = Queryable();
 
-            foreach (var relatedEntityToEagerlyLoad in relatedEntitiesToEagerlyLoad.Where(s => !string.IsNullOrEmpty(s)))
+            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
             {
-                query.Include(relatedEntityToEagerlyLoad);
+                query = query.Include(include);
             }
 
             return await query.SingleOrDefaultAsync(filter);
@@ -234,25 +234,25 @@ namespace PVIMS.Infrastructure.Repositories
             return query.SingleOrDefault(filter);
         }
 
-        public TEntity Get(object entityId, string[] relatedEntitiesToEagerlyLoad)
+        public TEntity Get(object entityId, string[] includeExpressions)
         {
-            IQueryable<TEntity> query = dbSet;
+            var query = Queryable();
 
-            foreach (var relatedEntityToEagerlyLoad in relatedEntitiesToEagerlyLoad.Where(s => !string.IsNullOrEmpty(s)))
+            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
             {
-                query.Include(relatedEntityToEagerlyLoad);
+                query = query.Include(include);
             }
 
             return query.SingleOrDefault(q => q.Id == (long)entityId);
         }
 
-        public TEntity Get(Expression<Func<TEntity, bool>> filter, string[] relatedEntitiesToEagerlyLoad)
+        public TEntity Get(Expression<Func<TEntity, bool>> filter, string[] includeExpressions)
         {
-            IQueryable<TEntity> query = dbSet;
+            var query = Queryable();
 
-            foreach (var relatedEntityToEagerlyLoad in relatedEntitiesToEagerlyLoad.Where(s => !string.IsNullOrEmpty(s)))
+            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
             {
-                query.Include(relatedEntityToEagerlyLoad);
+                query = query.Include(include);
             }
 
             return query.SingleOrDefault(filter);

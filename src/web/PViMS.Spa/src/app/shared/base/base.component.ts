@@ -6,7 +6,9 @@ import { EventService } from '../services/event.service';
 import { Subject } from 'rxjs';
 import { Router } from '@angular/router';
 import { FormGroup, ValidationErrors } from '@angular/forms';
+import { Directive } from "@angular/core";
 
+@Directive()
 export class BaseComponent {
 
     protected _unsubscribeAll: Subject<any>;

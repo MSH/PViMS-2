@@ -23,18 +23,16 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.Condition)
                 .WithMany(p => p.ConditionLabTests)
                 .HasForeignKey(d => d.ConditionId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.ConditionLabTest_dbo.Condition_Condition_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.LabTest)
                 .WithMany(p => p.ConditionLabTests)
                 .HasForeignKey(d => d.LabTestId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.ConditionLabTest_dbo.LabTest_LabTest_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasIndex(e => new { e.ConditionId, e.LabTestId }).IsUnique(true);
-            configuration.HasIndex(e => e.ConditionId, "IX_Condition_Id");
-            configuration.HasIndex(e => e.LabTestId, "IX_LabTest_Id");
+            configuration.HasIndex(e => e.ConditionId);
+            configuration.HasIndex(e => e.LabTestId);
         }
     }
 }

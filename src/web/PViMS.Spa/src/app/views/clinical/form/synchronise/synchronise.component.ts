@@ -11,7 +11,9 @@ import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { Subscription } from 'rxjs';
 import { GridModel } from 'app/shared/models/grid.model';
 import { _routes } from 'app/config/routes';
-import { MatSort, MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { ViewErrorPopupComponent } from './viewerror-popup/viewerror.popup.component';
 
@@ -54,7 +56,7 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

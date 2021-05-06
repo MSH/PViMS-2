@@ -26,7 +26,6 @@ namespace PVIMS.Core.Entities
         public string CustomAttributesXmlSerialised { get; set; }
         public int EncounterTypeId { get; set; }
         public int PatientId { get; set; }
-        public int? PregnancyId { get; set; }
         public int PriorityId { get; set; }
         public bool Archived { get; set; }
         public DateTime? ArchivedDate { get; set; }
@@ -36,7 +35,6 @@ namespace PVIMS.Core.Entities
         public virtual User AuditUser { get; set; }
         public virtual EncounterType EncounterType { get; set; }
 		public virtual Patient Patient { get; set; }
-		public virtual Pregnancy Pregnancy { get; set; }
 		public virtual Priority Priority { get; set; }
 
         public virtual ICollection<Attachment> Attachments { get; set; }

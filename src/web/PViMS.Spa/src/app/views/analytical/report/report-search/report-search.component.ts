@@ -7,7 +7,8 @@ import { BaseComponent } from 'app/shared/base/base.component';
 import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
-import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CriteriaListModel } from 'app/shared/models/criteria.list.model';
@@ -97,7 +98,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
   criteriaList: CriteriaListModel[] = [];
   workFlow: WorkFlowDetailModel;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

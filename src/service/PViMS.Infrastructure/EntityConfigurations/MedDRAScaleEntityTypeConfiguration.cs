@@ -23,17 +23,15 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.GradingScale)
                 .WithMany(p => p.MedDrascales)
                 .HasForeignKey(d => d.GradingScaleId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.MedDRAScale_dbo.SelectionDataItem_GradingScale_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.TerminologyMedDra)
                 .WithMany(p => p.Scales)
                 .HasForeignKey(d => d.TerminologyMedDraId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.MedDRAScale_dbo.TerminologyMedDra_TerminologyMedDra_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
-            configuration.HasIndex(e => e.GradingScaleId, "IX_GradingScale_Id");
-            configuration.HasIndex(e => e.TerminologyMedDraId, "IX_TerminologyMedDra_Id");
+            configuration.HasIndex(e => e.GradingScaleId);
+            configuration.HasIndex(e => e.TerminologyMedDraId);
         }
     }
 }

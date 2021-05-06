@@ -25,25 +25,22 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.Concept)
                 .WithMany(p => p.ConditionMedications)
                 .HasForeignKey(d => d.ConceptId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.ConditionMedication_dbo.Concept_Concept_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.Condition)
                 .WithMany(p => p.ConditionMedications)
                 .HasForeignKey(d => d.ConditionId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.ConditionMedication_dbo.Condition_Condition_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.Product)
                 .WithMany(p => p.ConditionMedications)
                 .HasForeignKey(d => d.ProductId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.ConditionMedication_dbo.Product_Product_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasIndex(e => new { e.ConditionId, e.ConceptId, e.ProductId }).IsUnique(true);
-            configuration.HasIndex(e => e.ConceptId, "IX_Concept_Id");
-            configuration.HasIndex(e => e.ConditionId, "IX_Condition_Id");
-            configuration.HasIndex(e => e.ProductId, "IX_Product_Id");
+            configuration.HasIndex(e => e.ConceptId);
+            configuration.HasIndex(e => e.ConditionId);
+            configuration.HasIndex(e => e.ProductId);
         }
     }
 }

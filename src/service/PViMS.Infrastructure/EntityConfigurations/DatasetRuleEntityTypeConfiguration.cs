@@ -28,17 +28,15 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.DatasetElement)
                 .WithMany(p => p.DatasetRules)
                 .HasForeignKey(d => d.DatasetElementId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.DatasetRule_dbo.DatasetElement_DatasetElement_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.Dataset)
                 .WithMany(p => p.DatasetRules)
                 .HasForeignKey(d => d.DatasetId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.DatasetRule_dbo.Dataset_Dataset_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.DatasetElementId, "IX_DatasetElement_Id");
-            configuration.HasIndex(e => e.DatasetId, "IX_Dataset_Id");
+            configuration.HasIndex(e => e.DatasetElementId);
+            configuration.HasIndex(e => e.DatasetId);
         }
     }
 }

@@ -3,7 +3,6 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { SharedModule } from '../../shared/shared.module';
 import { PublicRoutes } from './public.routing';
 import { SpontaneousComponent } from './spontaneous/spontaneous.component';
@@ -24,7 +23,6 @@ import { SpontaneousTablePopupComponent } from './spontaneous/spontaneous-table/
     TranslateModule,
     FlexLayoutModule,
     PerfectScrollbarModule,
-    NgxDatatableModule,
     RouterModule.forChild(PublicRoutes)
   ],
   declarations: [

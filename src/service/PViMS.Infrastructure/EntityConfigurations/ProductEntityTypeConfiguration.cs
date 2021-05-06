@@ -30,10 +30,9 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.Concept)
                 .WithMany(p => p.Products)
                 .HasForeignKey(d => d.ConceptId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.Product_dbo.Concept_Concept_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.ConceptId, "IX_Concept_Id");
+            configuration.HasIndex(e => e.ConceptId);
         }
     }
 }

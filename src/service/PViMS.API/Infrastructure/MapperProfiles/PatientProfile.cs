@@ -39,7 +39,7 @@ namespace PVIMS.API.MapperProfiles
             CreateMap<PatientForUpdateDto, PatientDetailForCreation>()
                 .ForMember(dest => dest.Surname, opt => opt.MapFrom(src => src.LastName));
             CreateMap<PatientForCreationDto, ConditionDetail>()
-                .ForMember(dest => dest.DateStart, opt => opt.MapFrom(src => src.StartDate));
+                .ForMember(dest => dest.OnsetDate, opt => opt.MapFrom(src => src.StartDate));
 
             CreateMap<PatientList, PatientIdentifierDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PatientId))

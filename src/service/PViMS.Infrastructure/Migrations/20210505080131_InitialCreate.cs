@@ -146,7 +146,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    HolidayDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    HolidayDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
@@ -332,7 +332,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_OrgUnitType", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.OrgUnitType_dbo.OrgUnitType_Parent_Id",
+                        name: "FK_OrgUnitType_OrgUnitType_Parent_Id",
                         column: x => x.Parent_Id,
                         principalTable: "OrgUnitType",
                         principalColumn: "Id",
@@ -460,7 +460,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_TerminologyMedDra", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.TerminologyMedDra_dbo.TerminologyMedDra_Parent_Id",
+                        name: "FK_TerminologyMedDra_TerminologyMedDra_Parent_Id",
                         column: x => x.Parent_Id,
                         principalTable: "TerminologyMedDra",
                         principalColumn: "Id",
@@ -490,7 +490,7 @@ namespace PViMS.Infrastructure.Migrations
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EulaAcceptanceDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    EulaAcceptanceDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     AllowDatasetDownload = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     IdentityId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserType = table.Column<int>(type: "int", nullable: false)
@@ -523,8 +523,8 @@ namespace PViMS.Infrastructure.Migrations
                     CohortName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CohortCode = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
                     LastPatientNo = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    StartDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    FinishDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FinishDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MinEnrolment = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     MaxEnrolment = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     Condition_Id = table.Column<int>(type: "int", nullable: true)
@@ -533,7 +533,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_CohortGroup", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.CohortGroup_dbo.Condition_Condition_Id",
+                        name: "FK_CohortGroup_Condition_Condition_Id",
                         column: x => x.Condition_Id,
                         principalTable: "Condition",
                         principalColumn: "Id",
@@ -563,7 +563,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Field", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.Field_dbo.FieldType_FieldType_Id",
+                        name: "FK_Field_FieldType_FieldType_Id",
                         column: x => x.FieldType_Id,
                         principalTable: "FieldType",
                         principalColumn: "Id",
@@ -583,13 +583,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_ConditionLabTest", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.ConditionLabTest_dbo.Condition_Condition_Id",
+                        name: "FK_ConditionLabTest_Condition_Condition_Id",
                         column: x => x.Condition_Id,
                         principalTable: "Condition",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.ConditionLabTest_dbo.LabTest_LabTest_Id",
+                        name: "FK_ConditionLabTest_LabTest_LabTest_Id",
                         column: x => x.LabTest_Id,
                         principalTable: "LabTest",
                         principalColumn: "Id",
@@ -610,7 +610,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Concept", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.Concept_dbo.MedicationForm_MedicationForm_Id",
+                        name: "FK_Concept_MedicationForm_MedicationForm_Id",
                         column: x => x.MedicationForm_Id,
                         principalTable: "MedicationForm",
                         principalColumn: "Id",
@@ -633,7 +633,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_MetaTable", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.MetaTable_dbo.MetaTableType_TableType_Id",
+                        name: "FK_MetaTable_MetaTableType_TableType_Id",
                         column: x => x.TableType_Id,
                         principalTable: "MetaTableType",
                         principalColumn: "Id",
@@ -660,13 +660,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_MetaWidget", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.MetaWidget_dbo.MetaPage_MetaPage_Id",
+                        name: "FK_MetaWidget_MetaPage_MetaPage_Id",
                         column: x => x.MetaPage_Id,
                         principalTable: "MetaPage",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.MetaWidget_dbo.MetaWidgetType_WidgetType_Id",
+                        name: "FK_MetaWidget_MetaWidgetType_WidgetType_Id",
                         column: x => x.WidgetType_Id,
                         principalTable: "MetaWidgetType",
                         principalColumn: "Id",
@@ -687,13 +687,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_OrgUnit", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.OrgUnit_dbo.OrgUnit_Parent_Id",
+                        name: "FK_OrgUnit_OrgUnit_Parent_Id",
                         column: x => x.Parent_Id,
                         principalTable: "OrgUnit",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.OrgUnit_dbo.OrgUnitType_OrgUnitType_Id",
+                        name: "FK_OrgUnit_OrgUnitType_OrgUnitType_Id",
                         column: x => x.OrgUnitType_Id,
                         principalTable: "OrgUnitType",
                         principalColumn: "Id",
@@ -715,7 +715,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_RiskFactorOption", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.RiskFactorOption_dbo.RiskFactor_RiskFactor_Id",
+                        name: "FK_RiskFactorOption_RiskFactor_RiskFactor_Id",
                         column: x => x.RiskFactor_Id,
                         principalTable: "RiskFactor",
                         principalColumn: "Id",
@@ -735,13 +735,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_ConditionMedDra", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.ConditionMedDra_dbo.Condition_Condition_Id",
+                        name: "FK_ConditionMedDra_Condition_Condition_Id",
                         column: x => x.Condition_Id,
                         principalTable: "Condition",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.ConditionMedDra_dbo.TerminologyMedDra_TerminologyMedDra_Id",
+                        name: "FK_ConditionMedDra_TerminologyMedDra_TerminologyMedDra_Id",
                         column: x => x.TerminologyMedDra_Id,
                         principalTable: "TerminologyMedDra",
                         principalColumn: "Id",
@@ -761,13 +761,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_MedDRAScale", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.MedDRAScale_dbo.SelectionDataItem_GradingScale_Id",
+                        name: "FK_MedDRAScale_SelectionDataItem_GradingScale_Id",
                         column: x => x.GradingScale_Id,
                         principalTable: "SelectionDataItem",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.MedDRAScale_dbo.TerminologyMedDra_TerminologyMedDra_Id",
+                        name: "FK_MedDRAScale_TerminologyMedDra_TerminologyMedDra_Id",
                         column: x => x.TerminologyMedDra_Id,
                         principalTable: "TerminologyMedDra",
                         principalColumn: "Id",
@@ -780,7 +780,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ActionDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ActionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Details = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     User_Id = table.Column<int>(type: "int", nullable: false),
                     Log = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -790,7 +790,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_AuditLog", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.AuditLog_dbo.User_User_Id",
+                        name: "FK_AuditLog_User_User_Id",
                         column: x => x.User_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -805,8 +805,8 @@ namespace PViMS.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ConfigValue = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     ConfigType = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -814,13 +814,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Config", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.Config_dbo.User_CreatedBy_Id",
+                        name: "FK_Config_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.Config_dbo.User_UpdatedBy_Id",
+                        name: "FK_Config_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -834,8 +834,8 @@ namespace PViMS.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -843,13 +843,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetXml", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetXml_dbo.User_CreatedBy_Id",
+                        name: "FK_DatasetXml_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetXml_dbo.User_UpdatedBy_Id",
+                        name: "FK_DatasetXml_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -869,12 +869,12 @@ namespace PViMS.Infrastructure.Migrations
                     PatientGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newid()"),
                     MiddleName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     CustomAttributesXmlSerialised = table.Column<string>(type: "xml", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -882,19 +882,19 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Patient", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.Patient_dbo.User_AuditUser_Id",
+                        name: "FK_Patient_User_AuditUser_Id",
                         column: x => x.AuditUser_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.Patient_dbo.User_CreatedBy_Id",
+                        name: "FK_Patient_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.Patient_dbo.User_UpdatedBy_Id",
+                        name: "FK_Patient_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -908,7 +908,7 @@ namespace PViMS.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Token = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Expires = table.Column<DateTime>(type: "datetime", nullable: false),
+                    Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RemoteIpAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     User_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -916,7 +916,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_RefreshToken", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.RefreshToken_dbo.User_User_Id",
+                        name: "FK_RefreshToken_User_User_Id",
                         column: x => x.User_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -940,8 +940,8 @@ namespace PViMS.Infrastructure.Migrations
                     ContactEmail = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CountryCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     OrganisationName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -949,13 +949,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_SiteContactDetail", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.SiteContactDetail_dbo.User_CreatedBy_Id",
+                        name: "FK_SiteContactDetail_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.SiteContactDetail_dbo.User_UpdatedBy_Id",
+                        name: "FK_SiteContactDetail_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -976,8 +976,8 @@ namespace PViMS.Infrastructure.Migrations
                     InnerExceptionMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     InnerExceptionStackTrace = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RemoteIpAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -985,13 +985,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_SystemLog", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.SystemLog_dbo.User_CreatedBy_Id",
+                        name: "FK_SystemLog_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.SystemLog_dbo.User_UpdatedBy_Id",
+                        name: "FK_SystemLog_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -1012,7 +1012,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Activity", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.Activity_dbo.WorkFlow_WorkFlow_Id",
+                        name: "FK_Activity_WorkFlow_WorkFlow_Id",
                         column: x => x.WorkFlow_Id,
                         principalTable: "WorkFlow",
                         principalColumn: "Id",
@@ -1026,15 +1026,15 @@ namespace PViMS.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ReportInstanceGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Finished = table.Column<DateTime>(type: "datetime", nullable: true),
+                    FinishedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     WorkFlow_Id = table.Column<int>(type: "int", nullable: false),
                     ContextGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Identifier = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PatientIdentifier = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TerminologyMedDra_Id = table.Column<int>(type: "int", nullable: true),
                     SourceIdentifier = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1042,25 +1042,25 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_ReportInstance", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.ReportInstance_dbo.TerminologyMedDra_TerminologyMedDra_Id",
+                        name: "FK_ReportInstance_TerminologyMedDra_TerminologyMedDra_Id",
                         column: x => x.TerminologyMedDra_Id,
                         principalTable: "TerminologyMedDra",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.ReportInstance_dbo.User_CreatedBy_Id",
+                        name: "FK_ReportInstance_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.ReportInstance_dbo.User_UpdatedBy_Id",
+                        name: "FK_ReportInstance_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.ReportInstance_dbo.WorkFlow_WorkFlow_Id",
+                        name: "FK_ReportInstance_WorkFlow_WorkFlow_Id",
                         column: x => x.WorkFlow_Id,
                         principalTable: "WorkFlow",
                         principalColumn: "Id",
@@ -1086,13 +1086,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetElement", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetElement_dbo.DatasetElementType_DatasetElementType_Id",
+                        name: "FK_DatasetElement_DatasetElementType_DatasetElementType_Id",
                         column: x => x.DatasetElementType_Id,
                         principalTable: "DatasetElementType",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetElement_dbo.Field_Field_Id",
+                        name: "FK_DatasetElement_Field_Field_Id",
                         column: x => x.Field_Id,
                         principalTable: "Field",
                         principalColumn: "Id",
@@ -1115,7 +1115,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_FieldValue", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.FieldValue_dbo.Field_Field_Id",
+                        name: "FK_FieldValue_Field_Field_Id",
                         column: x => x.Field_Id,
                         principalTable: "Field",
                         principalColumn: "Id",
@@ -1137,7 +1137,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_ConceptIngredient", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.ConceptIngredient_dbo.Concept_Concept_Id",
+                        name: "FK_ConceptIngredient_Concept_Concept_Id",
                         column: x => x.Concept_Id,
                         principalTable: "Concept",
                         principalColumn: "Id",
@@ -1160,7 +1160,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Product", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.Product_dbo.Concept_Concept_Id",
+                        name: "FK_Product_Concept_Concept_Id",
                         column: x => x.Concept_Id,
                         principalTable: "Concept",
                         principalColumn: "Id",
@@ -1185,13 +1185,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_MetaColumn", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.MetaColumn_dbo.MetaColumnType_ColumnType_Id",
+                        name: "FK_MetaColumn_MetaColumnType_ColumnType_Id",
                         column: x => x.ColumnType_Id,
                         principalTable: "MetaColumnType",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.MetaColumn_dbo.MetaTable_Table_Id",
+                        name: "FK_MetaColumn_MetaTable_Table_Id",
                         column: x => x.Table_Id,
                         principalTable: "MetaTable",
                         principalColumn: "Id",
@@ -1214,12 +1214,12 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_MetaDependency", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.MetaDependency_dbo.MetaTable_ParentTable_Id",
+                        name: "FK_MetaDependency_MetaTable_ParentTable_Id",
                         column: x => x.ParentTable_Id,
                         principalTable: "MetaTable",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.MetaDependency_dbo.MetaTable_ReferenceTable_Id",
+                        name: "FK_MetaDependency_MetaTable_ReferenceTable_Id",
                         column: x => x.ReferenceTable_Id,
                         principalTable: "MetaTable",
                         principalColumn: "Id");
@@ -1243,13 +1243,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Facility", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.Facility_dbo.FacilityType_FacilityType_Id",
+                        name: "FK_Facility_FacilityType_FacilityType_Id",
                         column: x => x.FacilityType_Id,
                         principalTable: "FacilityType",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.Facility_dbo.OrgUnit_OrgUnit_Id",
+                        name: "FK_Facility_OrgUnit_OrgUnit_Id",
                         column: x => x.OrgUnit_Id,
                         principalTable: "OrgUnit",
                         principalColumn: "Id",
@@ -1270,7 +1270,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_MedDRAGrading", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.MedDRAGrading_dbo.MedDRAScale_Scale_Id",
+                        name: "FK_MedDRAGrading_MedDRAScale_Scale_Id",
                         column: x => x.Scale_Id,
                         principalTable: "MedDRAScale",
                         principalColumn: "Id",
@@ -1283,18 +1283,18 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AppointmentDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    AppointmentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     DNA = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     Cancelled = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CancellationReason = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1302,24 +1302,24 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Appointment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.Appointment_dbo.Patient_Patient_Id",
+                        name: "FK_Appointment_Patient_Patient_Id",
                         column: x => x.Patient_Id,
                         principalTable: "Patient",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.Appointment_dbo.User_AuditUser_Id",
+                        name: "FK_Appointment_User_AuditUser_Id",
                         column: x => x.AuditUser_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.Appointment_dbo.User_CreatedBy_Id",
+                        name: "FK_Appointment_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.Appointment_dbo.User_UpdatedBy_Id",
+                        name: "FK_Appointment_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id");
@@ -1331,12 +1331,12 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    EnroledDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    EnroledDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CohortGroup_Id = table.Column<int>(type: "int", nullable: false),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
-                    DeenroledDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    DeenroledDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1344,23 +1344,85 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_CohortGroupEnrolment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.CohortGroupEnrolment_dbo.CohortGroup_CohortGroup_Id",
+                        name: "FK_CohortGroupEnrolment_CohortGroup_CohortGroup_Id",
                         column: x => x.CohortGroup_Id,
                         principalTable: "CohortGroup",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.CohortGroupEnrolment_dbo.Patient_Patient_Id",
+                        name: "FK_CohortGroupEnrolment_Patient_Patient_Id",
                         column: x => x.Patient_Id,
                         principalTable: "Patient",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.CohortGroupEnrolment_dbo.User_AuditUser_Id",
+                        name: "FK_CohortGroupEnrolment_User_AuditUser_Id",
                         column: x => x.AuditUser_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Encounter",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EncounterDate = table.Column<DateTime>(type: "date", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EncounterGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newid()"),
+                    Discharged = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EncounterType_Id = table.Column<int>(type: "int", nullable: false),
+                    Patient_Id = table.Column<int>(type: "int", nullable: false),
+                    Priority_Id = table.Column<int>(type: "int", nullable: false),
+                    Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    AuditUser_Id = table.Column<int>(type: "int", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
+                    UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Encounter", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Encounter_EncounterType_EncounterType_Id",
+                        column: x => x.EncounterType_Id,
+                        principalTable: "EncounterType",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Encounter_Patient_Patient_Id",
+                        column: x => x.Patient_Id,
+                        principalTable: "Patient",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Encounter_Priority_Priority_Id",
+                        column: x => x.Priority_Id,
+                        principalTable: "Priority",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Encounter_User_AuditUser_Id",
+                        column: x => x.AuditUser_Id,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Encounter_User_CreatedBy_Id",
+                        column: x => x.CreatedBy_Id,
+                        principalTable: "User",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Encounter_User_UpdatedBy_Id",
+                        column: x => x.UpdatedBy_Id,
+                        principalTable: "User",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -1369,15 +1431,15 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    DateStart = table.Column<DateTime>(type: "datetime", nullable: false),
-                    OutcomeDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    OnsetDate = table.Column<DateTime>(type: "date", nullable: false),
+                    OutcomeDate = table.Column<DateTime>(type: "date", nullable: true),
                     Comments = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Condition_Id = table.Column<int>(type: "int", nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     PatientConditionGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
                     TerminologyMedDra_Id = table.Column<int>(type: "int", nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     Outcome_Id = table.Column<int>(type: "int", nullable: true),
@@ -1389,37 +1451,37 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_PatientCondition", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientCondition_dbo.Condition_Condition_Id",
+                        name: "FK_PatientCondition_Condition_Condition_Id",
                         column: x => x.Condition_Id,
                         principalTable: "Condition",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientCondition_dbo.Outcome_Outcome_Id",
+                        name: "FK_PatientCondition_Outcome_Outcome_Id",
                         column: x => x.Outcome_Id,
                         principalTable: "Outcome",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientCondition_dbo.Patient_Patient_Id",
+                        name: "FK_PatientCondition_Patient_Patient_Id",
                         column: x => x.Patient_Id,
                         principalTable: "Patient",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientCondition_dbo.TerminologyMedDra_TerminologyMedDra_Id",
+                        name: "FK_PatientCondition_TerminologyMedDra_TerminologyMedDra_Id",
                         column: x => x.TerminologyMedDra_Id,
                         principalTable: "TerminologyMedDra",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientCondition_dbo.TreatmentOutcome_TreatmentOutcome_Id",
+                        name: "FK_PatientCondition_TreatmentOutcome_TreatmentOutcome_Id",
                         column: x => x.TreatmentOutcome_Id,
                         principalTable: "TreatmentOutcome",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientCondition_dbo.User_AuditUser_Id",
+                        name: "FK_PatientCondition_User_AuditUser_Id",
                         column: x => x.AuditUser_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -1432,7 +1494,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TestDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    TestDate = table.Column<DateTime>(type: "date", nullable: false),
                     TestResult = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     LabTest_Id = table.Column<int>(type: "int", nullable: false),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
@@ -1440,7 +1502,7 @@ namespace PViMS.Infrastructure.Migrations
                     TestUnit_Id = table.Column<int>(type: "int", nullable: true),
                     LabValue = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     ReferenceLower = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
@@ -1452,25 +1514,25 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_PatientLabTest", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientLabTest_dbo.LabTest_LabTest_Id",
+                        name: "FK_PatientLabTest_LabTest_LabTest_Id",
                         column: x => x.LabTest_Id,
                         principalTable: "LabTest",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientLabTest_dbo.LabTestUnit_TestUnit_Id",
+                        name: "FK_PatientLabTest_LabTestUnit_TestUnit_Id",
                         column: x => x.TestUnit_Id,
                         principalTable: "LabTestUnit",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientLabTest_dbo.Patient_Patient_Id",
+                        name: "FK_PatientLabTest_Patient_Patient_Id",
                         column: x => x.Patient_Id,
                         principalTable: "Patient",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientLabTest_dbo.User_AuditUser_Id",
+                        name: "FK_PatientLabTest_User_AuditUser_Id",
                         column: x => x.AuditUser_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -1491,13 +1553,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_PatientLanguage", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientLanguage_dbo.Language_Language_Id",
+                        name: "FK_PatientLanguage_Language_Language_Id",
                         column: x => x.Language_Id,
                         principalTable: "Language",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientLanguage_dbo.Patient_Patient_Id",
+                        name: "FK_PatientLanguage_Patient_Patient_Id",
                         column: x => x.Patient_Id,
                         principalTable: "Patient",
                         principalColumn: "Id",
@@ -1510,16 +1572,16 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    EffectiveDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    EffectiveDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Comments = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     PatientStatus_Id = table.Column<int>(type: "int", nullable: false),
                     Archived = table.Column<bool>(type: "bit", nullable: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1527,69 +1589,30 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_PatientStatusHistory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientStatusHistory_dbo.Patient_Patient_Id",
+                        name: "FK_PatientStatusHistory_Patient_Patient_Id",
                         column: x => x.Patient_Id,
                         principalTable: "Patient",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientStatusHistory_dbo.PatientStatus_PatientStatus_Id",
+                        name: "FK_PatientStatusHistory_PatientStatus_PatientStatus_Id",
                         column: x => x.PatientStatus_Id,
                         principalTable: "PatientStatus",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientStatusHistory_dbo.User_AuditUser_Id",
+                        name: "FK_PatientStatusHistory_User_AuditUser_Id",
                         column: x => x.AuditUser_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientStatusHistory_dbo.User_CreatedBy_Id",
+                        name: "FK_PatientStatusHistory_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.PatientStatusHistory_dbo.User_UpdatedBy_Id",
-                        column: x => x.UpdatedBy_Id,
-                        principalTable: "User",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Pregnancy",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    StartDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    FinishDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    PreferredFeedingChoice = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    InitialGestation = table.Column<short>(type: "smallint", nullable: true),
-                    ExpectedDeliveryDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ActualDeliveryDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    Patient_Id = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
-                    CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
-                    UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Pregnancy", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_dbo.Pregnancy_dbo.Patient_Patient_Id",
-                        column: x => x.Patient_Id,
-                        principalTable: "Patient",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_dbo.Pregnancy_dbo.User_CreatedBy_Id",
-                        column: x => x.CreatedBy_Id,
-                        principalTable: "User",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_dbo.Pregnancy_dbo.User_UpdatedBy_Id",
+                        name: "FK_PatientStatusHistory_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id");
@@ -1609,7 +1632,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_ActivityExecutionStatus", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.ActivityExecutionStatus_dbo.Activity_Activity_Id",
+                        name: "FK_ActivityExecutionStatus_Activity_Activity_Id",
                         column: x => x.Activity_Id,
                         principalTable: "Activity",
                         principalColumn: "Id",
@@ -1625,18 +1648,55 @@ namespace PViMS.Infrastructure.Migrations
                     MedicationIdentifier = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     NaranjoCausality = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
                     WhoCausality = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
-                    ReportInstance_Id = table.Column<int>(type: "int", nullable: false),
-                    ReportInstanceMedicationGuid = table.Column<Guid>(type: "uniqueidentifier", maxLength: 30, nullable: false)
+                    ReportInstanceMedicationGuid = table.Column<Guid>(type: "uniqueidentifier", maxLength: 30, nullable: false),
+                    ReportInstance_Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ReportInstanceMedication", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.ReportInstanceMedication_dbo.ReportInstance_ReportInstance_Id",
+                        name: "FK_ReportInstanceMedication_ReportInstance_ReportInstance_Id",
                         column: x => x.ReportInstance_Id,
                         principalTable: "ReportInstance",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReportInstanceTask",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ReportInstanceId = table.Column<int>(type: "int", nullable: false),
+                    TaskDetail_Source = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TaskDetail_Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TaskTypeId = table.Column<int>(type: "int", nullable: false),
+                    TaskStatusId = table.Column<int>(type: "int", nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
+                    UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReportInstanceTask", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ReportInstanceTask_ReportInstance_ReportInstanceId",
+                        column: x => x.ReportInstanceId,
+                        principalTable: "ReportInstance",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReportInstanceTask_User_CreatedBy_Id",
+                        column: x => x.CreatedBy_Id,
+                        principalTable: "User",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ReportInstanceTask_User_UpdatedBy_Id",
+                        column: x => x.UpdatedBy_Id,
+                        principalTable: "User",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -1659,13 +1719,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetElementSub", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetElementSub_dbo.DatasetElement_DatasetElement_Id",
+                        name: "FK_DatasetElementSub_DatasetElement_DatasetElement_Id",
                         column: x => x.DatasetElement_Id,
                         principalTable: "DatasetElement",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetElementSub_dbo.Field_Field_Id",
+                        name: "FK_DatasetElementSub_Field_Field_Id",
                         column: x => x.Field_Id,
                         principalTable: "Field",
                         principalColumn: "Id",
@@ -1686,19 +1746,19 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_ConditionMedication", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.ConditionMedication_dbo.Concept_Concept_Id",
+                        name: "FK_ConditionMedication_Concept_Concept_Id",
                         column: x => x.Concept_Id,
                         principalTable: "Concept",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.ConditionMedication_dbo.Condition_Condition_Id",
+                        name: "FK_ConditionMedication_Condition_Condition_Id",
                         column: x => x.Condition_Id,
                         principalTable: "Condition",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.ConditionMedication_dbo.Product_Product_Id",
+                        name: "FK_ConditionMedication_Product_Product_Id",
                         column: x => x.Product_Id,
                         principalTable: "Product",
                         principalColumn: "Id");
@@ -1710,15 +1770,15 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    DateStart = table.Column<DateTime>(type: "datetime", nullable: false),
-                    DateEnd = table.Column<DateTime>(type: "datetime", nullable: true),
+                    StartDate = table.Column<DateTime>(type: "date", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "date", nullable: true),
                     Dose = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
                     DoseFrequency = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
                     DoseUnit = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     PatientMedicationGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
                     Archived = table.Column<bool>(type: "bit", nullable: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     MedicationSource = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
@@ -1730,24 +1790,24 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_PatientMedication", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientMedication_dbo.Concept_Concept_Id",
+                        name: "FK_PatientMedication_Concept_Concept_Id",
                         column: x => x.Concept_Id,
                         principalTable: "Concept",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientMedication_dbo.Patient_Patient_Id",
+                        name: "FK_PatientMedication_Patient_Patient_Id",
                         column: x => x.Patient_Id,
                         principalTable: "Patient",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientMedication_dbo.Product_Product_Id",
+                        name: "FK_PatientMedication_Product_Product_Id",
                         column: x => x.Product_Id,
                         principalTable: "Product",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.PatientMedication_dbo.User_AuditUser_Id",
+                        name: "FK_PatientMedication_User_AuditUser_Id",
                         column: x => x.AuditUser_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -1760,11 +1820,11 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    EnrolledDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    EnrolledDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Facility_Id = table.Column<int>(type: "int", nullable: false),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1772,19 +1832,19 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_PatientFacility", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientFacility_dbo.Facility_Facility_Id",
+                        name: "FK_PatientFacility_Facility_Facility_Id",
                         column: x => x.Facility_Id,
                         principalTable: "Facility",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientFacility_dbo.Patient_Patient_Id",
+                        name: "FK_PatientFacility_Patient_Patient_Id",
                         column: x => x.Patient_Id,
                         principalTable: "Patient",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientFacility_dbo.User_AuditUser_Id",
+                        name: "FK_PatientFacility_User_AuditUser_Id",
                         column: x => x.AuditUser_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -1804,184 +1864,17 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_UserFacility", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.UserFacility_dbo.Facility_Facility_Id",
+                        name: "FK_UserFacility_Facility_Facility_Id",
                         column: x => x.Facility_Id,
                         principalTable: "Facility",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.UserFacility_dbo.User_User_Id",
+                        name: "FK_UserFacility_User_User_Id",
                         column: x => x.User_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Encounter",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EncounterDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EncounterGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newid()"),
-                    Discharged = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EncounterType_Id = table.Column<int>(type: "int", nullable: false),
-                    Patient_Id = table.Column<int>(type: "int", nullable: false),
-                    Pregnancy_Id = table.Column<int>(type: "int", nullable: true),
-                    Priority_Id = table.Column<int>(type: "int", nullable: false),
-                    Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    AuditUser_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
-                    CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
-                    UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Encounter", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_dbo.Encounter_dbo.EncounterType_EncounterType_Id",
-                        column: x => x.EncounterType_Id,
-                        principalTable: "EncounterType",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_dbo.Encounter_dbo.Patient_Patient_Id",
-                        column: x => x.Patient_Id,
-                        principalTable: "Patient",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_dbo.Encounter_dbo.Pregnancy_Pregnancy_Id",
-                        column: x => x.Pregnancy_Id,
-                        principalTable: "Pregnancy",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_dbo.Encounter_dbo.Priority_Priority_Id",
-                        column: x => x.Priority_Id,
-                        principalTable: "Priority",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_dbo.Encounter_dbo.User_AuditUser_Id",
-                        column: x => x.AuditUser_Id,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_dbo.Encounter_dbo.User_CreatedBy_Id",
-                        column: x => x.CreatedBy_Id,
-                        principalTable: "User",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_dbo.Encounter_dbo.User_UpdatedBy_Id",
-                        column: x => x.UpdatedBy_Id,
-                        principalTable: "User",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ActivityInstance",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    QualifiedName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CurrentStatus_Id = table.Column<int>(type: "int", nullable: false),
-                    ReportInstance_Id = table.Column<int>(type: "int", nullable: false),
-                    Current = table.Column<bool>(type: "bit", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
-                    CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
-                    UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ActivityInstance", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_dbo.ActivityInstance_dbo.ActivityExecutionStatus_CurrentStatus_Id",
-                        column: x => x.CurrentStatus_Id,
-                        principalTable: "ActivityExecutionStatus",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_dbo.ActivityInstance_dbo.ReportInstance_ReportInstance_Id1",
-                        column: x => x.ReportInstance_Id,
-                        principalTable: "ReportInstance",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_dbo.ActivityInstance_dbo.User_CreatedBy_Id",
-                        column: x => x.CreatedBy_Id,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_dbo.ActivityInstance_dbo.User_UpdatedBy_Id",
-                        column: x => x.UpdatedBy_Id,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DatasetXmlNode",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    NodeName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    NodeType = table.Column<int>(type: "int", nullable: false),
-                    NodeValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ParentNode_Id = table.Column<int>(type: "int", nullable: true),
-                    DatasetElement_Id = table.Column<int>(type: "int", nullable: true),
-                    DatasetXml_Id = table.Column<int>(type: "int", nullable: false),
-                    DatasetElementSub_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
-                    CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
-                    UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DatasetXmlNode", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_dbo.DatasetXmlNode_dbo.DatasetElement_DatasetElement_Id",
-                        column: x => x.DatasetElement_Id,
-                        principalTable: "DatasetElement",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_dbo.DatasetXmlNode_dbo.DatasetElementSub_DatasetElementSub_Id",
-                        column: x => x.DatasetElementSub_Id,
-                        principalTable: "DatasetElementSub",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_dbo.DatasetXmlNode_dbo.DatasetXml_DatasetXml_Id",
-                        column: x => x.DatasetXml_Id,
-                        principalTable: "DatasetXml",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_dbo.DatasetXmlNode_dbo.DatasetXmlNode_ParentNode_Id",
-                        column: x => x.ParentNode_Id,
-                        principalTable: "DatasetXmlNode",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_dbo.DatasetXmlNode_dbo.User_CreatedBy_Id",
-                        column: x => x.CreatedBy_Id,
-                        principalTable: "User",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_dbo.DatasetXmlNode_dbo.User_UpdatedBy_Id",
-                        column: x => x.UpdatedBy_Id,
-                        principalTable: "User",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -1998,7 +1891,7 @@ namespace PViMS.Infrastructure.Migrations
                     SourceTerminologyMedDra_Id = table.Column<int>(type: "int", nullable: true),
                     TerminologyMedDra_Id1 = table.Column<int>(type: "int", nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     SourceDescription = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
@@ -2008,29 +1901,161 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_PatientClinicalEvent", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientClinicalEvent_dbo.Encounter_Encounter_Id",
+                        name: "FK_PatientClinicalEvent_Encounter_Encounter_Id",
                         column: x => x.Encounter_Id,
                         principalTable: "Encounter",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientClinicalEvent_dbo.Patient_Patient_Id",
+                        name: "FK_PatientClinicalEvent_Patient_Patient_Id",
                         column: x => x.Patient_Id,
                         principalTable: "Patient",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientClinicalEvent_dbo.TerminologyMedDra_SourceTerminologyMedDra_Id",
+                        name: "FK_PatientClinicalEvent_TerminologyMedDra_SourceTerminologyMedDra_Id",
                         column: x => x.SourceTerminologyMedDra_Id,
                         principalTable: "TerminologyMedDra",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.PatientClinicalEvent_dbo.User_AuditUser_Id",
+                        name: "FK_PatientClinicalEvent_User_AuditUser_Id",
                         column: x => x.AuditUser_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ActivityInstance",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    QualifiedName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CurrentStatus_Id = table.Column<int>(type: "int", nullable: false),
+                    Current = table.Column<bool>(type: "bit", nullable: false),
+                    ReportInstance_Id = table.Column<int>(type: "int", nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
+                    UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ActivityInstance", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ActivityInstance_ActivityExecutionStatus_CurrentStatus_Id",
+                        column: x => x.CurrentStatus_Id,
+                        principalTable: "ActivityExecutionStatus",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ActivityInstance_ReportInstance_ReportInstance_Id",
+                        column: x => x.ReportInstance_Id,
+                        principalTable: "ReportInstance",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ActivityInstance_User_CreatedBy_Id",
+                        column: x => x.CreatedBy_Id,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ActivityInstance_User_UpdatedBy_Id",
+                        column: x => x.UpdatedBy_Id,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReportInstanceTaskComment",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    ReportInstanceTaskId = table.Column<int>(type: "int", nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
+                    UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReportInstanceTaskComment", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ReportInstanceTaskComment_ReportInstanceTask_ReportInstanceTaskId",
+                        column: x => x.ReportInstanceTaskId,
+                        principalTable: "ReportInstanceTask",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReportInstanceTaskComment_User_CreatedBy_Id",
+                        column: x => x.CreatedBy_Id,
+                        principalTable: "User",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ReportInstanceTaskComment_User_UpdatedBy_Id",
+                        column: x => x.UpdatedBy_Id,
+                        principalTable: "User",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DatasetXmlNode",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NodeName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    NodeType = table.Column<int>(type: "int", nullable: false),
+                    NodeValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ParentNode_Id = table.Column<int>(type: "int", nullable: true),
+                    DatasetElement_Id = table.Column<int>(type: "int", nullable: true),
+                    DatasetXml_Id = table.Column<int>(type: "int", nullable: false),
+                    DatasetElementSub_Id = table.Column<int>(type: "int", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
+                    UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DatasetXmlNode", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DatasetXmlNode_DatasetElement_DatasetElement_Id",
+                        column: x => x.DatasetElement_Id,
+                        principalTable: "DatasetElement",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DatasetXmlNode_DatasetElementSub_DatasetElementSub_Id",
+                        column: x => x.DatasetElementSub_Id,
+                        principalTable: "DatasetElementSub",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DatasetXmlNode_DatasetXml_DatasetXml_Id",
+                        column: x => x.DatasetXml_Id,
+                        principalTable: "DatasetXml",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DatasetXmlNode_DatasetXmlNode_ParentNode_Id",
+                        column: x => x.ParentNode_Id,
+                        principalTable: "DatasetXmlNode",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DatasetXmlNode_User_CreatedBy_Id",
+                        column: x => x.CreatedBy_Id,
+                        principalTable: "User",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DatasetXmlNode_User_UpdatedBy_Id",
+                        column: x => x.UpdatedBy_Id,
+                        principalTable: "User",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -2039,30 +2064,30 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    EventDateTime = table.Column<DateTime>(type: "datetime", nullable: false),
+                    EventDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Comments = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ActivityInstance_Id = table.Column<int>(type: "int", nullable: false),
                     EventCreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     ExecutionStatus_Id = table.Column<int>(type: "int", nullable: false),
-                    ContextDateTime = table.Column<DateTime>(type: "datetime", nullable: true),
-                    ContextCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true)
+                    ContextDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ContextCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    ActivityInstance_Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ActivityExecutionStatusEvent", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.ActivityExecutionStatusEvent_dbo.ActivityExecutionStatus_ExecutionStatus_Id",
+                        name: "FK_ActivityExecutionStatusEvent_ActivityExecutionStatus_ExecutionStatus_Id",
                         column: x => x.ExecutionStatus_Id,
                         principalTable: "ActivityExecutionStatus",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.ActivityExecutionStatusEvent_dbo.ActivityInstance_ActivityInstance_Id",
+                        name: "FK_ActivityExecutionStatusEvent_ActivityInstance_ActivityInstance_Id",
                         column: x => x.ActivityInstance_Id,
                         principalTable: "ActivityInstance",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.ActivityExecutionStatusEvent_dbo.User_EventCreatedBy_Id",
+                        name: "FK_ActivityExecutionStatusEvent_User_EventCreatedBy_Id",
                         column: x => x.EventCreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -2079,8 +2104,8 @@ namespace PViMS.Infrastructure.Migrations
                     AttributeValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DatasetElement_Id = table.Column<int>(type: "int", nullable: true),
                     ParentNode_Id = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2088,24 +2113,24 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetXmlAttribute", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetXmlAttribute_dbo.DatasetElement_DatasetElement_Id",
+                        name: "FK_DatasetXmlAttribute_DatasetElement_DatasetElement_Id",
                         column: x => x.DatasetElement_Id,
                         principalTable: "DatasetElement",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetXmlAttribute_dbo.DatasetXmlNode_ParentNode_Id",
+                        name: "FK_DatasetXmlAttribute_DatasetXmlNode_ParentNode_Id",
                         column: x => x.ParentNode_Id,
                         principalTable: "DatasetXmlNode",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetXmlAttribute_dbo.User_CreatedBy_Id",
+                        name: "FK_DatasetXmlAttribute_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetXmlAttribute_dbo.User_UpdatedBy_Id",
+                        name: "FK_DatasetXmlAttribute_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -2126,12 +2151,12 @@ namespace PViMS.Infrastructure.Migrations
                     Encounter_Id = table.Column<int>(type: "int", nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     ActivityExecutionStatusEvent_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2139,40 +2164,40 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Attachment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.Attachment_dbo.ActivityExecutionStatusEvent_ActivityExecutionStatusEvent_Id",
+                        name: "FK_Attachment_ActivityExecutionStatusEvent_ActivityExecutionStatusEvent_Id",
                         column: x => x.ActivityExecutionStatusEvent_Id,
                         principalTable: "ActivityExecutionStatusEvent",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.Attachment_dbo.AttachmentType_AttachmentType_Id",
+                        name: "FK_Attachment_AttachmentType_AttachmentType_Id",
                         column: x => x.AttachmentType_Id,
                         principalTable: "AttachmentType",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.Attachment_dbo.Encounter_Encounter_Id",
+                        name: "FK_Attachment_Encounter_Encounter_Id",
                         column: x => x.Encounter_Id,
                         principalTable: "Encounter",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.Attachment_dbo.Patient_Patient_Id",
+                        name: "FK_Attachment_Patient_Patient_Id",
                         column: x => x.Patient_Id,
                         principalTable: "Patient",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.Attachment_dbo.User_AuditUser_Id",
+                        name: "FK_Attachment_User_AuditUser_Id",
                         column: x => x.AuditUser_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.Attachment_dbo.User_CreatedBy_Id",
+                        name: "FK_Attachment_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.Attachment_dbo.User_UpdatedBy_Id",
+                        name: "FK_Attachment_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id");
@@ -2193,7 +2218,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_WorkPlanCareEvent", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.WorkPlanCareEvent_dbo.CareEvent_CareEvent_Id",
+                        name: "FK_WorkPlanCareEvent_CareEvent_CareEvent_Id",
                         column: x => x.CareEvent_Id,
                         principalTable: "CareEvent",
                         principalColumn: "Id",
@@ -2214,13 +2239,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_EncounterTypeWorkPlan", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.EncounterTypeWorkPlan_dbo.CohortGroup_CohortGroup_Id",
+                        name: "FK_EncounterTypeWorkPlan_CohortGroup_CohortGroup_Id",
                         column: x => x.CohortGroup_Id,
                         principalTable: "CohortGroup",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.EncounterTypeWorkPlan_dbo.EncounterType_EncounterType_Id",
+                        name: "FK_EncounterTypeWorkPlan_EncounterType_EncounterType_Id",
                         column: x => x.EncounterType_Id,
                         principalTable: "EncounterType",
                         principalColumn: "Id",
@@ -2243,8 +2268,8 @@ namespace PViMS.Infrastructure.Migrations
                     UID = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     IsSystem = table.Column<bool>(type: "bit", nullable: false),
                     DatasetXml_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2252,31 +2277,31 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Dataset", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.Dataset_dbo.ContextType_ContextType_Id",
+                        name: "FK_Dataset_ContextType_ContextType_Id",
                         column: x => x.ContextType_Id,
                         principalTable: "ContextType",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.Dataset_dbo.DatasetXml_DatasetXml_Id",
+                        name: "FK_Dataset_DatasetXml_DatasetXml_Id",
                         column: x => x.DatasetXml_Id,
                         principalTable: "DatasetXml",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.Dataset_dbo.EncounterTypeWorkPlan_EncounterTypeWorkPlan_Id",
+                        name: "FK_Dataset_EncounterTypeWorkPlan_EncounterTypeWorkPlan_Id",
                         column: x => x.EncounterTypeWorkPlan_Id,
                         principalTable: "EncounterTypeWorkPlan",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.Dataset_dbo.User_CreatedBy_Id",
+                        name: "FK_Dataset_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.Dataset_dbo.User_UpdatedBy_Id",
+                        name: "FK_Dataset_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -2305,7 +2330,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetCategory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetCategory_dbo.Dataset_Dataset_Id1",
+                        name: "FK_DatasetCategory_Dataset_Dataset_Id",
                         column: x => x.Dataset_Id,
                         principalTable: "Dataset",
                         principalColumn: "Id",
@@ -2324,8 +2349,8 @@ namespace PViMS.Infrastructure.Migrations
                     Tag = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DatasetInstanceGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newid()"),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2333,24 +2358,24 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetInstance", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetInstance_dbo.Dataset_Dataset_Id",
+                        name: "FK_DatasetInstance_Dataset_Dataset_Id",
                         column: x => x.Dataset_Id,
                         principalTable: "Dataset",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetInstance_dbo.EncounterTypeWorkPlan_EncounterTypeWorkPlan_Id",
+                        name: "FK_DatasetInstance_EncounterTypeWorkPlan_EncounterTypeWorkPlan_Id",
                         column: x => x.EncounterTypeWorkPlan_Id,
                         principalTable: "EncounterTypeWorkPlan",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetInstance_dbo.User_CreatedBy_Id",
+                        name: "FK_DatasetInstance_User_CreatedBy_Id",
                         column: x => x.CreatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetInstance_dbo.User_UpdatedBy_Id",
+                        name: "FK_DatasetInstance_User_UpdatedBy_Id",
                         column: x => x.UpdatedBy_Id,
                         principalTable: "User",
                         principalColumn: "Id");
@@ -2371,13 +2396,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetRule", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetRule_dbo.Dataset_Dataset_Id",
+                        name: "FK_DatasetRule_Dataset_Dataset_Id",
                         column: x => x.Dataset_Id,
                         principalTable: "Dataset",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetRule_dbo.DatasetElement_DatasetElement_Id",
+                        name: "FK_DatasetRule_DatasetElement_DatasetElement_Id",
                         column: x => x.DatasetElement_Id,
                         principalTable: "DatasetElement",
                         principalColumn: "Id",
@@ -2397,7 +2422,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_WorkPlan", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.WorkPlan_dbo.Dataset_Dataset_Id",
+                        name: "FK_WorkPlan_Dataset_Dataset_Id",
                         column: x => x.Dataset_Id,
                         principalTable: "Dataset",
                         principalColumn: "Id",
@@ -2417,13 +2442,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetCategoryCondition", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetCategoryCondition_dbo.Condition_Condition_Id",
+                        name: "FK_DatasetCategoryCondition_Condition_Condition_Id",
                         column: x => x.Condition_Id,
                         principalTable: "Condition",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetCategoryCondition_dbo.DatasetCategory_DatasetCategory_Id",
+                        name: "FK_DatasetCategoryCondition_DatasetCategory_DatasetCategory_Id",
                         column: x => x.DatasetCategory_Id,
                         principalTable: "DatasetCategory",
                         principalColumn: "Id",
@@ -2451,13 +2476,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetCategoryElement", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetCategoryElement_dbo.DatasetCategory_DatasetCategory_Id",
+                        name: "FK_DatasetCategoryElement_DatasetCategory_DatasetCategory_Id",
                         column: x => x.DatasetCategory_Id,
                         principalTable: "DatasetCategory",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetCategoryElement_dbo.DatasetElement_DatasetElement_Id",
+                        name: "FK_DatasetCategoryElement_DatasetElement_DatasetElement_Id",
                         column: x => x.DatasetElement_Id,
                         principalTable: "DatasetElement",
                         principalColumn: "Id",
@@ -2477,13 +2502,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_WorkPlanCareEventDatasetCategory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.WorkPlanCareEventDatasetCategory_dbo.DatasetCategory_DatasetCategory_Id",
+                        name: "FK_WorkPlanCareEventDatasetCategory_DatasetCategory_DatasetCategory_Id",
                         column: x => x.DatasetCategory_Id,
                         principalTable: "DatasetCategory",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.WorkPlanCareEventDatasetCategory_dbo.WorkPlanCareEvent_WorkPlanCareEvent_Id",
+                        name: "FK_WorkPlanCareEventDatasetCategory_WorkPlanCareEvent_WorkPlanCareEvent_Id",
                         column: x => x.WorkPlanCareEvent_Id,
                         principalTable: "WorkPlanCareEvent",
                         principalColumn: "Id",
@@ -2504,13 +2529,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetInstanceValue", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetInstanceValue_dbo.DatasetElement_DatasetElement_Id",
+                        name: "FK_DatasetInstanceValue_DatasetElement_DatasetElement_Id",
                         column: x => x.DatasetElement_Id,
                         principalTable: "DatasetElement",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetInstanceValue_dbo.DatasetInstance_DatasetInstance_Id",
+                        name: "FK_DatasetInstanceValue_DatasetInstance_DatasetInstance_Id",
                         column: x => x.DatasetInstance_Id,
                         principalTable: "DatasetInstance",
                         principalColumn: "Id",
@@ -2530,13 +2555,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetCategoryElementCondition", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetCategoryElementCondition_dbo.Condition_Condition_Id",
+                        name: "FK_DatasetCategoryElementCondition_Condition_Condition_Id",
                         column: x => x.Condition_Id,
                         principalTable: "Condition",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetCategoryElementCondition_dbo.DatasetCategoryElement_DatasetCategoryElement_Id",
+                        name: "FK_DatasetCategoryElementCondition_DatasetCategoryElement_DatasetCategoryElement_Id",
                         column: x => x.DatasetCategoryElement_Id,
                         principalTable: "DatasetCategoryElement",
                         principalColumn: "Id",
@@ -2561,13 +2586,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetMapping", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetMapping_dbo.DatasetCategoryElement_DestinationElement_Id",
+                        name: "FK_DatasetMapping_DatasetCategoryElement_DestinationElement_Id",
                         column: x => x.DestinationElement_Id,
                         principalTable: "DatasetCategoryElement",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetMapping_dbo.DatasetCategoryElement_SourceElement_Id",
+                        name: "FK_DatasetMapping_DatasetCategoryElement_SourceElement_Id",
                         column: x => x.SourceElement_Id,
                         principalTable: "DatasetCategoryElement",
                         principalColumn: "Id");
@@ -2588,13 +2613,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetInstanceSubValue", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetInstanceSubValue_dbo.DatasetElementSub_DatasetElementSub_Id",
+                        name: "FK_DatasetInstanceSubValue_DatasetElementSub_DatasetElementSub_Id",
                         column: x => x.DatasetElementSub_Id,
                         principalTable: "DatasetElementSub",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetInstanceSubValue_dbo.DatasetInstanceValue_DatasetInstanceValue_Id",
+                        name: "FK_DatasetInstanceSubValue_DatasetInstanceValue_DatasetInstanceValue_Id",
                         column: x => x.DatasetInstanceValue_Id,
                         principalTable: "DatasetInstanceValue",
                         principalColumn: "Id");
@@ -2618,18 +2643,18 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetMappingSub", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetMappingSub_dbo.DatasetElementSub_DestinationElement_Id",
+                        name: "FK_DatasetMappingSub_DatasetElementSub_DestinationElement_Id",
                         column: x => x.DestinationElement_Id,
                         principalTable: "DatasetElementSub",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetMappingSub_dbo.DatasetElementSub_SourceElement_Id",
+                        name: "FK_DatasetMappingSub_DatasetElementSub_SourceElement_Id",
                         column: x => x.SourceElement_Id,
                         principalTable: "DatasetElementSub",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetMappingSub_dbo.DatasetMapping_Mapping_Id",
+                        name: "FK_DatasetMappingSub_DatasetMapping_Mapping_Id",
                         column: x => x.Mapping_Id,
                         principalTable: "DatasetMapping",
                         principalColumn: "Id");
@@ -2651,13 +2676,13 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_DatasetMappingValue", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetMappingValue_dbo.DatasetMapping_Mapping_Id",
+                        name: "FK_DatasetMappingValue_DatasetMapping_Mapping_Id",
                         column: x => x.Mapping_Id,
                         principalTable: "DatasetMapping",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_dbo.DatasetMappingValue_dbo.DatasetMappingSub_SubMapping_Id",
+                        name: "FK_DatasetMappingValue_DatasetMappingSub_SubMapping_Id",
                         column: x => x.SubMapping_Id,
                         principalTable: "DatasetMappingSub",
                         principalColumn: "Id");
@@ -2670,12 +2695,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkFlow_Id",
+                name: "IX_Activity_WorkFlow_Id",
                 table: "Activity",
                 column: "WorkFlow_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Activity_Id",
+                name: "IX_ActivityExecutionStatus_Activity_Id",
                 table: "ActivityExecutionStatus",
                 column: "Activity_Id");
 
@@ -2686,25 +2711,35 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ActivityExecutionStatusEvent_ActivityInstance_Id",
+                table: "ActivityExecutionStatusEvent",
+                column: "ActivityInstance_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityExecutionStatusEvent_EventCreatedBy_Id",
+                table: "ActivityExecutionStatusEvent",
+                column: "EventCreatedBy_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ActivityExecutionStatusEvent_EventDateTime_ActivityInstance_Id_ExecutionStatus_Id",
                 table: "ActivityExecutionStatusEvent",
                 columns: new[] { "EventDateTime", "ActivityInstance_Id", "ExecutionStatus_Id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ActivityInstance_Id",
-                table: "ActivityExecutionStatusEvent",
-                column: "ActivityInstance_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EventCreatedBy_Id",
-                table: "ActivityExecutionStatusEvent",
-                column: "EventCreatedBy_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ExecutionStatus_Id",
+                name: "IX_ActivityExecutionStatusEvent_ExecutionStatus_Id",
                 table: "ActivityExecutionStatusEvent",
                 column: "ExecutionStatus_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityInstance_CreatedBy_Id",
+                table: "ActivityInstance",
+                column: "CreatedBy_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityInstance_CurrentStatus_Id",
+                table: "ActivityInstance",
+                column: "CurrentStatus_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ActivityInstance_QualifiedName_ReportInstance_Id",
@@ -2713,22 +2748,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id",
-                table: "ActivityInstance",
-                column: "CreatedBy_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CurrentStatus_Id",
-                table: "ActivityInstance",
-                column: "CurrentStatus_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ReportInstance_Id",
+                name: "IX_ActivityInstance_ReportInstance_Id",
                 table: "ActivityInstance",
                 column: "ReportInstance_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id",
+                name: "IX_ActivityInstance_UpdatedBy_Id",
                 table: "ActivityInstance",
                 column: "UpdatedBy_Id");
 
@@ -2738,57 +2763,57 @@ namespace PViMS.Infrastructure.Migrations
                 column: "AppointmentDate");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id",
+                name: "IX_Appointment_AuditUser_Id",
                 table: "Appointment",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id1",
+                name: "IX_Appointment_CreatedBy_Id",
                 table: "Appointment",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id",
+                name: "IX_Appointment_Patient_Id",
                 table: "Appointment",
                 column: "Patient_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id1",
+                name: "IX_Appointment_UpdatedBy_Id",
                 table: "Appointment",
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ActivityExecutionStatusEvent_Id",
+                name: "IX_Attachment_ActivityExecutionStatusEvent_Id",
                 table: "Attachment",
                 column: "ActivityExecutionStatusEvent_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttachmentType_Id",
+                name: "IX_Attachment_AttachmentType_Id",
                 table: "Attachment",
                 column: "AttachmentType_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id1",
+                name: "IX_Attachment_AuditUser_Id",
                 table: "Attachment",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id2",
+                name: "IX_Attachment_CreatedBy_Id",
                 table: "Attachment",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Encounter_Id",
+                name: "IX_Attachment_Encounter_Id",
                 table: "Attachment",
                 column: "Encounter_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id1",
+                name: "IX_Attachment_Patient_Id",
                 table: "Attachment",
                 column: "Patient_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id2",
+                name: "IX_Attachment_UpdatedBy_Id",
                 table: "Attachment",
                 column: "UpdatedBy_Id");
 
@@ -2804,7 +2829,7 @@ namespace PViMS.Infrastructure.Migrations
                 column: "ActionDate");
 
             migrationBuilder.CreateIndex(
-                name: "IX_User_Id2",
+                name: "IX_AuditLog_User_Id",
                 table: "AuditLog",
                 column: "User_Id");
 
@@ -2827,22 +2852,22 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Condition_Id",
+                name: "IX_CohortGroup_Condition_Id",
                 table: "CohortGroup",
                 column: "Condition_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id2",
+                name: "IX_CohortGroupEnrolment_AuditUser_Id",
                 table: "CohortGroupEnrolment",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CohortGroup_Id",
+                name: "IX_CohortGroupEnrolment_CohortGroup_Id",
                 table: "CohortGroupEnrolment",
                 column: "CohortGroup_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id2",
+                name: "IX_CohortGroupEnrolment_Patient_Id",
                 table: "CohortGroupEnrolment",
                 column: "Patient_Id");
 
@@ -2853,12 +2878,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_MedicationForm_Id",
+                name: "IX_Concept_MedicationForm_Id",
                 table: "Concept",
                 column: "MedicationForm_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Concept_Id",
+                name: "IX_ConceptIngredient_Concept_Id",
                 table: "ConceptIngredient",
                 column: "Concept_Id");
 
@@ -2875,7 +2900,7 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Condition_Id1",
+                name: "IX_ConditionLabTest_Condition_Id",
                 table: "ConditionLabTest",
                 column: "Condition_Id");
 
@@ -2886,12 +2911,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_LabTest_Id",
+                name: "IX_ConditionLabTest_LabTest_Id",
                 table: "ConditionLabTest",
                 column: "LabTest_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Condition_Id2",
+                name: "IX_ConditionMedDra_Condition_Id",
                 table: "ConditionMedDra",
                 column: "Condition_Id");
 
@@ -2902,17 +2927,17 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_TerminologyMedDra_Id",
+                name: "IX_ConditionMedDra_TerminologyMedDra_Id",
                 table: "ConditionMedDra",
                 column: "TerminologyMedDra_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Concept_Id1",
+                name: "IX_ConditionMedication_Concept_Id",
                 table: "ConditionMedication",
                 column: "Concept_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Condition_Id3",
+                name: "IX_ConditionMedication_Condition_Id",
                 table: "ConditionMedication",
                 column: "Condition_Id");
 
@@ -2924,7 +2949,7 @@ namespace PViMS.Infrastructure.Migrations
                 filter: "[Product_Id] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Product_Id",
+                name: "IX_ConditionMedication_Product_Id",
                 table: "ConditionMedication",
                 column: "Product_Id");
 
@@ -2934,12 +2959,12 @@ namespace PViMS.Infrastructure.Migrations
                 column: "ConfigType");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id3",
+                name: "IX_Config_CreatedBy_Id",
                 table: "Config",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id3",
+                name: "IX_Config_UpdatedBy_Id",
                 table: "Config",
                 column: "UpdatedBy_Id");
 
@@ -2957,12 +2982,12 @@ namespace PViMS.Infrastructure.Migrations
                 filter: "[AttributeKey] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ContextType_Id",
+                name: "IX_Dataset_ContextType_Id",
                 table: "Dataset",
                 column: "ContextType_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id4",
+                name: "IX_Dataset_CreatedBy_Id",
                 table: "Dataset",
                 column: "CreatedBy_Id");
 
@@ -2973,22 +2998,22 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetXml_Id",
+                name: "IX_Dataset_DatasetXml_Id",
                 table: "Dataset",
                 column: "DatasetXml_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EncounterTypeWorkPlan_Id",
+                name: "IX_Dataset_EncounterTypeWorkPlan_Id",
                 table: "Dataset",
                 column: "EncounterTypeWorkPlan_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id4",
+                name: "IX_Dataset_UpdatedBy_Id",
                 table: "Dataset",
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Dataset_Id",
+                name: "IX_DatasetCategory_Dataset_Id",
                 table: "DatasetCategory",
                 column: "Dataset_Id");
 
@@ -2999,14 +3024,9 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Condition_Id4",
+                name: "IX_DatasetCategoryCondition_Condition_Id",
                 table: "DatasetCategoryCondition",
                 column: "Condition_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DatasetCategory_Id",
-                table: "DatasetCategoryCondition",
-                column: "DatasetCategory_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DatasetCategoryCondition_Condition_Id_DatasetCategory_Id",
@@ -3015,7 +3035,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetCategory_Id1",
+                name: "IX_DatasetCategoryCondition_DatasetCategory_Id",
+                table: "DatasetCategoryCondition",
+                column: "DatasetCategory_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DatasetCategoryElement_DatasetCategory_Id",
                 table: "DatasetCategoryElement",
                 column: "DatasetCategory_Id");
 
@@ -3026,19 +3051,14 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetElement_Id",
+                name: "IX_DatasetCategoryElement_DatasetElement_Id",
                 table: "DatasetCategoryElement",
                 column: "DatasetElement_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Condition_Id5",
+                name: "IX_DatasetCategoryElementCondition_Condition_Id",
                 table: "DatasetCategoryElementCondition",
                 column: "Condition_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DatasetCategoryElement_Id",
-                table: "DatasetCategoryElementCondition",
-                column: "DatasetCategoryElement_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DatasetCategoryElementCondition_Condition_Id_DatasetCategoryElement_Id",
@@ -3047,23 +3067,28 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_DatasetCategoryElementCondition_DatasetCategoryElement_Id",
+                table: "DatasetCategoryElementCondition",
+                column: "DatasetCategoryElement_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DatasetElement_DatasetElementType_Id",
+                table: "DatasetElement",
+                column: "DatasetElementType_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DatasetElement_ElementName",
                 table: "DatasetElement",
                 column: "ElementName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetElementType_Id",
-                table: "DatasetElement",
-                column: "DatasetElementType_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Field_Id",
+                name: "IX_DatasetElement_Field_Id",
                 table: "DatasetElement",
                 column: "Field_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetElement_Id1",
+                name: "IX_DatasetElementSub_DatasetElement_Id",
                 table: "DatasetElementSub",
                 column: "DatasetElement_Id");
 
@@ -3074,7 +3099,7 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Field_Id1",
+                name: "IX_DatasetElementSub_Field_Id",
                 table: "DatasetElementSub",
                 column: "Field_Id");
 
@@ -3085,29 +3110,34 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id5",
+                name: "IX_DatasetInstance_CreatedBy_Id",
                 table: "DatasetInstance",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Dataset_Id1",
+                name: "IX_DatasetInstance_Dataset_Id",
                 table: "DatasetInstance",
                 column: "Dataset_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EncounterTypeWorkPlan_Id1",
+                name: "IX_DatasetInstance_EncounterTypeWorkPlan_Id",
                 table: "DatasetInstance",
                 column: "EncounterTypeWorkPlan_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id5",
+                name: "IX_DatasetInstance_UpdatedBy_Id",
                 table: "DatasetInstance",
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetElementSub_Id",
+                name: "IX_DatasetInstanceSubValue_DatasetElementSub_Id",
                 table: "DatasetInstanceSubValue",
                 column: "DatasetElementSub_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DatasetInstanceSubValue_DatasetInstanceValue_Id",
+                table: "DatasetInstanceSubValue",
+                column: "DatasetInstanceValue_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DatasetInstanceSubValue_DatasetInstanceValue_Id_DatasetElementSub_Id",
@@ -3116,17 +3146,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetInstanceValue_Id",
-                table: "DatasetInstanceSubValue",
-                column: "DatasetInstanceValue_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DatasetElement_Id2",
+                name: "IX_DatasetInstanceValue_DatasetElement_Id",
                 table: "DatasetInstanceValue",
                 column: "DatasetElement_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetInstance_Id",
+                name: "IX_DatasetInstanceValue_DatasetInstance_Id",
                 table: "DatasetInstanceValue",
                 column: "DatasetInstance_Id");
 
@@ -3137,97 +3162,97 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DestinationElement_Id",
+                name: "IX_DatasetMapping_DestinationElement_Id",
                 table: "DatasetMapping",
                 column: "DestinationElement_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SourceElement_Id",
+                name: "IX_DatasetMapping_SourceElement_Id",
                 table: "DatasetMapping",
                 column: "SourceElement_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DestinationElement_Id1",
+                name: "IX_DatasetMappingSub_DestinationElement_Id",
                 table: "DatasetMappingSub",
                 column: "DestinationElement_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Mapping_Id",
+                name: "IX_DatasetMappingSub_Mapping_Id",
                 table: "DatasetMappingSub",
                 column: "Mapping_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SourceElement_Id1",
+                name: "IX_DatasetMappingSub_SourceElement_Id",
                 table: "DatasetMappingSub",
                 column: "SourceElement_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Mapping_Id1",
+                name: "IX_DatasetMappingValue_Mapping_Id",
                 table: "DatasetMappingValue",
                 column: "Mapping_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SubMapping_Id",
+                name: "IX_DatasetMappingValue_SubMapping_Id",
                 table: "DatasetMappingValue",
                 column: "SubMapping_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Dataset_Id2",
+                name: "IX_DatasetRule_Dataset_Id",
                 table: "DatasetRule",
                 column: "Dataset_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetElement_Id3",
+                name: "IX_DatasetRule_DatasetElement_Id",
                 table: "DatasetRule",
                 column: "DatasetElement_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id6",
+                name: "IX_DatasetXml_CreatedBy_Id",
                 table: "DatasetXml",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id6",
+                name: "IX_DatasetXml_UpdatedBy_Id",
                 table: "DatasetXml",
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id7",
+                name: "IX_DatasetXmlAttribute_CreatedBy_Id",
                 table: "DatasetXmlAttribute",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetElement_Id4",
+                name: "IX_DatasetXmlAttribute_DatasetElement_Id",
                 table: "DatasetXmlAttribute",
                 column: "DatasetElement_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ParentNode_Id",
+                name: "IX_DatasetXmlAttribute_ParentNode_Id",
                 table: "DatasetXmlAttribute",
                 column: "ParentNode_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id7",
+                name: "IX_DatasetXmlAttribute_UpdatedBy_Id",
                 table: "DatasetXmlAttribute",
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id8",
+                name: "IX_DatasetXmlNode_CreatedBy_Id",
                 table: "DatasetXmlNode",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetElement_Id5",
+                name: "IX_DatasetXmlNode_DatasetElement_Id",
                 table: "DatasetXmlNode",
                 column: "DatasetElement_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetElementSub_Id1",
+                name: "IX_DatasetXmlNode_DatasetElementSub_Id",
                 table: "DatasetXmlNode",
                 column: "DatasetElementSub_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetXml_Id1",
+                name: "IX_DatasetXmlNode_DatasetXml_Id",
                 table: "DatasetXmlNode",
                 column: "DatasetXml_Id");
 
@@ -3238,22 +3263,22 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ParentNode_Id1",
+                name: "IX_DatasetXmlNode_ParentNode_Id",
                 table: "DatasetXmlNode",
                 column: "ParentNode_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id8",
+                name: "IX_DatasetXmlNode_UpdatedBy_Id",
                 table: "DatasetXmlNode",
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id3",
+                name: "IX_Encounter_AuditUser_Id",
                 table: "Encounter",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id9",
+                name: "IX_Encounter_CreatedBy_Id",
                 table: "Encounter",
                 column: "CreatedBy_Id");
 
@@ -3263,32 +3288,27 @@ namespace PViMS.Infrastructure.Migrations
                 column: "EncounterDate");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Encounter_EncounterType_Id",
+                table: "Encounter",
+                column: "EncounterType_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Encounter_Patient_Id",
+                table: "Encounter",
+                column: "Patient_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Encounter_Patient_Id_EncounterDate",
                 table: "Encounter",
                 columns: new[] { "Patient_Id", "EncounterDate" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_EncounterType_Id",
-                table: "Encounter",
-                column: "EncounterType_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id3",
-                table: "Encounter",
-                column: "Patient_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Pregnancy_Id",
-                table: "Encounter",
-                column: "Pregnancy_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Priority_Id",
+                name: "IX_Encounter_Priority_Id",
                 table: "Encounter",
                 column: "Priority_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id9",
+                name: "IX_Encounter_UpdatedBy_Id",
                 table: "Encounter",
                 column: "UpdatedBy_Id");
 
@@ -3299,14 +3319,9 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CohortGroup_Id1",
+                name: "IX_EncounterTypeWorkPlan_CohortGroup_Id",
                 table: "EncounterTypeWorkPlan",
                 column: "CohortGroup_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EncounterType_Id1",
-                table: "EncounterTypeWorkPlan",
-                column: "EncounterType_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EncounterTypeWorkPlan_CohortGroup_Id_EncounterType_Id_WorkPlan_Id",
@@ -3316,7 +3331,12 @@ namespace PViMS.Infrastructure.Migrations
                 filter: "[CohortGroup_Id] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkPlan_Id",
+                name: "IX_EncounterTypeWorkPlan_EncounterType_Id",
+                table: "EncounterTypeWorkPlan",
+                column: "EncounterType_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EncounterTypeWorkPlan_WorkPlan_Id",
                 table: "EncounterTypeWorkPlan",
                 column: "WorkPlan_Id");
 
@@ -3333,12 +3353,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_FacilityType_Id",
+                name: "IX_Facility_FacilityType_Id",
                 table: "Facility",
                 column: "FacilityType_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrgUnit_Id",
+                name: "IX_Facility_OrgUnit_Id",
                 table: "Facility",
                 column: "OrgUnit_Id");
 
@@ -3349,7 +3369,7 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_FieldType_Id",
+                name: "IX_Field_FieldType_Id",
                 table: "Field",
                 column: "FieldType_Id");
 
@@ -3360,7 +3380,7 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Field_Id2",
+                name: "IX_FieldValue_Field_Id",
                 table: "FieldValue",
                 column: "Field_Id");
 
@@ -3395,17 +3415,17 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Scale_Id",
+                name: "IX_MedDRAGrading_Scale_Id",
                 table: "MedDRAGrading",
                 column: "Scale_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GradingScale_Id",
+                name: "IX_MedDRAScale_GradingScale_Id",
                 table: "MedDRAScale",
                 column: "GradingScale_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TerminologyMedDra_Id1",
+                name: "IX_MedDRAScale_TerminologyMedDra_Id",
                 table: "MedDRAScale",
                 column: "TerminologyMedDra_Id");
 
@@ -3416,12 +3436,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ColumnType_Id",
+                name: "IX_MetaColumn_ColumnType_Id",
                 table: "MetaColumn",
                 column: "ColumnType_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Table_Id",
+                name: "IX_MetaColumn_Table_Id",
                 table: "MetaColumn",
                 column: "Table_Id");
 
@@ -3432,12 +3452,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ParentTable_Id",
+                name: "IX_MetaDependency_ParentTable_Id",
                 table: "MetaDependency",
                 column: "ParentTable_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReferenceTable_Id",
+                name: "IX_MetaDependency_ReferenceTable_Id",
                 table: "MetaDependency",
                 column: "ReferenceTable_Id");
 
@@ -3466,7 +3486,7 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_TableType_Id",
+                name: "IX_MetaTable_TableType_Id",
                 table: "MetaTable",
                 column: "TableType_Id");
 
@@ -3477,7 +3497,7 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_MetaPage_Id",
+                name: "IX_MetaWidget_MetaPage_Id",
                 table: "MetaWidget",
                 column: "MetaPage_Id");
 
@@ -3488,7 +3508,7 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_WidgetType_Id",
+                name: "IX_MetaWidget_WidgetType_Id",
                 table: "MetaWidget",
                 column: "WidgetType_Id");
 
@@ -3505,12 +3525,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrgUnitType_Id",
+                name: "IX_OrgUnit_OrgUnitType_Id",
                 table: "OrgUnit",
                 column: "OrgUnitType_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Parent_Id",
+                name: "IX_OrgUnit_Parent_Id",
                 table: "OrgUnit",
                 column: "Parent_Id");
 
@@ -3521,7 +3541,7 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Parent_Id1",
+                name: "IX_OrgUnitType_Parent_Id",
                 table: "OrgUnitType",
                 column: "Parent_Id");
 
@@ -3532,24 +3552,14 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id4",
+                name: "IX_Patient_AuditUser_Id",
                 table: "Patient",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id10",
+                name: "IX_Patient_CreatedBy_Id",
                 table: "Patient",
                 column: "CreatedBy_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Patient_Created",
-                table: "Patient",
-                column: "Created");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Patient_DateOfBirth",
-                table: "Patient",
-                column: "DateOfBirth");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Patient_Surname_FirstName",
@@ -3557,72 +3567,72 @@ namespace PViMS.Infrastructure.Migrations
                 columns: new[] { "Surname", "FirstName" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id10",
+                name: "IX_Patient_UpdatedBy_Id",
                 table: "Patient",
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id5",
+                name: "IX_PatientClinicalEvent_AuditUser_Id",
                 table: "PatientClinicalEvent",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Encounter_Id1",
+                name: "IX_PatientClinicalEvent_Encounter_Id",
                 table: "PatientClinicalEvent",
                 column: "Encounter_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id4",
+                name: "IX_PatientClinicalEvent_Patient_Id",
                 table: "PatientClinicalEvent",
                 column: "Patient_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SourceTerminologyMedDra_Id",
+                name: "IX_PatientClinicalEvent_SourceTerminologyMedDra_Id",
                 table: "PatientClinicalEvent",
                 column: "SourceTerminologyMedDra_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id6",
+                name: "IX_PatientCondition_AuditUser_Id",
                 table: "PatientCondition",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Condition_Id6",
+                name: "IX_PatientCondition_Condition_Id",
                 table: "PatientCondition",
                 column: "Condition_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Outcome_Id",
+                name: "IX_PatientCondition_Outcome_Id",
                 table: "PatientCondition",
                 column: "Outcome_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id5",
+                name: "IX_PatientCondition_Patient_Id",
                 table: "PatientCondition",
                 column: "Patient_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TerminologyMedDra_Id2",
+                name: "IX_PatientCondition_TerminologyMedDra_Id",
                 table: "PatientCondition",
                 column: "TerminologyMedDra_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TreatmentOutcome_Id",
+                name: "IX_PatientCondition_TreatmentOutcome_Id",
                 table: "PatientCondition",
                 column: "TreatmentOutcome_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id7",
+                name: "IX_PatientFacility_AuditUser_Id",
                 table: "PatientFacility",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Facility_Id1",
+                name: "IX_PatientFacility_Facility_Id",
                 table: "PatientFacility",
                 column: "Facility_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id6",
+                name: "IX_PatientFacility_Patient_Id",
                 table: "PatientFacility",
                 column: "Patient_Id");
 
@@ -3632,17 +3642,17 @@ namespace PViMS.Infrastructure.Migrations
                 columns: new[] { "Patient_Id", "Facility_Id" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id8",
+                name: "IX_PatientLabTest_AuditUser_Id",
                 table: "PatientLabTest",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LabTest_Id1",
+                name: "IX_PatientLabTest_LabTest_Id",
                 table: "PatientLabTest",
                 column: "LabTest_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id7",
+                name: "IX_PatientLabTest_Patient_Id",
                 table: "PatientLabTest",
                 column: "Patient_Id");
 
@@ -3652,17 +3662,17 @@ namespace PViMS.Infrastructure.Migrations
                 columns: new[] { "Patient_Id", "LabTest_Id" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TestUnit_Id",
+                name: "IX_PatientLabTest_TestUnit_Id",
                 table: "PatientLabTest",
                 column: "TestUnit_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Language_Id",
+                name: "IX_PatientLanguage_Language_Id",
                 table: "PatientLanguage",
                 column: "Language_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id8",
+                name: "IX_PatientLanguage_Patient_Id",
                 table: "PatientLanguage",
                 column: "Patient_Id");
 
@@ -3673,17 +3683,17 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id9",
+                name: "IX_PatientMedication_AuditUser_Id",
                 table: "PatientMedication",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Concept_Id2",
+                name: "IX_PatientMedication_Concept_Id",
                 table: "PatientMedication",
                 column: "Concept_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id9",
+                name: "IX_PatientMedication_Patient_Id",
                 table: "PatientMedication",
                 column: "Patient_Id");
 
@@ -3693,7 +3703,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: new[] { "Patient_Id", "Concept_Id", "Product_Id" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Product_Id1",
+                name: "IX_PatientMedication_Product_Id",
                 table: "PatientMedication",
                 column: "Product_Id");
 
@@ -3703,24 +3713,19 @@ namespace PViMS.Infrastructure.Migrations
                 column: "Description");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuditUser_Id10",
+                name: "IX_PatientStatusHistory_AuditUser_Id",
                 table: "PatientStatusHistory",
                 column: "AuditUser_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id11",
+                name: "IX_PatientStatusHistory_CreatedBy_Id",
                 table: "PatientStatusHistory",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id10",
+                name: "IX_PatientStatusHistory_Patient_Id",
                 table: "PatientStatusHistory",
                 column: "Patient_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PatientStatus_Id",
-                table: "PatientStatusHistory",
-                column: "PatientStatus_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PatientStatusHistory_Patient_Id_PatientStatus_Id",
@@ -3728,30 +3733,20 @@ namespace PViMS.Infrastructure.Migrations
                 columns: new[] { "Patient_Id", "PatientStatus_Id" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id11",
+                name: "IX_PatientStatusHistory_PatientStatus_Id",
+                table: "PatientStatusHistory",
+                column: "PatientStatus_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PatientStatusHistory_UpdatedBy_Id",
                 table: "PatientStatusHistory",
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ScriptFileName",
+                name: "IX_PostDeployment_ScriptFileName",
                 table: "PostDeployment",
                 column: "ScriptFileName",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id12",
-                table: "Pregnancy",
-                column: "CreatedBy_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Patient_Id11",
-                table: "Pregnancy",
-                column: "Patient_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id12",
-                table: "Pregnancy",
-                column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Priority_Description",
@@ -3760,50 +3755,75 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Concept_Id3",
+                name: "IX_Product_Concept_Id",
                 table: "Product",
                 column: "Concept_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_User_Id",
+                name: "IX_RefreshToken_User_Id",
                 table: "RefreshToken",
                 column: "User_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id13",
+                name: "IX_ReportInstance_CreatedBy_Id",
                 table: "ReportInstance",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TerminologyMedDra_Id3",
+                name: "IX_ReportInstance_TerminologyMedDra_Id",
                 table: "ReportInstance",
                 column: "TerminologyMedDra_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id13",
+                name: "IX_ReportInstance_UpdatedBy_Id",
                 table: "ReportInstance",
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkFlow_Id1",
+                name: "IX_ReportInstance_WorkFlow_Id",
                 table: "ReportInstance",
                 column: "WorkFlow_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReportInstance_Id1",
+                name: "IX_ReportInstanceMedication_ReportInstance_Id",
                 table: "ReportInstanceMedication",
                 column: "ReportInstance_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReportInstanceTask_CreatedBy_Id",
+                table: "ReportInstanceTask",
+                column: "CreatedBy_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReportInstanceTask_ReportInstanceId",
+                table: "ReportInstanceTask",
+                column: "ReportInstanceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReportInstanceTask_UpdatedBy_Id",
+                table: "ReportInstanceTask",
+                column: "UpdatedBy_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReportInstanceTaskComment_CreatedBy_Id",
+                table: "ReportInstanceTaskComment",
+                column: "CreatedBy_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReportInstanceTaskComment_ReportInstanceTaskId",
+                table: "ReportInstanceTaskComment",
+                column: "ReportInstanceTaskId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReportInstanceTaskComment_UpdatedBy_Id",
+                table: "ReportInstanceTaskComment",
+                column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RiskFactor_FactorName",
                 table: "RiskFactor",
                 column: "FactorName",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RiskFactor_Id",
-                table: "RiskFactorOption",
-                column: "RiskFactor_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RiskFactorOption_Display",
@@ -3813,6 +3833,11 @@ namespace PViMS.Infrastructure.Migrations
                 filter: "[Display] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RiskFactorOption_RiskFactor_Id",
+                table: "RiskFactorOption",
+                column: "RiskFactor_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SelectionDataItem_AttributeKey_SelectionKey",
                 table: "SelectionDataItem",
                 columns: new[] { "AttributeKey", "SelectionKey" },
@@ -3820,22 +3845,22 @@ namespace PViMS.Infrastructure.Migrations
                 filter: "[AttributeKey] IS NOT NULL AND [SelectionKey] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id14",
+                name: "IX_SiteContactDetail_CreatedBy_Id",
                 table: "SiteContactDetail",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id14",
+                name: "IX_SiteContactDetail_UpdatedBy_Id",
                 table: "SiteContactDetail",
                 column: "UpdatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CreatedBy_Id15",
+                name: "IX_SystemLog_CreatedBy_Id",
                 table: "SystemLog",
                 column: "CreatedBy_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UpdatedBy_Id15",
+                name: "IX_SystemLog_UpdatedBy_Id",
                 table: "SystemLog",
                 column: "UpdatedBy_Id");
 
@@ -3854,7 +3879,7 @@ namespace PViMS.Infrastructure.Migrations
                 filter: "[Name] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Parent_Id2",
+                name: "IX_TerminologyMedDra_Parent_Id",
                 table: "TerminologyMedDra",
                 column: "Parent_Id");
 
@@ -3871,12 +3896,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Facility_Id",
+                name: "IX_UserFacility_Facility_Id",
                 table: "UserFacility",
                 column: "Facility_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_User_Id1",
+                name: "IX_UserFacility_User_Id",
                 table: "UserFacility",
                 column: "User_Id");
 
@@ -3893,7 +3918,7 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Dataset_Id3",
+                name: "IX_WorkPlan_Dataset_Id",
                 table: "WorkPlan",
                 column: "Dataset_Id");
 
@@ -3904,12 +3929,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CareEvent_Id",
+                name: "IX_WorkPlanCareEvent_CareEvent_Id",
                 table: "WorkPlanCareEvent",
                 column: "CareEvent_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkPlan_Id1",
+                name: "IX_WorkPlanCareEvent_WorkPlan_Id",
                 table: "WorkPlanCareEvent",
                 column: "WorkPlan_Id");
 
@@ -3920,12 +3945,12 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetCategory_Id2",
+                name: "IX_WorkPlanCareEventDatasetCategory_DatasetCategory_Id",
                 table: "WorkPlanCareEventDatasetCategory",
                 column: "DatasetCategory_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkPlanCareEvent_Id",
+                name: "IX_WorkPlanCareEventDatasetCategory_WorkPlanCareEvent_Id",
                 table: "WorkPlanCareEventDatasetCategory",
                 column: "WorkPlanCareEvent_Id");
 
@@ -3936,7 +3961,7 @@ namespace PViMS.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_dbo.WorkPlanCareEvent_dbo.WorkPlan_WorkPlan_Id",
+                name: "FK_WorkPlanCareEvent_WorkPlan_WorkPlan_Id",
                 table: "WorkPlanCareEvent",
                 column: "WorkPlan_Id",
                 principalTable: "WorkPlan",
@@ -3944,7 +3969,7 @@ namespace PViMS.Infrastructure.Migrations
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_dbo.EncounterTypeWorkPlan_dbo.WorkPlan_WorkPlan_Id",
+                name: "FK_EncounterTypeWorkPlan_WorkPlan_WorkPlan_Id",
                 table: "EncounterTypeWorkPlan",
                 column: "WorkPlan_Id",
                 principalTable: "WorkPlan",
@@ -3955,39 +3980,39 @@ namespace PViMS.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_dbo.Dataset_dbo.User_CreatedBy_Id",
+                name: "FK_Dataset_User_CreatedBy_Id",
                 table: "Dataset");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_dbo.Dataset_dbo.User_UpdatedBy_Id",
+                name: "FK_Dataset_User_UpdatedBy_Id",
                 table: "Dataset");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_dbo.DatasetXml_dbo.User_CreatedBy_Id",
+                name: "FK_DatasetXml_User_CreatedBy_Id",
                 table: "DatasetXml");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_dbo.DatasetXml_dbo.User_UpdatedBy_Id",
+                name: "FK_DatasetXml_User_UpdatedBy_Id",
                 table: "DatasetXml");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_dbo.CohortGroup_dbo.Condition_Condition_Id",
+                name: "FK_CohortGroup_Condition_Condition_Id",
                 table: "CohortGroup");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_dbo.EncounterTypeWorkPlan_dbo.CohortGroup_CohortGroup_Id",
+                name: "FK_EncounterTypeWorkPlan_CohortGroup_CohortGroup_Id",
                 table: "EncounterTypeWorkPlan");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_dbo.Dataset_dbo.ContextType_ContextType_Id",
+                name: "FK_Dataset_ContextType_ContextType_Id",
                 table: "Dataset");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_dbo.Dataset_dbo.DatasetXml_DatasetXml_Id",
+                name: "FK_Dataset_DatasetXml_DatasetXml_Id",
                 table: "Dataset");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_dbo.Dataset_dbo.EncounterTypeWorkPlan_EncounterTypeWorkPlan_Id",
+                name: "FK_Dataset_EncounterTypeWorkPlan_EncounterTypeWorkPlan_Id",
                 table: "Dataset");
 
             migrationBuilder.DropTable(
@@ -4096,6 +4121,9 @@ namespace PViMS.Infrastructure.Migrations
                 name: "ReportInstanceMedication");
 
             migrationBuilder.DropTable(
+                name: "ReportInstanceTaskComment");
+
+            migrationBuilder.DropTable(
                 name: "RiskFactorOption");
 
             migrationBuilder.DropTable(
@@ -4168,6 +4196,9 @@ namespace PViMS.Infrastructure.Migrations
                 name: "PatientStatus");
 
             migrationBuilder.DropTable(
+                name: "ReportInstanceTask");
+
+            migrationBuilder.DropTable(
                 name: "RiskFactor");
 
             migrationBuilder.DropTable(
@@ -4195,7 +4226,7 @@ namespace PViMS.Infrastructure.Migrations
                 name: "MetaTableType");
 
             migrationBuilder.DropTable(
-                name: "Pregnancy");
+                name: "Patient");
 
             migrationBuilder.DropTable(
                 name: "Priority");
@@ -4220,9 +4251,6 @@ namespace PViMS.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "DatasetCategoryElement");
-
-            migrationBuilder.DropTable(
-                name: "Patient");
 
             migrationBuilder.DropTable(
                 name: "MedicationForm");

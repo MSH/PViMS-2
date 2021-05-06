@@ -42,18 +42,16 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.DatasetElementType)
                 .WithMany(p => p.DatasetElements)
                 .HasForeignKey(d => d.DatasetElementTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.DatasetElement_dbo.DatasetElementType_DatasetElementType_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             configuration.HasOne(d => d.Field)
                 .WithMany(p => p.DatasetElements)
                 .HasForeignKey(d => d.FieldId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.DatasetElement_dbo.Field_Field_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             configuration.HasIndex("ElementName").IsUnique(true);
-            configuration.HasIndex(e => e.DatasetElementTypeId, "IX_DatasetElementType_Id");
-            configuration.HasIndex(e => e.FieldId, "IX_Field_Id");
+            configuration.HasIndex(e => e.DatasetElementTypeId);
+            configuration.HasIndex(e => e.FieldId);
         }
     }
 }

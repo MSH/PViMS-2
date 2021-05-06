@@ -23,18 +23,16 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.DatasetCategory)
                 .WithMany(p => p.WorkPlanCareEventDatasetCategories)
                 .HasForeignKey(d => d.DatasetCategoryId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.WorkPlanCareEventDatasetCategory_dbo.DatasetCategory_DatasetCategory_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.WorkPlanCareEvent)
                 .WithMany(p => p.WorkPlanCareEventDatasetCategories)
                 .HasForeignKey(d => d.WorkPlanCareEventId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.WorkPlanCareEventDatasetCategory_dbo.WorkPlanCareEvent_WorkPlanCareEvent_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasIndex(e => new { e.WorkPlanCareEventId, e.DatasetCategoryId }).IsUnique(true);
-            configuration.HasIndex(e => e.DatasetCategoryId, "IX_DatasetCategory_Id");
-            configuration.HasIndex(e => e.WorkPlanCareEventId, "IX_WorkPlanCareEvent_Id");
+            configuration.HasIndex(e => e.DatasetCategoryId);
+            configuration.HasIndex(e => e.WorkPlanCareEventId);
         }
     }
 }

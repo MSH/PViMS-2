@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PVIMS.Core.Entities;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 
 namespace PVIMS.Infrastructure.EntityConfigurations
 {
@@ -13,21 +13,14 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(e => e.Created)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.CreatedById)
                 .IsRequired()
                 .HasColumnName("CreatedBy_Id");
 
-            configuration.Property(e => e.Finished)
-                .HasColumnType("datetime");
-
             configuration.Property(e => e.Identifier)
                 .IsRequired();
-
-            configuration.Property(e => e.LastUpdated)
-                .HasColumnType("datetime");
 
             configuration.Property(e => e.PatientIdentifier)
                 .IsRequired();
@@ -47,29 +40,25 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.ReportInstanceCreations)
-                .HasForeignKey(d => d.CreatedById)
-                .HasConstraintName("FK_dbo.ReportInstance_dbo.User_CreatedBy_Id");
+                .HasForeignKey(d => d.CreatedById);
 
             configuration.HasOne(d => d.TerminologyMedDra)
                 .WithMany(p => p.ReportInstances)
-                .HasForeignKey(d => d.TerminologyMedDraId)
-                .HasConstraintName("FK_dbo.ReportInstance_dbo.TerminologyMedDra_TerminologyMedDra_Id");
+                .HasForeignKey(d => d.TerminologyMedDraId);
 
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.ReportInstanceUpdates)
-                .HasForeignKey(d => d.UpdatedById)
-                .HasConstraintName("FK_dbo.ReportInstance_dbo.User_UpdatedBy_Id");
+                .HasForeignKey(d => d.UpdatedById);
 
             configuration.HasOne(d => d.WorkFlow)
                 .WithMany(p => p.ReportInstances)
                 .HasForeignKey(d => d.WorkFlowId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.ReportInstance_dbo.WorkFlow_WorkFlow_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
-            configuration.HasIndex(e => e.TerminologyMedDraId, "IX_TerminologyMedDra_Id");
-            configuration.HasIndex(e => e.UpdatedById, "IX_UpdatedBy_Id");
-            configuration.HasIndex(e => e.WorkFlowId, "IX_WorkFlow_Id");
+            configuration.HasIndex(e => e.CreatedById);
+            configuration.HasIndex(e => e.TerminologyMedDraId);
+            configuration.HasIndex(e => e.UpdatedById);
+            configuration.HasIndex(e => e.WorkFlowId);
         }
     }
 }

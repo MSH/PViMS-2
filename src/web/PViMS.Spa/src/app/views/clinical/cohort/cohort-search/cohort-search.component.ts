@@ -6,7 +6,8 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
-import { MatPaginator, MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { GridModel } from 'app/shared/models/grid.model';
 import { CohortGroupService } from 'app/shared/services/cohort-group.service';
@@ -54,7 +55,7 @@ export class CohortSearchComponent extends BaseComponent implements OnInit, OnDe
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

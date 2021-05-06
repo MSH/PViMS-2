@@ -10,7 +10,7 @@ using PVIMS.Infrastructure;
 namespace PViMS.Infrastructure.Migrations
 {
     [DbContext(typeof(PVIMSDbContext))]
-    [Migration("20210427151124_InitialCreate")]
+    [Migration("20210505080131_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,6 +21,282 @@ namespace PViMS.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.5");
 
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityExecutionStatusEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<int>("ActivityInstanceId")
+                        .HasColumnType("int")
+                        .HasColumnName("ActivityInstance_Id");
+
+                    b.Property<string>("Comments")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContextCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("ContextDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EventCreatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("EventCreatedBy_Id");
+
+                    b.Property<DateTime>("EventDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExecutionStatusId")
+                        .HasColumnType("int")
+                        .HasColumnName("ExecutionStatus_Id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActivityInstanceId");
+
+                    b.HasIndex("EventCreatedById");
+
+                    b.HasIndex("ExecutionStatusId");
+
+                    b.HasIndex("EventDateTime", "ActivityInstanceId", "ExecutionStatusId")
+                        .IsUnique();
+
+                    b.ToTable("ActivityExecutionStatusEvent");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityInstance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("CreatedBy_Id");
+
+                    b.Property<bool>("Current")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("CurrentStatusId")
+                        .HasColumnType("int")
+                        .HasColumnName("CurrentStatus_Id");
+
+                    b.Property<DateTime?>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("QualifiedName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("ReportInstanceId")
+                        .HasColumnType("int")
+                        .HasColumnName("ReportInstance_Id");
+
+                    b.Property<int?>("UpdatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("UpdatedBy_Id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("CurrentStatusId");
+
+                    b.HasIndex("ReportInstanceId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.HasIndex("QualifiedName", "ReportInstanceId")
+                        .IsUnique();
+
+                    b.ToTable("ActivityInstance");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<Guid>("ContextGuid")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("CreatedBy_Id");
+
+                    b.Property<DateTime?>("FinishedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Identifier")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PatientIdentifier")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ReportInstanceGuid")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SourceIdentifier")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TerminologyMedDraId")
+                        .HasColumnType("int")
+                        .HasColumnName("TerminologyMedDra_Id");
+
+                    b.Property<int?>("UpdatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("UpdatedBy_Id");
+
+                    b.Property<int>("WorkFlowId")
+                        .HasColumnType("int")
+                        .HasColumnName("WorkFlow_Id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("TerminologyMedDraId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.HasIndex("WorkFlowId");
+
+                    b.ToTable("ReportInstance");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstanceMedication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("MedicationIdentifier")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NaranjoCausality")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("ReportInstanceId")
+                        .HasColumnType("int")
+                        .HasColumnName("ReportInstance_Id");
+
+                    b.Property<Guid>("ReportInstanceMedicationGuid")
+                        .HasMaxLength(30)
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("WhoCausality")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReportInstanceId");
+
+                    b.ToTable("ReportInstanceMedication");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstanceTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("CreatedBy_Id");
+
+                    b.Property<DateTime?>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReportInstanceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TaskStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TaskTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UpdatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("UpdatedBy_Id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("ReportInstanceId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.ToTable("ReportInstanceTask");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstanceTaskComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("CreatedBy_Id");
+
+                    b.Property<DateTime?>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReportInstanceTaskId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UpdatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("UpdatedBy_Id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("ReportInstanceTaskId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.ToTable("ReportInstanceTaskComment");
+                });
+
             modelBuilder.Entity("PVIMS.Core.Entities.Accounts.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
@@ -29,7 +305,7 @@ namespace PViMS.Infrastructure.Migrations
                         .UseIdentityColumn();
 
                     b.Property<DateTime>("Expires")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("RemoteIpAddress")
                         .HasColumnType("nvarchar(max)");
@@ -43,7 +319,7 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "UserId" }, "IX_User_Id");
+                    b.HasIndex("UserId");
 
                     b.ToTable("RefreshToken");
                 });
@@ -64,7 +340,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("EulaAcceptanceDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -109,13 +385,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FacilityId");
+
+                    b.HasIndex("UserId");
+
                     b.HasIndex("UserId", "FacilityId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "FacilityId" }, "IX_Facility_Id");
-
-                    b.HasIndex(new[] { "UserId" }, "IX_User_Id")
-                        .HasDatabaseName("IX_User_Id1");
 
                     b.ToTable("UserFacility");
                 });
@@ -141,10 +416,10 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("WorkFlowId");
+
                     b.HasIndex("QualifiedName", "WorkFlowId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "WorkFlowId" }, "IX_WorkFlow_Id");
 
                     b.ToTable("Activity");
                 });
@@ -171,111 +446,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ActivityId");
+
                     b.HasIndex("Description", "ActivityId")
                         .IsUnique();
 
-                    b.HasIndex(new[] { "ActivityId" }, "IX_Activity_Id");
-
                     b.ToTable("ActivityExecutionStatus");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.ActivityExecutionStatusEvent", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<int>("ActivityInstanceId")
-                        .HasColumnType("int")
-                        .HasColumnName("ActivityInstance_Id");
-
-                    b.Property<string>("Comments")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ContextCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime?>("ContextDateTime")
-                        .HasColumnType("datetime");
-
-                    b.Property<int>("EventCreatedById")
-                        .HasColumnType("int")
-                        .HasColumnName("EventCreatedBy_Id");
-
-                    b.Property<DateTime>("EventDateTime")
-                        .HasColumnType("datetime");
-
-                    b.Property<int>("ExecutionStatusId")
-                        .HasColumnType("int")
-                        .HasColumnName("ExecutionStatus_Id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventDateTime", "ActivityInstanceId", "ExecutionStatusId")
-                        .IsUnique();
-
-                    b.HasIndex(new[] { "ActivityInstanceId" }, "IX_ActivityInstance_Id");
-
-                    b.HasIndex(new[] { "EventCreatedById" }, "IX_EventCreatedBy_Id");
-
-                    b.HasIndex(new[] { "ExecutionStatusId" }, "IX_ExecutionStatus_Id");
-
-                    b.ToTable("ActivityExecutionStatusEvent");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.ActivityInstance", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
-
-                    b.Property<int>("CreatedById")
-                        .HasColumnType("int")
-                        .HasColumnName("CreatedBy_Id");
-
-                    b.Property<bool>("Current")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("CurrentStatusId")
-                        .HasColumnType("int")
-                        .HasColumnName("CurrentStatus_Id");
-
-                    b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("QualifiedName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("ReportInstanceId")
-                        .HasColumnType("int")
-                        .HasColumnName("ReportInstance_Id");
-
-                    b.Property<int?>("UpdatedById")
-                        .HasColumnType("int")
-                        .HasColumnName("UpdatedBy_Id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QualifiedName", "ReportInstanceId")
-                        .IsUnique();
-
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id");
-
-                    b.HasIndex(new[] { "CurrentStatusId" }, "IX_CurrentStatus_Id");
-
-                    b.HasIndex(new[] { "ReportInstanceId" }, "IX_ReportInstance_Id");
-
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id");
-
-                    b.ToTable("ActivityInstance");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.Appointment", b =>
@@ -286,7 +462,7 @@ namespace PViMS.Infrastructure.Migrations
                         .UseIdentityColumn();
 
                     b.Property<DateTime>("AppointmentDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("Archived")
                         .ValueGeneratedOnAdd()
@@ -294,7 +470,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -314,7 +490,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
@@ -327,7 +503,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("DNA");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("PatientId")
                         .HasColumnType("int")
@@ -346,15 +522,13 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasIndex("AppointmentDate");
 
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id");
+                    b.HasIndex("AuditUserId");
 
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id1");
+                    b.HasIndex("CreatedById");
 
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id");
+                    b.HasIndex("PatientId");
 
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id1");
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Appointment");
                 });
@@ -376,7 +550,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -395,7 +569,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
@@ -415,7 +589,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("PatientId")
                         .HasColumnType("int")
@@ -430,23 +604,19 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "ActivityExecutionStatusEventId" }, "IX_ActivityExecutionStatusEvent_Id");
+                    b.HasIndex("ActivityExecutionStatusEventId");
 
-                    b.HasIndex(new[] { "AttachmentTypeId" }, "IX_AttachmentType_Id");
+                    b.HasIndex("AttachmentTypeId");
 
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id")
-                        .HasDatabaseName("IX_AuditUser_Id1");
+                    b.HasIndex("AuditUserId");
 
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id2");
+                    b.HasIndex("CreatedById");
 
-                    b.HasIndex(new[] { "EncounterId" }, "IX_Encounter_Id");
+                    b.HasIndex("EncounterId");
 
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id1");
+                    b.HasIndex("PatientId");
 
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id2");
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Attachment");
                 });
@@ -484,7 +654,7 @@ namespace PViMS.Infrastructure.Migrations
                         .UseIdentityColumn();
 
                     b.Property<DateTime>("ActionDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("AuditType")
                         .HasColumnType("int");
@@ -503,8 +673,7 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasIndex("ActionDate");
 
-                    b.HasIndex(new[] { "UserId" }, "IX_User_Id")
-                        .HasDatabaseName("IX_User_Id2");
+                    b.HasIndex("UserId");
 
                     b.ToTable("AuditLog");
                 });
@@ -552,7 +721,7 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.Property<DateTime?>("FinishDate")
                         .IsRequired()
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("LastPatientNo")
                         .ValueGeneratedOnAdd()
@@ -570,7 +739,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(0);
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -580,7 +749,7 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasIndex("CohortName")
                         .IsUnique();
 
-                    b.HasIndex(new[] { "ConditionId" }, "IX_Condition_Id");
+                    b.HasIndex("ConditionId");
 
                     b.ToTable("CohortGroup");
                 });
@@ -598,7 +767,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -613,10 +782,10 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("CohortGroup_Id");
 
                     b.Property<DateTime?>("DeenroledDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("EnroledDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("PatientId")
                         .HasColumnType("int")
@@ -624,13 +793,11 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id")
-                        .HasDatabaseName("IX_AuditUser_Id2");
+                    b.HasIndex("AuditUserId");
 
-                    b.HasIndex(new[] { "CohortGroupId" }, "IX_CohortGroup_Id");
+                    b.HasIndex("CohortGroupId");
 
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id2");
+                    b.HasIndex("PatientId");
 
                     b.ToTable("CohortGroupEnrolment");
                 });
@@ -656,10 +823,10 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("MedicationFormId");
+
                     b.HasIndex("ConceptName", "MedicationFormId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "MedicationFormId" }, "IX_MedicationForm_Id");
 
                     b.ToTable("Concept");
                 });
@@ -690,10 +857,10 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ConceptId");
+
                     b.HasIndex("ConceptId", "Ingredient", "Strength")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "ConceptId" }, "IX_Concept_Id");
 
                     b.ToTable("ConceptIngredient");
                 });
@@ -741,13 +908,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ConditionId");
+
+                    b.HasIndex("LabTestId");
+
                     b.HasIndex("ConditionId", "LabTestId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "ConditionId" }, "IX_Condition_Id")
-                        .HasDatabaseName("IX_Condition_Id1");
-
-                    b.HasIndex(new[] { "LabTestId" }, "IX_LabTest_Id");
 
                     b.ToTable("ConditionLabTest");
                 });
@@ -769,13 +935,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ConditionId");
+
+                    b.HasIndex("TerminologyMedDraId");
+
                     b.HasIndex("ConditionId", "TerminologyMedDraId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "ConditionId" }, "IX_Condition_Id")
-                        .HasDatabaseName("IX_Condition_Id2");
-
-                    b.HasIndex(new[] { "TerminologyMedDraId" }, "IX_TerminologyMedDra_Id");
 
                     b.ToTable("ConditionMedDra");
                 });
@@ -802,17 +967,15 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ConceptId");
+
+                    b.HasIndex("ConditionId");
+
+                    b.HasIndex("ProductId");
+
                     b.HasIndex("ConditionId", "ConceptId", "ProductId")
                         .IsUnique()
                         .HasFilter("[Product_Id] IS NOT NULL");
-
-                    b.HasIndex(new[] { "ConceptId" }, "IX_Concept_Id")
-                        .HasDatabaseName("IX_Concept_Id1");
-
-                    b.HasIndex(new[] { "ConditionId" }, "IX_Condition_Id")
-                        .HasDatabaseName("IX_Condition_Id3");
-
-                    b.HasIndex(new[] { "ProductId" }, "IX_Product_Id");
 
                     b.ToTable("ConditionMedication");
                 });
@@ -833,14 +996,14 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
                         .HasColumnName("CreatedBy_Id");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("UpdatedById")
                         .HasColumnType("int")
@@ -850,11 +1013,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasIndex("ConfigType");
 
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id3");
+                    b.HasIndex("CreatedById");
 
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id3");
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Config");
                 });
@@ -956,7 +1117,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("ContextType_Id");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
@@ -987,7 +1148,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("RulesProcess")
                         .HasMaxLength(100)
@@ -1004,20 +1165,18 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ContextTypeId");
+
+                    b.HasIndex("CreatedById");
+
                     b.HasIndex("DatasetName")
                         .IsUnique();
 
-                    b.HasIndex(new[] { "ContextTypeId" }, "IX_ContextType_Id");
+                    b.HasIndex("DatasetXmlId");
 
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id4");
+                    b.HasIndex("EncounterTypeWorkPlanId");
 
-                    b.HasIndex(new[] { "DatasetXmlId" }, "IX_DatasetXml_Id");
-
-                    b.HasIndex(new[] { "EncounterTypeWorkPlanId" }, "IX_EncounterTypeWorkPlan_Id");
-
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id4");
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Dataset");
                 });
@@ -1072,10 +1231,10 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DatasetId");
+
                     b.HasIndex("Dataset_Id", "DatasetCategoryName")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "DatasetId" }, "IX_Dataset_Id");
 
                     b.ToTable("DatasetCategory");
                 });
@@ -1097,13 +1256,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ConditionId");
+
+                    b.HasIndex("DatasetCategoryId");
+
                     b.HasIndex("ConditionId", "DatasetCategoryId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "ConditionId" }, "IX_Condition_Id")
-                        .HasDatabaseName("IX_Condition_Id4");
-
-                    b.HasIndex(new[] { "DatasetCategoryId" }, "IX_DatasetCategory_Id");
 
                     b.ToTable("DatasetCategoryCondition");
                 });
@@ -1153,13 +1311,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DatasetCategoryId");
+
+                    b.HasIndex("DatasetElementId");
+
                     b.HasIndex("DatasetCategoryId", "DatasetElementId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "DatasetCategoryId" }, "IX_DatasetCategory_Id")
-                        .HasDatabaseName("IX_DatasetCategory_Id1");
-
-                    b.HasIndex(new[] { "DatasetElementId" }, "IX_DatasetElement_Id");
 
                     b.ToTable("DatasetCategoryElement");
                 });
@@ -1181,13 +1338,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ConditionId");
+
+                    b.HasIndex("DatasetCategoryElementId");
+
                     b.HasIndex("ConditionId", "DatasetCategoryElementId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "ConditionId" }, "IX_Condition_Id")
-                        .HasDatabaseName("IX_Condition_Id5");
-
-                    b.HasIndex(new[] { "DatasetCategoryElementId" }, "IX_DatasetCategoryElement_Id");
 
                     b.ToTable("DatasetCategoryElementCondition");
                 });
@@ -1235,12 +1391,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DatasetElementTypeId");
+
                     b.HasIndex("ElementName")
                         .IsUnique();
 
-                    b.HasIndex(new[] { "DatasetElementTypeId" }, "IX_DatasetElementType_Id");
-
-                    b.HasIndex(new[] { "FieldId" }, "IX_Field_Id");
+                    b.HasIndex("FieldId");
 
                     b.ToTable("DatasetElement");
                 });
@@ -1289,14 +1445,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DatasetElementId");
+
+                    b.HasIndex("FieldId");
+
                     b.HasIndex("DatasetElementId", "ElementName")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "DatasetElementId" }, "IX_DatasetElement_Id")
-                        .HasDatabaseName("IX_DatasetElement_Id1");
-
-                    b.HasIndex(new[] { "FieldId" }, "IX_Field_Id")
-                        .HasDatabaseName("IX_Field_Id1");
 
                     b.ToTable("DatasetElementSub");
                 });
@@ -1333,7 +1487,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("ContextID");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
@@ -1353,7 +1507,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("EncounterTypeWorkPlan_Id");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -1367,17 +1521,13 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id5");
+                    b.HasIndex("CreatedById");
 
-                    b.HasIndex(new[] { "DatasetId" }, "IX_Dataset_Id")
-                        .HasDatabaseName("IX_Dataset_Id1");
+                    b.HasIndex("DatasetId");
 
-                    b.HasIndex(new[] { "EncounterTypeWorkPlanId" }, "IX_EncounterTypeWorkPlan_Id")
-                        .HasDatabaseName("IX_EncounterTypeWorkPlan_Id1");
+                    b.HasIndex("EncounterTypeWorkPlanId");
 
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id5");
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("DatasetInstance");
                 });
@@ -1406,12 +1556,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DatasetElementSubId");
+
+                    b.HasIndex("DatasetInstanceValueId");
+
                     b.HasIndex("DatasetInstanceValueId", "DatasetElementSubId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "DatasetElementSubId" }, "IX_DatasetElementSub_Id");
-
-                    b.HasIndex(new[] { "DatasetInstanceValueId" }, "IX_DatasetInstanceValue_Id");
 
                     b.ToTable("DatasetInstanceSubValue");
                 });
@@ -1437,13 +1587,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DatasetElementId");
+
+                    b.HasIndex("DatasetInstanceId");
+
                     b.HasIndex("DatasetInstanceId", "DatasetElementId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "DatasetElementId" }, "IX_DatasetElement_Id")
-                        .HasDatabaseName("IX_DatasetElement_Id2");
-
-                    b.HasIndex(new[] { "DatasetInstanceId" }, "IX_DatasetInstance_Id");
 
                     b.ToTable("DatasetInstanceValue");
                 });
@@ -1480,9 +1629,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "DestinationElementId" }, "IX_DestinationElement_Id");
+                    b.HasIndex("DestinationElementId");
 
-                    b.HasIndex(new[] { "SourceElementId" }, "IX_SourceElement_Id");
+                    b.HasIndex("SourceElementId");
 
                     b.ToTable("DatasetMapping");
                 });
@@ -1520,13 +1669,11 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "DestinationElementId" }, "IX_DestinationElement_Id")
-                        .HasDatabaseName("IX_DestinationElement_Id1");
+                    b.HasIndex("DestinationElementId");
 
-                    b.HasIndex(new[] { "MappingId" }, "IX_Mapping_Id");
+                    b.HasIndex("MappingId");
 
-                    b.HasIndex(new[] { "SourceElementId" }, "IX_SourceElement_Id")
-                        .HasDatabaseName("IX_SourceElement_Id1");
+                    b.HasIndex("SourceElementId");
 
                     b.ToTable("DatasetMappingSub");
                 });
@@ -1561,10 +1708,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "MappingId" }, "IX_Mapping_Id")
-                        .HasDatabaseName("IX_Mapping_Id1");
+                    b.HasIndex("MappingId");
 
-                    b.HasIndex(new[] { "SubMappingId" }, "IX_SubMapping_Id");
+                    b.HasIndex("SubMappingId");
 
                     b.ToTable("DatasetMappingValue");
                 });
@@ -1592,11 +1738,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "DatasetElementId" }, "IX_DatasetElement_Id")
-                        .HasDatabaseName("IX_DatasetElement_Id3");
+                    b.HasIndex("DatasetElementId");
 
-                    b.HasIndex(new[] { "DatasetId" }, "IX_Dataset_Id")
-                        .HasDatabaseName("IX_Dataset_Id2");
+                    b.HasIndex("DatasetId");
 
                     b.ToTable("DatasetRule");
                 });
@@ -1609,7 +1753,7 @@ namespace PViMS.Infrastructure.Migrations
                         .UseIdentityColumn();
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
@@ -1621,7 +1765,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("UpdatedById")
                         .HasColumnType("int")
@@ -1629,11 +1773,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id6");
+                    b.HasIndex("CreatedById");
 
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id6");
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("DatasetXml");
                 });
@@ -1654,7 +1796,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
@@ -1665,7 +1807,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("DatasetElement_Id");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ParentNodeId")
                         .HasColumnType("int")
@@ -1677,16 +1819,13 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id7");
+                    b.HasIndex("CreatedById");
 
-                    b.HasIndex(new[] { "DatasetElementId" }, "IX_DatasetElement_Id")
-                        .HasDatabaseName("IX_DatasetElement_Id4");
+                    b.HasIndex("DatasetElementId");
 
-                    b.HasIndex(new[] { "ParentNodeId" }, "IX_ParentNode_Id");
+                    b.HasIndex("ParentNodeId");
 
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id7");
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("DatasetXmlAttribute");
                 });
@@ -1699,7 +1838,7 @@ namespace PViMS.Infrastructure.Migrations
                         .UseIdentityColumn();
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
@@ -1718,7 +1857,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("DatasetXml_Id");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("NodeName")
                         .IsRequired()
@@ -1741,26 +1880,20 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("DatasetElementId");
+
+                    b.HasIndex("DatasetElementSubId");
+
+                    b.HasIndex("DatasetXmlId");
+
+                    b.HasIndex("ParentNodeId");
+
+                    b.HasIndex("UpdatedById");
+
                     b.HasIndex("DatasetXmlId", "NodeName")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id8");
-
-                    b.HasIndex(new[] { "DatasetElementSubId" }, "IX_DatasetElementSub_Id")
-                        .HasDatabaseName("IX_DatasetElementSub_Id1");
-
-                    b.HasIndex(new[] { "DatasetElementId" }, "IX_DatasetElement_Id")
-                        .HasDatabaseName("IX_DatasetElement_Id5");
-
-                    b.HasIndex(new[] { "DatasetXmlId" }, "IX_DatasetXml_Id")
-                        .HasDatabaseName("IX_DatasetXml_Id1");
-
-                    b.HasIndex(new[] { "ParentNodeId" }, "IX_ParentNode_Id")
-                        .HasDatabaseName("IX_ParentNode_Id1");
-
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id8");
 
                     b.ToTable("DatasetXmlNode");
                 });
@@ -1778,7 +1911,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -1789,7 +1922,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("AuditUser_Id");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
@@ -1804,7 +1937,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime>("EncounterDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("date");
 
                     b.Property<Guid>("EncounterGuid")
                         .ValueGeneratedOnAdd()
@@ -1816,7 +1949,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("EncounterType_Id");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -1824,10 +1957,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.Property<int>("PatientId")
                         .HasColumnType("int")
                         .HasColumnName("Patient_Id");
-
-                    b.Property<int?>("PregnancyId")
-                        .HasColumnType("int")
-                        .HasColumnName("Pregnancy_Id");
 
                     b.Property<int>("PriorityId")
                         .HasColumnType("int")
@@ -1839,27 +1968,21 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AuditUserId");
+
+                    b.HasIndex("CreatedById");
+
                     b.HasIndex("EncounterDate");
 
+                    b.HasIndex("EncounterTypeId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("PriorityId");
+
+                    b.HasIndex("UpdatedById");
+
                     b.HasIndex("PatientId", "EncounterDate");
-
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id")
-                        .HasDatabaseName("IX_AuditUser_Id3");
-
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id9");
-
-                    b.HasIndex(new[] { "EncounterTypeId" }, "IX_EncounterType_Id");
-
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id3");
-
-                    b.HasIndex(new[] { "PregnancyId" }, "IX_Pregnancy_Id");
-
-                    b.HasIndex(new[] { "PriorityId" }, "IX_Priority_Id");
-
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id9");
 
                     b.ToTable("Encounter");
                 });
@@ -1914,17 +2037,15 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CohortGroupId");
+
+                    b.HasIndex("EncounterTypeId");
+
+                    b.HasIndex("WorkPlanId");
+
                     b.HasIndex("CohortGroupId", "EncounterTypeId", "WorkPlanId")
                         .IsUnique()
                         .HasFilter("[CohortGroup_Id] IS NOT NULL");
-
-                    b.HasIndex(new[] { "CohortGroupId" }, "IX_CohortGroup_Id")
-                        .HasDatabaseName("IX_CohortGroup_Id1");
-
-                    b.HasIndex(new[] { "EncounterTypeId" }, "IX_EncounterType_Id")
-                        .HasDatabaseName("IX_EncounterType_Id1");
-
-                    b.HasIndex(new[] { "WorkPlanId" }, "IX_WorkPlan_Id");
 
                     b.ToTable("EncounterTypeWorkPlan");
                 });
@@ -1974,9 +2095,9 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasIndex("FacilityName")
                         .IsUnique();
 
-                    b.HasIndex(new[] { "FacilityTypeId" }, "IX_FacilityType_Id");
+                    b.HasIndex("FacilityTypeId");
 
-                    b.HasIndex(new[] { "OrgUnitId" }, "IX_OrgUnit_Id");
+                    b.HasIndex("OrgUnitId");
 
                     b.ToTable("Facility");
                 });
@@ -2054,7 +2175,7 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "FieldTypeId" }, "IX_FieldType_Id");
+                    b.HasIndex("FieldTypeId");
 
                     b.ToTable("Field");
                 });
@@ -2106,8 +2227,7 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "FieldId" }, "IX_Field_Id")
-                        .HasDatabaseName("IX_Field_Id2");
+                    b.HasIndex("FieldId");
 
                     b.ToTable("FieldValue");
                 });
@@ -2125,7 +2245,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("HolidayDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -2607,7 +2727,7 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "ScaleId" }, "IX_Scale_Id");
+                    b.HasIndex("ScaleId");
 
                     b.ToTable("MedDRAGrading");
                 });
@@ -2629,10 +2749,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "GradingScaleId" }, "IX_GradingScale_Id");
+                    b.HasIndex("GradingScaleId");
 
-                    b.HasIndex(new[] { "TerminologyMedDraId" }, "IX_TerminologyMedDra_Id")
-                        .HasDatabaseName("IX_TerminologyMedDra_Id1");
+                    b.HasIndex("TerminologyMedDraId");
 
                     b.ToTable("MedDRAScale");
                 });
@@ -2692,9 +2811,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "ColumnTypeId" }, "IX_ColumnType_Id");
+                    b.HasIndex("ColumnTypeId");
 
-                    b.HasIndex(new[] { "TableId" }, "IX_Table_Id");
+                    b.HasIndex("TableId");
 
                     b.ToTable("MetaColumn");
                 });
@@ -2754,9 +2873,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "ParentTableId" }, "IX_ParentTable_Id");
+                    b.HasIndex("ParentTableId");
 
-                    b.HasIndex(new[] { "ReferenceTableId" }, "IX_ReferenceTable_Id");
+                    b.HasIndex("ReferenceTableId");
 
                     b.ToTable("MetaDependency");
                 });
@@ -2919,7 +3038,7 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasIndex("TableName")
                         .IsUnique();
 
-                    b.HasIndex(new[] { "TableTypeId" }, "IX_TableType_Id");
+                    b.HasIndex("TableTypeId");
 
                     b.ToTable("MetaTable");
                 });
@@ -2990,12 +3109,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("MetaPageId");
+
                     b.HasIndex("WidgetName")
                         .IsUnique();
 
-                    b.HasIndex(new[] { "MetaPageId" }, "IX_MetaPage_Id");
-
-                    b.HasIndex(new[] { "WidgetTypeId" }, "IX_WidgetType_Id");
+                    b.HasIndex("WidgetTypeId");
 
                     b.ToTable("MetaWidget");
                 });
@@ -3049,9 +3168,9 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.HasIndex(new[] { "OrgUnitTypeId" }, "IX_OrgUnitType_Id");
+                    b.HasIndex("OrgUnitTypeId");
 
-                    b.HasIndex(new[] { "ParentId" }, "IX_Parent_Id");
+                    b.HasIndex("ParentId");
 
                     b.ToTable("OrgUnit");
                 });
@@ -3077,8 +3196,7 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasIndex("Description")
                         .IsUnique();
 
-                    b.HasIndex(new[] { "ParentId" }, "IX_Parent_Id")
-                        .HasDatabaseName("IX_Parent_Id1");
+                    b.HasIndex("ParentId");
 
                     b.ToTable("OrgUnitType");
                 });
@@ -3116,7 +3234,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -3127,7 +3245,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("AuditUser_Id");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
@@ -3144,7 +3262,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("MiddleName")
                         .HasColumnType("nvarchar(max)");
@@ -3167,20 +3285,13 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Created");
+                    b.HasIndex("AuditUserId");
 
-                    b.HasIndex("DateOfBirth");
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("UpdatedById");
 
                     b.HasIndex("Surname", "FirstName");
-
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id")
-                        .HasDatabaseName("IX_AuditUser_Id4");
-
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id10");
-
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id10");
 
                     b.ToTable("Patient");
                 });
@@ -3198,7 +3309,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -3244,16 +3355,13 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id")
-                        .HasDatabaseName("IX_AuditUser_Id5");
+                    b.HasIndex("AuditUserId");
 
-                    b.HasIndex(new[] { "EncounterId" }, "IX_Encounter_Id")
-                        .HasDatabaseName("IX_Encounter_Id1");
+                    b.HasIndex("EncounterId");
 
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id4");
+                    b.HasIndex("PatientId");
 
-                    b.HasIndex(new[] { "SourceTerminologyMedDraId" }, "IX_SourceTerminologyMedDra_Id");
+                    b.HasIndex("SourceTerminologyMedDraId");
 
                     b.ToTable("PatientClinicalEvent");
                 });
@@ -3271,7 +3379,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -3296,11 +3404,11 @@ namespace PViMS.Infrastructure.Migrations
                     b.Property<string>("CustomAttributesXmlSerialised")
                         .HasColumnType("xml");
 
-                    b.Property<DateTime>("DateStart")
-                        .HasColumnType("datetime");
+                    b.Property<DateTime>("OnsetDate")
+                        .HasColumnType("date");
 
                     b.Property<DateTime?>("OutcomeDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("date");
 
                     b.Property<int?>("OutcomeId")
                         .HasColumnType("int")
@@ -3325,21 +3433,17 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id")
-                        .HasDatabaseName("IX_AuditUser_Id6");
+                    b.HasIndex("AuditUserId");
 
-                    b.HasIndex(new[] { "ConditionId" }, "IX_Condition_Id")
-                        .HasDatabaseName("IX_Condition_Id6");
+                    b.HasIndex("ConditionId");
 
-                    b.HasIndex(new[] { "OutcomeId" }, "IX_Outcome_Id");
+                    b.HasIndex("OutcomeId");
 
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id5");
+                    b.HasIndex("PatientId");
 
-                    b.HasIndex(new[] { "TerminologyMedDraId" }, "IX_TerminologyMedDra_Id")
-                        .HasDatabaseName("IX_TerminologyMedDra_Id2");
+                    b.HasIndex("TerminologyMedDraId");
 
-                    b.HasIndex(new[] { "TreatmentOutcomeId" }, "IX_TreatmentOutcome_Id");
+                    b.HasIndex("TreatmentOutcomeId");
 
                     b.ToTable("PatientCondition");
                 });
@@ -3357,7 +3461,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -3368,7 +3472,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("AuditUser_Id");
 
                     b.Property<DateTime>("EnrolledDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("FacilityId")
                         .HasColumnType("int")
@@ -3380,16 +3484,13 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AuditUserId");
+
+                    b.HasIndex("FacilityId");
+
+                    b.HasIndex("PatientId");
+
                     b.HasIndex("PatientId", "FacilityId");
-
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id")
-                        .HasDatabaseName("IX_AuditUser_Id7");
-
-                    b.HasIndex(new[] { "FacilityId" }, "IX_Facility_Id")
-                        .HasDatabaseName("IX_Facility_Id1");
-
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id6");
 
                     b.ToTable("PatientFacility");
                 });
@@ -3407,7 +3508,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -3450,7 +3551,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("TestDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("date");
 
                     b.Property<string>("TestResult")
                         .HasMaxLength(50)
@@ -3462,18 +3563,15 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AuditUserId");
+
+                    b.HasIndex("LabTestId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("TestUnitId");
+
                     b.HasIndex("PatientId", "LabTestId");
-
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id")
-                        .HasDatabaseName("IX_AuditUser_Id8");
-
-                    b.HasIndex(new[] { "LabTestId" }, "IX_LabTest_Id")
-                        .HasDatabaseName("IX_LabTest_Id1");
-
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id7");
-
-                    b.HasIndex(new[] { "TestUnitId" }, "IX_TestUnit_Id");
 
                     b.ToTable("PatientLabTest");
                 });
@@ -3498,13 +3596,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("PatientId");
+
                     b.HasIndex("PatientId", "LanguageId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "LanguageId" }, "IX_Language_Id");
-
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id8");
 
                     b.ToTable("PatientLanguage");
                 });
@@ -3520,7 +3617,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -3537,12 +3634,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.Property<string>("CustomAttributesXmlSerialised")
                         .HasColumnType("xml");
 
-                    b.Property<DateTime?>("DateEnd")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime>("DateStart")
-                        .HasColumnType("datetime");
-
                     b.Property<string>("Dose")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
@@ -3554,6 +3645,9 @@ namespace PViMS.Infrastructure.Migrations
                     b.Property<string>("DoseUnit")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("MedicationSource")
                         .HasMaxLength(200)
@@ -3572,21 +3666,20 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasColumnName("Product_Id");
 
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("date");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("AuditUserId");
+
+                    b.HasIndex("ConceptId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("ProductId");
+
                     b.HasIndex("PatientId", "ConceptId", "ProductId");
-
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id")
-                        .HasDatabaseName("IX_AuditUser_Id9");
-
-                    b.HasIndex(new[] { "ConceptId" }, "IX_Concept_Id")
-                        .HasDatabaseName("IX_Concept_Id2");
-
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id9");
-
-                    b.HasIndex(new[] { "ProductId" }, "IX_Product_Id")
-                        .HasDatabaseName("IX_Product_Id1");
 
                     b.ToTable("PatientMedication");
                 });
@@ -3621,7 +3714,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("ArchivedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ArchivedReason")
                         .HasMaxLength(200)
@@ -3636,17 +3729,17 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
                         .HasColumnName("CreatedBy_Id");
 
                     b.Property<DateTime>("EffectiveDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("PatientId")
                         .HasColumnType("int")
@@ -3662,21 +3755,17 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AuditUserId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("PatientStatusId");
+
+                    b.HasIndex("UpdatedById");
+
                     b.HasIndex("PatientId", "PatientStatusId");
-
-                    b.HasIndex(new[] { "AuditUserId" }, "IX_AuditUser_Id")
-                        .HasDatabaseName("IX_AuditUser_Id10");
-
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id11");
-
-                    b.HasIndex(new[] { "PatientStatusId" }, "IX_PatientStatus_Id");
-
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id10");
-
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id11");
 
                     b.ToTable("PatientStatusHistory");
                 });
@@ -3716,69 +3805,10 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "ScriptFileName" }, "IX_ScriptFileName")
+                    b.HasIndex("ScriptFileName")
                         .IsUnique();
 
                     b.ToTable("PostDeployment");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.Pregnancy", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<DateTime?>("ActualDeliveryDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
-
-                    b.Property<int>("CreatedById")
-                        .HasColumnType("int")
-                        .HasColumnName("CreatedBy_Id");
-
-                    b.Property<DateTime?>("ExpectedDeliveryDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime?>("FinishDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<short?>("InitialGestation")
-                        .HasColumnType("smallint");
-
-                    b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int")
-                        .HasColumnName("Patient_Id");
-
-                    b.Property<string>("PreferredFeedingChoice")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<int?>("UpdatedById")
-                        .HasColumnType("int")
-                        .HasColumnName("UpdatedBy_Id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id12");
-
-                    b.HasIndex(new[] { "PatientId" }, "IX_Patient_Id")
-                        .HasDatabaseName("IX_Patient_Id11");
-
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id12");
-
-                    b.ToTable("Pregnancy");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.Priority", b =>
@@ -3831,111 +3861,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "ConceptId" }, "IX_Concept_Id")
-                        .HasDatabaseName("IX_Concept_Id3");
+                    b.HasIndex("ConceptId");
 
                     b.ToTable("Product");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.ReportInstance", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<Guid>("ContextGuid")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
-
-                    b.Property<int>("CreatedById")
-                        .HasColumnType("int")
-                        .HasColumnName("CreatedBy_Id");
-
-                    b.Property<DateTime?>("Finished")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("Identifier")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("PatientIdentifier")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("ReportInstanceGuid")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SourceIdentifier")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("TerminologyMedDraId")
-                        .HasColumnType("int")
-                        .HasColumnName("TerminologyMedDra_Id");
-
-                    b.Property<int?>("UpdatedById")
-                        .HasColumnType("int")
-                        .HasColumnName("UpdatedBy_Id");
-
-                    b.Property<int>("WorkFlowId")
-                        .HasColumnType("int")
-                        .HasColumnName("WorkFlow_Id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id13");
-
-                    b.HasIndex(new[] { "TerminologyMedDraId" }, "IX_TerminologyMedDra_Id")
-                        .HasDatabaseName("IX_TerminologyMedDra_Id3");
-
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id13");
-
-                    b.HasIndex(new[] { "WorkFlowId" }, "IX_WorkFlow_Id")
-                        .HasDatabaseName("IX_WorkFlow_Id1");
-
-                    b.ToTable("ReportInstance");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.ReportInstanceMedication", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<string>("MedicationIdentifier")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NaranjoCausality")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<int>("ReportInstanceId")
-                        .HasColumnType("int")
-                        .HasColumnName("ReportInstance_Id");
-
-                    b.Property<Guid>("ReportInstanceMedicationGuid")
-                        .HasMaxLength(30)
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("WhoCausality")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex(new[] { "ReportInstanceId" }, "IX_ReportInstance_Id")
-                        .HasDatabaseName("IX_ReportInstance_Id1");
-
-                    b.ToTable("ReportInstanceMedication");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.RiskFactor", b =>
@@ -4003,7 +3931,7 @@ namespace PViMS.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[Display] IS NOT NULL");
 
-                    b.HasIndex(new[] { "RiskFactorId" }, "IX_RiskFactor_Id");
+                    b.HasIndex("RiskFactorId");
 
                     b.ToTable("RiskFactorOption");
                 });
@@ -4071,14 +3999,14 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
                         .HasColumnName("CreatedBy_Id");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("OrganisationName")
                         .IsRequired()
@@ -4104,11 +4032,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id14");
+                    b.HasIndex("CreatedById");
 
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id14");
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("SiteContactDetail");
                 });
@@ -4121,7 +4047,7 @@ namespace PViMS.Infrastructure.Migrations
                         .UseIdentityColumn();
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int")
@@ -4149,7 +4075,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("RemoteIpAddress")
                         .HasColumnType("nvarchar(max)");
@@ -4164,11 +4090,9 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "CreatedById" }, "IX_CreatedBy_Id")
-                        .HasDatabaseName("IX_CreatedBy_Id15");
+                    b.HasIndex("CreatedById");
 
-                    b.HasIndex(new[] { "UpdatedById" }, "IX_UpdatedBy_Id")
-                        .HasDatabaseName("IX_UpdatedBy_Id15");
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("SystemLog");
                 });
@@ -4235,8 +4159,7 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "ParentId" }, "IX_Parent_Id")
-                        .HasDatabaseName("IX_Parent_Id2");
+                    b.HasIndex("ParentId");
 
                     b.ToTable("TerminologyMedDra");
                 });
@@ -4302,11 +4225,10 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DatasetId");
+
                     b.HasIndex("Description")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "DatasetId" }, "IX_Dataset_Id")
-                        .HasDatabaseName("IX_Dataset_Id3");
 
                     b.ToTable("WorkPlan");
                 });
@@ -4334,13 +4256,12 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CareEventId");
+
+                    b.HasIndex("WorkPlanId");
+
                     b.HasIndex("WorkPlanId", "CareEventId")
                         .IsUnique();
-
-                    b.HasIndex(new[] { "CareEventId" }, "IX_CareEvent_Id");
-
-                    b.HasIndex(new[] { "WorkPlanId" }, "IX_WorkPlan_Id")
-                        .HasDatabaseName("IX_WorkPlan_Id1");
 
                     b.ToTable("WorkPlanCareEvent");
                 });
@@ -4362,15 +4283,191 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DatasetCategoryId");
+
+                    b.HasIndex("WorkPlanCareEventId");
+
                     b.HasIndex("WorkPlanCareEventId", "DatasetCategoryId")
                         .IsUnique();
 
-                    b.HasIndex(new[] { "DatasetCategoryId" }, "IX_DatasetCategory_Id")
-                        .HasDatabaseName("IX_DatasetCategory_Id2");
-
-                    b.HasIndex(new[] { "WorkPlanCareEventId" }, "IX_WorkPlanCareEvent_Id");
-
                     b.ToTable("WorkPlanCareEventDatasetCategory");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityExecutionStatusEvent", b =>
+                {
+                    b.HasOne("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityInstance", "ActivityInstance")
+                        .WithMany("ExecutionEvents")
+                        .HasForeignKey("ActivityInstanceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "EventCreatedBy")
+                        .WithMany("ExecutionEvents")
+                        .HasForeignKey("EventCreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Entities.ActivityExecutionStatus", "ExecutionStatus")
+                        .WithMany("ExecutionEvents")
+                        .HasForeignKey("ExecutionStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ActivityInstance");
+
+                    b.Navigation("EventCreatedBy");
+
+                    b.Navigation("ExecutionStatus");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityInstance", b =>
+                {
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
+                        .WithMany("ActivityInstanceCreations")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Entities.ActivityExecutionStatus", "CurrentStatus")
+                        .WithMany("ActivityInstances")
+                        .HasForeignKey("CurrentStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstance", "ReportInstance")
+                        .WithMany("Activities")
+                        .HasForeignKey("ReportInstanceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
+                        .WithMany("ActivityInstanceUpdates")
+                        .HasForeignKey("UpdatedById");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("CurrentStatus");
+
+                    b.Navigation("ReportInstance");
+
+                    b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstance", b =>
+                {
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
+                        .WithMany("ReportInstanceCreations")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Entities.TerminologyMedDra", "TerminologyMedDra")
+                        .WithMany("ReportInstances")
+                        .HasForeignKey("TerminologyMedDraId");
+
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
+                        .WithMany("ReportInstanceUpdates")
+                        .HasForeignKey("UpdatedById");
+
+                    b.HasOne("PVIMS.Core.Entities.WorkFlow", "WorkFlow")
+                        .WithMany("ReportInstances")
+                        .HasForeignKey("WorkFlowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("TerminologyMedDra");
+
+                    b.Navigation("UpdatedBy");
+
+                    b.Navigation("WorkFlow");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstanceMedication", b =>
+                {
+                    b.HasOne("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstance", "ReportInstance")
+                        .WithMany("Medications")
+                        .HasForeignKey("ReportInstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ReportInstance");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstanceTask", b =>
+                {
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
+                        .WithMany("ReportInstanceTaskCreations")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstance", "ReportInstance")
+                        .WithMany("Tasks")
+                        .HasForeignKey("ReportInstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
+                        .WithMany("ReportInstanceTaskUpdates")
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.OwnsOne("PVIMS.Core.Aggregates.ReportInstanceAggregate.TaskDetail", "TaskDetail", b1 =>
+                        {
+                            b1.Property<int>("ReportInstanceTaskId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .UseIdentityColumn();
+
+                            b1.Property<string>("Description")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Source")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("ReportInstanceTaskId");
+
+                            b1.ToTable("ReportInstanceTask");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ReportInstanceTaskId");
+                        });
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ReportInstance");
+
+                    b.Navigation("TaskDetail");
+
+                    b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstanceTaskComment", b =>
+                {
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
+                        .WithMany("ReportInstanceTaskCommentCreations")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstanceTask", "ReportInstanceTask")
+                        .WithMany("Comments")
+                        .HasForeignKey("ReportInstanceTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
+                        .WithMany("ReportInstanceTaskCommentUpdates")
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ReportInstanceTask");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.Accounts.RefreshToken", b =>
@@ -4378,7 +4475,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "User")
                         .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
-                        .HasConstraintName("FK_dbo.RefreshToken_dbo.User_User_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4390,14 +4486,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Facility", "Facility")
                         .WithMany("UserFacilities")
                         .HasForeignKey("FacilityId")
-                        .HasConstraintName("FK_dbo.UserFacility_dbo.Facility_Facility_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "User")
                         .WithMany("Facilities")
                         .HasForeignKey("UserId")
-                        .HasConstraintName("FK_dbo.UserFacility_dbo.User_User_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4411,7 +4505,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.WorkFlow", "WorkFlow")
                         .WithMany("Activities")
                         .HasForeignKey("WorkFlowId")
-                        .HasConstraintName("FK_dbo.Activity_dbo.WorkFlow_WorkFlow_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4423,105 +4516,33 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Activity", "Activity")
                         .WithMany("ExecutionStatuses")
                         .HasForeignKey("ActivityId")
-                        .HasConstraintName("FK_dbo.ActivityExecutionStatus_dbo.Activity_Activity_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Activity");
                 });
 
-            modelBuilder.Entity("PVIMS.Core.Entities.ActivityExecutionStatusEvent", b =>
-                {
-                    b.HasOne("PVIMS.Core.Entities.ActivityInstance", "ActivityInstance")
-                        .WithMany("ExecutionEvents")
-                        .HasForeignKey("ActivityInstanceId")
-                        .HasConstraintName("FK_dbo.ActivityExecutionStatusEvent_dbo.ActivityInstance_ActivityInstance_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "EventCreatedBy")
-                        .WithMany("ExecutionEvents")
-                        .HasForeignKey("EventCreatedById")
-                        .HasConstraintName("FK_dbo.ActivityExecutionStatusEvent_dbo.User_EventCreatedBy_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.ActivityExecutionStatus", "ExecutionStatus")
-                        .WithMany("ExecutionEvents")
-                        .HasForeignKey("ExecutionStatusId")
-                        .HasConstraintName("FK_dbo.ActivityExecutionStatusEvent_dbo.ActivityExecutionStatus_ExecutionStatus_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ActivityInstance");
-
-                    b.Navigation("EventCreatedBy");
-
-                    b.Navigation("ExecutionStatus");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.ActivityInstance", b =>
-                {
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
-                        .WithMany("ActivityInstanceCreations")
-                        .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.ActivityInstance_dbo.User_CreatedBy_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.ActivityExecutionStatus", "CurrentStatus")
-                        .WithMany("ActivityInstances")
-                        .HasForeignKey("CurrentStatusId")
-                        .HasConstraintName("FK_dbo.ActivityInstance_dbo.ActivityExecutionStatus_CurrentStatus_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.ReportInstance", "ReportInstance")
-                        .WithMany("Activities")
-                        .HasForeignKey("ReportInstanceId")
-                        .HasConstraintName("FK_dbo.ActivityInstance_dbo.ReportInstance_ReportInstance_Id1")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
-                        .WithMany("ActivityInstanceUpdates")
-                        .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.ActivityInstance_dbo.User_UpdatedBy_Id");
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("CurrentStatus");
-
-                    b.Navigation("ReportInstance");
-
-                    b.Navigation("UpdatedBy");
-                });
-
             modelBuilder.Entity("PVIMS.Core.Entities.Appointment", b =>
                 {
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("Appointments")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.Appointment_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("AppointmentCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.Appointment_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.Appointment_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("AppointmentUpdates")
                         .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.Appointment_dbo.User_UpdatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("AuditUser");
@@ -4535,46 +4556,39 @@ namespace PViMS.Infrastructure.Migrations
 
             modelBuilder.Entity("PVIMS.Core.Entities.Attachment", b =>
                 {
-                    b.HasOne("PVIMS.Core.Entities.ActivityExecutionStatusEvent", "ActivityExecutionStatusEvent")
+                    b.HasOne("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityExecutionStatusEvent", "ActivityExecutionStatusEvent")
                         .WithMany("Attachments")
                         .HasForeignKey("ActivityExecutionStatusEventId")
-                        .HasConstraintName("FK_dbo.Attachment_dbo.ActivityExecutionStatusEvent_ActivityExecutionStatusEvent_Id")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("PVIMS.Core.Entities.AttachmentType", "AttachmentType")
                         .WithMany("Attachments")
                         .HasForeignKey("AttachmentTypeId")
-                        .HasConstraintName("FK_dbo.Attachment_dbo.AttachmentType_AttachmentType_Id")
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("Attachments")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.Attachment_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("AttachmentCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.Attachment_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Encounter", "Encounter")
                         .WithMany("Attachments")
                         .HasForeignKey("EncounterId")
-                        .HasConstraintName("FK_dbo.Attachment_dbo.Encounter_Encounter_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("Attachments")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.Attachment_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("AttachmentUpdates")
                         .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.Attachment_dbo.User_UpdatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("ActivityExecutionStatusEvent");
@@ -4597,7 +4611,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "User")
                         .WithMany("AuditLogs")
                         .HasForeignKey("UserId")
-                        .HasConstraintName("FK_dbo.AuditLog_dbo.User_User_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4609,7 +4622,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Condition", "Condition")
                         .WithMany("CohortGroups")
                         .HasForeignKey("ConditionId")
-                        .HasConstraintName("FK_dbo.CohortGroup_dbo.Condition_Condition_Id")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Condition");
@@ -4619,20 +4631,17 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("CohortGroupEnrolments")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.CohortGroupEnrolment_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.CohortGroup", "CohortGroup")
                         .WithMany("CohortGroupEnrolments")
                         .HasForeignKey("CohortGroupId")
-                        .HasConstraintName("FK_dbo.CohortGroupEnrolment_dbo.CohortGroup_CohortGroup_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("CohortEnrolments")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.CohortGroupEnrolment_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4648,7 +4657,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.MedicationForm", "MedicationForm")
                         .WithMany("Concepts")
                         .HasForeignKey("MedicationFormId")
-                        .HasConstraintName("FK_dbo.Concept_dbo.MedicationForm_MedicationForm_Id")
                         .IsRequired();
 
                     b.Navigation("MedicationForm");
@@ -4659,7 +4667,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Concept", "Concept")
                         .WithMany("ConceptIngredients")
                         .HasForeignKey("ConceptId")
-                        .HasConstraintName("FK_dbo.ConceptIngredient_dbo.Concept_Concept_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4671,14 +4678,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Condition", "Condition")
                         .WithMany("ConditionLabTests")
                         .HasForeignKey("ConditionId")
-                        .HasConstraintName("FK_dbo.ConditionLabTest_dbo.Condition_Condition_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.LabTest", "LabTest")
                         .WithMany("ConditionLabTests")
                         .HasForeignKey("LabTestId")
-                        .HasConstraintName("FK_dbo.ConditionLabTest_dbo.LabTest_LabTest_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4692,14 +4697,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Condition", "Condition")
                         .WithMany("ConditionMedDras")
                         .HasForeignKey("ConditionId")
-                        .HasConstraintName("FK_dbo.ConditionMedDra_dbo.Condition_Condition_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.TerminologyMedDra", "TerminologyMedDra")
                         .WithMany("ConditionMedDras")
                         .HasForeignKey("TerminologyMedDraId")
-                        .HasConstraintName("FK_dbo.ConditionMedDra_dbo.TerminologyMedDra_TerminologyMedDra_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4713,21 +4716,18 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Concept", "Concept")
                         .WithMany("ConditionMedications")
                         .HasForeignKey("ConceptId")
-                        .HasConstraintName("FK_dbo.ConditionMedication_dbo.Concept_Concept_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Condition", "Condition")
                         .WithMany("ConditionMedications")
                         .HasForeignKey("ConditionId")
-                        .HasConstraintName("FK_dbo.ConditionMedication_dbo.Condition_Condition_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Product", "Product")
                         .WithMany("ConditionMedications")
                         .HasForeignKey("ProductId")
-                        .HasConstraintName("FK_dbo.ConditionMedication_dbo.Product_Product_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Concept");
@@ -4742,14 +4742,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("ConfigCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.Config_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("ConfigUpdates")
-                        .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.Config_dbo.User_UpdatedBy_Id");
+                        .HasForeignKey("UpdatedById");
 
                     b.Navigation("CreatedBy");
 
@@ -4761,31 +4759,26 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.ContextType", "ContextType")
                         .WithMany("Datasets")
                         .HasForeignKey("ContextTypeId")
-                        .HasConstraintName("FK_dbo.Dataset_dbo.ContextType_ContextType_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("DatasetCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.Dataset_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetXml", "DatasetXml")
                         .WithMany("Datasets")
-                        .HasForeignKey("DatasetXmlId")
-                        .HasConstraintName("FK_dbo.Dataset_dbo.DatasetXml_DatasetXml_Id");
+                        .HasForeignKey("DatasetXmlId");
 
                     b.HasOne("PVIMS.Core.Entities.EncounterTypeWorkPlan", "EncounterTypeWorkPlan")
                         .WithMany("Datasets")
-                        .HasForeignKey("EncounterTypeWorkPlanId")
-                        .HasConstraintName("FK_dbo.Dataset_dbo.EncounterTypeWorkPlan_EncounterTypeWorkPlan_Id");
+                        .HasForeignKey("EncounterTypeWorkPlanId");
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("DatasetUpdates")
-                        .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.Dataset_dbo.User_UpdatedBy_Id");
+                        .HasForeignKey("UpdatedById");
 
                     b.Navigation("ContextType");
 
@@ -4803,7 +4796,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Dataset", "Dataset")
                         .WithMany("DatasetCategories")
                         .HasForeignKey("DatasetId")
-                        .HasConstraintName("FK_dbo.DatasetCategory_dbo.Dataset_Dataset_Id1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4815,14 +4807,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Condition", "Condition")
                         .WithMany("DatasetCategoryConditions")
                         .HasForeignKey("ConditionId")
-                        .HasConstraintName("FK_dbo.DatasetCategoryCondition_dbo.Condition_Condition_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetCategory", "DatasetCategory")
                         .WithMany("DatasetCategoryConditions")
                         .HasForeignKey("DatasetCategoryId")
-                        .HasConstraintName("FK_dbo.DatasetCategoryCondition_dbo.DatasetCategory_DatasetCategory_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4836,14 +4826,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.DatasetCategory", "DatasetCategory")
                         .WithMany("DatasetCategoryElements")
                         .HasForeignKey("DatasetCategoryId")
-                        .HasConstraintName("FK_dbo.DatasetCategoryElement_dbo.DatasetCategory_DatasetCategory_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetElement", "DatasetElement")
                         .WithMany("DatasetCategoryElements")
                         .HasForeignKey("DatasetElementId")
-                        .HasConstraintName("FK_dbo.DatasetCategoryElement_dbo.DatasetElement_DatasetElement_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4857,13 +4845,11 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Condition", "Condition")
                         .WithMany("DatasetCategoryElementConditions")
                         .HasForeignKey("ConditionId")
-                        .HasConstraintName("FK_dbo.DatasetCategoryElementCondition_dbo.Condition_Condition_Id")
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetCategoryElement", "DatasetCategoryElement")
                         .WithMany("DatasetCategoryElementConditions")
                         .HasForeignKey("DatasetCategoryElementId")
-                        .HasConstraintName("FK_dbo.DatasetCategoryElementCondition_dbo.DatasetCategoryElement_DatasetCategoryElement_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4877,13 +4863,11 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.DatasetElementType", "DatasetElementType")
                         .WithMany("DatasetElements")
                         .HasForeignKey("DatasetElementTypeId")
-                        .HasConstraintName("FK_dbo.DatasetElement_dbo.DatasetElementType_DatasetElementType_Id")
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Field", "Field")
                         .WithMany("DatasetElements")
                         .HasForeignKey("FieldId")
-                        .HasConstraintName("FK_dbo.DatasetElement_dbo.Field_Field_Id")
                         .IsRequired();
 
                     b.Navigation("DatasetElementType");
@@ -4896,14 +4880,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.DatasetElement", "DatasetElement")
                         .WithMany("DatasetElementSubs")
                         .HasForeignKey("DatasetElementId")
-                        .HasConstraintName("FK_dbo.DatasetElementSub_dbo.DatasetElement_DatasetElement_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Field", "Field")
                         .WithMany("DatasetElementSubs")
                         .HasForeignKey("FieldId")
-                        .HasConstraintName("FK_dbo.DatasetElementSub_dbo.Field_Field_Id")
                         .IsRequired();
 
                     b.Navigation("DatasetElement");
@@ -4916,26 +4898,22 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("DatasetInstanceCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.DatasetInstance_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Dataset", "Dataset")
                         .WithMany("DatasetInstances")
                         .HasForeignKey("DatasetId")
-                        .HasConstraintName("FK_dbo.DatasetInstance_dbo.Dataset_Dataset_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.EncounterTypeWorkPlan", "EncounterTypeWorkPlan")
                         .WithMany("DatasetInstances")
-                        .HasForeignKey("EncounterTypeWorkPlanId")
-                        .HasConstraintName("FK_dbo.DatasetInstance_dbo.EncounterTypeWorkPlan_EncounterTypeWorkPlan_Id");
+                        .HasForeignKey("EncounterTypeWorkPlanId");
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("DatasetInstanceUpdates")
                         .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.DatasetInstance_dbo.User_UpdatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("CreatedBy");
@@ -4952,14 +4930,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.DatasetElementSub", "DatasetElementSub")
                         .WithMany("DatasetInstanceSubValues")
                         .HasForeignKey("DatasetElementSubId")
-                        .HasConstraintName("FK_dbo.DatasetInstanceSubValue_dbo.DatasetElementSub_DatasetElementSub_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetInstanceValue", "DatasetInstanceValue")
                         .WithMany("DatasetInstanceSubValues")
                         .HasForeignKey("DatasetInstanceValueId")
-                        .HasConstraintName("FK_dbo.DatasetInstanceSubValue_dbo.DatasetInstanceValue_DatasetInstanceValue_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -4973,14 +4949,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.DatasetElement", "DatasetElement")
                         .WithMany("DatasetInstanceValues")
                         .HasForeignKey("DatasetElementId")
-                        .HasConstraintName("FK_dbo.DatasetInstanceValue_dbo.DatasetElement_DatasetElement_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetInstance", "DatasetInstance")
                         .WithMany("DatasetInstanceValues")
                         .HasForeignKey("DatasetInstanceId")
-                        .HasConstraintName("FK_dbo.DatasetInstanceValue_dbo.DatasetInstance_DatasetInstance_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4994,14 +4968,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.DatasetCategoryElement", "DestinationElement")
                         .WithMany("DestinationMappings")
                         .HasForeignKey("DestinationElementId")
-                        .HasConstraintName("FK_dbo.DatasetMapping_dbo.DatasetCategoryElement_DestinationElement_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetCategoryElement", "SourceElement")
                         .WithMany("SourceMappings")
                         .HasForeignKey("SourceElementId")
-                        .HasConstraintName("FK_dbo.DatasetMapping_dbo.DatasetCategoryElement_SourceElement_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("DestinationElement");
@@ -5014,21 +4986,18 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.DatasetElementSub", "DestinationElement")
                         .WithMany("DatasetMappingSubDestinationElements")
                         .HasForeignKey("DestinationElementId")
-                        .HasConstraintName("FK_dbo.DatasetMappingSub_dbo.DatasetElementSub_DestinationElement_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetMapping", "Mapping")
                         .WithMany("SubMappings")
                         .HasForeignKey("MappingId")
-                        .HasConstraintName("FK_dbo.DatasetMappingSub_dbo.DatasetMapping_Mapping_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetElementSub", "SourceElement")
                         .WithMany("DatasetMappingSubSourceElements")
                         .HasForeignKey("SourceElementId")
-                        .HasConstraintName("FK_dbo.DatasetMappingSub_dbo.DatasetElementSub_SourceElement_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("DestinationElement");
@@ -5043,14 +5012,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.DatasetMapping", "Mapping")
                         .WithMany("DatasetMappingValues")
                         .HasForeignKey("MappingId")
-                        .HasConstraintName("FK_dbo.DatasetMappingValue_dbo.DatasetMapping_Mapping_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetMappingSub", "SubMapping")
                         .WithMany("DatasetMappingValues")
                         .HasForeignKey("SubMappingId")
-                        .HasConstraintName("FK_dbo.DatasetMappingValue_dbo.DatasetMappingSub_SubMapping_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Mapping");
@@ -5063,13 +5030,11 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.DatasetElement", "DatasetElement")
                         .WithMany("DatasetRules")
                         .HasForeignKey("DatasetElementId")
-                        .HasConstraintName("FK_dbo.DatasetRule_dbo.DatasetElement_DatasetElement_Id")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("PVIMS.Core.Entities.Dataset", "Dataset")
                         .WithMany("DatasetRules")
                         .HasForeignKey("DatasetId")
-                        .HasConstraintName("FK_dbo.DatasetRule_dbo.Dataset_Dataset_Id")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Dataset");
@@ -5082,14 +5047,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("DatasetXmlCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.DatasetXml_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("DatasetXmlUpdates")
-                        .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.DatasetXml_dbo.User_UpdatedBy_Id");
+                        .HasForeignKey("UpdatedById");
 
                     b.Navigation("CreatedBy");
 
@@ -5101,27 +5064,23 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("DatasetXmlAttributeCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.DatasetXmlAttribute_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetElement", "DatasetElement")
                         .WithMany("DatasetXmlAttributes")
                         .HasForeignKey("DatasetElementId")
-                        .HasConstraintName("FK_dbo.DatasetXmlAttribute_dbo.DatasetElement_DatasetElement_Id")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("PVIMS.Core.Entities.DatasetXmlNode", "ParentNode")
                         .WithMany("NodeAttributes")
                         .HasForeignKey("ParentNodeId")
-                        .HasConstraintName("FK_dbo.DatasetXmlAttribute_dbo.DatasetXmlNode_ParentNode_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("DatasetXmlAttributeUpdates")
-                        .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.DatasetXmlAttribute_dbo.User_UpdatedBy_Id");
+                        .HasForeignKey("UpdatedById");
 
                     b.Navigation("CreatedBy");
 
@@ -5137,39 +5096,33 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("DatasetXmlNodeCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetElement", "DatasetElement")
                         .WithMany("DatasetXmlNodes")
                         .HasForeignKey("DatasetElementId")
-                        .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.DatasetElement_DatasetElement_Id")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("PVIMS.Core.Entities.DatasetElementSub", "DatasetElementSub")
                         .WithMany("DatasetXmlNodes")
                         .HasForeignKey("DatasetElementSubId")
-                        .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.DatasetElementSub_DatasetElementSub_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("PVIMS.Core.Entities.DatasetXml", "DatasetXml")
                         .WithMany("ChildrenNodes")
                         .HasForeignKey("DatasetXmlId")
-                        .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.DatasetXml_DatasetXml_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.DatasetXmlNode", "ParentNode")
                         .WithMany("ChildrenNodes")
                         .HasForeignKey("ParentNodeId")
-                        .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.DatasetXmlNode_ParentNode_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("DatasetXmlNodeUpdates")
                         .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.User_UpdatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("CreatedBy");
@@ -5189,46 +5142,35 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("Encounters")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.Encounter_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("EncounterCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.Encounter_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.EncounterType", "EncounterType")
                         .WithMany("Encounters")
                         .HasForeignKey("EncounterTypeId")
-                        .HasConstraintName("FK_dbo.Encounter_dbo.EncounterType_EncounterType_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("Encounters")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.Encounter_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.Pregnancy", "Pregnancy")
-                        .WithMany("Encounters")
-                        .HasForeignKey("PregnancyId")
-                        .HasConstraintName("FK_dbo.Encounter_dbo.Pregnancy_Pregnancy_Id");
 
                     b.HasOne("PVIMS.Core.Entities.Priority", "Priority")
                         .WithMany("Encounters")
                         .HasForeignKey("PriorityId")
-                        .HasConstraintName("FK_dbo.Encounter_dbo.Priority_Priority_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("EncounterUpdates")
                         .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.Encounter_dbo.User_UpdatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("AuditUser");
@@ -5239,8 +5181,6 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.Navigation("Patient");
 
-                    b.Navigation("Pregnancy");
-
                     b.Navigation("Priority");
 
                     b.Navigation("UpdatedBy");
@@ -5250,20 +5190,17 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.CohortGroup", "CohortGroup")
                         .WithMany("EncounterTypeWorkPlans")
-                        .HasForeignKey("CohortGroupId")
-                        .HasConstraintName("FK_dbo.EncounterTypeWorkPlan_dbo.CohortGroup_CohortGroup_Id");
+                        .HasForeignKey("CohortGroupId");
 
                     b.HasOne("PVIMS.Core.Entities.EncounterType", "EncounterType")
                         .WithMany("EncounterTypeWorkPlans")
                         .HasForeignKey("EncounterTypeId")
-                        .HasConstraintName("FK_dbo.EncounterTypeWorkPlan_dbo.EncounterType_EncounterType_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.WorkPlan", "WorkPlan")
                         .WithMany("EncounterTypeWorkPlans")
                         .HasForeignKey("WorkPlanId")
-                        .HasConstraintName("FK_dbo.EncounterTypeWorkPlan_dbo.WorkPlan_WorkPlan_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5279,14 +5216,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.FacilityType", "FacilityType")
                         .WithMany("Facilities")
                         .HasForeignKey("FacilityTypeId")
-                        .HasConstraintName("FK_dbo.Facility_dbo.FacilityType_FacilityType_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.OrgUnit", "OrgUnit")
                         .WithMany("Facilities")
                         .HasForeignKey("OrgUnitId")
-                        .HasConstraintName("FK_dbo.Facility_dbo.OrgUnit_OrgUnit_Id")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("FacilityType");
@@ -5299,7 +5234,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.FieldType", "FieldType")
                         .WithMany("Fields")
                         .HasForeignKey("FieldTypeId")
-                        .HasConstraintName("FK_dbo.Field_dbo.FieldType_FieldType_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5311,7 +5245,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Field", "Field")
                         .WithMany("FieldValues")
                         .HasForeignKey("FieldId")
-                        .HasConstraintName("FK_dbo.FieldValue_dbo.Field_Field_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5323,7 +5256,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.MedDRAScale", "Scale")
                         .WithMany("Grades")
                         .HasForeignKey("ScaleId")
-                        .HasConstraintName("FK_dbo.MedDRAGrading_dbo.MedDRAScale_Scale_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5335,14 +5267,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.SelectionDataItem", "GradingScale")
                         .WithMany("MedDrascales")
                         .HasForeignKey("GradingScaleId")
-                        .HasConstraintName("FK_dbo.MedDRAScale_dbo.SelectionDataItem_GradingScale_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.TerminologyMedDra", "TerminologyMedDra")
                         .WithMany("Scales")
                         .HasForeignKey("TerminologyMedDraId")
-                        .HasConstraintName("FK_dbo.MedDRAScale_dbo.TerminologyMedDra_TerminologyMedDra_Id")
                         .IsRequired();
 
                     b.Navigation("GradingScale");
@@ -5355,13 +5285,11 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.MetaColumnType", "ColumnType")
                         .WithMany("MetaColumns")
                         .HasForeignKey("ColumnTypeId")
-                        .HasConstraintName("FK_dbo.MetaColumn_dbo.MetaColumnType_ColumnType_Id")
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.MetaTable", "Table")
                         .WithMany("Columns")
                         .HasForeignKey("TableId")
-                        .HasConstraintName("FK_dbo.MetaColumn_dbo.MetaTable_Table_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5375,14 +5303,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.MetaTable", "ParentTable")
                         .WithMany("MetaDependencyParentTables")
                         .HasForeignKey("ParentTableId")
-                        .HasConstraintName("FK_dbo.MetaDependency_dbo.MetaTable_ParentTable_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.MetaTable", "ReferenceTable")
                         .WithMany("MetaDependencyReferenceTables")
                         .HasForeignKey("ReferenceTableId")
-                        .HasConstraintName("FK_dbo.MetaDependency_dbo.MetaTable_ReferenceTable_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -5396,7 +5322,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.MetaTableType", "TableType")
                         .WithMany("MetaTables")
                         .HasForeignKey("TableTypeId")
-                        .HasConstraintName("FK_dbo.MetaTable_dbo.MetaTableType_TableType_Id")
                         .IsRequired();
 
                     b.Navigation("TableType");
@@ -5407,14 +5332,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.MetaPage", "MetaPage")
                         .WithMany("Widgets")
                         .HasForeignKey("MetaPageId")
-                        .HasConstraintName("FK_dbo.MetaWidget_dbo.MetaPage_MetaPage_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.MetaWidgetType", "WidgetType")
                         .WithMany("MetaWidgets")
                         .HasForeignKey("WidgetTypeId")
-                        .HasConstraintName("FK_dbo.MetaWidget_dbo.MetaWidgetType_WidgetType_Id")
                         .IsRequired();
 
                     b.Navigation("MetaPage");
@@ -5427,13 +5350,11 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.OrgUnitType", "OrgUnitType")
                         .WithMany("OrgUnits")
                         .HasForeignKey("OrgUnitTypeId")
-                        .HasConstraintName("FK_dbo.OrgUnit_dbo.OrgUnitType_OrgUnitType_Id")
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.OrgUnit", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .HasConstraintName("FK_dbo.OrgUnit_dbo.OrgUnit_Parent_Id");
+                        .HasForeignKey("ParentId");
 
                     b.Navigation("OrgUnitType");
 
@@ -5444,8 +5365,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.OrgUnitType", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .HasConstraintName("FK_dbo.OrgUnitType_dbo.OrgUnitType_Parent_Id");
+                        .HasForeignKey("ParentId");
 
                     b.Navigation("Parent");
                 });
@@ -5454,20 +5374,17 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("Patients")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.Patient_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("PatientCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.Patient_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("PatientUpdates")
-                        .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.Patient_dbo.User_UpdatedBy_Id");
+                        .HasForeignKey("UpdatedById");
 
                     b.Navigation("AuditUser");
 
@@ -5480,25 +5397,21 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("PatientClinicalEvents")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.PatientClinicalEvent_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.Encounter", "Encounter")
                         .WithMany("PatientClinicalEvents")
-                        .HasForeignKey("EncounterId")
-                        .HasConstraintName("FK_dbo.PatientClinicalEvent_dbo.Encounter_Encounter_Id");
+                        .HasForeignKey("EncounterId");
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("PatientClinicalEvents")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.PatientClinicalEvent_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.TerminologyMedDra", "SourceTerminologyMedDra")
                         .WithMany("PatientClinicalEvents")
-                        .HasForeignKey("SourceTerminologyMedDraId")
-                        .HasConstraintName("FK_dbo.PatientClinicalEvent_dbo.TerminologyMedDra_SourceTerminologyMedDra_Id");
+                        .HasForeignKey("SourceTerminologyMedDraId");
 
                     b.Navigation("AuditUser");
 
@@ -5513,36 +5426,30 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("PatientConditions")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.PatientCondition_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.Condition", "Condition")
                         .WithMany("PatientConditions")
                         .HasForeignKey("ConditionId")
-                        .HasConstraintName("FK_dbo.PatientCondition_dbo.Condition_Condition_Id")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("PVIMS.Core.Entities.Outcome", "Outcome")
                         .WithMany("PatientConditions")
-                        .HasForeignKey("OutcomeId")
-                        .HasConstraintName("FK_dbo.PatientCondition_dbo.Outcome_Outcome_Id");
+                        .HasForeignKey("OutcomeId");
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("PatientConditions")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.PatientCondition_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.TerminologyMedDra", "TerminologyMedDra")
                         .WithMany("PatientConditions")
-                        .HasForeignKey("TerminologyMedDraId")
-                        .HasConstraintName("FK_dbo.PatientCondition_dbo.TerminologyMedDra_TerminologyMedDra_Id");
+                        .HasForeignKey("TerminologyMedDraId");
 
                     b.HasOne("PVIMS.Core.Entities.TreatmentOutcome", "TreatmentOutcome")
                         .WithMany("PatientConditions")
-                        .HasForeignKey("TreatmentOutcomeId")
-                        .HasConstraintName("FK_dbo.PatientCondition_dbo.TreatmentOutcome_TreatmentOutcome_Id");
+                        .HasForeignKey("TreatmentOutcomeId");
 
                     b.Navigation("AuditUser");
 
@@ -5561,20 +5468,17 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("PatientFacilities")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.PatientFacility_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.Facility", "Facility")
                         .WithMany("PatientFacilities")
                         .HasForeignKey("FacilityId")
-                        .HasConstraintName("FK_dbo.PatientFacility_dbo.Facility_Facility_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("PatientFacilities")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.PatientFacility_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5589,27 +5493,23 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("PatientLabTests")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.PatientLabTest_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.LabTest", "LabTest")
                         .WithMany("PatientLabTests")
                         .HasForeignKey("LabTestId")
-                        .HasConstraintName("FK_dbo.PatientLabTest_dbo.LabTest_LabTest_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("PatientLabTests")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.PatientLabTest_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.LabTestUnit", "TestUnit")
                         .WithMany("PatientLabTests")
                         .HasForeignKey("TestUnitId")
-                        .HasConstraintName("FK_dbo.PatientLabTest_dbo.LabTestUnit_TestUnit_Id")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("AuditUser");
@@ -5626,14 +5526,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Language", "Language")
                         .WithMany("PatientLanguages")
                         .HasForeignKey("LanguageId")
-                        .HasConstraintName("FK_dbo.PatientLanguage_dbo.Language_Language_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("PatientLanguages")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.PatientLanguage_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5646,27 +5544,23 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("PatientMedications")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.PatientMedication_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.Concept", "Concept")
                         .WithMany("PatientMedications")
                         .HasForeignKey("ConceptId")
-                        .HasConstraintName("FK_dbo.PatientMedication_dbo.Concept_Concept_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("PatientMedications")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.PatientMedication_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Product", "Product")
                         .WithMany("PatientMedications")
                         .HasForeignKey("ProductId")
-                        .HasConstraintName("FK_dbo.PatientMedication_dbo.Product_Product_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("AuditUser");
@@ -5682,34 +5576,29 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "AuditUser")
                         .WithMany("PatientStatusHistories")
-                        .HasForeignKey("AuditUserId")
-                        .HasConstraintName("FK_dbo.PatientStatusHistory_dbo.User_AuditUser_Id");
+                        .HasForeignKey("AuditUserId");
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("PatientStatusHistoryCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.PatientStatusHistory_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
                         .WithMany("PatientStatusHistories")
                         .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.PatientStatusHistory_dbo.Patient_Patient_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.PatientStatus", "PatientStatus")
                         .WithMany("PatientStatusHistories")
                         .HasForeignKey("PatientStatusId")
-                        .HasConstraintName("FK_dbo.PatientStatusHistory_dbo.PatientStatus_PatientStatus_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("PatientStatusHistoryUpdates")
                         .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.PatientStatusHistory_dbo.User_UpdatedBy_Id")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("AuditUser");
@@ -5723,92 +5612,15 @@ namespace PViMS.Infrastructure.Migrations
                     b.Navigation("UpdatedBy");
                 });
 
-            modelBuilder.Entity("PVIMS.Core.Entities.Pregnancy", b =>
-                {
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
-                        .WithMany("PregnancyCreations")
-                        .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.Pregnancy_dbo.User_CreatedBy_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.Patient", "Patient")
-                        .WithMany("Pregnancies")
-                        .HasForeignKey("PatientId")
-                        .HasConstraintName("FK_dbo.Pregnancy_dbo.Patient_Patient_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
-                        .WithMany("PregnancyUpdates")
-                        .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.Pregnancy_dbo.User_UpdatedBy_Id")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("Patient");
-
-                    b.Navigation("UpdatedBy");
-                });
-
             modelBuilder.Entity("PVIMS.Core.Entities.Product", b =>
                 {
                     b.HasOne("PVIMS.Core.Entities.Concept", "Concept")
                         .WithMany("Products")
                         .HasForeignKey("ConceptId")
-                        .HasConstraintName("FK_dbo.Product_dbo.Concept_Concept_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Concept");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.ReportInstance", b =>
-                {
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
-                        .WithMany("ReportInstanceCreations")
-                        .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.ReportInstance_dbo.User_CreatedBy_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.TerminologyMedDra", "TerminologyMedDra")
-                        .WithMany("ReportInstances")
-                        .HasForeignKey("TerminologyMedDraId")
-                        .HasConstraintName("FK_dbo.ReportInstance_dbo.TerminologyMedDra_TerminologyMedDra_Id");
-
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
-                        .WithMany("ReportInstanceUpdates")
-                        .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.ReportInstance_dbo.User_UpdatedBy_Id");
-
-                    b.HasOne("PVIMS.Core.Entities.WorkFlow", "WorkFlow")
-                        .WithMany("ReportInstances")
-                        .HasForeignKey("WorkFlowId")
-                        .HasConstraintName("FK_dbo.ReportInstance_dbo.WorkFlow_WorkFlow_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("TerminologyMedDra");
-
-                    b.Navigation("UpdatedBy");
-
-                    b.Navigation("WorkFlow");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.ReportInstanceMedication", b =>
-                {
-                    b.HasOne("PVIMS.Core.Entities.ReportInstance", "ReportInstance")
-                        .WithMany("ReportInstanceMedications")
-                        .HasForeignKey("ReportInstanceId")
-                        .HasConstraintName("FK_dbo.ReportInstanceMedication_dbo.ReportInstance_ReportInstance_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ReportInstance");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.RiskFactorOption", b =>
@@ -5816,7 +5628,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.RiskFactor", "RiskFactor")
                         .WithMany("Options")
                         .HasForeignKey("RiskFactorId")
-                        .HasConstraintName("FK_dbo.RiskFactorOption_dbo.RiskFactor_RiskFactor_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5828,14 +5639,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("SiteContactDetailCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.SiteContactDetail_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("SiteContactDetailUpdates")
-                        .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.SiteContactDetail_dbo.User_UpdatedBy_Id");
+                        .HasForeignKey("UpdatedById");
 
                     b.Navigation("CreatedBy");
 
@@ -5847,14 +5656,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
                         .WithMany("SystemLogCreations")
                         .HasForeignKey("CreatedById")
-                        .HasConstraintName("FK_dbo.SystemLog_dbo.User_CreatedBy_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
                         .WithMany("SystemLogUpdates")
-                        .HasForeignKey("UpdatedById")
-                        .HasConstraintName("FK_dbo.SystemLog_dbo.User_UpdatedBy_Id");
+                        .HasForeignKey("UpdatedById");
 
                     b.Navigation("CreatedBy");
 
@@ -5865,8 +5672,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.TerminologyMedDra", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .HasConstraintName("FK_dbo.TerminologyMedDra_dbo.TerminologyMedDra_Parent_Id");
+                        .HasForeignKey("ParentId");
 
                     b.Navigation("Parent");
                 });
@@ -5875,8 +5681,7 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.HasOne("PVIMS.Core.Entities.Dataset", "Dataset")
                         .WithMany("WorkPlans")
-                        .HasForeignKey("DatasetId")
-                        .HasConstraintName("FK_dbo.WorkPlan_dbo.Dataset_Dataset_Id");
+                        .HasForeignKey("DatasetId");
 
                     b.Navigation("Dataset");
                 });
@@ -5886,14 +5691,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.CareEvent", "CareEvent")
                         .WithMany("WorkPlanCareEvents")
                         .HasForeignKey("CareEventId")
-                        .HasConstraintName("FK_dbo.WorkPlanCareEvent_dbo.CareEvent_CareEvent_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.WorkPlan", "WorkPlan")
                         .WithMany("WorkPlanCareEvents")
                         .HasForeignKey("WorkPlanId")
-                        .HasConstraintName("FK_dbo.WorkPlanCareEvent_dbo.WorkPlan_WorkPlan_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -5907,20 +5710,42 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.DatasetCategory", "DatasetCategory")
                         .WithMany("WorkPlanCareEventDatasetCategories")
                         .HasForeignKey("DatasetCategoryId")
-                        .HasConstraintName("FK_dbo.WorkPlanCareEventDatasetCategory_dbo.DatasetCategory_DatasetCategory_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PVIMS.Core.Entities.WorkPlanCareEvent", "WorkPlanCareEvent")
                         .WithMany("WorkPlanCareEventDatasetCategories")
                         .HasForeignKey("WorkPlanCareEventId")
-                        .HasConstraintName("FK_dbo.WorkPlanCareEventDatasetCategory_dbo.WorkPlanCareEvent_WorkPlanCareEvent_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("DatasetCategory");
 
                     b.Navigation("WorkPlanCareEvent");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityExecutionStatusEvent", b =>
+                {
+                    b.Navigation("Attachments");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityInstance", b =>
+                {
+                    b.Navigation("ExecutionEvents");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstance", b =>
+                {
+                    b.Navigation("Activities");
+
+                    b.Navigation("Medications");
+
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstanceTask", b =>
+                {
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.Accounts.User", b =>
@@ -6001,13 +5826,17 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.Navigation("PatientUpdates");
 
-                    b.Navigation("PregnancyCreations");
-
-                    b.Navigation("PregnancyUpdates");
-
                     b.Navigation("RefreshTokens");
 
                     b.Navigation("ReportInstanceCreations");
+
+                    b.Navigation("ReportInstanceTaskCommentCreations");
+
+                    b.Navigation("ReportInstanceTaskCommentUpdates");
+
+                    b.Navigation("ReportInstanceTaskCreations");
+
+                    b.Navigation("ReportInstanceTaskUpdates");
 
                     b.Navigation("ReportInstanceUpdates");
 
@@ -6029,16 +5858,6 @@ namespace PViMS.Infrastructure.Migrations
                 {
                     b.Navigation("ActivityInstances");
 
-                    b.Navigation("ExecutionEvents");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.ActivityExecutionStatusEvent", b =>
-                {
-                    b.Navigation("Attachments");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.ActivityInstance", b =>
-                {
                     b.Navigation("ExecutionEvents");
                 });
 
@@ -6333,18 +6152,11 @@ namespace PViMS.Infrastructure.Migrations
                     b.Navigation("PatientMedications");
 
                     b.Navigation("PatientStatusHistories");
-
-                    b.Navigation("Pregnancies");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.PatientStatus", b =>
                 {
                     b.Navigation("PatientStatusHistories");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.Pregnancy", b =>
-                {
-                    b.Navigation("Encounters");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.Priority", b =>
@@ -6357,13 +6169,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.Navigation("ConditionMedications");
 
                     b.Navigation("PatientMedications");
-                });
-
-            modelBuilder.Entity("PVIMS.Core.Entities.ReportInstance", b =>
-                {
-                    b.Navigation("Activities");
-
-                    b.Navigation("ReportInstanceMedications");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.RiskFactor", b =>

@@ -10,7 +10,7 @@ import { EventService } from 'app/shared/services/event.service';
 import { MetaPageService } from 'app/shared/services/meta-page.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { MediaObserver } from '@angular/flex-layout';
-import { MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { WidgetConfigurePopupComponent } from '../widget-configure-popup/widget-configure.popup.component';
 import { MetaWidgetDetailModel } from 'app/shared/models/meta/meta-widget.detail.model';
 import { GenericDeletePopupComponent } from '../../shared/generic-delete-popup/generic-delete.popup.component';

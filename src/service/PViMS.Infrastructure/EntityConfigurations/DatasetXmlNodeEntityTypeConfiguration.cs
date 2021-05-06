@@ -14,8 +14,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(e => e.Created)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.CreatedById)
                 .IsRequired()
@@ -30,9 +29,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.Property(e => e.DatasetXmlId)
                 .IsRequired()
                 .HasColumnName("DatasetXml_Id");
-
-            configuration.Property(e => e.LastUpdated)
-                .HasColumnType("datetime");
 
             configuration.Property(c => c.NodeName)
                 .IsRequired()
@@ -50,46 +46,40 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.DatasetXmlNodeCreations)
                 .HasForeignKey(d => d.CreatedById)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.User_CreatedBy_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasOne(d => d.DatasetElement)
                 .WithMany(p => p.DatasetXmlNodes)
                 .HasForeignKey(d => d.DatasetElementId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.DatasetElement_DatasetElement_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.DatasetElementSub)
                 .WithMany(p => p.DatasetXmlNodes)
                 .HasForeignKey(d => d.DatasetElementSubId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.DatasetElementSub_DatasetElementSub_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasOne(d => d.DatasetXml)
                 .WithMany(p => p.ChildrenNodes)
                 .HasForeignKey(d => d.DatasetXmlId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.DatasetXml_DatasetXml_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.ParentNode)
                 .WithMany(p => p.ChildrenNodes)
                 .HasForeignKey(d => d.ParentNodeId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.DatasetXmlNode_ParentNode_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.DatasetXmlNodeUpdates)
                 .HasForeignKey(d => d.UpdatedById)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_dbo.DatasetXmlNode_dbo.User_UpdatedBy_Id");
+                .OnDelete(DeleteBehavior.NoAction);
 
             configuration.HasIndex(e => new { e.DatasetXmlId, e.NodeName }).IsUnique(true);
-            configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
-            configuration.HasIndex(e => e.DatasetElementSubId, "IX_DatasetElementSub_Id");
-            configuration.HasIndex(e => e.DatasetElementId, "IX_DatasetElement_Id");
-            configuration.HasIndex(e => e.DatasetXmlId, "IX_DatasetXml_Id");
-            configuration.HasIndex(e => e.ParentNodeId, "IX_ParentNode_Id");
-            configuration.HasIndex(e => e.UpdatedById, "IX_UpdatedBy_Id");
+            configuration.HasIndex(e => e.CreatedById);
+            configuration.HasIndex(e => e.DatasetElementSubId);
+            configuration.HasIndex(e => e.DatasetElementId);
+            configuration.HasIndex(e => e.DatasetXmlId);
+            configuration.HasIndex(e => e.ParentNodeId);
+            configuration.HasIndex(e => e.UpdatedById);
         }
     }
 }

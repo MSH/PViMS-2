@@ -8,7 +8,9 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatSort, MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
@@ -53,8 +55,8 @@ export class FacilityListComponent extends BaseComponent implements OnInit, Afte
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridSort', { static: false }) mainGridSort: MatSort;
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridSort') mainGridSort: MatSort;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

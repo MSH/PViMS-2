@@ -12,9 +12,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(c => c.ArchivedDate)
-                .HasColumnType("datetime");
-
             configuration.Property(c => c.ArchivedReason)
                 .HasMaxLength(200);
 
@@ -56,30 +53,26 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.AuditUser)
                 .WithMany(p => p.PatientClinicalEvents)
-                .HasForeignKey(d => d.AuditUserId)
-                .HasConstraintName("FK_dbo.PatientClinicalEvent_dbo.User_AuditUser_Id");
+                .HasForeignKey(d => d.AuditUserId);
 
             configuration.HasOne(d => d.Encounter)
                 .WithMany(p => p.PatientClinicalEvents)
-                .HasForeignKey(d => d.EncounterId)
-                .HasConstraintName("FK_dbo.PatientClinicalEvent_dbo.Encounter_Encounter_Id");
+                .HasForeignKey(d => d.EncounterId);
 
             configuration.HasOne(d => d.Patient)
                 .WithMany(p => p.PatientClinicalEvents)
                 .HasForeignKey(d => d.PatientId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.PatientClinicalEvent_dbo.Patient_Patient_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.SourceTerminologyMedDra)
                 .WithMany(p => p.PatientClinicalEvents)
                 .HasForeignKey(d => d.SourceTerminologyMedDraId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.PatientClinicalEvent_dbo.TerminologyMedDra_SourceTerminologyMedDra_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
-            configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
-            configuration.HasIndex(e => e.EncounterId, "IX_Encounter_Id");
-            configuration.HasIndex(e => e.PatientId, "IX_Patient_Id");
-            configuration.HasIndex(e => e.SourceTerminologyMedDraId, "IX_SourceTerminologyMedDra_Id");
+            configuration.HasIndex(e => e.AuditUserId);
+            configuration.HasIndex(e => e.EncounterId);
+            configuration.HasIndex(e => e.PatientId);
+            configuration.HasIndex(e => e.SourceTerminologyMedDraId);
         }
     }
 }

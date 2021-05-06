@@ -193,8 +193,8 @@ namespace PVIMS.API.Controllers
                         MedicationSource = medicationForUpdate.SourceDescription,
                         Concept = conceptFromRepo,
                         Product = productFromRepo,
-                        DateStart = medicationForUpdate.StartDate,
-                        DateEnd = medicationForUpdate.EndDate,
+                        StartDate = medicationForUpdate.StartDate,
+                        EndDate = medicationForUpdate.EndDate,
                         Dose = medicationForUpdate.Dose,
                         DoseFrequency = medicationForUpdate.DoseFrequency,
                         DoseUnit = medicationForUpdate.DoseUnit,
@@ -205,7 +205,8 @@ namespace PVIMS.API.Controllers
                     _modelExtensionBuilder.UpdateExtendable(patientMedication, medicationDetail.CustomAttributes, "Admin");
 
                     _patientMedicationRepository.Save(patientMedication);
-                    AddOrUpdateMedicationsToReportInstance(patientMedication);
+                    await AddOrUpdateMedicationsToReportInstanceAsync(patientMedication);
+                    
                     _unitOfWork.Complete();
 
                     var mappedPatientMedication = _mapper.Map<PatientMedicationIdentifierDto>(patientMedication);
@@ -296,8 +297,8 @@ namespace PVIMS.API.Controllers
                     medicationFromRepo.MedicationSource = medicationForUpdate.SourceDescription;
                     medicationFromRepo.Concept = conceptFromRepo;
                     medicationFromRepo.Product = productFromRepo;
-                    medicationFromRepo.DateStart = medicationForUpdate.StartDate;
-                    medicationFromRepo.DateEnd = medicationForUpdate.EndDate;
+                    medicationFromRepo.StartDate = medicationForUpdate.StartDate;
+                    medicationFromRepo.EndDate = medicationForUpdate.EndDate;
                     medicationFromRepo.Dose = medicationForUpdate.Dose;
                     medicationFromRepo.DoseFrequency = medicationForUpdate.DoseFrequency;
                     medicationFromRepo.DoseUnit = medicationForUpdate.DoseUnit;
@@ -306,7 +307,8 @@ namespace PVIMS.API.Controllers
                     _modelExtensionBuilder.UpdateExtendable(medicationFromRepo, medicationDetail.CustomAttributes, "Admin");
 
                     _patientMedicationRepository.Update(medicationFromRepo);
-                    AddOrUpdateMedicationsToReportInstance(medicationFromRepo);
+                    await AddOrUpdateMedicationsToReportInstanceAsync(medicationFromRepo);
+
                     _unitOfWork.Complete();
 
                     return Ok();
@@ -570,7 +572,7 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="patientMedication">The medication to be updated</param>
         /// <returns></returns>
-        private void AddOrUpdateMedicationsToReportInstance(PatientMedication patientMedication)
+        private async Task AddOrUpdateMedicationsToReportInstanceAsync(PatientMedication patientMedication)
         {
             var weeks = 0;
             var config = _configRepository.Get(c => c.ConfigType == ConfigType.MedicationOnsetCheckPeriodWeeks);
@@ -584,13 +586,13 @@ namespace PVIMS.API.Controllers
 
             // Manage modifications to report instance - if one exists
             IEnumerable<PatientClinicalEvent> events;
-            if (!patientMedication.DateEnd.HasValue)
+            if (!patientMedication.EndDate.HasValue)
             {
-                events = patientMedication.Patient.PatientClinicalEvents.Where(pce => pce.OnsetDate >= patientMedication.DateStart.AddDays(weeks * -7) && pce.Archived == false);
+                events = patientMedication.Patient.PatientClinicalEvents.Where(pce => pce.OnsetDate >= patientMedication.StartDate.AddDays(weeks * -7) && pce.Archived == false);
             }
             else
             {
-                events = patientMedication.Patient.PatientClinicalEvents.Where(pce => pce.OnsetDate >= patientMedication.DateStart.AddDays(weeks * -7) && pce.OnsetDate <= Convert.ToDateTime(patientMedication.DateEnd).AddDays(weeks * 7) && pce.Archived == false);
+                events = patientMedication.Patient.PatientClinicalEvents.Where(pce => pce.OnsetDate >= patientMedication.StartDate.AddDays(weeks * -7) && pce.OnsetDate <= Convert.ToDateTime(patientMedication.EndDate).AddDays(weeks * 7) && pce.Archived == false);
             }
 
             // Prepare medications
@@ -604,7 +606,7 @@ namespace PVIMS.API.Controllers
 
             foreach (var evt in events)
             {
-                _workFlowService.AddOrUpdateMedicationsForWorkFlowInstance(evt.PatientClinicalEventGuid, instanceMedications);
+                await _workFlowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(evt.PatientClinicalEventGuid, instanceMedications);
             }
         }
     }

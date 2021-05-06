@@ -17,8 +17,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasColumnName("ContextType_Id");
 
             configuration.Property(e => e.Created)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.CreatedById)
                 .IsRequired()
@@ -40,9 +39,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.Property(c => c.InitialiseProcess)
                 .HasMaxLength(100);
 
-            configuration.Property(e => e.LastUpdated)
-                .HasColumnType("datetime");
-
             configuration.Property(c => c.RulesProcess)
                 .HasMaxLength(100);
 
@@ -61,37 +57,32 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.ContextType)
                 .WithMany(p => p.Datasets)
-                .HasForeignKey(d => d.ContextTypeId)
-                .HasConstraintName("FK_dbo.Dataset_dbo.ContextType_ContextType_Id");
+                .HasForeignKey(d => d.ContextTypeId);
 
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.DatasetCreations)
-                .HasForeignKey(d => d.CreatedById)
-                .HasConstraintName("FK_dbo.Dataset_dbo.User_CreatedBy_Id");
+                .HasForeignKey(d => d.CreatedById);
 
             configuration.HasOne(d => d.DatasetXml)
                 .WithMany(p => p.Datasets)
                 .HasForeignKey(d => d.DatasetXmlId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.Dataset_dbo.DatasetXml_DatasetXml_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             configuration.HasOne(d => d.EncounterTypeWorkPlan)
                 .WithMany(p => p.Datasets)
                 .HasForeignKey(d => d.EncounterTypeWorkPlanId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.Dataset_dbo.EncounterTypeWorkPlan_EncounterTypeWorkPlan_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.DatasetUpdates)
-                .HasForeignKey(d => d.UpdatedById)
-                .HasConstraintName("FK_dbo.Dataset_dbo.User_UpdatedBy_Id");
+                .HasForeignKey(d => d.UpdatedById);
 
             configuration.HasIndex("DatasetName").IsUnique(true);
-            configuration.HasIndex(e => e.ContextTypeId, "IX_ContextType_Id");
-            configuration.HasIndex(e => e.CreatedById, "IX_CreatedBy_Id");
-            configuration.HasIndex(e => e.DatasetXmlId, "IX_DatasetXml_Id");
-            configuration.HasIndex(e => e.EncounterTypeWorkPlanId, "IX_EncounterTypeWorkPlan_Id");
-            configuration.HasIndex(e => e.UpdatedById, "IX_UpdatedBy_Id");
+            configuration.HasIndex(e => e.ContextTypeId);
+            configuration.HasIndex(e => e.CreatedById);
+            configuration.HasIndex(e => e.DatasetXmlId);
+            configuration.HasIndex(e => e.EncounterTypeWorkPlanId);
+            configuration.HasIndex(e => e.UpdatedById);
         }
     }
 }

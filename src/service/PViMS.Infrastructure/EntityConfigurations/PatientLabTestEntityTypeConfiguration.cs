@@ -12,9 +12,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasKey(e => e.Id);
 
-            configuration.Property(c => c.ArchivedDate)
-                .HasColumnType("datetime");
-
             configuration.Property(c => c.ArchivedReason)
                 .HasMaxLength(200);
 
@@ -50,7 +47,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.Property(e => e.TestDate)
                 .IsRequired()
-                .HasColumnType("datetime");
+                .HasColumnType("date");
 
             configuration.Property(e => e.TestResult)
                 .HasMaxLength(50);
@@ -64,32 +61,28 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.AuditUser)
                 .WithMany(p => p.PatientLabTests)
-                .HasForeignKey(d => d.AuditUserId)
-                .HasConstraintName("FK_dbo.PatientLabTest_dbo.User_AuditUser_Id");
+                .HasForeignKey(d => d.AuditUserId);
 
             configuration.HasOne(d => d.LabTest)
                 .WithMany(p => p.PatientLabTests)
                 .HasForeignKey(d => d.LabTestId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.PatientLabTest_dbo.LabTest_LabTest_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.Patient)
                 .WithMany(p => p.PatientLabTests)
                 .HasForeignKey(d => d.PatientId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.PatientLabTest_dbo.Patient_Patient_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.TestUnit)
                 .WithMany(p => p.PatientLabTests)
                 .HasForeignKey(d => d.TestUnitId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.PatientLabTest_dbo.LabTestUnit_TestUnit_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasIndex(e => new { e.PatientId, e.LabTestId }).IsUnique(false);
-            configuration.HasIndex(e => e.AuditUserId, "IX_AuditUser_Id");
-            configuration.HasIndex(e => e.LabTestId, "IX_LabTest_Id");
-            configuration.HasIndex(e => e.PatientId, "IX_Patient_Id");
-            configuration.HasIndex(e => e.TestUnitId, "IX_TestUnit_Id");
+            configuration.HasIndex(e => e.AuditUserId);
+            configuration.HasIndex(e => e.LabTestId);
+            configuration.HasIndex(e => e.PatientId);
+            configuration.HasIndex(e => e.TestUnitId);
         }
     }
 }

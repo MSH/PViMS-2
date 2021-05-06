@@ -12,6 +12,7 @@ using PVIMS.Core.SeedWork;
 using PVIMS.Infrastructure.EntityConfigurations;
 using PVIMS.Infrastructure.EntityConfigurations.KeyLess;
 using PVIMS.Infrastructure.Identity;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 
 namespace PVIMS.Infrastructure
 {
@@ -97,12 +98,10 @@ namespace PVIMS.Infrastructure
         public virtual DbSet<PatientStatus> PatientStatuses { get; set; }
         public virtual DbSet<PatientStatusHistory> PatientStatusHistories { get; set; }
         public virtual DbSet<PostDeployment> PostDeployments { get; set; }
-        public virtual DbSet<Pregnancy> Pregnancies { get; set; }
         public virtual DbSet<Priority> Priorities { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
         public virtual DbSet<ReportInstance> ReportInstances { get; set; }
-        public virtual DbSet<ReportInstanceMedication> ReportInstanceMedications { get; set; }
         public virtual DbSet<RiskFactor> RiskFactors { get; set; }
         public virtual DbSet<RiskFactorOption> RiskFactorOptions { get; set; }
         public virtual DbSet<SelectionDataItem> SelectionDataItems { get; set; }
@@ -236,12 +235,13 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new PatientStatusEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientStatusHistoryEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PostDeploymentEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new PregnancyEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PriorityEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ProductEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ReportInstanceEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ReportInstanceMedicationEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ReportInstanceTaskCommentEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ReportInstanceTaskEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new RiskFactorEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new RiskFactorOptionEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SelectionDataItemEntityTypeConfiguration());

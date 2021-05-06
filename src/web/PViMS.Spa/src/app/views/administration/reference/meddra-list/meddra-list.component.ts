@@ -8,7 +8,8 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { MeddraTermService } from 'app/shared/services/meddra-term.service';
@@ -41,7 +42,7 @@ export class MeddraListComponent extends BaseComponent implements OnInit, AfterV
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

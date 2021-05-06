@@ -1,3 +1,4 @@
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using System;
 using System.Collections.Generic;
 

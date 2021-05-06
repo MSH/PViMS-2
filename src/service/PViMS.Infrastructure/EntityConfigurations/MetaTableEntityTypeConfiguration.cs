@@ -33,11 +33,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.TableType)
                 .WithMany(p => p.MetaTables)
                 .HasForeignKey(d => d.TableTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.MetaTable_dbo.MetaTableType_TableType_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             configuration.HasIndex("TableName").IsUnique(true);
-            configuration.HasIndex(e => e.TableTypeId, "IX_TableType_Id");
+            configuration.HasIndex(e => e.TableTypeId);
         }
     }
 }

@@ -15,7 +15,7 @@ import { Subscription } from 'rxjs';
 import * as _moment from 'moment';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { _routes } from 'app/config/routes';
-import { MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { DatasetService } from 'app/shared/services/dataset.service';
 import { finalize } from 'rxjs/operators';
 import { DatasetCategoryViewModel } from 'app/shared/models/dataset/dataset-category-view.model';

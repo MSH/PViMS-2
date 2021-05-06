@@ -31,17 +31,15 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.ColumnType)
                 .WithMany(p => p.MetaColumns)
                 .HasForeignKey(d => d.ColumnTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_dbo.MetaColumn_dbo.MetaColumnType_ColumnType_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             configuration.HasOne(d => d.Table)
                 .WithMany(p => p.Columns)
                 .HasForeignKey(d => d.TableId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.MetaColumn_dbo.MetaTable_Table_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.ColumnTypeId, "IX_ColumnType_Id");
-            configuration.HasIndex(e => e.TableId, "IX_Table_Id");
+            configuration.HasIndex(e => e.ColumnTypeId);
+            configuration.HasIndex(e => e.TableId);
         }
     }
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { PopupService } from 'app/shared/services/popup.service';

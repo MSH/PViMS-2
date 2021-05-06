@@ -39,19 +39,17 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.FacilityType)
                 .WithMany(p => p.Facilities)
                 .HasForeignKey(d => d.FacilityTypeId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.Facility_dbo.FacilityType_FacilityType_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.OrgUnit)
                 .WithMany(p => p.Facilities)
                 .HasForeignKey(d => d.OrgUnitId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.Facility_dbo.OrgUnit_OrgUnit_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasIndex("FacilityCode").IsUnique(true);
             configuration.HasIndex("FacilityName").IsUnique(true);
-            configuration.HasIndex(e => e.FacilityTypeId, "IX_FacilityType_Id");
-            configuration.HasIndex(e => e.OrgUnitId, "IX_OrgUnit_Id");
+            configuration.HasIndex(e => e.FacilityTypeId);
+            configuration.HasIndex(e => e.OrgUnitId);
         }
     }
 }

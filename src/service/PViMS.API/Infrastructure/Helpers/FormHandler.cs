@@ -400,7 +400,7 @@ namespace PVIMS.API.Helpers
                     conditionDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<PatientCondition>();
 
                     // Prepare first class
-                    conditionDetail.DateStart = DateTime.Today;
+                    conditionDetail.OnsetDate = DateTime.Today;
                     conditionDetail.ConditionSource = GetAttributeValueFromArrayRow(attributeArray, i, "condition");
                     conditionDetail.TreatmentOutcome = GetAttributeValueFromArrayRow(attributeArray, i, "conditionStatus");
 

@@ -1,5 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatProgressBar, MatButton, MatDialog, MatDialogRef } from '@angular/material';
+import { MatButton } from '@angular/material/button';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatProgressBar } from '@angular/material/progress-bar';
 import { Validators, FormGroup, FormControl } from '@angular/forms';
 import { AccountService } from 'app/shared/services/account.service';
 import { Router } from '@angular/router';
@@ -16,8 +18,8 @@ import { environment } from 'environments/environment';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  @ViewChild(MatProgressBar, {static: false}) progressBar: MatProgressBar;
-  @ViewChild(MatButton, {static: false}) submitButton: MatButton;
+  @ViewChild(MatProgressBar) progressBar: MatProgressBar;
+  @ViewChild(MatButton) submitButton: MatButton;
 
   viewModelForm: FormGroup;
 

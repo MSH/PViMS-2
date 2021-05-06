@@ -12,7 +12,7 @@ namespace PVIMS.Core.Entities
             PatientConditionGuid = Guid.NewGuid();
         }
 
-        public DateTime DateStart { get; set; }
+        public DateTime OnsetDate { get; set; }
         public DateTime? OutcomeDate { get; set; }
         public string Comments { get; set; }
         public int? ConditionId { get; set; }

@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.11.3" />
-    <PackageReference Include="EntityFramework" Version="6.4.0" />
     <PackageReference Include="EPPlus" Version="5.4.2" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
   </ItemGroup>

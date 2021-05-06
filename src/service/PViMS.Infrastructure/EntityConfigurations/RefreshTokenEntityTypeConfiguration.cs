@@ -13,8 +13,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasKey(e => e.Id);
 
             configuration.Property(e => e.Expires)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             configuration.Property(e => e.UserId)
                 .IsRequired()
@@ -23,10 +22,9 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.User)
                 .WithMany(p => p.RefreshTokens)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.RefreshToken_dbo.User_User_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.UserId, "IX_User_Id");
+            configuration.HasIndex(e => e.UserId);
         }
     }
 }

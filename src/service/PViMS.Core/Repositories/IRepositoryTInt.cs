@@ -38,44 +38,44 @@ namespace PVIMS.Core.Repositories
         /// </summary>
         /// <param name="filter">The filter.</param>
         /// <param name="orderBy">The order by.</param>
-        /// <param name="relatedEntitiesToEagerlyLoad">The related entities to eagerly load.</param>
+        /// <param name="includeExpressions">The related entities to eagerly load.</param>
         /// <returns></returns>
         Task<ICollection<TEntity>> ListAsync(Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-            params string[] relatedEntitiesToEagerlyLoad);
+            params string[] includeExpressions);
 
         /// <summary>
         /// Returns a collection of entities, optionally filtered and sorted with specified associated entities eagerly loaded.
         /// </summary>
         /// <param name="filter">The filter.</param>
         /// <param name="orderBy">The order by.</param>
-        /// <param name="relatedEntitiesToEagerlyLoad">The related entities to eagerly load.</param>
+        /// <param name="includeExpressions">The related entities to eagerly load.</param>
         /// <returns></returns>
         ICollection<TEntity> List(Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-            params string[] relatedEntitiesToEagerlyLoad);
+            params string[] includeExpressions);
 
         /// <summary>
         /// Returns a list entities, optionally filtered and sorted with specified associated entities eagerly loaded asynchronously.
         /// </summary>
         /// <param name="filter">The filter.</param>
         /// <param name="orderBy">The order by.</param>
-        /// <param name="relatedEntitiesToEagerlyLoad">Property expressions representing related entities to be eagerly loaded.</param>
+        /// <param name="includeExpressions">Property expressions representing related entities to be eagerly loaded.</param>
         /// <returns></returns>
         ICollection<TEntity> List<TProperty>(Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
-            Expression<Func<TEntity, TProperty>> relatedEntitiesToEagerlyLoad);
+            Expression<Func<TEntity, TProperty>> includeExpressions);
 
         /// <summary>
         /// Returns a list entities, optionally filtered and sorted with specified associated entities eagerly loaded.
         /// </summary>
         /// <param name="filter">The filter.</param>
         /// <param name="orderBy">The order by.</param>
-        /// <param name="relatedEntitiesToEagerlyLoad">Property expressions representing related entities to be eagerly loaded.</param>
+        /// <param name="includeExpressions">Property expressions representing related entities to be eagerly loaded.</param>
         /// <returns></returns>
         Task<ICollection<TEntity>> ListAsync<TProperty>(Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
-            Expression<Func<TEntity, TProperty>> relatedEntitiesToEagerlyLoad);
+            Expression<Func<TEntity, TProperty>> includeExpressions);
 
         /// <summary>
         /// Returns a paged collection of entities, optionally filtered and sorted with specified associated entities eagerly loaded.
@@ -83,12 +83,12 @@ namespace PVIMS.Core.Repositories
         /// <param name="pagingInfo">The paging information.</param>
         /// <param name="filter">The filter.</param>
         /// <param name="orderBy">The order by.</param>
-        /// <param name="relatedEntitiesToEagerlyLoad">The related entities to eagerly load.</param>
+        /// <param name="includeExpressions">The related entities to eagerly load.</param>
         /// <returns></returns>
         PagedCollection<TEntity> List(IPagingInfo pagingInfo,
             Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
-            params string[] relatedEntitiesToEagerlyLoad);
+            params string[] includeExpressions);
 
         /// <summary>
         /// Returns a paged collection of entities, optionally filtered and sorted with specified associated entities eagerly loaded.
@@ -96,12 +96,12 @@ namespace PVIMS.Core.Repositories
         /// <param name="pagingInfo">The paging information.</param>
         /// <param name="filter">The filter.</param>
         /// <param name="orderBy">The order by.</param>
-        /// <param name="relatedEntitiesToEagerlyLoad">Property expressions representing related entities to be eagerly loaded.</param>
+        /// <param name="includeExpressions">Property expressions representing related entities to be eagerly loaded.</param>
         /// <returns></returns>
         PagedCollection<TEntity> List<TProperty>(IPagingInfo pagingInfo,
             Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
-            Expression<Func<TEntity, TProperty>> relatedEntitiesToEagerlyLoad);
+            Expression<Func<TEntity, TProperty>> includeExpressions);
 
         /// <summary>
         /// Gets the specified entity by identifier.
@@ -121,17 +121,17 @@ namespace PVIMS.Core.Repositories
         /// Gets the specified entity by identifier and allows for eager loading of entities.
         /// </summary>
         /// <param name="entityId">The entity identifier.</param>
-        /// <param name="relatedEntitiesToEagerlyLoad">The related entities to eagerly load.</param>
+        /// <param name="includeExpressions">The related entities to eagerly load.</param>
         /// <returns></returns>
-        TEntity Get(object entityId, params string[] relatedEntitiesToEagerlyLoad);
+        TEntity Get(object entityId, params string[] includeExpressions);
 
         /// <summary>
         /// Gets the specified entity by expression and allows for eager loading of entities.
         /// </summary>
         /// <param name="filter">Filter expression</param>
-        /// <param name="relatedEntitiesToEagerlyLoad">The related entities to eagerly load.</param>
+        /// <param name="includeExpressions">The related entities to eagerly load.</param>
         /// <returns></returns>
-        TEntity Get(Expression<Func<TEntity, bool>> filter, params string[] relatedEntitiesToEagerlyLoad);
+        TEntity Get(Expression<Func<TEntity, bool>> filter, params string[] includeExpressions);
 
         /// <summary>
         /// Gets the specified entity by identifier asynchronously.
@@ -151,17 +151,17 @@ namespace PVIMS.Core.Repositories
         /// Gets the specified entity by identifier asynchronously and allows for eager loading of entities.
         /// </summary>
         /// <param name="entityId">The entity identifier.</param>
-        /// <param name="relatedEntitiesToEagerlyLoad">The related entities to eagerly load.</param>
+        /// <param name="includeExpressions">The related entities to eagerly load.</param>
         /// <returns></returns>
-        Task<TEntity> GetAsync(object entityId, params string[] relatedEntitiesToEagerlyLoad);
+        Task<TEntity> GetAsync(object entityId, params string[] includeExpressions);
 
         /// <summary>
         /// Gets the specified entity by expression asynchronously and allows for eager loading of entities.
         /// </summary>
         /// <param name="filter">Filter expression</param>
-        /// <param name="relatedEntitiesToEagerlyLoad">The related entities to eagerly load.</param>
+        /// <param name="includeExpressions">The related entities to eagerly load.</param>
         /// <returns></returns>
-        Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> filter, params string[] relatedEntitiesToEagerlyLoad);
+        Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> filter, string[] includeExpressions);
 
         /// <summary>
         /// Saves the specified entity.

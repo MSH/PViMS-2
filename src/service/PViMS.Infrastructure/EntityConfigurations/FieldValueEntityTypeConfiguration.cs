@@ -32,10 +32,9 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.HasOne(d => d.Field)
                 .WithMany(p => p.FieldValues)
                 .HasForeignKey(d => d.FieldId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.FieldValue_dbo.Field_Field_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(e => e.FieldId, "IX_Field_Id");
+            configuration.HasIndex(e => e.FieldId);
         }
     }
 }

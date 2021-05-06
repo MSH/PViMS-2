@@ -8,7 +8,7 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { UserService } from 'app/shared/services/user.service';

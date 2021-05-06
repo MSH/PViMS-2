@@ -25,25 +25,22 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.HasOne(d => d.CohortGroup)
                 .WithMany(p => p.EncounterTypeWorkPlans)
-                .HasForeignKey(d => d.CohortGroupId)
-                .HasConstraintName("FK_dbo.EncounterTypeWorkPlan_dbo.CohortGroup_CohortGroup_Id");
+                .HasForeignKey(d => d.CohortGroupId);
 
             configuration.HasOne(d => d.EncounterType)
                 .WithMany(p => p.EncounterTypeWorkPlans)
                 .HasForeignKey(d => d.EncounterTypeId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.EncounterTypeWorkPlan_dbo.EncounterType_EncounterType_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasOne(d => d.WorkPlan)
                 .WithMany(p => p.EncounterTypeWorkPlans)
                 .HasForeignKey(d => d.WorkPlanId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_dbo.EncounterTypeWorkPlan_dbo.WorkPlan_WorkPlan_Id");
+                .OnDelete(DeleteBehavior.Cascade);
 
             configuration.HasIndex(e => new { e.CohortGroupId, e.EncounterTypeId, e.WorkPlanId }).IsUnique(true);
-            configuration.HasIndex(e => e.CohortGroupId, "IX_CohortGroup_Id");
-            configuration.HasIndex(e => e.EncounterTypeId, "IX_EncounterType_Id");
-            configuration.HasIndex(e => e.WorkPlanId, "IX_WorkPlan_Id");
+            configuration.HasIndex(e => e.CohortGroupId);
+            configuration.HasIndex(e => e.EncounterTypeId);
+            configuration.HasIndex(e => e.WorkPlanId);
         }
     }
 }
