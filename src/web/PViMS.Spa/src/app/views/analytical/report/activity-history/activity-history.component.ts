@@ -10,7 +10,7 @@ import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { Subscription } from 'rxjs';
 import { GridModel } from 'app/shared/models/grid.model';
-import { takeUntil, finalize } from 'rxjs/operators';
+import { finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { ProgressStatusEnum, ProgressStatus } from 'app/shared/models/program-status.model';
 import { HttpEventType } from '@angular/common/http';
@@ -69,20 +69,18 @@ export class ActivityhistoryComponent extends BaseComponent implements OnInit, A
 
   ngAfterViewInit(): void {
     let self = this;
-    self.viewModel.mainGrid.setupAdvance(
-       null, null, null)
-       .subscribe(() => { self.loadGrid(); });
-    self.loadGrid();
+    self.viewModel.mainGrid.setupBasic(null, null, null);
     self.loadData();
   }
 
   loadData(): void {
     let self = this;
     self.setBusy(true);
-    self.reportInstanceService.getReportInstanceDetail(self.workFlowId, self.reportInstanceId)
+    self.reportInstanceService.getReportInstanceExpanded(self.workFlowId, self.reportInstanceId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.updateForm(self.itemForm, result);
+        self.viewModel.mainGrid.updateBasic(result.events);
       }, error => {
         this.handleError(error, "Error fetching report instance");
       });
@@ -103,20 +101,6 @@ export class ActivityhistoryComponent extends BaseComponent implements OnInit, A
     { 
       this.viewModel.mainGrid.updateDisplayedColumns(['activity', 'execution-event', 'executed-date']);
     }
-  }
-
-  loadGrid(): void {
-    let self = this;
-    self.setBusy(true);
-
-    self.reportInstanceService.getReportInstanceActivity(self.workFlowId, self.reportInstanceId)
-      .pipe(takeUntil(self._unsubscribeAll))
-      .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-          self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-          self.handleError(error, "Error fetching report instance activity");
-        });
   }
 
   downloadAttachment(activityExecutionStatusEventId: number, attachmentId: number): void {
