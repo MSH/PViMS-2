@@ -16,13 +16,7 @@ namespace PVIMS.API.Models
         public string SourceIdentifier { get; set; }
 
         /// <summary>
-        /// Terminology that has been set by the pv specialist
-        /// </summary>
-        [DataMember]
-        public TerminologyMedDraDto TerminologyMedDra { get; set; }
-
-        /// <summary>
-        /// Patient identification details
+        /// Patient identifier
         /// </summary>
         [DataMember]
         public string PatientIdentifier { get; set; }
@@ -52,25 +46,31 @@ namespace PVIMS.API.Models
         public int AttachmentId { get; set; }
 
         /// <summary>
-        /// Details of the household creation
+        /// Terminology that has been set by the pv specialist
+        /// </summary>
+        [DataMember]
+        public TerminologyMedDraDto TerminologyMedDra { get; set; }
+
+        /// <summary>
+        /// Details of the report creation
         /// </summary>
         [DataMember]
         public string CreatedDetail { get; set; }
 
         /// <summary>
-        /// Details of the last update to the household
+        /// Details of the last update to the report
         /// </summary>
         [DataMember]
         public string UpdatedDetail { get; set; }
 
         /// <summary>
-        /// The qualified name of the activity
+        /// The qualified name of the current activity of the report
         /// </summary>
         [DataMember]
         public string QualifiedName { get; set; }
 
         /// <summary>
-        /// The current status of the activity
+        /// The status of the current activity of the report
         /// </summary>
         [DataMember]
         public string CurrentStatus { get; set; }
@@ -80,6 +80,12 @@ namespace PVIMS.API.Models
         /// </summary>
         [DataMember]
         public DatasetInstanceDto E2BInstance { get; set; }
+
+        /// <summary>
+        /// The number of tasks that have been allocated to this report
+        /// </summary>
+        [DataMember]
+        public int TaskCount { get; set; }
 
         /// <summary>
         /// The dataset that has been generated for a spontaneous report

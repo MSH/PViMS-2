@@ -2,14 +2,16 @@ import { TerminologyMedDraModel } from "../terminologymeddra.model";
 import { ReportInstanceMedicationDetailModel } from "./report-instance-medication.detail.model";
 import { LinkModel } from "../link.model";
 import { DatasetInstanceModel } from "../dataset/dataset-instance-model";
+import { TaskModel } from "./task.model";
+import { ActivityExecutionStatusEventModel } from "./activity-execution-status-event.model";
 
-export interface ReportInstanceDetailWrapperModel {
-    value:  ReportInstanceDetailModel[];
+export interface ReportInstanceExpandedWrapperModel {
+    value:  ReportInstanceExpandedModel[];
     recordCount: number;
     links: LinkModel[];
 }
 
-export interface ReportInstanceDetailModel {
+export interface ReportInstanceExpandedModel {
     id: number;
     reportInstanceGuid: string;
     contextGuid: string;
@@ -29,5 +31,7 @@ export interface ReportInstanceDetailModel {
     qualifiedName: string;
     currentStatus: string;
     medications: ReportInstanceMedicationDetailModel[];
+    events: ActivityExecutionStatusEventModel[];
+    tasks: TaskModel[];
     links: LinkModel[];
 }

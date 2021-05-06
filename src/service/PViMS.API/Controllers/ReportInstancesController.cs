@@ -142,13 +142,45 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<ReportInstanceDetailDto>> GetReportInstanceByDetail(Guid workFlowGuid, int id)
         {
-            var mappedReportInstance = await GetReportInstanceAsync<ReportInstanceDetailDto>(workFlowGuid, id);
-            if (mappedReportInstance == null)
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
+            if (reportInstanceFromRepo == null)
             {
                 return NotFound();
             }
 
-            return Ok(CreateLinksForReportInstance<ReportInstanceDetailDto>(workFlowGuid, CustomReportInstanceMap(mappedReportInstance)));
+            var mappedReportInstanceDto = _mapper.Map<ReportInstanceDetailDto>(reportInstanceFromRepo);
+
+            await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, mappedReportInstanceDto);
+
+            return Ok(CreateLinksForReportInstance<ReportInstanceDetailDto>(workFlowGuid, mappedReportInstanceDto));
+        }
+
+        /// <summary>
+        /// Get a single report instance using it's unique id and valid media type 
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+        /// <param name="id">The unique id of the report instance</param>
+        /// <returns>An ActionResult of type ReportInstanceExpandedDto</returns>
+        [HttpGet("workflow/{workFlowGuid}/reportinstances/{id}", Name = "GetReportInstanceByExpanded")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult<ReportInstanceExpandedDto>> GetReportInstanceByExpanded(Guid workFlowGuid, int id)
+        {
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus.Activity", "Tasks" });
+            if (reportInstanceFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            var mappedReportInstanceDto = _mapper.Map<ReportInstanceExpandedDto>(reportInstanceFromRepo);
+
+            await CustomReportInstanceExpandedMapAsync(reportInstanceFromRepo, mappedReportInstanceDto);
+                
+            return Ok(CreateLinksForReportInstance<ReportInstanceExpandedDto>(workFlowGuid, mappedReportInstanceDto));
         }
 
         /// <summary>
@@ -192,7 +224,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetReportInstancesByDetail(Guid workFlowGuid, 
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>>> GetReportInstancesByDetail(Guid workFlowGuid, 
             [FromQuery] ReportInstanceResourceParameters reportInstanceResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<ReportInstanceDetailDto, ReportInstance>
@@ -204,7 +236,11 @@ namespace PVIMS.API.Controllers
             var mappedReportsWithLinks = GetReportInstances<ReportInstanceDetailDto>(workFlowGuid, reportInstanceResourceParameters);
 
             // Add custom mappings to report instances
-            mappedReportsWithLinks.ForEach(dto => CustomReportInstanceMap(dto));
+            foreach (var report in mappedReportsWithLinks)
+            {
+                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
+                await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, report);
+            }
 
             var wrapper = new LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>(mappedReportsWithLinks.TotalCount, mappedReportsWithLinks);
             var wrapperWithLinks = CreateLinksForReportInstances(workFlowGuid, wrapper, reportInstanceResourceParameters,
@@ -227,7 +263,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.newreports.v1+json", "application/vnd.pvims.newreports.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetNewReportInstancesByDetail(Guid workFlowGuid,
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>>> GetNewReportInstancesByDetail(Guid workFlowGuid,
             [FromQuery] ReportInstanceNewResourceParameters reportInstanceResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<ReportInstanceDetailDto, ReportInstance>
@@ -239,7 +275,11 @@ namespace PVIMS.API.Controllers
             var mappedReportsWithLinks = GetNewReportInstances<ReportInstanceDetailDto>(workFlowGuid, reportInstanceResourceParameters);
 
             // Add custom mappings to report instances
-            mappedReportsWithLinks.ForEach(dto => CustomReportInstanceMap(dto));
+            foreach (var report in mappedReportsWithLinks)
+            {
+                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
+                await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, report);
+            }
 
             var wrapper = new LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>(mappedReportsWithLinks.TotalCount, mappedReportsWithLinks);
             var wrapperWithLinks = CreateLinksForNewReportInstances(workFlowGuid, wrapper, reportInstanceResourceParameters,
@@ -274,42 +314,17 @@ namespace PVIMS.API.Controllers
             var mappedReportsWithLinks = await GetFeedbackReportInstancesAsync<ReportInstanceDetailDto>(workFlowGuid, reportInstanceResourceParameters);
 
             // Add custom mappings to report instances
-            mappedReportsWithLinks.ForEach(dto => CustomReportInstanceMap(dto));
+            foreach (var report in mappedReportsWithLinks)
+            {
+                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
+                await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, report);
+            }
 
             var wrapper = new LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>(mappedReportsWithLinks.TotalCount, mappedReportsWithLinks);
             var wrapperWithLinks = CreateLinksForNewReportInstances(workFlowGuid, wrapper, reportInstanceResourceParameters,
                 mappedReportsWithLinks.HasNext, mappedReportsWithLinks.HasPrevious);
 
             return Ok(wrapperWithLinks);
-        }
-
-        /// <summary>
-        /// Get all activity events for a given report instance
-        /// </summary>
-        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-        /// <param name="reportinstanceId">The unique identifier of the work flow that report instances are associated to</param>
-        /// <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of ActivityExecutionStatusEventDto</returns>
-        [HttpGet("workflow/{workFlowGuid}/reportinstances/{reportinstanceId}/activity", Name = "GetActivityExecutionStatusEvents")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType("Accept",
-            "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ActivityExecutionStatusEventDto>>> GetActivityExecutionStatusEvents(Guid workFlowGuid, int reportinstanceId)
-        {
-            var mappedReportInstance = await GetReportInstanceAsync<ReportInstanceIdentifierDto>(workFlowGuid, reportinstanceId);
-            if (mappedReportInstance == null)
-            {
-                return NotFound();
-            }
-
-            var mappedEvents = GetActivityExecutionStatusEvents<ActivityExecutionStatusEventDto>(workFlowGuid, reportinstanceId);
-
-            // Add custom mappings to patients
-            mappedEvents.ForEach(dto => CustomActivityExecutionStatusEventMap(dto));
-
-            var wrapper = new LinkedCollectionResourceWrapperDto<ActivityExecutionStatusEventDto>(mappedEvents.Count, mappedEvents);
-
-            return Ok(wrapper);
         }
 
         /// <summary>
@@ -631,16 +646,9 @@ namespace PVIMS.API.Controllers
             return BadRequest(ModelState);
         }
 
-        /// <summary>
-        /// Get single report instance from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
         private async Task<T> GetReportInstanceAsync<T>(Guid workFlowGuid, long id) where T : class
         {
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id);
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "Activities", "Tasks" });
 
             if (reportInstanceFromRepo != null)
             {
@@ -653,13 +661,6 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        /// Get report instances from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="workFlowGuid">The uniwue identifier of the work flow that report instances are associated to</param>
-        /// <param name="reportInstanceResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
         private PagedCollection<T> GetReportInstances<T>(Guid workFlowGuid, ReportInstanceResourceParameters reportInstanceResourceParameters) where T : class
         {
             var pagingInfo = new PagingInfo()
@@ -739,11 +740,6 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        /// Get new report instances
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <returns></returns>
         private PagedCollection<T> GetNewReportInstances<T>(Guid workFlowGuid, ReportInstanceNewResourceParameters reportInstanceResourceParameters) where T : class
         {
             var config = _configRepository.Get(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
@@ -801,11 +797,6 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        /// Get new report instances for clinical feedback
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <returns></returns>
         private async Task<PagedCollection<T>> GetFeedbackReportInstancesAsync<T>(Guid workFlowGuid, ReportInstanceNewResourceParameters reportInstanceResourceParameters) where T : class
         {
             var config = _configRepository.Get(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
@@ -872,42 +863,6 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        /// Get report instances from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="workFlowGuid">The uniwue identifier of the work flow that report instances are associated to</param>
-        /// <param name="reportinstanceId">The unique identifier of the work flow that report instances are associated to</param>
-        /// <returns></returns>
-        private List<T> GetActivityExecutionStatusEvents<T>(Guid workFlowGuid, int reportinstanceId) where T : class
-        {
-            var orderby = Extensions.GetOrderBy<ActivityExecutionStatusEvent>("EventDateTime", "asc");
-
-            // Filter list
-            var predicate = PredicateBuilder.New<ActivityExecutionStatusEvent>(true);
-            predicate = predicate.And(f => f.ActivityInstance.ReportInstance.WorkFlow.WorkFlowGuid == workFlowGuid && f.ActivityInstance.ReportInstance.Id == reportinstanceId);
-
-            var eventsFromRepo = _activityExecutionStatusEventRepository.List(predicate, orderby, "");
-            if (eventsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedEvents = _mapper.Map<List<T>>(eventsFromRepo);
-
-                return mappedEvents;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="reportInstanceResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
         private LinkedResourceBaseDto CreateLinksForReportInstances(Guid workFlowGuid, 
             LinkedResourceBaseDto wrapper,
             ReportInstanceResourceParameters reportInstanceResourceParameters,
@@ -937,15 +892,6 @@ namespace PVIMS.API.Controllers
             return wrapper;
         }
 
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="reportInstanceNewResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
         private LinkedResourceBaseDto CreateLinksForNewReportInstances(Guid workFlowGuid,
             LinkedResourceBaseDto wrapper,
             ReportInstanceNewResourceParameters reportInstanceNewResourceParameters,
@@ -975,12 +921,6 @@ namespace PVIMS.API.Controllers
             return wrapper;
         }
 
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
         private ReportInstanceIdentifierDto CreateLinksForReportInstance<T>(Guid workFlowGuid, T dto)
         {
             ReportInstanceIdentifierDto identifier = (ReportInstanceIdentifierDto)(object)dto;
@@ -990,7 +930,7 @@ namespace PVIMS.API.Controllers
 
             identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateReportInstanceResourceUri(workFlowGuid, identifier.Id), "self", "GET"));
 
-            var reportInstance = _reportInstanceRepository.Get(r => r.Id == identifier.Id, new string[] { "WorkFlow", "Activities.ExecutionEvents" });
+            var reportInstance = _reportInstanceRepository.Get(r => r.Id == identifier.Id, new string[] { "WorkFlow", "Activities.ExecutionEvents", "Activities.CurrentStatus" });
             if (reportInstance == null)
             {
                 return identifier;
@@ -1100,64 +1040,47 @@ namespace PVIMS.API.Controllers
             return identifier;
         }
 
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private ReportInstanceDetailDto CustomReportInstanceMap(ReportInstanceDetailDto dto)
+        private async Task CustomReportInstanceDetailMapAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto mappedReportInstanceDto)
         {
-            var reportInstance = _reportInstanceRepository.Get(r => r.Id == dto.Id, new string[] { "Activities.ExecutionEvents" });
-            if (reportInstance == null)
+            if (reportInstanceFromRepo == null)
             {
-                return dto;
+                throw new ArgumentNullException(nameof(reportInstanceFromRepo));
+            }
+            
+            await MapIdsForReportInstanceAsync(reportInstanceFromRepo, mappedReportInstanceDto);
+            await MapE2BActivitiesForReportInstanceAsync(reportInstanceFromRepo, mappedReportInstanceDto);
+
+            if (reportInstanceFromRepo.WorkFlow.Description == "New Spontaneous Surveilliance Report")
+            {
+                await MapSpontaneousInstanceForReportInstanceAsync(reportInstanceFromRepo.ContextGuid, mappedReportInstanceDto);
             }
 
-            var patientClinicalEvent = _patientClinicalEventRepository.Get(p => p.PatientClinicalEventGuid == dto.ContextGuid, new string[] { "Patient" });
+            foreach (var medication in mappedReportInstanceDto.Medications)
+            {
+                await CustomReportInstanceMedicationMapAsync(reportInstanceFromRepo, medication);
+            }
+        }
+
+        private async Task MapIdsForReportInstanceAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto)
+        {
+            var patientClinicalEvent = await _patientClinicalEventRepository.GetAsync(p => p.PatientClinicalEventGuid == reportInstanceFromRepo.ContextGuid, new string[] { "Patient" });
             dto.PatientId = patientClinicalEvent != null ? patientClinicalEvent.Patient.Id : 0;
             dto.PatientClinicalEventId = patientClinicalEvent != null ? patientClinicalEvent.Id : 0;
+        }
 
-            var currentActivityInstance = reportInstance.Activities.Single(a => a.Current == true);
-
-            switch (reportInstance.CurrentActivity.QualifiedName)
+        private async Task MapE2BActivitiesForReportInstanceAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto)
+        {
+            switch (reportInstanceFromRepo.CurrentActivity.QualifiedName)
             {
                 case "Extract E2B":
-                    if (currentActivityInstance.CurrentStatus.Description == "E2BINITIATED")
+                    if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "E2BINITIATED")
                     {
-                        var evt = currentActivityInstance.ExecutionEvents
-                            .OrderByDescending(ee => ee.EventDateTime)
-                            .First(ee => ee.ExecutionStatus.Id == currentActivityInstance.CurrentStatus.Id);
-                        var tag = (reportInstance.WorkFlow.Description == "New Active Surveilliance Report") ? "Active" : "Spontaneous";
-
-                        if (evt != null)
-                        {
-                            var datasetInstance = _datasetInstanceRepository.Get(di => di.Tag == tag && di.ContextId == evt.Id, new string[] { "Dataset" });
-                            if (datasetInstance != null)
-                            {
-                                dto.E2BInstance = new DatasetInstanceDto()
-                                {
-                                    DatasetId = datasetInstance.Dataset.Id,
-                                    DatasetInstanceId = datasetInstance.Id
-                                };
-                            }
-                        }
+                        await MapE2BInstanceForReportInstanceAsync(reportInstanceFromRepo, dto);
                     }
 
-                    if (currentActivityInstance.CurrentStatus.Description == "E2BGENERATED")
+                    if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "E2BGENERATED")
                     {
-                        var executionEvent = currentActivityInstance.ExecutionEvents
-                            .OrderByDescending(ee => ee.EventDateTime)
-                            .First(ee => ee.ExecutionStatus.Description == "E2BGENERATED");
-
-                        if (executionEvent != null)
-                        {
-                            var e2bAttachment = executionEvent.Attachments.SingleOrDefault(att => att.Description == "E2b");
-                            if (e2bAttachment != null)
-                            {
-                                dto.ActivityExecutionStatusEventId = executionEvent.Id;
-                                dto.AttachmentId = e2bAttachment.Id;
-                            }
-                        }
+                        MapE2BAttachmentForReportInstance(reportInstanceFromRepo, dto);
                     }
 
                     break;
@@ -1165,34 +1088,103 @@ namespace PVIMS.API.Controllers
                 default:
                     break;
             }
+        }
 
-            if(reportInstance.WorkFlow.Description == "New Spontaneous Surveilliance Report")
+        private async Task MapE2BInstanceForReportInstanceAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto)
+        {
+            var latestExecutionEvent = reportInstanceFromRepo.CurrentActivity.GetLatestEvent();
+            if (latestExecutionEvent != null)
             {
-                var datasetInstance = _datasetInstanceRepository.Get(di => di.DatasetInstanceGuid == reportInstance.ContextGuid, new string[] { "Dataset" });
-                if(datasetInstance != null)
+                var tag = reportInstanceFromRepo.WorkFlow.Description == "New Active Surveilliance Report" ? "Active" : "Spontaneous";
+                var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.Tag == tag && di.ContextId == latestExecutionEvent.Id, new string[] { "Dataset" });
+                if (datasetInstance != null)
                 {
-                    dto.SpontaneousInstance = new DatasetInstanceDto()
+                    dto.E2BInstance = new DatasetInstanceDto()
                     {
                         DatasetId = datasetInstance.Dataset.Id,
                         DatasetInstanceId = datasetInstance.Id
                     };
                 }
             }
-
-            // Add custom mappings to Medications
-            dto.Medications.ForEach(medication => CustomReportInstanceMedicationMap(reportInstance, medication));
-
-            return dto;
         }
 
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private ActivityExecutionStatusEventDto CustomActivityExecutionStatusEventMap(ActivityExecutionStatusEventDto dto)
+        private void MapE2BAttachmentForReportInstance(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto)
         {
-            var activityExecutionStatusEvent = _activityExecutionStatusEventRepository.Get(a => a.Id == dto.Id);
+            var latestE2BGeneratedExecutionEvent = reportInstanceFromRepo.CurrentActivity.GetLatestE2BGeneratedEvent();
+            if (latestE2BGeneratedExecutionEvent != null)
+            {
+                var e2bAttachment = latestE2BGeneratedExecutionEvent.Attachments.SingleOrDefault(att => att.Description == "E2b");
+                if (e2bAttachment != null)
+                {
+                    dto.ActivityExecutionStatusEventId = latestE2BGeneratedExecutionEvent.Id;
+                    dto.AttachmentId = e2bAttachment.Id;
+                }
+            }
+        }
+
+        private async Task MapSpontaneousInstanceForReportInstanceAsync(Guid contextGuid, ReportInstanceDetailDto dto)
+        {
+            var datasetInstanceFromRepo = await _datasetInstanceRepository.GetAsync(di => di.DatasetInstanceGuid == contextGuid, new string[] { "Dataset" });
+            if (datasetInstanceFromRepo != null)
+            {
+                dto.SpontaneousInstance = new DatasetInstanceDto()
+                {
+                    DatasetId = datasetInstanceFromRepo.Dataset.Id,
+                    DatasetInstanceId = datasetInstanceFromRepo.Id
+                };
+            }
+        }
+
+        private async Task CustomReportInstanceMedicationMapAsync(ReportInstance reportInstanceFromRepo, ReportInstanceMedicationDetailDto dto)
+        {
+            if (reportInstanceFromRepo.WorkFlow.Description == "New Spontaneous Surveilliance Report")
+            {
+                var datasetInstanceFromRepo = await _datasetInstanceRepository.GetAsync(di => di.DatasetInstanceGuid == reportInstanceFromRepo.ContextGuid);
+                if(datasetInstanceFromRepo != null)
+                {
+                    var drugItemValues = datasetInstanceFromRepo.GetInstanceSubValues("Product Information", dto.ReportInstanceMedicationGuid);
+                    var drugName = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product")?.InstanceValue;
+                    DateTime tempdt;
+
+                    var startElement = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Start Date");
+                    var stopElement = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug End Date");
+
+                    dto.StartDate = startElement != null ? DateTime.TryParse(startElement.InstanceValue, out tempdt) ? Convert.ToDateTime(startElement.InstanceValue).ToString("yyyy-MM-dd") : "" : "";
+                    dto.EndDate = stopElement != null ? DateTime.TryParse(stopElement.InstanceValue, out tempdt) ? Convert.ToDateTime(stopElement.InstanceValue).ToString("yyyy-MM-dd") : "" : "";
+                }
+            }
+            else
+            {
+                var medication = await _patientMedicationRepository.GetAsync(p => p.PatientMedicationGuid == dto.ReportInstanceMedicationGuid);
+                if (medication == null)
+                {
+                    return;
+                }
+
+                dto.StartDate = medication.StartDate.ToString("yyyy-MM-dd");
+                dto.EndDate = medication.EndDate.HasValue ? medication.EndDate.Value.ToString("yyyy-MM-dd") : "";
+            }
+        }
+
+        private async Task CustomReportInstanceExpandedMapAsync(ReportInstance reportInstanceFromRepo, ReportInstanceExpandedDto mappedReportInstanceDto)
+        {
+            if (reportInstanceFromRepo == null)
+            {
+                throw new ArgumentNullException(nameof(reportInstanceFromRepo));
+            }
+            
+            await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, mappedReportInstanceDto);
+
+            foreach (var executionEvent in reportInstanceFromRepo.CurrentActivity.ExecutionEvents)
+            {
+                var mappedExecutionEvent = _mapper.Map<ActivityExecutionStatusEventDto>(executionEvent);
+                mappedReportInstanceDto.Events.Add(await CustomActivityExecutionStatusEventMap(mappedExecutionEvent));
+            }
+        }
+
+        private async Task<ActivityExecutionStatusEventDto> CustomActivityExecutionStatusEventMap(ActivityExecutionStatusEventDto dto)
+        {
+            var activityExecutionStatusEvent = await _activityExecutionStatusEventRepository.GetAsync(a => a.Id == dto.Id, new string[] { "Attachments" });
             if (activityExecutionStatusEvent == null)
             {
                 return dto;
@@ -2294,52 +2286,6 @@ namespace PVIMS.API.Controllers
             } // if (!String.IsNullOrWhiteSpace(drugAction))
 
             return "";
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="reportInstance">The report instance that the medication is associated to</param>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private ReportInstanceMedicationDetailDto CustomReportInstanceMedicationMap(ReportInstance reportInstance, ReportInstanceMedicationDetailDto dto)
-        {
-            if(reportInstance.WorkFlow.Description == "New Spontaneous Surveilliance Report")
-            {
-                var datasetInstance = _unitOfWork.Repository<DatasetInstance>()
-                    .Queryable()
-                    .Single(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
-
-                var drugItemValues = datasetInstance.GetInstanceSubValues("Product Information", dto.ReportInstanceMedicationGuid);
-                var drugName = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product").InstanceValue;
-
-                if (String.IsNullOrWhiteSpace(drugName))
-                {
-                    return dto;
-                }
-
-                DateTime tempdt;
-
-                var startElement = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Start Date");
-                var stopElement = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug End Date");
-
-                dto.StartDate = startElement != null ? DateTime.TryParse(startElement.InstanceValue, out tempdt) ? Convert.ToDateTime(startElement.InstanceValue).ToString("yyyy-MM-dd") : "" : "";
-                dto.EndDate = stopElement != null ? DateTime.TryParse(stopElement.InstanceValue, out tempdt) ? Convert.ToDateTime(stopElement.InstanceValue).ToString("yyyy-MM-dd") : "" : "";
-            }
-            else
-            {
-                var medication = _patientMedicationRepository.Get(p => p.PatientMedicationGuid == dto.ReportInstanceMedicationGuid);
-
-                if (medication == null)
-                {
-                    return dto;
-                }
-
-                dto.StartDate = medication.StartDate.ToString("yyyy-MM-dd");
-                dto.EndDate = medication.EndDate.HasValue ? medication.EndDate.Value.ToString("yyyy-MM-dd") : "";
-            }
-
-            return dto;
         }
 
         /// <summary>
