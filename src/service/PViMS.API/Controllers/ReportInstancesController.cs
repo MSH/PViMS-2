@@ -1,10 +1,14 @@
 ﻿using AutoMapper;
 using LinqKit;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using PVIMS.API.Application.Commands;
+using PVIMS.API.Application.Queries.ReportInstance;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
@@ -37,6 +41,7 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class ReportInstancesController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly IRepositoryInt<ActivityExecutionStatusEvent> _activityExecutionStatusEventRepository;
         private readonly IRepositoryInt<Attachment> _attachmentRepository;
@@ -58,8 +63,11 @@ namespace PVIMS.API.Controllers
         private readonly IArtefactService _artefactService;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<ReportInstancesController> _logger;
 
-        public ReportInstancesController(IPropertyMappingService propertyMappingService,
+        public ReportInstancesController(
+            IMediator mediator, 
+            IPropertyMappingService propertyMappingService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<ActivityExecutionStatusEvent> activityExecutionStatusEventRepository,
@@ -79,8 +87,10 @@ namespace PVIMS.API.Controllers
             IWorkFlowService workFlowService,
             IArtefactService artefactService,
             IUnitOfWorkInt unitOfWork,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<ReportInstancesController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
@@ -102,6 +112,7 @@ namespace PVIMS.API.Controllers
             _infrastructureService = infrastructureService ?? throw new ArgumentNullException(nameof(infrastructureService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -142,7 +153,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<ReportInstanceDetailDto>> GetReportInstanceByDetail(Guid workFlowGuid, int id)
         {
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks", "Medications" });
             if (reportInstanceFromRepo == null)
             {
                 return NotFound();
@@ -170,7 +181,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<ReportInstanceExpandedDto>> GetReportInstanceByExpanded(Guid workFlowGuid, int id)
         {
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus.Activity", "Tasks" });
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus.Activity", "Tasks", "Medications" });
             if (reportInstanceFromRepo == null)
             {
                 return NotFound();
@@ -238,7 +249,7 @@ namespace PVIMS.API.Controllers
             // Add custom mappings to report instances
             foreach (var report in mappedReportsWithLinks)
             {
-                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
+                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks", "Medications" });
                 await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, report);
             }
 
@@ -277,7 +288,7 @@ namespace PVIMS.API.Controllers
             // Add custom mappings to report instances
             foreach (var report in mappedReportsWithLinks)
             {
-                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
+                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks", "Medications" });
                 await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, report);
             }
 
@@ -316,7 +327,7 @@ namespace PVIMS.API.Controllers
             // Add custom mappings to report instances
             foreach (var report in mappedReportsWithLinks)
             {
-                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
+                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks", "Medications" });
                 await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, report);
             }
 
@@ -646,6 +657,74 @@ namespace PVIMS.API.Controllers
             return BadRequest(ModelState);
         }
 
+        /// <summary>
+        /// Get a single report instance task using it's unique id and valid media type 
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+        /// <param name="reportInstanceId">The unique id of the report instance</param>
+        /// <param name="id">The unique id of the report instance task</param>
+        /// <returns>An ActionResult of type ReportInstanceTaskIdentifierDto</returns>
+        [HttpGet("workflow/{workFlowGuid}/reportinstances/{reportInstanceId}/tasks/{id}", Name = "GetReportInstanceTaskByIdentifier")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
+        public async Task<ActionResult<ReportInstanceTaskIdentifierDto>> GetReportInstanceTaskByIdentifier(Guid workFlowGuid, int reportInstanceId, int id)
+        {
+            var query = new GetReportInstanceTaskIdentifierQuery(workFlowGuid, reportInstanceId, id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetReportInstanceTaskIdentifierQuery - {workFlowGuid}: {reportInstanceId}: {id}",
+                workFlowGuid.ToString(),
+                reportInstanceId,
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            return Ok(queryResult);
+        }
+
+        /// <summary>
+        /// Add a new task to a report instance
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+        /// <param name="reportInstanceId">The unique identifier of the reporting instance</param>
+        /// <param name="reportInstanceTaskForCreation">The payload containing details of the task</param>
+        /// <returns></returns>
+        [HttpPost("workflow/{workFlowGuid}/reportinstances/{reportInstanceId}/tasks", Name = "CreateReportInstanceTask")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> CreateReportInstanceTask(Guid workFlowGuid, int reportInstanceId,
+            [FromBody] ReportInstanceTaskForCreationDto reportInstanceTaskForCreation)
+        {
+            var command = new AddTaskToReportInstanceCommand(workFlowGuid, reportInstanceId, reportInstanceTaskForCreation.Source, reportInstanceTaskForCreation.Description, reportInstanceTaskForCreation.TaskType);
+
+            _logger.LogInformation(
+                "----- Sending command: AddTaskToReportInstanceCommand - {workFlowGuid}: {reportInstanceId}",
+                command.WorkFlowGuid.ToString(),
+                command.ReportInstanceId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return CreatedAtRoute("GetReportInstanceTaskByIdentifier",
+                new
+                {
+                    workFlowGuid,
+                    reportInstanceId,
+                    id = commandResult.Id
+                }, commandResult);
+        }
+
         private async Task<T> GetReportInstanceAsync<T>(Guid workFlowGuid, long id) where T : class
         {
             var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "Activities", "Tasks" });
@@ -799,7 +878,7 @@ namespace PVIMS.API.Controllers
 
         private async Task<PagedCollection<T>> GetFeedbackReportInstancesAsync<T>(Guid workFlowGuid, ReportInstanceNewResourceParameters reportInstanceResourceParameters) where T : class
         {
-            var config = _configRepository.Get(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
+            var config = await _configRepository.GetAsync(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
             if (config != null)
             {
                 if (!String.IsNullOrEmpty(config.ConfigValue))
@@ -858,6 +937,21 @@ namespace PVIMS.API.Controllers
                         return mappedReports;
                     }
                 }
+            }
+
+            return null;
+        }
+
+        private async Task<T> GetReportInstanceTaskAsync<T>(Guid workFlowGuid, long id) where T : class
+        {
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "Activities", "Tasks" });
+
+            if (reportInstanceFromRepo != null)
+            {
+                // Map EF entity to Dto
+                var mappedReportInstance = _mapper.Map<T>(reportInstanceFromRepo);
+
+                return mappedReportInstance;
             }
 
             return null;

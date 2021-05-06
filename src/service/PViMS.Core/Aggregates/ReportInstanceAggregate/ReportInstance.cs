@@ -71,13 +71,14 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             _medications.Add(medication);
         }
 
-        public void AddTask(string source, string description, TaskType taskType)
+        public ReportInstanceTask AddTask(string source, string description, TaskType taskType)
         {
             var taskDetail = new TaskDetail(source, description);
             var taskStatus = TaskStatus.New;
 
             var newTask = new ReportInstanceTask(taskDetail, taskType, taskStatus);
             _tasks.Add(newTask);
+            return newTask;
         }
 
         public void AddTaskComment(int taskId, string comment)
