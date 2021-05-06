@@ -7,7 +7,7 @@ namespace PVIMS.API.Models
     /// A representation of a task that can be allocated to a report instance
     /// </summary>
     [DataContract()]
-    public class TaskDto
+    public class TaskDto: LinkedResourceBaseDto
     {
         /// <summary>
         /// The unique identifier of the task
