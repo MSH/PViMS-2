@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +18,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PVIMS.API;
+using PVIMS.API.Application.Queries.ReportInstance;
 using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.AutofacModules;
+using PVIMS.API.Infrastructure.Extensions;
 using PVIMS.API.Infrastructure.OperationFilters;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Infrastructure.Settings;
@@ -40,10 +42,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using PVIMS.API.Infrastructure.Extensions;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using PVIMS.API.Application.Queries.ReportInstance;
+
 
 namespace PViMS.API
 {
@@ -100,6 +99,8 @@ namespace PViMS.API
                 .InstancePerLifetimeScope();
 
             builder.Populate(services);
+            builder.RegisterModule(new MediatorModule());
+
             this.ApplicationContainer = builder.Build();
 
             // Create the IServiceProvider based on the container.
