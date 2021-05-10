@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PVIMS.API;
-using PVIMS.API.Application.Queries.ReportInstance;
+using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.AutofacModules;
 using PVIMS.API.Infrastructure.Extensions;
@@ -42,7 +42,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Text.Json.Serialization;
 
 namespace PViMS.API
 {
@@ -248,6 +248,10 @@ namespace PViMS.API
             })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
                 .AddXmlDataContractSerializerFormatters()
+                .AddJsonOptions(opts =>
+                {
+                    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                })
             ;
 
             services.AddCors(options =>
