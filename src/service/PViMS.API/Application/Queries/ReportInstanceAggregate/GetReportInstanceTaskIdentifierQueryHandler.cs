@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PVIMS.API.Application.Queries.ReportInstance
+namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
     public class GetReportInstanceTaskIdentifierQueryHandler
         : IRequestHandler<GetReportInstanceTaskIdentifierQuery, ReportInstanceTaskIdentifierDto>

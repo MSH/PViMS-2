@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace PVIMS.API.Application.Queries.ReportInstance
+namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
     /// <summary>
     /// A activity history value representation containing audit details of all activities

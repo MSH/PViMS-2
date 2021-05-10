@@ -3,7 +3,7 @@ using PVIMS.API.Models;
 using System;
 using System.Runtime.Serialization;
 
-namespace PVIMS.API.Application.Queries.ReportInstance
+namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
     [DataContract]
     public class GetReportInstanceTaskIdentifierQuery
