@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using System.Threading.Tasks;
 using PVIMS.Core.CustomAttributes;
 
 using PVIMS.Core.Models;
@@ -43,7 +43,7 @@ namespace PVIMS.Core.Services
         /// </summary>
         /// <param name="customAttribute"></param>
         /// <returns></returns>
-        void UpdateCustomAttribute(CustomAttributeConfigDetail customAttribute);
+        Task UpdateCustomAttributeAsync(CustomAttributeConfigDetail customAttribute);
 
         /// <summary>
         /// Adds SelectionDataItem record

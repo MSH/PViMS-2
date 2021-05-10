@@ -91,7 +91,7 @@ namespace PVIMS.Services
             }
 
             _reportInstanceRepository.Update(reportInstance);
-            _unitOfWork.Complete();
+            await _unitOfWork.CompleteAsync();
         }
 
         public async Task CreateWorkFlowInstanceAsync(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier)
@@ -123,7 +123,7 @@ namespace PVIMS.Services
                 reportInstance.SetSystemIdentifier();
 
                 _unitOfWork.Repository<ReportInstance>().Update(reportInstance);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
         }
 
@@ -164,7 +164,7 @@ namespace PVIMS.Services
                 _reportInstanceRepository.Update(reportInstance);
             }
 
-            _unitOfWork.Complete();
+            await _unitOfWork.CompleteAsync();
 
             return newEvent;
         }
@@ -263,7 +263,7 @@ namespace PVIMS.Services
                         "PatientSummary");
 
                     _activityExecutionStatusEventRepository.Update(executionEvent);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
                 }
             }
         }
@@ -314,7 +314,7 @@ namespace PVIMS.Services
                         "PatientExtract");
 
                     _activityExecutionStatusEventRepository.Update(executionEvent);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
                 }
             }
         }
@@ -351,7 +351,7 @@ namespace PVIMS.Services
                         "E2b");
 
                     _activityExecutionStatusEventRepository.Update(executionEvent);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
                 }
             }
         }

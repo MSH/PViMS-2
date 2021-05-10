@@ -6,6 +6,7 @@ using PVIMS.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PVIMS.Services
 {
@@ -123,7 +124,7 @@ namespace PVIMS.Services
             }
         }
 
-        public void UpdateCustomAttribute(CustomAttributeConfigDetail customAttribute)
+        public async Task UpdateCustomAttributeAsync(CustomAttributeConfigDetail customAttribute)
         {
             var updateCustomAttribute = _unitOfWork.Repository<CustomAttributeConfiguration>().Queryable().Single(ca => ca.ExtendableTypeName == customAttribute.EntityName && ca.AttributeKey == customAttribute.AttributeName);
 
@@ -160,7 +161,7 @@ namespace PVIMS.Services
             }
 
             _customAttributeConfigRepository.Update(updateCustomAttribute);
-            _unitOfWork.Complete();
+            await _unitOfWork.CompleteAsync();
         }
 
         public IList<SelectionDataItemDetail> ListSelectionDataItems(string attributeName)

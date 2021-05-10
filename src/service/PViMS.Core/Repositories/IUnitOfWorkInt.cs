@@ -1,5 +1,6 @@
 ﻿using PVIMS.Core.SeedWork;
 using System;
+using System.Threading.Tasks;
 
 namespace PVIMS.Core.Repositories
 {
@@ -22,7 +23,7 @@ namespace PVIMS.Core.Repositories
         /// <summary>
         /// Flushes all changes to the data store.
         /// </summary>
-        void Complete();
+        Task<bool> CompleteAsync();
         /// <summary>
         /// Seed the data store
         /// </summary>
