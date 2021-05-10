@@ -1,7 +1,8 @@
 ﻿using Autofac;
 using FluentValidation;
 using MediatR;
-using PVIMS.API.Application.Commands;
+using PVIMS.API.Application.Behaviors;
+using PVIMS.API.Application.Commands.ReportInstanceAggregate;
 using PVIMS.API.Application.Validations;
 using System.Reflection;
 
@@ -30,6 +31,8 @@ namespace PVIMS.API.Infrastructure.AutofacModules
                 var componentContext = context.Resolve<IComponentContext>();
                 return t => { object o; return componentContext.TryResolve(t, out o) ? o : null; };
             });
+
+            builder.RegisterGeneric(typeof(ValidatorBehavior<,>)).As(typeof(IPipelineBehavior<,>));
         }
     }
 }
