@@ -207,7 +207,7 @@ namespace PVIMS.API.Controllers
                     _patientMedicationRepository.Save(patientMedication);
                     await AddOrUpdateMedicationsToReportInstanceAsync(patientMedication);
                     
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     var mappedPatientMedication = _mapper.Map<PatientMedicationIdentifierDto>(patientMedication);
                     if (mappedPatientMedication == null)
@@ -309,7 +309,7 @@ namespace PVIMS.API.Controllers
                     _patientMedicationRepository.Update(medicationFromRepo);
                     await AddOrUpdateMedicationsToReportInstanceAsync(medicationFromRepo);
 
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     return Ok();
                 }
@@ -363,7 +363,7 @@ namespace PVIMS.API.Controllers
                 medicationFromRepo.ArchivedReason = medicationForDelete.Reason;
                 medicationFromRepo.AuditUser = user;
                 _patientMedicationRepository.Update(medicationFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();

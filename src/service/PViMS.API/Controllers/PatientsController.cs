@@ -30,7 +30,7 @@ using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Infrastructure;
-using PVIMS.API.Application.Queries.ReportInstance;
+using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -669,7 +669,7 @@ namespace PVIMS.API.Controllers
                     patientDetail.EncounterDate = patientForCreation.EncounterDate;
 
                     id = _patientService.AddPatient(patientDetail);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     var mappedPatient = await GetPatientAsync<PatientIdentifierDto>(id);
                     if (mappedPatient == null)
@@ -752,7 +752,7 @@ namespace PVIMS.API.Controllers
                     _modelExtensionBuilder.UpdateExtendable(patientFromRepo, patientDetail.CustomAttributes, "Admin");
 
                     _patientRepository.Update(patientFromRepo);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     return Ok();
                 }
@@ -887,7 +887,7 @@ namespace PVIMS.API.Controllers
                 patientFromRepo.ArchivedReason = patientForDelete.Reason;
                 patientFromRepo.AuditUser = user;
                 _patientRepository.Update(patientFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -959,7 +959,7 @@ namespace PVIMS.API.Controllers
                 };
 
                 _attachmentRepository.Save(attachment);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 var mappedAttachment = await GetAttachmentAsync<AttachmentIdentifierDto>(patientId, attachment.Id);
                 if (mappedAttachment == null)
@@ -1015,7 +1015,7 @@ namespace PVIMS.API.Controllers
                 attachmentFromRepo.ArchivedReason = attachmentForDelete.Reason;
                 attachmentFromRepo.AuditUser = user;
                 _attachmentRepository.Update(attachmentFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }

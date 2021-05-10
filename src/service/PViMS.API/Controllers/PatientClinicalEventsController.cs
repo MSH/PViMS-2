@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PVIMS.API.Application.Queries.ReportInstance;
+using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
@@ -245,7 +245,7 @@ namespace PVIMS.API.Controllers
                     }
                     await _workFlowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(patientClinicalEvent.PatientClinicalEventGuid, medications);
 
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     var mappedPatientClinicalEvent = _mapper.Map<PatientClinicalEventIdentifierDto>(patientClinicalEvent);
                     if (mappedPatientClinicalEvent == null)
@@ -323,7 +323,7 @@ namespace PVIMS.API.Controllers
                         clinicalEventFromRepo.Patient.FullName,
                         clinicalEventFromRepo.SourceTerminologyMedDra.DisplayName);
 
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     return Ok();
                 }
@@ -376,7 +376,7 @@ namespace PVIMS.API.Controllers
                 clinicalEventFromRepo.ArchivedReason = conditionForDelete.Reason;
                 clinicalEventFromRepo.AuditUser = user;
                 _patientClinicalEventRepository.Update(clinicalEventFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }

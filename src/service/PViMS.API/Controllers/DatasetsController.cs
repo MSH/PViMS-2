@@ -674,7 +674,7 @@ namespace PVIMS.API.Controllers
                 datasetFromRepo.Help = datasetForUpdate.Help;
 
                 _datasetRepository.Update(datasetFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -742,7 +742,7 @@ namespace PVIMS.API.Controllers
                 datasetCategoryFromRepo.Help = datasetCategoryForUpdate.Help;
 
                 _datasetCategoryRepository.Update(datasetCategoryFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -807,7 +807,7 @@ namespace PVIMS.API.Controllers
                 datasetCategoryElementFromRepo.Help = datasetCategoryElementForUpdate.Help;
 
                 _datasetCategoryElementRepository.Update(datasetCategoryElementFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -838,7 +838,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _datasetRepository.Delete(datasetFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();
@@ -868,7 +868,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _datasetCategoryRepository.Delete(datasetCategoryFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();
@@ -895,7 +895,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _datasetCategoryElementRepository.Delete(datasetCategoryElementFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();
@@ -1032,7 +1032,7 @@ namespace PVIMS.API.Controllers
                     }
                     await _workflowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(datasetInstance.DatasetInstanceGuid, medications);
 
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     return Ok();
                 }

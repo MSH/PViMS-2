@@ -130,7 +130,7 @@ namespace PVIMS.API.Controllers
 
                         userFromRepo.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
                         _userRepository.Update(userFromRepo);
-                        _unitOfWork.Complete();
+                        await _unitOfWork.CompleteAsync();
 
                         return Ok(new LoginResponseDto(await _jwtFactory.GenerateEncodedToken(userFromRepo, await _userManager.GetRolesAsync(userFromManager)), refreshToken, userFromRepo.EulaAcceptanceDate == null, userFromRepo.AllowDatasetDownload));
                     }
@@ -192,7 +192,7 @@ namespace PVIMS.API.Controllers
                     userFromRepo.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
 
                     _userRepository.Update(userFromRepo);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     return new ExchangeRefreshTokenResponseModel() { AccessToken = jwtToken, RefreshToken = refreshToken };
                 }

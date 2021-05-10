@@ -331,7 +331,7 @@ namespace PVIMS.API.Controllers
                 metaPageFromRepo.IsVisible = (metaPageForUpdate.Visible == Models.ValueTypes.YesNoValueType.Yes);
 
                 _metaPageRepository.Update(metaPageFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -369,7 +369,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _metaPageRepository.Delete(metaPageFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }
@@ -584,7 +584,7 @@ namespace PVIMS.API.Controllers
                 metaWidgetFromRepo.Icon = metaWidgetForUpdate.Icon;
 
                 _metaWidgetRepository.Update(metaWidgetFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -627,7 +627,7 @@ namespace PVIMS.API.Controllers
                 metaWidgetFromRepo.MetaPage = metaDestinationPageFromRepo;
 
                 _metaWidgetRepository.Update(metaWidgetFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -654,7 +654,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _metaWidgetRepository.Delete(metaWidgetFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }

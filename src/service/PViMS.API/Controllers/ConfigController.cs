@@ -120,7 +120,7 @@ namespace PVIMS.API.Controllers
                 configFromRepo.ConfigValue = String.IsNullOrWhiteSpace(configForUpdate.ConfigValue) ? "-- not specified --" : configForUpdate.ConfigValue;
 
                 _configRepository.Update(configFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();

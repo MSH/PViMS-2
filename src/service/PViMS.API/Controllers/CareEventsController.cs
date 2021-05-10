@@ -26,21 +26,19 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class CareEventsController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<CareEvent> _careEventRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
 
-        public CareEventsController(IPropertyMappingService propertyMappingService,
+        public CareEventsController(
             ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<CareEvent> careEventRepository,
             IUnitOfWorkInt unitOfWork)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
@@ -196,7 +194,7 @@ namespace PVIMS.API.Controllers
                 careEventFromRepo.Description = careEventForUpdate.CareEventName;
 
                 _careEventRepository.Update(careEventFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -225,7 +223,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _careEventRepository.Delete(careEventFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

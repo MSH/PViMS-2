@@ -368,7 +368,7 @@ namespace PVIMS.API.Controllers
                 facilityFromRepo.TelNumber = facilityForUpdate.ContactNumber;
 
                 _facilityRepository.Update(facilityFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -397,7 +397,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _facilityRepository.Delete(facilityFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

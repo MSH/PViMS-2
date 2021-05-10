@@ -391,7 +391,7 @@ namespace PVIMS.API.Controllers
                 conceptFromRepo.Active = (conceptForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
 
                 _conceptRepository.Update(conceptFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -421,7 +421,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _conceptRepository.Delete(conceptFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }
@@ -611,7 +611,7 @@ namespace PVIMS.API.Controllers
                 productFromRepo.Active = (productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
 
                 _productRepository.Update(productFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -643,7 +643,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _productRepository.Delete(productFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

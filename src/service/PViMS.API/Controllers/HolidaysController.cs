@@ -185,7 +185,7 @@ namespace PVIMS.API.Controllers
                 holidayFromRepo.Description = holidayForUpdate.Description;
 
                 _holidayRepository.Update(holidayFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -208,7 +208,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _holidayRepository.Delete(holidayFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

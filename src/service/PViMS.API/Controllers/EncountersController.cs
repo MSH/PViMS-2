@@ -290,7 +290,7 @@ namespace PVIMS.API.Controllers
             {
                 var encounterDetail = PrepareEncounterDetail(encounterForCreation);
                 id = _patientService.AddEncounter(patientFromRepo, encounterDetail);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 var mappedEncounter = await GetEncounterAsync<EncounterIdentifierDto>(patientId, id);
                 if (mappedEncounter == null)
@@ -391,7 +391,7 @@ namespace PVIMS.API.Controllers
                     _datasetInstanceRepository.Update(datasetInstanceFromRepo);
                 }
 
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -453,8 +453,9 @@ namespace PVIMS.API.Controllers
                 encounterFromRepo.ArchivedDate = DateTime.Now;
                 encounterFromRepo.ArchivedReason = encounterForDelete.Reason;
                 encounterFromRepo.AuditUser = user;
+
                 _encounterRepository.Update(encounterFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }

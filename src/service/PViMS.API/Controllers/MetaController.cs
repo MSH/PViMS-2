@@ -23,6 +23,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
 {
@@ -227,7 +228,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPost("meta", Name = "RefreshMeta")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult RefreshMeta()
+        public async Task<IActionResult> RefreshMetaAsync()
         {
             // Ensure all meta definitions exist
             CheckEntitiesExist();
@@ -243,7 +244,7 @@ namespace PVIMS.API.Controllers
             UpdateCustomAttributes();
             CreateMetaDependencies();
 
-            _infrastructureService.SetConfigValue(ConfigType.MetaDataLastUpdated, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+            await _infrastructureService.SetConfigValueAsync(ConfigType.MetaDataLastUpdated, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
 
             return NoContent();
         }

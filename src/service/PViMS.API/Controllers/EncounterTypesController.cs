@@ -281,7 +281,7 @@ namespace PVIMS.API.Controllers
                 encounterTypeFromRepo.Help = encounterTypeForUpdate.Help;
 
                 _encounterTypeRepository.Update(encounterTypeFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -319,7 +319,7 @@ namespace PVIMS.API.Controllers
                 }
 
                 _encounterTypeRepository.Delete(encounterTypeFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }

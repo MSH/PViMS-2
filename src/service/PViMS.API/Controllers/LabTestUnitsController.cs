@@ -195,7 +195,7 @@ namespace PVIMS.API.Controllers
                 labTestUnitFromRepo.Description = labTestUnitForUpdate.LabTestUnitName;
 
                 _labTestUnitRepository.Update(labTestUnitFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -220,7 +220,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _labTestUnitRepository.Delete(labTestUnitFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

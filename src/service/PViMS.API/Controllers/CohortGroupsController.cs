@@ -316,7 +316,7 @@ namespace PVIMS.API.Controllers
                 cohortGroupFromRepo.Condition = conditionFromRepo;
 
                 _cohortGroupRepository.Update(cohortGroupFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -347,7 +347,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _cohortGroupRepository.Delete(cohortGroupFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

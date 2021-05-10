@@ -238,7 +238,7 @@ namespace PVIMS.API.Controllers
                 }
 
                 _conditionRepository.Save(newCondition);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 var mappedCondition = await GetConditionAsync<ConditionIdentifierDto>(newCondition.Id);
                 if (mappedCondition == null)
@@ -309,7 +309,7 @@ namespace PVIMS.API.Controllers
                 AddOrUpdateConditionMeddras(conditionForUpdate, conditionFromRepo);
                 AddOrUpdateConditionMedications(conditionForUpdate, conditionFromRepo);
 
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -343,7 +343,7 @@ namespace PVIMS.API.Controllers
                 meddraValues.ForEach(conditionMedication => _conditionMeddraRepository.Delete(conditionMedication));
 
                 _conditionRepository.Delete(conditionFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

@@ -215,7 +215,7 @@ namespace PVIMS.API.Controllers
                     _modelExtensionBuilder.UpdateExtendable(patientCondition, conditionDetail.CustomAttributes, "Admin");
 
                     _patientConditionRepository.Save(patientCondition);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     var mappedPatientCondition = _mapper.Map<PatientConditionIdentifierDto>(patientCondition);
                     if (mappedPatientCondition == null)
@@ -328,7 +328,7 @@ namespace PVIMS.API.Controllers
                     _modelExtensionBuilder.UpdateExtendable(patientCondition, conditionDetail.CustomAttributes, "Admin");
 
                     _patientConditionRepository.Update(patientCondition);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     return Ok();
                 }
@@ -381,7 +381,7 @@ namespace PVIMS.API.Controllers
                 conditionFromRepo.ArchivedReason = conditionForDelete.Reason;
                 conditionFromRepo.AuditUser = user;
                 _patientConditionRepository.Update(conditionFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }

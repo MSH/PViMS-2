@@ -268,7 +268,7 @@ namespace PVIMS.API.Controllers
                 enrolmentFromRepo.DeenroledDate = deenroledDate;
 
                 _cohortGroupEnrolmentRepository.Update(enrolmentFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return CreatedAtRoute("GetPatientEnrolmentByIdentifier",
@@ -330,7 +330,7 @@ namespace PVIMS.API.Controllers
                 enrolmentFromRepo.AuditUser = user;
 
                 _cohortGroupEnrolmentRepository.Update(enrolmentFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }

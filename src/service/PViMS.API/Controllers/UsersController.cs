@@ -244,7 +244,7 @@ namespace PVIMS.API.Controllers
                             userFromRepo.Facilities.Add(uf);
                         }
                         _userRepository.Update(userFromRepo);
-                        _unitOfWork.Complete();
+                        await _unitOfWork.CompleteAsync();
 
                         var mappedUser = _mapper.Map<UserIdentifierDto>(userFromRepo);
 
@@ -343,7 +343,7 @@ namespace PVIMS.API.Controllers
                 UpdateUserRoles(userForUpdate, userFromRepo);
                 await UpdateUserFacilitiesAsync(userForUpdate, userFromRepo);
 
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -379,7 +379,7 @@ namespace PVIMS.API.Controllers
                 //String hashedNewPassword = _userManager.PasswordHasher.HashPassword(userForPasswordUpdate.Password);
                 //userFromRepo.PasswordHash = hashedNewPassword;
                 _userRepository.Update(userFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -411,7 +411,7 @@ namespace PVIMS.API.Controllers
                 userFromRepo.EulaAcceptanceDate = DateTime.Now;
 
                 _userRepository.Update(userFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -444,7 +444,7 @@ namespace PVIMS.API.Controllers
                 userFacilityValues.ForEach(userFacility => _userFacilityRepository.Delete(userFacility));
 
                 _userRepository.Delete(userFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

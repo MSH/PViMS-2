@@ -183,7 +183,7 @@ namespace PVIMS.API.Controllers
                 labResultFromRepo.Active = (labResultForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
 
                 _labResultRepository.Update(labResultFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -206,7 +206,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _labResultRepository.Delete(labResultFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

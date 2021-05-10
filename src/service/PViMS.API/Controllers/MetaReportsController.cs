@@ -322,7 +322,7 @@ namespace PVIMS.API.Controllers
                 metaReportFromRepo.MetaDefinition = PrepareMetaDefinition(metaReportForUpdate);
 
                 _metaReportRepository.Update(metaReportFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -353,7 +353,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _metaReportRepository.Delete(metaReportFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }
@@ -370,7 +370,7 @@ namespace PVIMS.API.Controllers
         [HttpPut("{id}/attributes", Name = "UpdateMetaReportAttributes")]
         [Consumes("application/json")]
         [Authorize(Roles = "ReporterAdmin")]
-        public async Task<IActionResult> UpdateMetaReportAttributes(long metaPageId, long id,
+        public async Task<IActionResult> UpdateMetaReportAttributes(long id,
             [FromBody] MetaReportForAttributeUpdateDto metaReportForAttributeUpdate)
         {
             if (metaReportForAttributeUpdate == null)
@@ -389,7 +389,7 @@ namespace PVIMS.API.Controllers
                 PrepareMetaDefinitionForAttribute(metaReportForAttributeUpdate, metaReportFromRepo);
 
                 _metaReportRepository.Update(metaReportFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }

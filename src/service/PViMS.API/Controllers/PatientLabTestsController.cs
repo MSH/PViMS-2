@@ -182,7 +182,7 @@ namespace PVIMS.API.Controllers
                     _modelExtensionBuilder.UpdateExtendable(patientLabTest, labTestDetail.CustomAttributes, "Admin");
 
                     _patientLabTestRepository.Save(patientLabTest);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     var mappedPatientLabTest = _mapper.Map<PatientLabTestIdentifierDto>(patientLabTest);
                     if (mappedPatientLabTest == null)
@@ -268,7 +268,7 @@ namespace PVIMS.API.Controllers
                     _modelExtensionBuilder.UpdateExtendable(patientLabTestFromRepo, labTestDetail.CustomAttributes, "Admin");
 
                     _patientLabTestRepository.Update(patientLabTestFromRepo);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     return Ok();
                 }
@@ -325,7 +325,7 @@ namespace PVIMS.API.Controllers
                 patientLabTestFromRepo.ArchivedReason = labTestForDelete.Reason;
                 patientLabTestFromRepo.AuditUser = user;
                 _patientLabTestRepository.Update(patientLabTestFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
