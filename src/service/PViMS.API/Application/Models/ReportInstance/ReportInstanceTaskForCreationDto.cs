@@ -1,5 +1,5 @@
-﻿using PVIMS.Core.Aggregates.ReportInstanceAggregate;
-using System.ComponentModel.DataAnnotations;
+﻿using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Models.ValueTypes;
 
 namespace PVIMS.API.Models
 {
@@ -8,19 +8,17 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The source of that data quality task
         /// </summary>
-        [Required]
-        public string Source { get; private set; }
+        public string Source { get; set; }
 
         /// <summary>
         /// A detailed description of the task requirement
         /// </summary>
-        [Required]
-        public string Description { get; private set; }
+        public string Description { get; set; }
 
         /// <summary>
         /// The type of task
         /// </summary>
-        [Required]
-        public TaskType TaskType { get; private set; }
+        [ValidEnumValue]
+        public TaskTypeValueType TaskType { get; set; }
     }
 }

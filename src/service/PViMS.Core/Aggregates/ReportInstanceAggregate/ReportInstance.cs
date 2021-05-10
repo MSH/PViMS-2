@@ -81,7 +81,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             return newTask;
         }
 
-        public void AddTaskComment(int taskId, string comment)
+        public ReportInstanceTaskComment AddTaskComment(int taskId, string comment)
         {
             if (string.IsNullOrWhiteSpace(comment))
             {
@@ -93,7 +93,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                 throw new KeyNotFoundException(nameof(taskId));
             }
 
-            task.AddComment(comment);
+            return task.AddComment(comment);
         }
 
         public void ChangeTaskDetails(int taskId, string source, string description)

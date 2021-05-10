@@ -9,8 +9,8 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
     public class TaskType
         : Enumeration
     {
-        public static TaskType DataQualityAssurance = new TaskType(1, nameof(DataQualityAssurance).ToLowerInvariant());
-        public static TaskType FollowUp = new TaskType(2, nameof(FollowUp).ToLowerInvariant());
+        public static TaskType DataQualityAssurance = new TaskType(1, "Data Quality Assurance");
+        public static TaskType FollowUp = new TaskType(2, "Follow Up");
 
         public TaskType(int id, string name)
             : base(id, name)

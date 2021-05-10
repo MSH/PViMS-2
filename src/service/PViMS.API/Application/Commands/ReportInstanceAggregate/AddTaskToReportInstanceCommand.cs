@@ -4,7 +4,7 @@ using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using System;
 using System.Runtime.Serialization;
 
-namespace PVIMS.API.Application.Commands
+namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
 {
     [DataContract]
     public class AddTaskToReportInstanceCommand

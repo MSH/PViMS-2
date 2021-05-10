@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.Logging;
-using PVIMS.API.Application.Commands;
+using PVIMS.API.Application.Commands.ReportInstanceAggregate;
 
 namespace PVIMS.API.Application.Validations
 {

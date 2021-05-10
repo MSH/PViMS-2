@@ -1,4 +1,4 @@
-﻿using PVIMS.API.Application.Queries.ReportInstance;
+﻿using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 

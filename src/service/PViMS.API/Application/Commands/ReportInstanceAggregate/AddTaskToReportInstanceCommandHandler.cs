@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PVIMS.API.Application.Commands
+namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
 {
     public class AddTaskToReportInstanceCommandHandler
         : IRequestHandler<AddTaskToReportInstanceCommand, TaskDto>
@@ -46,7 +46,9 @@ namespace PVIMS.API.Application.Commands
             }
 
             var reportInstanceTask = reportInstanceFromRepo.AddTask(message.Source, message.Description, message.TaskType);
-            _unitOfWork.Complete();
+            _reportInstanceRepository.Update(reportInstanceFromRepo);
+
+            await _unitOfWork.CompleteAsync();
 
             _logger.LogInformation($"----- Task {message.Source} created");
 

@@ -32,9 +32,11 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             TaskStatusId = taskStatus.Id;
         }
 
-        public void AddComment(string comment)
+        public ReportInstanceTaskComment AddComment(string comment)
         {
-            _comments.Add(new ReportInstanceTaskComment(comment));
+            var newTaskComment = new ReportInstanceTaskComment(comment);
+            _comments.Add(newTaskComment);
+            return newTaskComment;
         }
 
         public void ChangeDetails(TaskDetail taskDetail)
