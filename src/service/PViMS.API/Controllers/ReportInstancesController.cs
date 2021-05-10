@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PVIMS.API.Application.Commands;
-using PVIMS.API.Application.Queries.ReportInstance;
+using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
@@ -33,6 +33,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PVIMS.API.Application.Commands.ReportInstanceAggregate;
+using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -554,7 +556,7 @@ namespace PVIMS.API.Controllers
                 reportInstanceFromRepo.TerminologyMedDra = termFromRepo;
 
                 _reportInstanceRepository.Update(reportInstanceFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "MEDDRASET", "AUTOMATION: MedDRA Term set", null, "");
 
@@ -649,7 +651,7 @@ namespace PVIMS.API.Controllers
                 }
 
                 _reportInstanceMedicationRepository.Update(reportInstanceMedicationFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -702,7 +704,14 @@ namespace PVIMS.API.Controllers
         public async Task<IActionResult> CreateReportInstanceTask(Guid workFlowGuid, int reportInstanceId,
             [FromBody] ReportInstanceTaskForCreationDto reportInstanceTaskForCreation)
         {
-            var command = new AddTaskToReportInstanceCommand(workFlowGuid, reportInstanceId, reportInstanceTaskForCreation.Source, reportInstanceTaskForCreation.Description, reportInstanceTaskForCreation.TaskType);
+            if (reportInstanceTaskForCreation == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for command");
+                return BadRequest(ModelState);
+            }
+
+            var taskType = TaskType.FromName(reportInstanceTaskForCreation.TaskType.ToString());
+            var command = new AddTaskToReportInstanceCommand(workFlowGuid, reportInstanceId, reportInstanceTaskForCreation.Source, reportInstanceTaskForCreation.Description, taskType);
 
             _logger.LogInformation(
                 "----- Sending command: AddTaskToReportInstanceCommand - {workFlowGuid}: {reportInstanceId}",
@@ -721,6 +730,148 @@ namespace PVIMS.API.Controllers
                 {
                     workFlowGuid,
                     reportInstanceId,
+                    id = commandResult.Id
+                }, commandResult);
+        }
+
+        /// <summary>
+        /// Change task details for report instance task
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+        /// <param name="reportInstanceId">The unique identifier of the reporting instance</param>
+        /// <param name="id">The unique identifier of the reporting instance task</param>
+        /// <param name="reportInstanceTaskDetailsForUpdate">The payload for updating task details</param>
+        /// <returns></returns>
+        [HttpPut("workflow/{workFlowGuid}/reportinstances/{reportInstanceId}/tasks/{id}/details", Name = "UpdateReportInstanceTaskDetails")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdateReportInstanceTaskDetails(Guid workFlowGuid, int reportInstanceId, int id,
+            [FromBody] ReportInstanceTaskDetailsForUpdateDto reportInstanceTaskDetailsForUpdate)
+        {
+            var command = new ChangeTaskDetailsCommand(workFlowGuid, reportInstanceId, id, reportInstanceTaskDetailsForUpdate.Source, reportInstanceTaskDetailsForUpdate.Description);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeTaskDetailsCommand - {workFlowGuid}: {reportInstanceId}: {id}",
+                command.WorkFlowGuid.ToString(),
+                command.ReportInstanceId,
+                command.ReportInstanceTaskId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Change current status for report instance task
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+        /// <param name="reportInstanceId">The unique identifier of the reporting instance</param>
+        /// <param name="id">The unique identifier of the reporting instance task</param>
+        /// <param name="reportInstanceTaskStatusForUpdate">The payload for updating task status</param>
+        /// <returns></returns>
+        [HttpPut("workflow/{workFlowGuid}/reportinstances/{reportInstanceId}/tasks/{id}/status", Name = "UpdateReportInstanceTaskStatus")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdateReportInstanceTaskStatus(Guid workFlowGuid, int reportInstanceId, int id,
+            [FromBody] ReportInstanceTaskStatusForUpdateDto reportInstanceTaskStatusForUpdate)
+        {
+            var taskStatus = Core.Aggregates.ReportInstanceAggregate.TaskStatus.FromName(reportInstanceTaskStatusForUpdate.TaskStatus.ToString());
+            var command = new ChangeTaskStatusCommand(workFlowGuid, reportInstanceId, id, taskStatus);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeTaskStatusCommand - {workFlowGuid}: {reportInstanceId}: {id}",
+                command.WorkFlowGuid.ToString(),
+                command.ReportInstanceId,
+                command.ReportInstanceTaskId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Get a single report instance task comment using it's unique id and valid media type 
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+        /// <param name="reportInstanceId">The unique id of the report instance</param>
+        /// <param name="reportInstanceTaskId">The unique id of the report instance task</param>
+        /// <param name="id">The unique id of the report instance task</param>
+        /// <returns>An ActionResult of type ReportInstanceTaskCommentIdentifierDto</returns>
+        [HttpGet("workflow/{workFlowGuid}/reportinstances/{reportInstanceId}/tasks/{reportInstanceTaskId}/comments/{id}", Name = "GetReportInstanceTaskCommentByIdentifier")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
+        public async Task<ActionResult<ReportInstanceTaskCommentIdentifierDto>> GetReportInstanceTaskCommentByIdentifier(Guid workFlowGuid, int reportInstanceId, int reportInstanceTaskId, int id)
+        {
+            var query = new GetReportInstanceTaskCommentIdentifierQuery(workFlowGuid, reportInstanceId, reportInstanceTaskId, id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetReportInstanceTaskCommentIdentifierQuery - {workFlowGuid}: {reportInstanceId}: {reportInstanceTaskId}: {id}",
+                workFlowGuid.ToString(),
+                reportInstanceId,
+                reportInstanceTaskId,
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            return Ok(queryResult);
+        }
+
+        /// <summary>
+        /// Add a new comment to a report instance task
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+        /// <param name="reportInstanceId">The unique identifier of the reporting instance</param>
+        /// <param name="reportInstanceTaskId">The unique identifier of the reporting instance task</param>
+        /// <param name="reportInstanceTaskCommentForCreation">The payload containing details of the task comment</param>
+        /// <returns></returns>
+        [HttpPost("workflow/{workFlowGuid}/reportinstances/{reportInstanceId}/tasks/{reportInstanceTaskId}/comments", Name = "CreateReportInstanceTaskComment")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> CreateReportInstanceTaskComment(Guid workFlowGuid, int reportInstanceId, int reportInstanceTaskId, 
+            [FromBody] ReportInstanceTaskCommentForCreationDto reportInstanceTaskCommentForCreation)
+        {
+            if (reportInstanceTaskCommentForCreation == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for command");
+                return BadRequest(ModelState);
+            }
+
+            var command = new AddCommentToReportInstanceTaskCommand(workFlowGuid, reportInstanceId, reportInstanceTaskId, reportInstanceTaskCommentForCreation.Comment);
+
+            _logger.LogInformation(
+                "----- Sending command: AddCommentToReportInstanceTaskCommand - {workFlowGuid}: {reportInstanceId}: {reportInstanceTaskId}",
+                command.WorkFlowGuid.ToString(),
+                command.ReportInstanceId,
+                command.ReportInstanceTaskId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return CreatedAtRoute("GetReportInstanceTaskCommentByIdentifier",
+                new
+                {
+                    workFlowGuid,
+                    reportInstanceId,
+                    reportInstanceTaskId,
                     id = commandResult.Id
                 }, commandResult);
         }
@@ -1397,7 +1548,7 @@ namespace PVIMS.API.Controllers
                     datasetInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "E.i.2.1b MedDRA Code for Reaction / Event"), term.DisplayName);
                 }
 
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
         } // end of sub
 
@@ -1444,7 +1595,7 @@ namespace PVIMS.API.Controllers
                     SetInstanceValuesForSpontaneousRelease3(datasetInstance, sourceInstance, user, sourceInstance.Id);
                 }
 
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
         }
 
