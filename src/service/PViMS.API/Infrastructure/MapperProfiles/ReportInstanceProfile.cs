@@ -44,6 +44,10 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.CreatedDetail, opt => opt.MapFrom(src => src.Created))
                 .ForMember(dest => dest.UpdatedDetail, opt => opt.MapFrom(src => src.LastUpdated));
 
+            CreateMap<ReportInstanceTaskComment, TaskCommentDto>()
+                .ForMember(dest => dest.CreatedDetail, opt => opt.MapFrom(src => src.Created))
+                .ForMember(dest => dest.UpdatedDetail, opt => opt.MapFrom(src => src.LastUpdated));
+
             CreateMap<ActivityExecutionStatusEvent, ActivityExecutionStatusEventDto>()
                 .ForMember(dest => dest.Activity, opt => opt.MapFrom(src => src.ExecutionStatus.Activity.QualifiedName))
                 .ForMember(dest => dest.ExecutionEvent, opt => opt.MapFrom(src => src.ExecutionStatus.Description))

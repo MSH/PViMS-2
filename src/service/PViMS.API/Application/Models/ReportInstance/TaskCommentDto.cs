@@ -6,7 +6,7 @@ namespace PVIMS.API.Models
     /// A comment that can be allocated by a system user to a task
     /// </summary>
     [DataContract()]
-    public class TaskCommentDto
+    public class TaskCommentDto : LinkedResourceBaseDto
     {
         /// <summary>
         /// The unique identifier of the comment
