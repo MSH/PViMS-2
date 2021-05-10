@@ -693,6 +693,39 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Get a single report instance task using it's unique id and valid media type 
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+        /// <param name="reportInstanceId">The unique id of the report instance</param>
+        /// <param name="id">The unique id of the report instance task</param>
+        /// <returns>An ActionResult of type TaskDto</returns>
+        [HttpGet("workflow/{workFlowGuid}/reportinstances/{reportInstanceId}/tasks/{id}", Name = "GetReportInstanceTaskByDetail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
+        public async Task<ActionResult<TaskDto>> GetReportInstanceTaskByDetail(Guid workFlowGuid, int reportInstanceId, int id)
+        {
+            var query = new GetReportInstanceTaskDetailQuery(workFlowGuid, reportInstanceId, id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetReportInstanceTaskDetailQuery - {workFlowGuid}: {reportInstanceId}: {id}",
+                workFlowGuid.ToString(),
+                reportInstanceId,
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            return Ok(queryResult);
+        }
+
+        /// <summary>
         /// Add a new task to a report instance
         /// </summary>
         /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
