@@ -24,6 +24,7 @@ import { ReportTaskListComponent } from './report/report-task/report-task-list.c
 import { ReportTaskAddPopupComponent } from './report/report-task/report-task-add-popup/report-task-add.popup.component';
 import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-task-details-popup/change-task-details.popup.component';
 import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task-status-popup/change-task-status.popup.component';
+import { TaskCommentsPopupComponent } from './report/report-task/task-comments-popup/task-comments.popup.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task
     ReportTaskAddPopupComponent,
     ReportTaskListComponent,
     SetMeddraPopupComponent, 
-    SpontaneousAnalyserComponent, 
+    SpontaneousAnalyserComponent,
+    TaskCommentsPopupComponent,
     WhoPopupComponent
   ],
   imports: [
@@ -60,9 +62,10 @@ import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task
     ChangeTaskStatusPopupComponent,
     DatasetInstancePopupComponent,
     NaranjoPopupComponent,
+    ReportTaskAddPopupComponent,    
     SetMeddraPopupComponent, 
-    WhoPopupComponent,
-    ReportTaskAddPopupComponent
+    TaskCommentsPopupComponent,
+    WhoPopupComponent
   ]  
 })
 export class AnalyticalModule { }

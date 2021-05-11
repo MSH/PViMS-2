@@ -42,10 +42,12 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.TaskType, opt => opt.MapFrom(src => TaskType.From(src.TaskTypeId).Name))
                 .ForMember(dest => dest.TaskStatus, opt => opt.MapFrom(src => TaskStatus.From(src.TaskStatusId).Name))
                 .ForMember(dest => dest.CreatedDetail, opt => opt.MapFrom(src => src.Created))
-                .ForMember(dest => dest.UpdatedDetail, opt => opt.MapFrom(src => src.LastUpdated));
+                .ForMember(dest => dest.UpdatedDetail, opt => opt.MapFrom(src => src.LastUpdated))
+                .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.Comments.OrderByDescending(c => c.Created)));
 
             CreateMap<ReportInstanceTaskComment, TaskCommentDto>()
                 .ForMember(dest => dest.CreatedDetail, opt => opt.MapFrom(src => src.Created))
+                .ForMember(dest => dest.CreatedInitials, opt => opt.MapFrom(src => $"{src.CreatedBy.FirstName.Substring(0, 1)}{src.CreatedBy.LastName.Substring(0, 1)}"))
                 .ForMember(dest => dest.UpdatedDetail, opt => opt.MapFrom(src => src.LastUpdated));
 
             CreateMap<ActivityExecutionStatusEvent, ActivityExecutionStatusEventDto>()

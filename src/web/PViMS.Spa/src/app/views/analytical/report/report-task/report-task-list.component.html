@@ -102,7 +102,7 @@
                       {{ 'Change status' | translate }}
                   </span>
                 </button>
-                <button mat-menu-item (click)="downloadAttachment(record.id, record.e2bXmlFileId)">
+                <button mat-menu-item (click)="openTaskCommentsPopUp(record.id)">
                   <mat-icon>comment</mat-icon>
                   <span style="vertical-align: middle;">
                       {{ 'Comments' | translate }}

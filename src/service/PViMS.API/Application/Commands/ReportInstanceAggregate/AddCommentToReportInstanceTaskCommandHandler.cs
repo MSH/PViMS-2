@@ -38,7 +38,8 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
         public async Task<TaskCommentDto> Handle(AddCommentToReportInstanceTaskCommand message, CancellationToken cancellationToken)
         {
             var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.WorkFlow.WorkFlowGuid == message.WorkFlowGuid
-                    && ri.Id == message.ReportInstanceId);
+                    && ri.Id == message.ReportInstanceId,
+                    new string[] { "Tasks.Comments" });
 
             if(reportInstanceFromRepo == null)
             {

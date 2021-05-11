@@ -1,3 +1,5 @@
+import { TaskCommentModel } from "./task-comment.model";
+
 export interface TaskModel {
   id: number;
   source: string;
@@ -6,4 +8,5 @@ export interface TaskModel {
   taskStatus: string;
   createdDetail: string;
   updatedDetail: string;
+  comments: TaskCommentModel[];
 }

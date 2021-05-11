@@ -21,6 +21,12 @@ namespace PVIMS.API.Models
         public string Comment { get; set; }
 
         /// <summary>
+        /// The initials of the user that created the comment
+        /// </summary>
+        [DataMember]
+        public string CreatedInitials { get; set; }
+
+        /// <summary>
         /// Details of the comment creation
         /// </summary>
         [DataMember]

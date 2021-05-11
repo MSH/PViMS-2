@@ -143,7 +143,11 @@ export class ReportInstanceService extends BaseService {
 
     addTaskToReportInstanceCommand(workFlowGuid: string, reportInstanceId: number, model: any): any {
       return this.Post(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks`, model);
-    }    
+    }
+
+    addCommentToReportInstanceTaskCommand(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number, model: any): any {
+      return this.Post(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks/${reportInstanceTaskId}/comments`, model);
+    }
 
     changeTaskDetailsCommand(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number, model: any): any {
       return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks/${reportInstanceTaskId}/details`, model);

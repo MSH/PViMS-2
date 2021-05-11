@@ -36,7 +36,8 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         {
             var reportInstanceTaskFromRepo = await _reportInstanceTaskRepository.GetAsync(rit => rit.ReportInstance.WorkFlow.WorkFlowGuid == message.WorkFlowGuid
                     && rit.ReportInstance.Id == message.ReportInstanceId
-                    && rit.Id == message.Id);
+                    && rit.Id == message.Id,
+                    new string[] { "Comments.CreatedBy" });
 
             if(reportInstanceTaskFromRepo == null)
             {
