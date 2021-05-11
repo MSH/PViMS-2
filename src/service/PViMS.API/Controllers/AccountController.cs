@@ -100,7 +100,7 @@ namespace PVIMS.API.Controllers
             }
 
             var userFromManager = await _userManager.FindByNameAsync(request.UserName);
-            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == request.UserName);
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == request.UserName, new string[] { "Facilities.Facility" });
             if (userFromManager != null && userFromRepo != null)
             {
                 if (await _userManager.CheckPasswordAsync(userFromManager, request.Password))
