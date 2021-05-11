@@ -271,6 +271,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
+          this.CLog(result);
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
           this.handleError(error, "Error searching for new report instances");
@@ -338,6 +339,11 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
   detailActivity(model: GridRecordModel = null): void {
     let self = this;
     self._router.navigate([_routes.analytical.reports.activity(self.workflowId, model ? model.id : 0)]);
+  }
+
+  detailTask(model: GridRecordModel = null): void {
+    let self = this;
+    self._router.navigate([_routes.analytical.reports.task(self.workflowId, model ? model.id : 0)]);
   }
 
   detailPatient(model: GridRecordModel = null): void {
@@ -478,7 +484,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['created', 'identifier', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'status', 'actions']);
+          (['identifier', 'created', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'status', 'actions']);
 
   qualifiedName: string;
   searchFrom: Moment;

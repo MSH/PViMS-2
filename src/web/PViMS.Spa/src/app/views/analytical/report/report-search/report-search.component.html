@@ -105,17 +105,17 @@
                 </mat-cell>
             </ng-container>
 
+            <ng-container matColumnDef="identifier">
+              <mat-header-cell *matHeaderCellDef>{{ 'Identifier' | translate }}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <p>{{record.identifier}}</p>
+              </mat-cell>
+            </ng-container>
+
             <ng-container matColumnDef="created">
                 <mat-header-cell *matHeaderCellDef>{{ 'Created' | translate }}</mat-header-cell>
                 <mat-cell *matCellDef="let record">
-                    <p>{{record.createdDetail}}</p>
-                </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="identifier">
-                <mat-header-cell *matHeaderCellDef>{{ 'Identifier' | translate }}</mat-header-cell>
-                <mat-cell *matCellDef="let record">
-                    <p>{{record.identifier}}</p>
+                    <p>{{record.createdDetail}}</p><br/>
                 </mat-cell>
             </ng-container>
 
@@ -175,6 +175,15 @@
                     </button>
                     
                     <mat-divider></mat-divider>
+
+                    <button mat-menu-item *ngIf="hasLink(record, 'confirm')" (click)="detailTask(record)">
+                      <mat-icon>assignment</mat-icon>
+                      <span style="vertical-align: middle;">
+                        {{ 'Tasks' | translate }}
+                      </span>
+                    </button>
+
+                    <mat-divider *ngIf="hasLink(record, 'confirm')"></mat-divider>
 
                     <button mat-menu-item *ngIf="hasLink(record, 'confirm')" (click)="openActivityChangePopUp('Confirm Report', record, 'CONFIRMED')">
                       <mat-icon>check</mat-icon>

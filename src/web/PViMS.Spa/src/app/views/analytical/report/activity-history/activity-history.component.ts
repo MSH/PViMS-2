@@ -21,7 +21,7 @@ import { HttpEventType } from '@angular/common/http';
   encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
-export class ActivityhistoryComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ActivityHistoryComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     protected _activatedRoute: ActivatedRoute,
@@ -89,7 +89,7 @@ export class ActivityhistoryComponent extends BaseComponent implements OnInit, A
   ngOnDestroy(): void {
     this._unsubscribeAll.next();
     this._unsubscribeAll.complete();
-    this.eventService.removeAll(ActivityhistoryComponent.name);
+    this.eventService.removeAll(ActivityHistoryComponent.name);
   }   
 
   setupTable() {
