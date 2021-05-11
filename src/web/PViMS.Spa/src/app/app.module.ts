@@ -23,6 +23,7 @@ import { WebcamModule } from 'ngx-webcam';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { HttpInterceptorExtension } from './shared/interceptors/http.interceptor.extension';
+import { QuillModule } from 'ngx-quill';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(httpClient: HttpClient) {
@@ -41,6 +42,7 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     HttpClientModule,
     PerfectScrollbarModule,
     WebcamModule,
+    QuillModule.forRoot(),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
