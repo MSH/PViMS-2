@@ -26,7 +26,6 @@ using PVIMS.API.Infrastructure.OperationFilters;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Infrastructure.Settings;
 using PVIMS.API.Helpers;
-using PVIMS.Core;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Infrastructure;
@@ -479,7 +478,6 @@ namespace PViMS.API
             services.AddScoped<ICustomAttributeConfigRepository, CustomAttributeConfigRepository>();
             services.AddScoped<ISelectionDataRepository, SelectionDataRepository>();
 
-            services.AddScoped<UserContext, UserContext>();
             services.AddScoped<FormHandler, FormHandler>();
 
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();

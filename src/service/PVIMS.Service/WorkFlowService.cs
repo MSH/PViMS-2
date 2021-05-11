@@ -1,4 +1,5 @@
-﻿using PVIMS.Core;
+﻿using Microsoft.AspNetCore.Http;
+using PVIMS.Core;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
@@ -11,6 +12,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace PVIMS.Services
@@ -28,17 +30,16 @@ namespace PVIMS.Services
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public IArtefactService _artefactService { get; set; }
         public ICustomAttributeService _attributeService { get; set; }
         public IPatientService _patientService { get; set; }
-        public UserContext _userContext { get; set; }
 
         public WorkFlowService(IUnitOfWorkInt unitOfWork, 
             ICustomAttributeService attributeService, 
             IPatientService patientService, 
             IArtefactService artefactService, 
-            UserContext userContext,
             IRepositoryInt<Activity> activityRepository,
             IRepositoryInt<ActivityInstance> activityInstanceRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
@@ -47,13 +48,13 @@ namespace PVIMS.Services
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<WorkFlow> workFlowRepository,
-            IRepositoryInt<User> userRepository)
+            IRepositoryInt<User> userRepository,
+            IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _attributeService = attributeService ?? throw new ArgumentNullException(nameof(attributeService));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
-            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _activityRepository = activityRepository ?? throw new ArgumentNullException(nameof(activityRepository));
             _activityInstanceRepository = activityInstanceRepository ?? throw new ArgumentNullException(nameof(activityInstanceRepository));
             _activityExecutionStatusEventRepository = activityExecutionStatusEventRepository ?? throw new ArgumentNullException(nameof(activityExecutionStatusEventRepository));
@@ -63,6 +64,7 @@ namespace PVIMS.Services
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public async Task AddOrUpdateMedicationsForWorkFlowInstanceAsync(Guid contextGuid, List<ReportInstanceMedicationListItem> medications)
@@ -108,7 +110,8 @@ namespace PVIMS.Services
                 throw new KeyNotFoundException($"{nameof(workFlowName)} Unable to locate work flow");
             }
 
-            var currentUser = await _userRepository.GetAsync(u => u.UserName == _userContext.UserName);
+            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var currentUser = await _userRepository.GetAsync(u => u.UserName == userName);
             if (currentUser == null)
             {
                 throw new KeyNotFoundException($"Unable to locate current user");
@@ -131,7 +134,8 @@ namespace PVIMS.Services
         {
             var reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().Single(ri => ri.ContextGuid == contextGuid);
             var newExecutionStatus = GetExecutionStatusForActivity(reportInstance, newStatus);
-            var currentUser = await _userRepository.GetAsync(u => u.UserName == _userContext.UserName);
+            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var currentUser = await _userRepository.GetAsync(u => u.UserName == userName);
 
             var newEvent = reportInstance.CurrentActivity.AddNewEvent(newExecutionStatus, currentUser, comments, contextDate, contextCode);
 
