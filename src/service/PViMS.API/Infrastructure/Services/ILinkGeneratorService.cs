@@ -40,7 +40,7 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateDownloadActivitySingleAttachmentResourceUri(Guid workFlowGuid, long reportinstanceId, long activityExecutionStatusEventId, long attachmentId);
 
-        string CreateEncountersResourceUri(ResourceUriType type, EncounterResourceParameters encounterResourceParameters);
+        string CreateEncountersResourceUri(ResourceUriType type, string orderBy, string facilityName, int pageNumber, int pageSize);
 
         string CreateEncounterForPatientResourceUri(long patientId, long encounterId);
 

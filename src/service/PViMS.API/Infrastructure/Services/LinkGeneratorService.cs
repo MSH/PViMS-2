@@ -497,7 +497,10 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreateEncountersResourceUri(ResourceUriType type,
-           EncounterResourceParameters encounterResourceParameters)
+           string orderBy,
+           string facilityName,
+           int pageNumber,
+           int pageSize)
         {
             switch (type)
             {
@@ -505,29 +508,29 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetEncountersByDetail",
                       new
                       {
-                          orderBy = encounterResourceParameters.OrderBy,
-                          facilityName = encounterResourceParameters.FacilityName,
-                          pageNumber = encounterResourceParameters.PageNumber - 1,
-                          pageSize = encounterResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber - 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetEncountersByDetail",
                       new
                       {
-                          orderBy = encounterResourceParameters.OrderBy,
-                          facilityName = encounterResourceParameters.FacilityName,
-                          pageNumber = encounterResourceParameters.PageNumber + 1,
-                          pageSize = encounterResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber + 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetEncountersByDetail",
                       new
                       {
-                          orderBy = encounterResourceParameters.OrderBy,
-                          facilityName = encounterResourceParameters.FacilityName,
-                          pageNumber = encounterResourceParameters.PageNumber,
-                          pageSize = encounterResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber,
+                          pageSize = pageSize
                       });
             }
         }

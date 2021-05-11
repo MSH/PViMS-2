@@ -1,30 +1,28 @@
 ﻿using AutoMapper;
 using LinqKit;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using PVIMS.API.Application.Queries.EncounterAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
-using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Models;
-using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
-using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
@@ -37,6 +35,7 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class EncountersController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
@@ -44,20 +43,19 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<Encounter> _encounterRepository;
         private readonly IRepositoryInt<EncounterType> _encounterTypeRepository;
         private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
-        private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<DatasetElement> _datasetElementRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<Attachment> _attachmentRepository;
-        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IPatientService _patientService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly PVIMSDbContext _context;
+        private readonly ILogger<EncountersController> _logger;
 
-        public EncountersController(IPropertyMappingService propertyMappingService,
+        public EncountersController(IMediator mediator, 
+            IPropertyMappingService propertyMappingService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Patient> patientRepository,
@@ -66,17 +64,16 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<Encounter> encounterRepository,
             IRepositoryInt<EncounterType> encounterTypeRepository,
             IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
-            IRepositoryInt<Facility> facilityRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<DatasetElement> datasetElementRepository,
             IRepositoryInt<User> userRepository,
             IRepositoryInt<Attachment> attachmentRepository,
-            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IUnitOfWorkInt unitOfWork,
             IPatientService patientService,
             IHttpContextAccessor httpContextAccessor,
-            PVIMSDbContext dbContext)
+            ILogger<EncountersController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
@@ -86,16 +83,14 @@ namespace PVIMS.API.Controllers
             _encounterRepository = encounterRepository ?? throw new ArgumentNullException(nameof(encounterRepository));
             _encounterTypeRepository = encounterTypeRepository ?? throw new ArgumentNullException(nameof(encounterTypeRepository));
             _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
-            _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _datasetElementRepository = datasetElementRepository ?? throw new ArgumentNullException(nameof(datasetElementRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _attachmentRepository = attachmentRepository ?? throw new ArgumentNullException(nameof(attachmentRepository));
-            _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -110,7 +105,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<EncounterDetailDto>> GetEncountersByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<EncounterDetailDto>>> GetEncountersByDetail(
             [FromQuery] EncounterResourceParameters encounterResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<EncounterDetailDto, Encounter>
@@ -119,40 +114,41 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            if(!String.IsNullOrWhiteSpace(encounterResourceParameters.FirstName))
+            var query = new GetEncountersDetailQuery(encounterResourceParameters.OrderBy,
+                encounterResourceParameters.FacilityName,
+                encounterResourceParameters.CustomAttributeId,
+                encounterResourceParameters.CustomAttributeValue,
+                encounterResourceParameters.PatientId,
+                encounterResourceParameters.SearchFrom,
+                encounterResourceParameters.SearchTo,
+                encounterResourceParameters.FirstName,
+                encounterResourceParameters.LastName,
+                encounterResourceParameters.PageNumber,
+                encounterResourceParameters.PageSize);
+
+            _logger.LogInformation(
+                "----- Sending query: GetEncountersDetailQuery");
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                if (Regex.Matches(encounterResourceParameters.FirstName, @"[-a-zA-Z ']").Count < encounterResourceParameters.FirstName.Length)
-                {
-                    ModelState.AddModelError("Message", "First name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-                }
+                return BadRequest("Query not created");
             }
 
-            if (!String.IsNullOrWhiteSpace(encounterResourceParameters.LastName))
+            // Prepare pagination data for response
+            var paginationMetadata = new
             {
-                if (Regex.Matches(encounterResourceParameters.LastName, @"[-a-zA-Z ']").Count < encounterResourceParameters.LastName.Length)
-                {
-                    ModelState.AddModelError("Message", "Last name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-                }
-            }
+                totalCount = queryResult.RecordCount,
+                pageSize = encounterResourceParameters.PageSize,
+                currentPage = encounterResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
 
-            if (!String.IsNullOrWhiteSpace(encounterResourceParameters.CustomAttributeValue))
-            {
-                if (Regex.Matches(encounterResourceParameters.CustomAttributeValue, @"[-a-zA-Z ']").Count < encounterResourceParameters.CustomAttributeValue.Length)
-                {
-                    ModelState.AddModelError("Message", "Custom attribute value contains invalid characters (Enter A-Z, a-z, 0-9, space, apostrophe)");
-                }
-            }
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
 
-            var mappedEncountersWithLinks = GetEncounters<EncounterDetailDto>(encounterResourceParameters);
-
-            // Add custom mappings to encounters
-            mappedEncountersWithLinks.ForEach(dto => CustomEncounterMap(dto));
-
-            var wrapper = new LinkedCollectionResourceWrapperDto<EncounterDetailDto>(mappedEncountersWithLinks.TotalCount, mappedEncountersWithLinks);
-            var wrapperWithLinks = CreateLinksForEncounters(wrapper, encounterResourceParameters,
-                mappedEncountersWithLinks.HasNext, mappedEncountersWithLinks.HasPrevious);
-
-            return Ok(wrapperWithLinks);
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -493,127 +489,14 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Get encounters from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="encounterResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetEncounters<T>(EncounterResourceParameters encounterResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = encounterResourceParameters.PageNumber,
-                PageSize = encounterResourceParameters.PageSize
-            };
-
-            var facility = !String.IsNullOrWhiteSpace(encounterResourceParameters.FacilityName) ? _facilityRepository.Get(f => f.FacilityName == encounterResourceParameters.FacilityName) : null;
-            var customAttribute = _customAttributeRepository.Get(ca => ca.Id == encounterResourceParameters.CustomAttributeId);
-            var path = customAttribute?.CustomAttributeType == CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute";
-
-            List<SqlParameter> parameters = new List<SqlParameter>();
-            parameters.Add(new SqlParameter("@FacilityId", facility != null ? facility.Id : 0));
-            parameters.Add(new SqlParameter("@PatientId", encounterResourceParameters.PatientId.ToString()));
-            parameters.Add(new SqlParameter("@FirstName", !String.IsNullOrWhiteSpace(encounterResourceParameters.FirstName) ? (Object)encounterResourceParameters.FirstName : DBNull.Value));
-            parameters.Add(new SqlParameter("@LastName", !String.IsNullOrWhiteSpace(encounterResourceParameters.LastName) ? (Object)encounterResourceParameters.LastName : DBNull.Value));
-            parameters.Add(new SqlParameter("@SearchFrom", encounterResourceParameters.SearchFrom > DateTime.MinValue ? (Object)encounterResourceParameters.SearchFrom : DBNull.Value));
-            parameters.Add(new SqlParameter("@SearchTo", encounterResourceParameters.SearchTo < DateTime.MaxValue ? (Object)encounterResourceParameters.SearchTo : DBNull.Value));
-            parameters.Add(new SqlParameter("@CustomAttributeKey", !String.IsNullOrWhiteSpace(encounterResourceParameters.CustomAttributeValue) ? (Object)customAttribute?.AttributeKey : DBNull.Value));
-            parameters.Add(new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(encounterResourceParameters.CustomAttributeValue) ? (Object)path : DBNull.Value));
-            parameters.Add(new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(encounterResourceParameters.CustomAttributeValue) ? (Object)encounterResourceParameters.CustomAttributeValue : DBNull.Value));
-
-            var resultsFromService = PagedCollection<EncounterList>.Create(_context.EncounterLists
-                .FromSqlRaw("spSearchEncounters @FacilityId, @PatientId, @FirstName, @LastName, @SearchFrom, @SearchTo, @CustomAttributeKey, @CustomPath, @CustomValue",
-                        parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (resultsFromService != null)
-            {
-                // Map EF entity to Dto
-                var mappedEncounters = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(resultsFromService),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    resultsFromService.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedEncounters.TotalCount,
-                    pageSize = mappedEncounters.PageSize,
-                    currentPage = mappedEncounters.CurrentPage,
-                    totalPages = mappedEncounters.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedEncounters.ForEach(dto => CreateLinksForEncounter(encounterResourceParameters.PatientId, dto));
-
-                return mappedEncounters;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         ///  Map additional dto detail elements not handled through automapper
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
         /// <returns></returns>
         private EncounterDetailDto CustomEncounterMap(EncounterDetailDto dto)
         {
-            var encounterFromRepo = _encounterRepository.Get(p => p.Id == dto.Id);
-            if (encounterFromRepo == null)
-            {
-                return dto;
-            }
-
-            dto.Patient = _mapper.Map<PatientDetailDto>(encounterFromRepo.Patient);
-
             // Encounter information
-            var datasetInstanceFromRepo = _datasetInstanceRepository.Get(di => di.Dataset.ContextType.Id == (int)ContextTypes.Encounter
-                    && di.ContextId == dto.Id
-                    && di.EncounterTypeWorkPlan.EncounterType.Id == encounterFromRepo.EncounterType.Id);
 
-            if (datasetInstanceFromRepo != null)
-            {
-                var groupedDatasetCategories = datasetInstanceFromRepo.Dataset.DatasetCategories
-                    .SelectMany(dc => dc.DatasetCategoryElements).OrderBy(dc => dc.FieldOrder)
-                    .GroupBy(dce => dce.DatasetCategory)
-                    .ToList();
-
-                dto.DatasetCategories = groupedDatasetCategories
-                    .Select(dsc => new DatasetCategoryViewDto
-                    {
-                        DatasetCategoryId = dsc.Key.Id,
-                        DatasetCategoryName = dsc.Key.DatasetCategoryName,
-                        DatasetCategoryDisplayed = ShouldCategoryBeDisplayed(encounterFromRepo, dsc.Key),
-                        DatasetElements = dsc.Select(element => new DatasetElementViewDto
-                        {
-                            DatasetElementId = element.DatasetElement.Id,
-                            DatasetElementName = element.DatasetElement.ElementName,
-                            DatasetElementDisplayName = element.FriendlyName ?? element.DatasetElement.ElementName,
-                            DatasetElementHelp = element.Help,
-                            DatasetElementDisplayed = ShouldElementBeDisplayed(encounterFromRepo, element),
-                            DatasetElementChronic = IsElementChronic(encounterFromRepo, element),
-                            DatasetElementSystem = element.DatasetElement.System,
-                            DatasetElementType = element.DatasetElement.Field.FieldType.Description,
-                            DatasetElementValue = datasetInstanceFromRepo.GetInstanceValue(element.DatasetElement.ElementName),
-                            StringMaxLength = element.DatasetElement.Field.MaxLength,
-                            NumericMinValue = element.DatasetElement.Field.MinSize,
-                            NumericMaxValue = element.DatasetElement.Field.MaxSize,
-                            Required = element.DatasetElement.Field.Mandatory,
-                            SelectionDataItems = element.DatasetElement.Field.FieldValues.Select(fv => new SelectionDataItemDto() { SelectionKey = fv.Value, Value = fv.Value }).ToList(),
-                            DatasetElementSubs = element.DatasetElement.DatasetElementSubs.Select(elementSub => new DatasetElementSubViewDto
-                            {
-                                DatasetElementSubId = elementSub.Id,
-                                DatasetElementSubName = elementSub.ElementName,
-                                DatasetElementSubType = elementSub.Field.FieldType.Description
-                            }).ToArray()
-                        })
-                        .ToArray()
-                    })
-                    .ToArray();
-            }
 
             return dto;
         }
@@ -706,43 +589,6 @@ namespace PVIMS.API.Controllers
             dto.Patient.MedicalRecordNumber = attribute != null ? attribute.ToString() : "";
 
             return dto;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="encounterResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForEncounters(
-            LinkedResourceBaseDto wrapper,
-            EncounterResourceParameters encounterResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateEncountersResourceUri(ResourceUriType.Current, encounterResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateEncountersResourceUri(ResourceUriType.NextPage, encounterResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateEncountersResourceUri(ResourceUriType.PreviousPage, encounterResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
         }
 
         /// <summary>
