@@ -96,7 +96,7 @@
                       {{ 'Change details' | translate }}
                   </span>
                 </button>
-                <button mat-menu-item (click)="downloadAttachment(record.id, record.patientExtractFileId)">
+                <button mat-menu-item (click)="openChangeTaskStatusPopUp(record.id)">
                   <mat-icon>check_box</mat-icon>
                   <span style="vertical-align: middle;">
                       {{ 'Change status' | translate }}

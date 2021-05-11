@@ -6,7 +6,8 @@ import { ParameterKeyValueModel } from '../models/parameter.keyvalue.model';
 import { CausalityReportWrapperModel } from '../models/causality.report.model';
 import { ActivityChangeModel } from '../models/activity/activity-change.model';
 import { ReportInstanceDetailWrapperModel } from '../models/report-instance/report-instance.detail.model';
-import { ReportInstanceExpandedWrapperModel } from '../models/report-instance/report-instance.expanded.model';
+import { ReportInstanceExpandedModel } from '../models/report-instance/report-instance.expanded.model';
+import { TaskModel } from '../models/report-instance/task.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReportInstanceService extends BaseService {
@@ -90,14 +91,14 @@ export class ReportInstanceService extends BaseService {
       let parameters: ParameterKeyValueModel[] = [];
       parameters.push(<ParameterKeyValueModel> { key: 'id', value: id.toString() });
 
-      return this.Get<ReportInstanceExpandedWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.expanded.v1+json', parameters);
+      return this.Get<ReportInstanceExpandedModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.expanded.v1+json', parameters);
     } 
 
     getReportInstanceTaskDetail(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number): any {
       let parameters: ParameterKeyValueModel[] = [];
       parameters.push(<ParameterKeyValueModel> { key: 'id', value: reportInstanceTaskId.toString() });
 
-      return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks`, 'application/vnd.pvims.detail.v1+json', parameters);
+      return this.Get<TaskModel>(`/workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks`, 'application/vnd.pvims.detail.v1+json', parameters);
     } 
 
     getActivityChangeStatus(workFlowGuid: string, reportInstanceId: number, id: number, activityExecutionStatusId: number): any {
@@ -149,7 +150,7 @@ export class ReportInstanceService extends BaseService {
     }
 
     changeTaskStatusCommand(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number, model: any): any {
-      return this.Post(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks/${reportInstanceTaskId}/status`, model);
+      return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks/${reportInstanceTaskId}/status`, model);
     }
 
     updateStatus(workFlowGuid: string, reportInstanceId: number, model: any): any {

@@ -15,6 +15,7 @@ import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ReportTaskAddPopupComponent } from './report-task-add-popup/report-task-add.popup.component';
 import { ChangeTaskDetailsPopupComponent } from './change-task-details-popup/change-task-details.popup.component';
+import { ChangeTaskStatusPopupComponent } from './change-task-status-popup/change-task-status.popup.component';
 
 @Component({
   templateUrl: './report-task-list.component.html',
@@ -139,6 +140,23 @@ export class ReportTaskListComponent extends BaseComponent implements OnInit, Af
         self.loadData();
       })
   }  
+
+  openChangeTaskStatusPopUp(reportInstanceTaskId: number) {
+    let self = this;
+    let dialogRef: MatDialogRef<any> = self.dialog.open(ChangeTaskStatusPopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { workFlowGuid: this.workFlowId, title: 'Change Task Status', reportInstanceId: this.reportInstanceId, reportInstanceTaskId }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadData();
+      })
+  }
 }
 
 class ViewModel {
