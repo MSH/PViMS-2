@@ -11,7 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { SpontaneousAnalyserComponent } from './analyser/spontaneous-analyser/spontaneous-analyser.component';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
-import { ActivityhistoryComponent } from './report/activity-history/activity-history.component';
+import { ActivityHistoryComponent } from './report/activity-history/activity-history.component';
 import { ActivityStatusChangePopupComponent } from './report/activity-status-change-popup/activity-status-change.popup.component';
 import { ReportSearchComponent } from './report/report-search/report-search.component';
 import { NaranjoPopupComponent } from './report/naranjo-popup/naranjo.popup.component';
@@ -20,19 +20,25 @@ import { DatasetInstancePopupComponent } from './report/dataset-instance-popup/d
 import { LandingComponent } from './landing/landing.component';
 import { WhoPopupComponent } from './report/who-popup/who.popup.component';
 import { ActiveAnalyserComponent } from './analyser/active-analyser/active-analyser.component';
+import { ReportTaskListComponent } from './report/report-task/report-task-list.component';
+import { ReportTaskAddPopupComponent } from './report/report-task/report-task-add-popup/report-task-add.popup.component';
+import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-task-details-popup/change-task-details.popup.component';
 
 @NgModule({
   declarations: [
-    SpontaneousAnalyserComponent, 
     ActiveAnalyserComponent, 
-    ReportSearchComponent, 
-    ActivityhistoryComponent,
+    ActivityHistoryComponent,
     ActivityStatusChangePopupComponent,
-    SetMeddraPopupComponent, 
-    NaranjoPopupComponent,
-    WhoPopupComponent,
+    ChangeTaskDetailsPopupComponent,
     DatasetInstancePopupComponent,
-    LandingComponent
+    LandingComponent,
+    NaranjoPopupComponent,
+    ReportSearchComponent, 
+    ReportTaskAddPopupComponent,
+    ReportTaskListComponent,
+    SetMeddraPopupComponent, 
+    SpontaneousAnalyserComponent, 
+    WhoPopupComponent
   ],
   imports: [
     CommonModule,
@@ -48,10 +54,12 @@ import { ActiveAnalyserComponent } from './analyser/active-analyser/active-analy
   entryComponents:
   [
     ActivityStatusChangePopupComponent,
-    SetMeddraPopupComponent, 
+    ChangeTaskDetailsPopupComponent,
+    DatasetInstancePopupComponent,
     NaranjoPopupComponent,
+    SetMeddraPopupComponent, 
     WhoPopupComponent,
-    DatasetInstancePopupComponent
+    ReportTaskAddPopupComponent
   ]  
 })
 export class AnalyticalModule { }

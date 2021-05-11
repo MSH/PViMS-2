@@ -177,7 +177,6 @@ export class NavigationService {
   // Supply different menu for different user type.
   publishNavigationChange(menuType: string) 
   {
-    console.log('publish');
     switch (menuType) {
       case "clinical-menu":
         this.prepareClinicalMenus();

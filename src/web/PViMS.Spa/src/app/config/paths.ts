@@ -45,7 +45,8 @@ export const _paths = {
     landing: `landing`,
     reports: {
       search: `reportsearch/:wuid`,
-      activity: `activityhistory/:wuid/:reportinstanceid`
+      activity: `activityhistory/:wuid/:reportinstanceid`,
+      task: `reporttask/:wuid/:reportinstanceid`
     }
   },
   reports: `reports`,

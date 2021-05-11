@@ -58,7 +58,10 @@ export const _routes = {
         },
         activity(workFlowId: string, reportInstanceId: number): string {
           return `${_paths.analytical}/${_paths.analyticalPath.reports.activity.replace(':wuid', workFlowId).replace(':reportinstanceid', reportInstanceId.toString())}`;
-        }
+        },
+        task(workFlowId: string, reportInstanceId: number): string {
+          return `${_paths.analytical}/${_paths.analyticalPath.reports.task.replace(':wuid', workFlowId).replace(':reportinstanceid', reportInstanceId.toString())}`;
+        }        
       }
     },
     reports: {

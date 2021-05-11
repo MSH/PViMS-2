@@ -93,6 +93,13 @@ export class ReportInstanceService extends BaseService {
       return this.Get<ReportInstanceExpandedWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.expanded.v1+json', parameters);
     } 
 
+    getReportInstanceTaskDetail(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number): any {
+      let parameters: ParameterKeyValueModel[] = [];
+      parameters.push(<ParameterKeyValueModel> { key: 'id', value: reportInstanceTaskId.toString() });
+
+      return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks`, 'application/vnd.pvims.detail.v1+json', parameters);
+    } 
+
     getActivityChangeStatus(workFlowGuid: string, reportInstanceId: number, id: number, activityExecutionStatusId: number): any {
       let parameters: ParameterKeyValueModel[] = [];
       
@@ -131,6 +138,18 @@ export class ReportInstanceService extends BaseService {
       parameters.push(<ParameterKeyValueModel> { key: 'id', value: reportInstanceId.toString() });
   
       return this.Download(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.patientsummary.v1+json', parameters);
+    }
+
+    addTaskToReportInstanceCommand(workFlowGuid: string, reportInstanceId: number, model: any): any {
+      return this.Post(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks`, model);
+    }    
+
+    changeTaskDetailsCommand(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number, model: any): any {
+      return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks/${reportInstanceTaskId}/details`, model);
+    }
+
+    changeTaskStatusCommand(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number, model: any): any {
+      return this.Post(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks/${reportInstanceTaskId}/status`, model);
     }
 
     updateStatus(workFlowGuid: string, reportInstanceId: number, model: any): any {
