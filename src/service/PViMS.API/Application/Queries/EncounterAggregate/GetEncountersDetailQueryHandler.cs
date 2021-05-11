@@ -228,7 +228,6 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
                     })
                     .ToArray();
             }
-
         }
 
         private void CreateLinks(int patientId, int encounterId, EncounterDetailDto mappedEncounter)

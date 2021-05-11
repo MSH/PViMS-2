@@ -193,21 +193,23 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<EncounterDetailDto>> GetEncounterByDetail(long patientId, long id)
+        public async Task<ActionResult<EncounterDetailDto>> GetEncounterByDetail(int patientId, int id)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var query = new GetEncounterDetailQuery(patientId, id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetEncounterDetailQuery - {patientId}: {id}",
+                patientId,
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return BadRequest();
+                return BadRequest("Query not created");
             }
 
-            var mappedEncounter = await GetEncounterAsync<EncounterDetailDto>(patientFromRepo.Id, id);
-            if (mappedEncounter == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(CreateLinksForEncounter<EncounterDetailDto>(patientFromRepo.Id, CustomEncounterMap(mappedEncounter)));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -223,15 +225,23 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<EncounterExpandedDto>> GetEncounterByExpanded(long patientId, long id)
+        public async Task<ActionResult<EncounterExpandedDto>> GetEncounterByExpanded(int patientId, int id)
         {
-            var mappedEncounter = await GetEncounterAsync<EncounterExpandedDto>(patientId, id);
-            if (mappedEncounter == null)
+            var query = new GetEncounterExpandedQuery(patientId, id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetEncounterExpandedQuery - {patientId}: {id}",
+                patientId,
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForEncounter<EncounterExpandedDto>(patientId, CustomEncounterMap(mappedEncounter)));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -486,109 +496,6 @@ namespace PVIMS.API.Controllers
             }
 
             return null;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private EncounterDetailDto CustomEncounterMap(EncounterDetailDto dto)
-        {
-            // Encounter information
-
-
-            return dto;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private EncounterExpandedDto CustomEncounterMap(EncounterExpandedDto dto)
-        {
-            var encounterFromRepo = _encounterRepository.Get(p => p.Id == dto.Id);
-            if (encounterFromRepo == null)
-            {
-                return dto;
-            }
-
-            // Encounter information
-            var datasetInstanceFromRepo = _datasetInstanceRepository.Get(di => di.Dataset.ContextType.Id == (int)ContextTypes.Encounter
-                    && di.ContextId == dto.Id
-                    && di.EncounterTypeWorkPlan.EncounterType.Id == encounterFromRepo.EncounterType.Id);
-
-            if (datasetInstanceFromRepo != null)
-            {
-                var groupedDatasetCategories = datasetInstanceFromRepo.Dataset.DatasetCategories
-                    .SelectMany(dc => dc.DatasetCategoryElements).OrderBy(dc => dc.FieldOrder)
-                    .GroupBy(dce => dce.DatasetCategory)
-                    .ToList();
-
-                dto.DatasetCategories = groupedDatasetCategories
-                    .Select(dsc => new DatasetCategoryViewDto
-                    {
-                        DatasetCategoryId = dsc.Key.Id,
-                        DatasetCategoryName = dsc.Key.DatasetCategoryName,
-                        DatasetCategoryDisplayed = ShouldCategoryBeDisplayed(encounterFromRepo, dsc.Key),
-                        DatasetElements = dsc.Select(element => new DatasetElementViewDto
-                        {
-                            DatasetElementId = element.DatasetElement.Id,
-                            DatasetElementName = element.DatasetElement.ElementName,
-                            DatasetElementDisplayName = element.FriendlyName ?? element.DatasetElement.ElementName,
-                            DatasetElementHelp = element.Help,
-                            DatasetElementDisplayed = ShouldElementBeDisplayed(encounterFromRepo, element),
-                            DatasetElementChronic = IsElementChronic(encounterFromRepo, element),
-                            DatasetElementSystem = element.DatasetElement.System,
-                            DatasetElementType = element.DatasetElement.Field.FieldType.Description,
-                            DatasetElementValue = datasetInstanceFromRepo.GetInstanceValue(element.DatasetElement.ElementName),
-                            DatasetElementSubs = element.DatasetElement.DatasetElementSubs.Select(elementSub => new DatasetElementSubViewDto
-                            {
-                                DatasetElementSubId = elementSub.Id,
-                                DatasetElementSubName = elementSub.ElementName,
-                                DatasetElementSubType = elementSub.Field.FieldType.Description
-                            }).ToArray()
-                        })
-                        .ToArray()
-                    })
-                    .ToArray();
-            }
-
-            // Condition groups
-            int[] terms = _patientConditionRepository.List(pc => pc.Patient.Id == encounterFromRepo.Patient.Id && !pc.Archived && !pc.Patient.Archived)
-                .Select(p => p.TerminologyMedDra.Id)
-                .ToArray();
-
-            List<PatientConditionGroupDto> groupArray = new List<PatientConditionGroupDto>();
-            foreach (var cm in _conditionMeddraRepository.List(cm => terms.Contains(cm.TerminologyMedDra.Id))
-                .ToList())
-            {
-                var tempCondition = cm.GetConditionForPatient(encounterFromRepo.Patient);
-                if (tempCondition != null)
-                {
-                    var group = new PatientConditionGroupDto()
-                    {
-                        ConditionGroup = cm.Condition.Description,
-                        Status = tempCondition.OutcomeDate != null ? "Case Closed" : "Case Open",
-                        PatientConditionId = tempCondition.Id,
-                        StartDate = tempCondition.OnsetDate.ToString("yyyy-MM-dd"),
-                        Detail = $"{tempCondition.TerminologyMedDra.DisplayName} started on {tempCondition.OnsetDate.ToString("yyyy-MM-dd")}"
-                    };
-                    groupArray.Add(group);
-                }
-            }
-            dto.ConditionGroups = groupArray;
-
-            // Weight history
-            dto.WeightSeries = _patientService.GetElementValues(encounterFromRepo.Patient.Id, "Weight (kg)", 5);
-
-            // patient custom mapping
-            IExtendable patientExtended = encounterFromRepo.Patient;
-            var attribute = patientExtended.GetAttributeValue("Medical Record Number");
-            dto.Patient.MedicalRecordNumber = attribute != null ? attribute.ToString() : "";
-
-            return dto;
         }
 
         /// <summary>
