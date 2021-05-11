@@ -68,8 +68,6 @@ export class BasePopupComponent {
 
     protected handleError(errorObject: any, title: string = "Exception")
     {
-      console.log(errorObject);
-
       let message = '';
       if(errorObject.message) {
         if(Array.isArray(errorObject.message)) {
