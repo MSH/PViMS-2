@@ -23,6 +23,7 @@ import { ActiveAnalyserComponent } from './analyser/active-analyser/active-analy
 import { ReportTaskListComponent } from './report/report-task/report-task-list.component';
 import { ReportTaskAddPopupComponent } from './report/report-task/report-task-add-popup/report-task-add.popup.component';
 import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-task-details-popup/change-task-details.popup.component';
+import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task-status-popup/change-task-status.popup.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-tas
     ActivityHistoryComponent,
     ActivityStatusChangePopupComponent,
     ChangeTaskDetailsPopupComponent,
+    ChangeTaskStatusPopupComponent,
     DatasetInstancePopupComponent,
     LandingComponent,
     NaranjoPopupComponent,
@@ -55,6 +57,7 @@ import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-tas
   [
     ActivityStatusChangePopupComponent,
     ChangeTaskDetailsPopupComponent,
+    ChangeTaskStatusPopupComponent,
     DatasetInstancePopupComponent,
     NaranjoPopupComponent,
     SetMeddraPopupComponent, 
