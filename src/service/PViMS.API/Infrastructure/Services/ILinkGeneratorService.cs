@@ -54,8 +54,6 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateNewEnrolmentForPatientResourceUri(long patientId);
 
-        string CreateNewReportInstancesResourceUri(Guid workFlowGuid, ResourceUriType type, ReportInstanceNewResourceParameters reportInstanceResourceParameters);
-
         string CreateOutstandingVisitReportResourceUri(ResourceUriType type, OutstandingVisitResourceParameters outstandingVisitResourceParameters);
 
         string CreatePatientAppointmentResourceUri(long patientId, long resourceId);
@@ -70,7 +68,7 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateReportInstanceResourceUri(Guid workFlowGuid, int reportInstanceId);
 
-        string CreateReportInstancesResourceUri(Guid workFlowGuid, ResourceUriType type, ReportInstanceResourceParameters reportInstanceResourceParameters);
+        string CreateReportInstancesResourceUri(Guid workFlowGuid, ResourceUriType type, string orderBy, string qualifiedName, DateTime searchFrom, DateTime searchTo, int pageNumber, int pageSize);
 
         string CreateUpdateDatasetInstanceResourceUri(long datasetId, long datasetInstanceId);
 

@@ -595,46 +595,6 @@ namespace PVIMS.API.Infrastructure.Services
               new { patientId });
         }
 
-        public string CreateNewReportInstancesResourceUri(Guid workFlowGuid,
-           ResourceUriType type,
-           ReportInstanceNewResourceParameters reportInstanceResourceParameters)
-        {
-            switch (type)
-            {
-                case ResourceUriType.PreviousPage:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetReportInstancesByDetail",
-                      new
-                      {
-                          workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          searchTerm = reportInstanceResourceParameters.SearchTerm,
-                          pageNumber = reportInstanceResourceParameters.PageNumber - 1,
-                          pageSize = reportInstanceResourceParameters.PageSize
-                      });
-                case ResourceUriType.NextPage:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetReportInstancesByDetail",
-                      new
-                      {
-                          workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          searchTerm = reportInstanceResourceParameters.SearchTerm,
-                          pageNumber = reportInstanceResourceParameters.PageNumber + 1,
-                          pageSize = reportInstanceResourceParameters.PageSize
-                      });
-                case ResourceUriType.Current:
-                default:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetReportInstancesByDetail",
-                      new
-                      {
-                          workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          searchTerm = reportInstanceResourceParameters.SearchTerm,
-                          pageNumber = reportInstanceResourceParameters.PageNumber,
-                          pageSize = reportInstanceResourceParameters.PageSize
-                      });
-            }
-        }
-
         public string CreateOutstandingVisitReportResourceUri(ResourceUriType type,
            OutstandingVisitResourceParameters outstandingVisitResourceParameters)
         {
@@ -820,7 +780,12 @@ namespace PVIMS.API.Infrastructure.Services
 
         public string CreateReportInstancesResourceUri(Guid workFlowGuid, 
            ResourceUriType type,
-           ReportInstanceResourceParameters reportInstanceResourceParameters)
+           string orderBy,
+           string qualifiedName,
+           DateTime searchFrom,
+           DateTime searchTo,
+           int pageNumber,
+           int pageSize)
         {
             switch (type)
             {
@@ -829,24 +794,24 @@ namespace PVIMS.API.Infrastructure.Services
                       new
                       {
                           workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          qualifiedName = reportInstanceResourceParameters.QualifiedName,
-                          searchFrom = reportInstanceResourceParameters.SearchFrom,
-                          searchTo = reportInstanceResourceParameters.SearchTo,
-                          pageNumber = reportInstanceResourceParameters.PageNumber - 1,
-                          pageSize = reportInstanceResourceParameters.PageSize
+                          orderBy,
+                          qualifiedName,
+                          searchFrom,
+                          searchTo,
+                          pageNumber = pageNumber - 1,
+                          pageSize
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetReportInstancesByDetail",
                       new
                       {
                           workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          qualifiedName = reportInstanceResourceParameters.QualifiedName,
-                          searchFrom = reportInstanceResourceParameters.SearchFrom,
-                          searchTo = reportInstanceResourceParameters.SearchTo,
-                          pageNumber = reportInstanceResourceParameters.PageNumber + 1,
-                          pageSize = reportInstanceResourceParameters.PageSize
+                          orderBy,
+                          qualifiedName,
+                          searchFrom,
+                          searchTo,
+                          pageNumber = pageNumber + 1,
+                          pageSize
                       });
                 case ResourceUriType.Current:
                 default:
@@ -854,12 +819,12 @@ namespace PVIMS.API.Infrastructure.Services
                       new
                       {
                           workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          qualifiedName = reportInstanceResourceParameters.QualifiedName,
-                          searchFrom = reportInstanceResourceParameters.SearchFrom,
-                          searchTo = reportInstanceResourceParameters.SearchTo,
-                          pageNumber = reportInstanceResourceParameters.PageNumber,
-                          pageSize = reportInstanceResourceParameters.PageSize
+                          orderBy,
+                          qualifiedName,
+                          searchFrom,
+                          searchTo,
+                          pageNumber,
+                          pageSize
                       });
             }
         }

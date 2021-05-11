@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using PVIMS.API.Application.Commands;
+using PVIMS.API.Application.Commands.ReportInstanceAggregate;
 using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
@@ -33,8 +33,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using PVIMS.API.Application.Commands.ReportInstanceAggregate;
-using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -46,12 +44,10 @@ namespace PVIMS.API.Controllers
         private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly IRepositoryInt<ActivityExecutionStatusEvent> _activityExecutionStatusEventRepository;
-        private readonly IRepositoryInt<Attachment> _attachmentRepository;
         private readonly IRepositoryInt<Config> _configRepository;
         private readonly IRepositoryInt<Dataset> _datasetRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
-        private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly IRepositoryInt<ReportInstanceMedication> _reportInstanceMedicationRepository;
         private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
@@ -73,12 +69,10 @@ namespace PVIMS.API.Controllers
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<ActivityExecutionStatusEvent> activityExecutionStatusEventRepository,
-            IRepositoryInt<Attachment> attachmentRepository,
             IRepositoryInt<Config> configRepository,
             IRepositoryInt<Dataset> datasetRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
-            IRepositoryInt<PatientMedication> patientMedicationRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<ReportInstanceMedication> reportInstanceMedicationRepository,
             IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
@@ -101,12 +95,10 @@ namespace PVIMS.API.Controllers
             _reportInstanceMedicationRepository = reportInstanceMedicationRepository ?? throw new ArgumentNullException(nameof(reportInstanceMedicationRepository));
             _activityExecutionStatusEventRepository = activityExecutionStatusEventRepository ?? throw new ArgumentNullException(nameof(activityExecutionStatusEventRepository));
             _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
-            _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
             _terminologyMeddraRepository = terminologyMeddraRepository ?? throw new ArgumentNullException(nameof(terminologyMeddraRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
-            _attachmentRepository = attachmentRepository ?? throw new ArgumentNullException(nameof(attachmentRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
@@ -155,17 +147,21 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<ReportInstanceDetailDto>> GetReportInstanceByDetail(Guid workFlowGuid, int id)
         {
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks", "Medications" });
-            if (reportInstanceFromRepo == null)
+            var query = new GetReportInstanceDetailQuery(workFlowGuid, id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetReportInstanceDetailQuery - {workFlowGuid}: {id}",
+                workFlowGuid.ToString(),
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            var mappedReportInstanceDto = _mapper.Map<ReportInstanceDetailDto>(reportInstanceFromRepo);
-
-            await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, mappedReportInstanceDto);
-
-            return Ok(CreateLinksForReportInstance<ReportInstanceDetailDto>(workFlowGuid, mappedReportInstanceDto));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -183,17 +179,21 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<ReportInstanceExpandedDto>> GetReportInstanceByExpanded(Guid workFlowGuid, int id)
         {
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus.Activity", "Tasks", "Medications" });
-            if (reportInstanceFromRepo == null)
+            var query = new GetReportInstanceExpandedQuery(workFlowGuid, id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetReportInstanceExpandedQuery - {workFlowGuid}: {id}",
+                workFlowGuid.ToString(),
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            var mappedReportInstanceDto = _mapper.Map<ReportInstanceExpandedDto>(reportInstanceFromRepo);
-
-            await CustomReportInstanceExpandedMapAsync(reportInstanceFromRepo, mappedReportInstanceDto);
-                
-            return Ok(CreateLinksForReportInstance<ReportInstanceExpandedDto>(workFlowGuid, mappedReportInstanceDto));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -246,20 +246,41 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedReportsWithLinks = GetReportInstances<ReportInstanceDetailDto>(workFlowGuid, reportInstanceResourceParameters);
+            var query = new GetReportInstancesDetailQuery(workFlowGuid, 
+                false, 
+                false,
+                reportInstanceResourceParameters.ActiveReportsOnly == Models.ValueTypes.YesNoValueType.Yes, 
+                reportInstanceResourceParameters.SearchFrom,
+                reportInstanceResourceParameters.SearchTo,
+                reportInstanceResourceParameters.SearchTerm,
+                reportInstanceResourceParameters.QualifiedName, 
+                reportInstanceResourceParameters.PageNumber, 
+                reportInstanceResourceParameters.PageSize);
 
-            // Add custom mappings to report instances
-            foreach (var report in mappedReportsWithLinks)
+            _logger.LogInformation(
+                "----- Sending query: GetReportInstancesDetailQuery - {workFlowGuid}",
+                workFlowGuid.ToString());
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks", "Medications" });
-                await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, report);
+                return BadRequest("Query not created");
             }
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>(mappedReportsWithLinks.TotalCount, mappedReportsWithLinks);
-            var wrapperWithLinks = CreateLinksForReportInstances(workFlowGuid, wrapper, reportInstanceResourceParameters,
-                mappedReportsWithLinks.HasNext, mappedReportsWithLinks.HasPrevious);
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = reportInstanceResourceParameters.PageSize,
+                currentPage = reportInstanceResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
 
-            return Ok(wrapperWithLinks);
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -285,20 +306,32 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedReportsWithLinks = GetNewReportInstances<ReportInstanceDetailDto>(workFlowGuid, reportInstanceResourceParameters);
+            var query = new GetReportInstancesDetailQuery(workFlowGuid, true, false, false, DateTime.MinValue, DateTime.MaxValue, "", "", reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
 
-            // Add custom mappings to report instances
-            foreach (var report in mappedReportsWithLinks)
+            _logger.LogInformation(
+                "----- Sending query: GetReportInstancesDetailQuery - {workFlowGuid}",
+                workFlowGuid.ToString());
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks", "Medications" });
-                await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, report);
+                return BadRequest("Query not created");
             }
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>(mappedReportsWithLinks.TotalCount, mappedReportsWithLinks);
-            var wrapperWithLinks = CreateLinksForNewReportInstances(workFlowGuid, wrapper, reportInstanceResourceParameters,
-                mappedReportsWithLinks.HasNext, mappedReportsWithLinks.HasPrevious);
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = reportInstanceResourceParameters.PageSize,
+                currentPage = reportInstanceResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
 
-            return Ok(wrapperWithLinks);
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -324,20 +357,32 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedReportsWithLinks = await GetFeedbackReportInstancesAsync<ReportInstanceDetailDto>(workFlowGuid, reportInstanceResourceParameters);
+            var query = new GetReportInstancesDetailQuery(workFlowGuid, false, true, false, DateTime.MinValue, DateTime.MaxValue, "", "", reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
 
-            // Add custom mappings to report instances
-            foreach (var report in mappedReportsWithLinks)
+            _logger.LogInformation(
+                "----- Sending query: GetReportInstancesDetailQuery - {workFlowGuid}",
+                workFlowGuid.ToString());
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == report.Id, new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks", "Medications" });
-                await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, report);
+                return BadRequest("Query not created");
             }
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>(mappedReportsWithLinks.TotalCount, mappedReportsWithLinks);
-            var wrapperWithLinks = CreateLinksForNewReportInstances(workFlowGuid, wrapper, reportInstanceResourceParameters,
-                mappedReportsWithLinks.HasNext, mappedReportsWithLinks.HasPrevious);
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = reportInstanceResourceParameters.PageSize,
+                currentPage = reportInstanceResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
 
-            return Ok(wrapperWithLinks);
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -924,281 +969,6 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        private PagedCollection<T> GetReportInstances<T>(Guid workFlowGuid, ReportInstanceResourceParameters reportInstanceResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = reportInstanceResourceParameters.PageNumber,
-                PageSize = reportInstanceResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<ReportInstance>("Created", "desc");
-
-            // FIlter list
-            var predicate = PredicateBuilder.New<ReportInstance>(true);
-            predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
-            predicate = predicate.And(f => f.Created >= reportInstanceResourceParameters.SearchFrom && f.Created <= reportInstanceResourceParameters.SearchTo);
-
-            if (!String.IsNullOrWhiteSpace(reportInstanceResourceParameters.QualifiedName))
-            {
-                if(reportInstanceResourceParameters.ActiveReportsOnly == Models.ValueTypes.YesNoValueType.Yes)
-                {
-                    switch (reportInstanceResourceParameters.QualifiedName)
-                    {
-                        case "Confirm Report Data":
-                            predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == reportInstanceResourceParameters.QualifiedName && a.Current == true && a.CurrentStatus.Description != "DELETED"));
-                            break;
-
-                        case "Extract E2B":
-                            predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == reportInstanceResourceParameters.QualifiedName && a.Current == true && a.CurrentStatus.Description != "E2BSUBMITTED"));
-                            break;
-
-                        default:
-                            predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == reportInstanceResourceParameters.QualifiedName && a.Current == true));
-                            break;
-                    }
-                }
-                else
-                {
-                    predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == reportInstanceResourceParameters.QualifiedName && a.Current == true));
-                }
-            }
-
-            if (!String.IsNullOrWhiteSpace(reportInstanceResourceParameters.SearchTerm))
-            {
-                predicate = predicate.And(f => f.PatientIdentifier.Contains(reportInstanceResourceParameters.SearchTerm) 
-                                || f.SourceIdentifier.Contains(reportInstanceResourceParameters.SearchTerm) 
-                                || f.TerminologyMedDra.MedDraTerm.Contains(reportInstanceResourceParameters.SearchTerm) 
-                                || f.Identifier.Contains(reportInstanceResourceParameters.SearchTerm) 
-                                || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
-            }
-
-            var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "Activities.CurrentStatus" });
-            if (pagedReportsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedReports = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedReportsFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedReportsFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedReports.TotalCount,
-                    pageSize = mappedReports.PageSize,
-                    currentPage = mappedReports.CurrentPage,
-                    totalPages = mappedReports.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedReports.ForEach(dto => CreateLinksForReportInstance(workFlowGuid, dto));
-
-                return mappedReports;
-            }
-
-            return null;
-        }
-
-        private PagedCollection<T> GetNewReportInstances<T>(Guid workFlowGuid, ReportInstanceNewResourceParameters reportInstanceResourceParameters) where T : class
-        {
-            var config = _configRepository.Get(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
-            if (config != null)
-            {
-                if (!String.IsNullOrEmpty(config.ConfigValue))
-                {
-                    var alertCount = Convert.ToInt32(config.ConfigValue);
-
-                    // How many instances within the last alertcount
-                    var compDate = DateTime.Now.AddDays(alertCount * -1);
-
-                    var pagingInfo = new PagingInfo()
-                    {
-                        PageNumber = reportInstanceResourceParameters.PageNumber,
-                        PageSize = reportInstanceResourceParameters.PageSize
-                    };
-
-                    var orderby = Extensions.GetOrderBy<ReportInstance>("Created", "desc");
-
-                    // FIlter list
-                    var predicate = PredicateBuilder.New<ReportInstance>(true);
-                    predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
-                    predicate = predicate.And(f => f.Created >= compDate);
-
-                    var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, "");
-                    if (pagedReportsFromRepo != null)
-                    {
-                        // Map EF entity to Dto
-                        var mappedReports = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedReportsFromRepo),
-                            pagingInfo.PageNumber,
-                            pagingInfo.PageSize,
-                            pagedReportsFromRepo.TotalCount);
-
-                        // Prepare pagination data for response
-                        var paginationMetadata = new
-                        {
-                            totalCount = mappedReports.TotalCount,
-                            pageSize = mappedReports.PageSize,
-                            currentPage = mappedReports.CurrentPage,
-                            totalPages = mappedReports.TotalPages,
-                        };
-
-                        Response.Headers.Add("X-Pagination",
-                            JsonConvert.SerializeObject(paginationMetadata));
-
-                        // Add HATEOAS links to each individual resource
-                        mappedReports.ForEach(dto => CreateLinksForReportInstance(workFlowGuid, dto));
-
-                        return mappedReports;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private async Task<PagedCollection<T>> GetFeedbackReportInstancesAsync<T>(Guid workFlowGuid, ReportInstanceNewResourceParameters reportInstanceResourceParameters) where T : class
-        {
-            var config = await _configRepository.GetAsync(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
-            if (config != null)
-            {
-                if (!String.IsNullOrEmpty(config.ConfigValue))
-                {
-                    var alertCount = Convert.ToInt32(config.ConfigValue);
-
-                    // How many instances within the last alertcount or if the user is searchjng by term, don't use the date parameter
-                    var compDate = String.IsNullOrWhiteSpace(reportInstanceResourceParameters.SearchTerm) ? DateTime.Now.AddDays(alertCount * -1) : DateTime.MinValue;
-
-                    var pagingInfo = new PagingInfo()
-                    {
-                        PageNumber = reportInstanceResourceParameters.PageNumber,
-                        PageSize = reportInstanceResourceParameters.PageSize
-                    };
-
-                    var orderby = Extensions.GetOrderBy<ReportInstance>("Created", "desc");
-
-                    // FIlter list
-                    var predicate = PredicateBuilder.New<ReportInstance>(true);
-                    predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
-                    predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == "Set MedDRA and Causality" && a.CurrentStatus.Description == "CAUSALITYSET" && a.Created >= compDate));
-
-                    if (!String.IsNullOrWhiteSpace(reportInstanceResourceParameters.SearchTerm))
-                    {
-                        predicate = predicate.And(f => f.PatientIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)
-                                        || f.SourceIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)
-                                        || f.TerminologyMedDra.MedDraTerm.Contains(reportInstanceResourceParameters.SearchTerm)
-                                        || f.Identifier.Contains(reportInstanceResourceParameters.SearchTerm)
-                                        || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(reportInstanceResourceParameters.SearchTerm)));
-                    }
-
-                    var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, "");
-                    if (pagedReportsFromRepo != null)
-                    {
-                        // Map EF entity to Dto
-                        var mappedReports = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedReportsFromRepo),
-                            pagingInfo.PageNumber,
-                            pagingInfo.PageSize,
-                            pagedReportsFromRepo.TotalCount);
-
-                        // Prepare pagination data for response
-                        var paginationMetadata = new
-                        {
-                            totalCount = mappedReports.TotalCount,
-                            pageSize = mappedReports.PageSize,
-                            currentPage = mappedReports.CurrentPage,
-                            totalPages = mappedReports.TotalPages,
-                        };
-
-                        Response.Headers.Add("X-Pagination",
-                            JsonConvert.SerializeObject(paginationMetadata));
-
-                        // Add HATEOAS links to each individual resource
-                        mappedReports.ForEach(dto => CreateLinksForReportInstance(workFlowGuid, dto));
-
-                        return mappedReports;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private async Task<T> GetReportInstanceTaskAsync<T>(Guid workFlowGuid, long id) where T : class
-        {
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id, new string[] { "Activities", "Tasks" });
-
-            if (reportInstanceFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedReportInstance = _mapper.Map<T>(reportInstanceFromRepo);
-
-                return mappedReportInstance;
-            }
-
-            return null;
-        }
-
-        private LinkedResourceBaseDto CreateLinksForReportInstances(Guid workFlowGuid, 
-            LinkedResourceBaseDto wrapper,
-            ReportInstanceResourceParameters reportInstanceResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateReportInstancesResourceUri(workFlowGuid, ResourceUriType.Current, reportInstanceResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateReportInstancesResourceUri(workFlowGuid, ResourceUriType.NextPage, reportInstanceResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateReportInstancesResourceUri(workFlowGuid, ResourceUriType.PreviousPage, reportInstanceResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        private LinkedResourceBaseDto CreateLinksForNewReportInstances(Guid workFlowGuid,
-            LinkedResourceBaseDto wrapper,
-            ReportInstanceNewResourceParameters reportInstanceNewResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateNewReportInstancesResourceUri(workFlowGuid, ResourceUriType.Current, reportInstanceNewResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateNewReportInstancesResourceUri(workFlowGuid, ResourceUriType.NextPage, reportInstanceNewResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateNewReportInstancesResourceUri(workFlowGuid, ResourceUriType.PreviousPage, reportInstanceNewResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
         private ReportInstanceIdentifierDto CreateLinksForReportInstance<T>(Guid workFlowGuid, T dto)
         {
             ReportInstanceIdentifierDto identifier = (ReportInstanceIdentifierDto)(object)dto;
@@ -1316,166 +1086,6 @@ namespace PVIMS.API.Controllers
             }
 
             return identifier;
-        }
-
-        private async Task CustomReportInstanceDetailMapAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto mappedReportInstanceDto)
-        {
-            if (reportInstanceFromRepo == null)
-            {
-                throw new ArgumentNullException(nameof(reportInstanceFromRepo));
-            }
-            
-            await MapIdsForReportInstanceAsync(reportInstanceFromRepo, mappedReportInstanceDto);
-            await MapE2BActivitiesForReportInstanceAsync(reportInstanceFromRepo, mappedReportInstanceDto);
-
-            if (reportInstanceFromRepo.WorkFlow.Description == "New Spontaneous Surveilliance Report")
-            {
-                await MapSpontaneousInstanceForReportInstanceAsync(reportInstanceFromRepo.ContextGuid, mappedReportInstanceDto);
-            }
-
-            foreach (var medication in mappedReportInstanceDto.Medications)
-            {
-                await CustomReportInstanceMedicationMapAsync(reportInstanceFromRepo, medication);
-            }
-        }
-
-        private async Task MapIdsForReportInstanceAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto)
-        {
-            var patientClinicalEvent = await _patientClinicalEventRepository.GetAsync(p => p.PatientClinicalEventGuid == reportInstanceFromRepo.ContextGuid, new string[] { "Patient" });
-            dto.PatientId = patientClinicalEvent != null ? patientClinicalEvent.Patient.Id : 0;
-            dto.PatientClinicalEventId = patientClinicalEvent != null ? patientClinicalEvent.Id : 0;
-        }
-
-        private async Task MapE2BActivitiesForReportInstanceAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto)
-        {
-            switch (reportInstanceFromRepo.CurrentActivity.QualifiedName)
-            {
-                case "Extract E2B":
-                    if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "E2BINITIATED")
-                    {
-                        await MapE2BInstanceForReportInstanceAsync(reportInstanceFromRepo, dto);
-                    }
-
-                    if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "E2BGENERATED")
-                    {
-                        MapE2BAttachmentForReportInstance(reportInstanceFromRepo, dto);
-                    }
-
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        private async Task MapE2BInstanceForReportInstanceAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto)
-        {
-            var latestExecutionEvent = reportInstanceFromRepo.CurrentActivity.GetLatestEvent();
-            if (latestExecutionEvent != null)
-            {
-                var tag = reportInstanceFromRepo.WorkFlow.Description == "New Active Surveilliance Report" ? "Active" : "Spontaneous";
-                var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.Tag == tag && di.ContextId == latestExecutionEvent.Id, new string[] { "Dataset" });
-                if (datasetInstance != null)
-                {
-                    dto.E2BInstance = new DatasetInstanceDto()
-                    {
-                        DatasetId = datasetInstance.Dataset.Id,
-                        DatasetInstanceId = datasetInstance.Id
-                    };
-                }
-            }
-        }
-
-        private void MapE2BAttachmentForReportInstance(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto)
-        {
-            var latestE2BGeneratedExecutionEvent = reportInstanceFromRepo.CurrentActivity.GetLatestE2BGeneratedEvent();
-            if (latestE2BGeneratedExecutionEvent != null)
-            {
-                var e2bAttachment = latestE2BGeneratedExecutionEvent.Attachments.SingleOrDefault(att => att.Description == "E2b");
-                if (e2bAttachment != null)
-                {
-                    dto.ActivityExecutionStatusEventId = latestE2BGeneratedExecutionEvent.Id;
-                    dto.AttachmentId = e2bAttachment.Id;
-                }
-            }
-        }
-
-        private async Task MapSpontaneousInstanceForReportInstanceAsync(Guid contextGuid, ReportInstanceDetailDto dto)
-        {
-            var datasetInstanceFromRepo = await _datasetInstanceRepository.GetAsync(di => di.DatasetInstanceGuid == contextGuid, new string[] { "Dataset" });
-            if (datasetInstanceFromRepo != null)
-            {
-                dto.SpontaneousInstance = new DatasetInstanceDto()
-                {
-                    DatasetId = datasetInstanceFromRepo.Dataset.Id,
-                    DatasetInstanceId = datasetInstanceFromRepo.Id
-                };
-            }
-        }
-
-        private async Task CustomReportInstanceMedicationMapAsync(ReportInstance reportInstanceFromRepo, ReportInstanceMedicationDetailDto dto)
-        {
-            if (reportInstanceFromRepo.WorkFlow.Description == "New Spontaneous Surveilliance Report")
-            {
-                var datasetInstanceFromRepo = await _datasetInstanceRepository.GetAsync(di => di.DatasetInstanceGuid == reportInstanceFromRepo.ContextGuid);
-                if(datasetInstanceFromRepo != null)
-                {
-                    var drugItemValues = datasetInstanceFromRepo.GetInstanceSubValues("Product Information", dto.ReportInstanceMedicationGuid);
-                    var drugName = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product")?.InstanceValue;
-                    DateTime tempdt;
-
-                    var startElement = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Start Date");
-                    var stopElement = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug End Date");
-
-                    dto.StartDate = startElement != null ? DateTime.TryParse(startElement.InstanceValue, out tempdt) ? Convert.ToDateTime(startElement.InstanceValue).ToString("yyyy-MM-dd") : "" : "";
-                    dto.EndDate = stopElement != null ? DateTime.TryParse(stopElement.InstanceValue, out tempdt) ? Convert.ToDateTime(stopElement.InstanceValue).ToString("yyyy-MM-dd") : "" : "";
-                }
-            }
-            else
-            {
-                var medication = await _patientMedicationRepository.GetAsync(p => p.PatientMedicationGuid == dto.ReportInstanceMedicationGuid);
-                if (medication == null)
-                {
-                    return;
-                }
-
-                dto.StartDate = medication.StartDate.ToString("yyyy-MM-dd");
-                dto.EndDate = medication.EndDate.HasValue ? medication.EndDate.Value.ToString("yyyy-MM-dd") : "";
-            }
-        }
-
-        private async Task CustomReportInstanceExpandedMapAsync(ReportInstance reportInstanceFromRepo, ReportInstanceExpandedDto mappedReportInstanceDto)
-        {
-            if (reportInstanceFromRepo == null)
-            {
-                throw new ArgumentNullException(nameof(reportInstanceFromRepo));
-            }
-            
-            await CustomReportInstanceDetailMapAsync(reportInstanceFromRepo, mappedReportInstanceDto);
-
-            foreach (var executionEvent in reportInstanceFromRepo.CurrentActivity.ExecutionEvents)
-            {
-                var mappedExecutionEvent = _mapper.Map<ActivityExecutionStatusEventDto>(executionEvent);
-                mappedReportInstanceDto.Events.Add(await CustomActivityExecutionStatusEventMap(mappedExecutionEvent));
-            }
-        }
-
-        private async Task<ActivityExecutionStatusEventDto> CustomActivityExecutionStatusEventMap(ActivityExecutionStatusEventDto dto)
-        {
-            var activityExecutionStatusEvent = await _activityExecutionStatusEventRepository.GetAsync(a => a.Id == dto.Id, new string[] { "Attachments" });
-            if (activityExecutionStatusEvent == null)
-            {
-                return dto;
-            }
-
-            dto.PatientSummaryFileId = activityExecutionStatusEvent.Attachments
-                .SingleOrDefault(att => att.Description == "PatientSummary") == null ? 0 : activityExecutionStatusEvent.Attachments.SingleOrDefault(att => att.Description == "PatientSummary").Id;
-            dto.PatientExtractFileId = activityExecutionStatusEvent.Attachments
-                .SingleOrDefault(att => att.Description == "PatientExtract") == null ? 0 : activityExecutionStatusEvent.Attachments.SingleOrDefault(att => att.Description == "PatientExtract").Id;
-            dto.E2bXmlFileId = activityExecutionStatusEvent.Attachments
-                .SingleOrDefault(att => att.Description == "E2b") == null ? 0 : activityExecutionStatusEvent.Attachments.SingleOrDefault(att => att.Description == "E2b").Id;
-
-            return dto;
         }
 
         /// <summary>
