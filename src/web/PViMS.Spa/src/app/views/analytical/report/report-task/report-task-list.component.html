@@ -24,6 +24,9 @@
           </mat-form-field>        
         </div>
       </div>
+      <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="end" class="p-8">
+        <button mat-raised-button class="mr-05" color="accent" (click)="openTaskAddPopUp()">{{'Add Task' | translate}}</button>
+      </div>
     </form>
     <div class="ml-05 mr-05 mt-12 pb-1">
       <mat-card class="flex-item p-12 mat-elevation-z6 rounded" *ngIf="viewModel?.mainGrid?.records?.data?.length == 0" [@animate]="{value:'50'}">
