@@ -1,7 +1,4 @@
-﻿using PVIMS.API.Infrastructure.Attributes;
-using PVIMS.API.Models.ValueTypes;
-
-namespace PVIMS.API.Models
+﻿namespace PVIMS.API.Models
 {
     public class ReportInstanceTaskForCreationDto
     {
@@ -18,7 +15,6 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The type of task
         /// </summary>
-        [ValidEnumValue]
-        public TaskTypeValueType TaskType { get; set; }
+        public string TaskType { get; set; }
     }
 }
