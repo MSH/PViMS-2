@@ -83,6 +83,15 @@
                 {{record.updatedDetail}}
             </mat-cell>
             </ng-container>
+
+            <ng-container matColumnDef="comment-count">
+              <mat-header-cell *matHeaderCellDef>{{ 'Comments' | translate }}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <div class="text-center pt-12 pb-12 border-right-light">
+                    <mat-icon matBadge="{{record.comments.length}}" matBadgeOverlap="false" matBadgeColor="accent">comment</mat-icon>
+                  </div>                
+              </mat-cell>
+            </ng-container>            
     
             <ng-container matColumnDef="actions">
             <mat-header-cell *matHeaderCellDef>

@@ -239,7 +239,15 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     let self = this;
 
     self.updateForm(self.viewModelForm, {qualifiedName: qualifiedName});
-    self.updateForm(self.viewModelForm, {activeReportsOnly: 'Yes'});    
+    self.updateForm(self.viewModelForm, {activeReportsOnly: 'Yes'});
+
+    if(qualifiedName == "Confirm Report Data") {
+      self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'task-count', 'status', 'actions'])
+    }
+    else {
+      self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'status', 'actions'])
+    }
+
     self.searchContext = qualifiedName == "New reports" ? "New" : "Active";
 
     self.loadGrid();
@@ -271,7 +279,6 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-          this.CLog(result);
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
           this.handleError(error, "Error searching for new report instances");
@@ -284,7 +291,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-          console.log(result);
+          self.CLog(result);
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
           this.handleError(error, "Error searching for report instances by activity");
@@ -484,7 +491,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['identifier', 'created', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'status', 'actions']);
+          (['identifier', 'created', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'task-count', 'status', 'actions']);
 
   qualifiedName: string;
   searchFrom: Moment;
@@ -505,6 +512,7 @@ class GridRecordModel {
   patientId: number;
   activityExecutionStatusEventId: number;
   attachmentId: number;
+  taskCount: number;
   qualifiedName: string;
   currentStatus: string;
   links: LinkModel[];

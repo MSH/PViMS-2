@@ -168,10 +168,6 @@ export class ReportTaskListComponent extends BaseComponent implements OnInit, Af
     })
     dialogRef.afterClosed()
       .subscribe(res => {
-        if(!res) {
-          // If user press cancel
-          return;
-        }
         self.loadData();
       })
   }  
@@ -181,7 +177,7 @@ class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
           (['source', 'description', 'task-type',
-              'task-status', 'created', 'updated', 'actions']);
+              'task-status', 'created', 'updated', 'comment-count', 'actions']);
 }
 
 class GridRecordModel {
