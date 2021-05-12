@@ -25,10 +25,11 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasDefaultValue(0);
 
             configuration.Property(c => c.StartDate)
-                .IsRequired();
+                .IsRequired()
+                .HasColumnType("date");
 
             configuration.Property(c => c.FinishDate)
-                .IsRequired();
+                .HasColumnType("date");
 
             configuration.Property(c => c.MinEnrolment)
                 .IsRequired(true)
@@ -39,6 +40,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasDefaultValue(0);
 
             configuration.Property(e => e.ConditionId)
+                .IsRequired()
                 .HasColumnName("Condition_Id");
 
             configuration.HasOne(d => d.Condition)
