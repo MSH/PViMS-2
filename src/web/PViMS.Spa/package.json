@@ -37,7 +37,7 @@
     "@swimlane/ngx-datatable": "15.0.2",
     "angular-in-memory-web-api": "0.8.0",
     "angular-user-idle": "^2.2.2",
-    "chart.js": "2.5.0",
+    "chart.js": "2.9.4",
     "classlist.js": "1.1.20150312",
     "core-js": "2.4.1",
     "date-fns": "1.28.5",
