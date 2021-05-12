@@ -635,7 +635,10 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreatePatientsResourceUri(ResourceUriType type,
-           PatientResourceParameters patientResourceParameters)
+           string orderBy,
+           string facilityName,
+           int pageNumber,
+           int pageSize)
         {
             switch (type)
             {
@@ -643,29 +646,29 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetPatientsByIdentifier",
                       new
                       {
-                          orderBy = patientResourceParameters.OrderBy,
-                          facilityName = patientResourceParameters.FacilityName,
-                          pageNumber = patientResourceParameters.PageNumber - 1,
-                          pageSize = patientResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber - 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetPatientsByIdentifier",
                       new
                       {
-                          orderBy = patientResourceParameters.OrderBy,
-                          facilityName = patientResourceParameters.FacilityName,
-                          pageNumber = patientResourceParameters.PageNumber + 1,
-                          pageSize = patientResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber + 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetPatientsByIdentifier",
                       new
                       {
-                          orderBy = patientResourceParameters.OrderBy,
-                          facilityName = patientResourceParameters.FacilityName,
-                          pageNumber = patientResourceParameters.PageNumber,
-                          pageSize = patientResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber,
+                          pageSize = pageSize
                       });
             }
         }

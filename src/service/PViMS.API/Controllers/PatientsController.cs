@@ -1,27 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.IO;
-using System.Linq;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Ionic.Zip;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Entities.Keyless;
@@ -30,7 +24,14 @@ using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Infrastructure;
-using PVIMS.API.Application.Queries.ReportInstanceAggregate;
+using PVIMS.API.Application.Queries.PatientAggregate;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
 {
@@ -39,6 +40,7 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class PatientsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
@@ -73,8 +75,10 @@ namespace PVIMS.API.Controllers
         private readonly ICustomAttributeService _customAttributeService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly PVIMSDbContext _context;
+        private readonly ILogger<PatientsController> _logger;
 
-        public PatientsController(IPropertyMappingService propertyMappingService, 
+        public PatientsController(IMediator mediator, 
+            IPropertyMappingService propertyMappingService, 
             ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
@@ -107,8 +111,10 @@ namespace PVIMS.API.Controllers
             IUnitOfWorkInt unitOfWork,
             ICustomAttributeService customAttributeService,
             IHttpContextAccessor httpContextAccessor,
-            PVIMSDbContext dbContext)
+            PVIMSDbContext dbContext,
+            ILogger<PatientsController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -143,6 +149,7 @@ namespace PVIMS.API.Controllers
             _customAttributeService = customAttributeService ?? throw new ArgumentNullException(nameof(customAttributeService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -157,7 +164,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<PatientIdentifierDto>> GetPatientsByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<PatientIdentifierDto>>> GetPatientsByIdentifier(
             [FromQuery] PatientResourceParameters patientResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<PatientIdentifierDto>
@@ -166,13 +173,40 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedPatientsWithLinks = GetPatients<PatientIdentifierDto>(patientResourceParameters);
+            var query = new GetPatientsIdentifierQuery(patientResourceParameters.OrderBy,
+                patientResourceParameters.FacilityName,
+                patientResourceParameters.CustomAttributeId,
+                patientResourceParameters.CustomAttributeValue,
+                patientResourceParameters.PatientId,
+                patientResourceParameters.DateOfBirth,
+                patientResourceParameters.FirstName,
+                patientResourceParameters.LastName,
+                patientResourceParameters.PageNumber,
+                patientResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<PatientIdentifierDto>(mappedPatientsWithLinks.TotalCount, mappedPatientsWithLinks);
-            var wrapperWithLinks = CreateLinksForPatients(wrapper, patientResourceParameters,
-                mappedPatientsWithLinks.HasNext, mappedPatientsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: GetPatientsIdentifierQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = patientResourceParameters.PageSize,
+                currentPage = patientResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -188,7 +222,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<PatientDetailDto>> GetPatientsByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<PatientDetailDto>>> GetPatientsByDetail(
             [FromQuery] PatientResourceParameters patientResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<PatientDetailDto, Patient>
@@ -197,40 +231,40 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            if (!String.IsNullOrWhiteSpace(patientResourceParameters.FirstName))
+            var query = new GetPatientsDetailQuery(patientResourceParameters.OrderBy,
+                patientResourceParameters.FacilityName,
+                patientResourceParameters.CustomAttributeId,
+                patientResourceParameters.CustomAttributeValue,
+                patientResourceParameters.PatientId,
+                patientResourceParameters.DateOfBirth,
+                patientResourceParameters.FirstName,
+                patientResourceParameters.LastName,
+                patientResourceParameters.PageNumber,
+                patientResourceParameters.PageSize);
+
+            _logger.LogInformation(
+                "----- Sending query: GetPatientsDetailQuery");
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                if (Regex.Matches(patientResourceParameters.FirstName, @"[-a-zA-Z ']").Count < patientResourceParameters.FirstName.Length)
-                {
-                    ModelState.AddModelError("Message", "First name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-                }
+                return BadRequest("Query not created");
             }
 
-            if (!String.IsNullOrWhiteSpace(patientResourceParameters.LastName))
+            // Prepare pagination data for response
+            var paginationMetadata = new
             {
-                if (Regex.Matches(patientResourceParameters.LastName, @"[-a-zA-Z ']").Count < patientResourceParameters.LastName.Length)
-                {
-                    ModelState.AddModelError("Message", "Last name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-                }
-            }
+                totalCount = queryResult.RecordCount,
+                pageSize = patientResourceParameters.PageSize,
+                currentPage = patientResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
 
-            if (!String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue))
-            {
-                if (Regex.Matches(patientResourceParameters.CustomAttributeValue, @"[-a-zA-Z ']").Count < patientResourceParameters.CustomAttributeValue.Length)
-                {
-                    ModelState.AddModelError("Message", "Custom attribute value contains invalid characters (Enter A-Z, a-z, 0-9, space, apostrophe)");
-                }
-            }
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
 
-            var mappedPatientsWithLinks = GetPatients<PatientDetailDto>(patientResourceParameters);
-
-            // Add custom mappings to patients
-            mappedPatientsWithLinks.ForEach(dto => CustomPatientMap(dto));
-
-            var wrapper = new LinkedCollectionResourceWrapperDto<PatientDetailDto>(mappedPatientsWithLinks.TotalCount, mappedPatientsWithLinks);
-            var wrapperWithLinks = CreateLinksForPatients(wrapper, patientResourceParameters,
-                mappedPatientsWithLinks.HasNext, mappedPatientsWithLinks.HasPrevious);
-
-            return Ok(wrapperWithLinks);
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -267,15 +301,22 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<PatientDetailDto>> GetPatientByDetail(long id)
+        public async Task<ActionResult<PatientDetailDto>> GetPatientByDetail(int id)
         {
-            var mappedPatient = await GetPatientAsync<PatientDetailDto>(id);
-            if (mappedPatient == null)
+            var query = new GetPatientDetailQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetPatientDetailQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForPatient<PatientDetailDto>(CustomPatientMap(mappedPatient)));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -290,15 +331,22 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<PatientExpandedDto>> GetPatientByExpanded(long id)
+        public async Task<ActionResult<PatientExpandedDto>> GetPatientByExpanded(int id)
         {
-            var mappedPatient = await GetPatientAsync<PatientExpandedDto>(id);
-            if (mappedPatient == null)
+            var query = new GetPatientExpandedQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetPatientExpandedQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForPatient<PatientExpandedDto>(await CustomPatientMapAsync(mappedPatient)));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -1067,104 +1115,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Get patients from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="patientResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetPatients<T>(PatientResourceParameters patientResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = patientResourceParameters.PageNumber,
-                PageSize = patientResourceParameters.PageSize
-            };
-
-            var facility = !String.IsNullOrWhiteSpace(patientResourceParameters.FacilityName) ? _facilityRepository.Get(f => f.FacilityName == patientResourceParameters.FacilityName) : null;
-            var customAttribute = _customAttributeRepository.Get(ca => ca.Id == patientResourceParameters.CustomAttributeId);
-            var path = customAttribute?.CustomAttributeType == CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute";
-
-            List <SqlParameter> parameters = new List<SqlParameter>();
-            parameters.Add(new SqlParameter("@FacilityId", facility != null ? facility.Id : 0));
-            parameters.Add(new SqlParameter("@PatientId", patientResourceParameters.PatientId.ToString()));
-            parameters.Add(new SqlParameter("@FirstName", !String.IsNullOrWhiteSpace(patientResourceParameters.FirstName) ? (Object)patientResourceParameters.FirstName : DBNull.Value));
-            parameters.Add(new SqlParameter("@LastName", !String.IsNullOrWhiteSpace(patientResourceParameters.LastName) ? (Object)patientResourceParameters.LastName : DBNull.Value));
-            parameters.Add(new SqlParameter("@DateOfBirth", patientResourceParameters.DateOfBirth > DateTime.MinValue ? (Object)patientResourceParameters.DateOfBirth : DBNull.Value));
-            parameters.Add(new SqlParameter("@CustomAttributeKey", !String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue) ? (Object)customAttribute?.AttributeKey : DBNull.Value));
-            parameters.Add(new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue) ? (Object)path : DBNull.Value));
-            parameters.Add(new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue) ? (Object)patientResourceParameters.CustomAttributeValue : DBNull.Value));
-
-            var resultsFromService = PagedCollection<EncounterList>.Create(_context.EncounterLists
-                .FromSqlRaw("spSearchEncounters @FacilityId, @PatientId, @FirstName, @LastName, @SearchFrom, @SearchTo, @CustomAttributeKey, @CustomPath, @CustomValue",
-                        parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (resultsFromService != null)
-            {
-                // Map EF entity to Dto
-                var mappedPatients = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(resultsFromService),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    resultsFromService.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedPatients.TotalCount,
-                    pageSize = mappedPatients.PageSize,
-                    currentPage = mappedPatients.CurrentPage,
-                    totalPages = mappedPatients.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedPatients.ForEach(dto => CreateLinksForPatient(dto));
-
-                return mappedPatients;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="patientResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForPatients(
-            LinkedResourceBaseDto wrapper,
-            PatientResourceParameters patientResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreatePatientsResourceUri(ResourceUriType.Current, patientResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreatePatientsResourceUri(ResourceUriType.NextPage, patientResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreatePatientsResourceUri(ResourceUriType.PreviousPage, patientResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        /// <summary>
         /// Prepare HATEOAS links for a identifier based collection resource
         /// </summary>
         /// <param name="wrapper">The linked dto wrapper that will host each link</param>
@@ -1385,172 +1335,6 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
         /// <returns></returns>
-        private PatientDetailDto CustomPatientMap(PatientDetailDto dto)
-        {
-            var patient = _patientRepository.Get(p => p.Id == dto.Id);
-            IExtendable patientExtended = patient;
-
-            if (patient == null)
-            {
-                return dto;
-            }
-
-            // Map all custom attributes
-            dto.PatientAttributes = _modelExtensionBuilder.BuildModelExtension(patientExtended)
-                .Select(h => new AttributeValueDto()
-                {
-                    Key = h.AttributeKey,
-                    Value = h.Value.ToString(),
-                    Category = h.Category,
-                    SelectionValue = (h.Type == CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
-                }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
-
-            var attribute = patientExtended.GetAttributeValue("Medical Record Number");
-            dto.MedicalRecordNumber = attribute != null ? attribute.ToString() : "";
-
-            return dto;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private async Task<PatientExpandedDto> CustomPatientMapAsync(PatientExpandedDto dto)
-        {
-            var patient = await _patientRepository.GetAsync(p => p.Id == dto.Id);
-            IExtendable patientExtended = patient;
-
-            if (patient == null)
-            {
-                return dto;
-            }
-
-            // Map all custom attributes
-            dto.PatientAttributes = _modelExtensionBuilder.BuildModelExtension(patientExtended)
-                .Select(h => new AttributeValueDto()
-                {
-                    Key = h.AttributeKey,
-                    Value = h.Value.ToString(),
-                    Category = h.Category,
-                    SelectionValue = (h.Type == CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
-                }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
-
-            // Map additional attributes to main dto
-            var attribute = patientExtended.GetAttributeValue("Medical Record Number");
-            dto.MedicalRecordNumber = attribute != null ? attribute.ToString() : "";
-
-            // Add custom mappings to adverse events
-            dto.PatientClinicalEvents.ForEach(clinicalEvent => CustomClinicalEventMap(clinicalEvent));
-
-            // Add custom mappings to medications
-            dto.PatientMedications.ForEach(medication => CustomMedicationMap(medication));
-
-            // Cohort groups
-            var mappedCohortGroups = GetCohortGroups(dto.Id);
-
-            // Add custom mappings to cohort groups
-            mappedCohortGroups.ForEach(cohortGroup => CustomCohortGroupMap(cohortGroup, patient));
-            dto.CohortGroups = mappedCohortGroups;
-
-            // Condition groups
-            int[] terms = _patientConditionRepository.List(pc => pc.Patient.Id == patient.Id && pc.TerminologyMedDra != null && !pc.Archived && !pc.Patient.Archived)
-                .Select(p => p.TerminologyMedDra.Id)
-                .ToArray();
-
-            List<PatientConditionGroupDto> groupArray = new List<PatientConditionGroupDto>();
-            foreach (var cm in _conditionMeddraRepository.List(cm => terms.Contains(cm.TerminologyMedDra.Id))
-                .ToList())
-            {
-                var tempCondition = cm.GetConditionForPatient(patient);
-                if (tempCondition != null)
-                {
-                    var group = new PatientConditionGroupDto()
-                    {
-                        ConditionGroup = cm.Condition.Description,
-                        Status = tempCondition.OutcomeDate != null ? "Case Closed" : "Case Open",
-                        PatientConditionId = tempCondition.Id,
-                        StartDate = tempCondition.OnsetDate.ToString("yyyy-MM-dd"),
-                        Detail = String.Format("{0} started on {1}", tempCondition.TerminologyMedDra.DisplayName, tempCondition.OnsetDate.ToString("yyyy-MM-dd"))
-                    };
-                    groupArray.Add(group);
-                }
-            }
-            dto.ConditionGroups = groupArray;
-
-            // Activity
-            var activity = await _reportInstanceQueries.GetExecutionStatusEventsForPatientViewAsync(patient.Id);
-            dto.Activity = activity.ToList();
-
-            return dto;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <param name="patient">The patient to be used to determine what enrolments to load</param>
-        /// <returns></returns>
-        private CohortGroupPatientDetailDto CustomCohortGroupMap(CohortGroupPatientDetailDto dto, Patient patient)
-        {
-            // Condition group enrolments
-            var mappedCohortGroupEnrolment = GetCohortGroupEnrolment(dto.Id, patient.Id);
-            dto.CohortGroupEnrolment = mappedCohortGroupEnrolment != null ? CreateLinksForEnrolment(mappedCohortGroupEnrolment) : null;
-
-            // Condition start date
-            dto.ConditionStartDate = patient.GetConditionForGroupAndDate(dto.Condition, DateTime.Today)?.OnsetDate.ToString("yyyy-MM-dd");
-
-            // Cohort group links
-            return CreateLinksForCohortGroup(dto);
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private PatientClinicalEventDetailDto CustomClinicalEventMap(PatientClinicalEventDetailDto dto)
-        {
-            var clinicalEvent = _patientClinicalEventRepository.Get(p => p.Id == dto.Id);
-            IExtendable clinicalEventExtended = clinicalEvent;
-
-            if (clinicalEvent == null)
-            {
-                return dto;
-            }
-
-            dto.ReportDate = _customAttributeService.GetCustomAttributeValue("PatientClinicalEvent", "Date of Report", clinicalEventExtended);
-            dto.IsSerious = _customAttributeService.GetCustomAttributeValue("PatientClinicalEvent", "Is the adverse event serious?", clinicalEventExtended);
-
-            // Cohort group links
-            return dto;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private PatientMedicationDetailDto CustomMedicationMap(PatientMedicationDetailDto dto)
-        {
-            var medication = _patientMedicationRepository.Get(p => p.Id == dto.Id);
-            IExtendable medicationExtended = medication;
-
-            if (medication == null)
-            {
-                return dto;
-            }
-
-            dto.IndicationType = _customAttributeService.GetCustomAttributeValue("PatientMedication", "Type of Indication", medicationExtended);
-
-            return dto;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
         private PatientMedicationReportDto CustomPatientMedicationReportMap(PatientMedicationReportDto dto)
         {
             dto.Patients = _mapper.Map<List<PatientListDto>>(_reportService.GetPatientListByDrugItems(dto.ConceptId));
@@ -1567,88 +1351,6 @@ namespace PVIMS.API.Controllers
         private PatientTreatmentReportDto CustomPatientTreatmentReportMap(PatientTreatmentReportDto dto, PatientTreatmentReportResourceParameters patientTreatmentReportResourceParameters)
         {
             dto.Patients = _mapper.Map<List<PatientListDto>>(_reportService.GetPatientListOnStudyItems(patientTreatmentReportResourceParameters.SearchFrom, patientTreatmentReportResourceParameters.SearchTo, patientTreatmentReportResourceParameters.PatientOnStudyCriteria, dto.FacilityId));
-
-            return dto;
-        }
-
-        /// <summary>
-        /// Get a list of cohort groups
-        /// </summary>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private List<CohortGroupPatientDetailDto> GetCohortGroups(long id)
-        {
-            var cohortGroupsFromRepo = _cohortGroupRepository.List();
-
-            if (cohortGroupsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedCohortGroups = _mapper.Map<List<CohortGroupPatientDetailDto>>(cohortGroupsFromRepo);
-
-                return mappedCohortGroups;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get a list of cohort groups
-        /// </summary>
-        /// <param name="cohortGroupId">Resource id to search by</param>
-        /// <param name="patientId">The patient id to be used to determine what enrolments to load</param>
-        /// <returns></returns>
-        private EnrolmentIdentifierDto GetCohortGroupEnrolment(long cohortGroupId, long patientId)
-        {
-            var cohortGroupEnrolmentsFromRepo = _cohortGroupEnrolmentRepository.List(cge => cge.CohortGroup.Id == cohortGroupId && cge.Patient.Id == patientId && !cge.Archived);
-            if (cohortGroupEnrolmentsFromRepo != null)
-            {
-                if(cohortGroupEnrolmentsFromRepo.Count > 0)
-                {
-                    var cohortGroupEnrolment = cohortGroupEnrolmentsFromRepo.First();
-                    // Map EF entity to Dto
-                    var mappedCohortGroupEnrolment = _mapper.Map<EnrolmentIdentifierDto>(cohortGroupEnrolment);
-
-                    return mappedCohortGroupEnrolment;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get the corresponding selection value
-        /// </summary>
-        /// <param name="attributeKey">The custom attribute key look up value</param>
-        /// <param name="selectionKey">The selection key look up value</param>
-        /// <returns></returns>
-        private string GetSelectionValue(string attributeKey, string selectionKey)
-        {
-            var selectionitem = _selectionDataItemRepository.Get(s => s.AttributeKey == attributeKey && s.SelectionKey == selectionKey);
-
-            return (selectionitem == null) ? string.Empty : selectionitem.Value;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource for enrolments
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private EnrolmentIdentifierDto CreateLinksForEnrolment(EnrolmentIdentifierDto dto)
-        {
-            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateEnrolmentForPatientResourceUri(dto.PatientId, dto.Id), "self", "GET"));
-            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDeenrolmentForPatientResourceUri(dto.PatientId, dto.Id), "deenrol", "PUT"));
-
-            return dto;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource for cohort groups
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private CohortGroupPatientDetailDto CreateLinksForCohortGroup(CohortGroupPatientDetailDto dto)
-        {
-            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("CohortGroup", dto.Id), "self", "GET"));
 
             return dto;
         }

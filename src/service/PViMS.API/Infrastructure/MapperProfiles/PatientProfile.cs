@@ -64,6 +64,15 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.OnsetDate, opt => opt.MapFrom(src => src.OnsetDate.HasValue ? Convert.ToDateTime(src.OnsetDate).ToString("yyyy-MM-dd") : ""))
                 .ForMember(dest => dest.ResolutionDate, opt => opt.MapFrom(src => src.ResolutionDate.HasValue ? Convert.ToDateTime(src.ResolutionDate).ToString("yyyy-MM-dd") : ""));
 
+            CreateMap<PatientMedication, PatientMedicationIdentifierDto>();
+            CreateMap<PatientMedication, PatientMedicationDetailDto>()
+                .ForMember(dest => dest.SourceDescription, opt => opt.MapFrom(src => src.MedicationSource))
+                .ForMember(dest => dest.ConceptId, opt => opt.MapFrom(src => src.Concept.Id))
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Product.Id))
+                .ForMember(dest => dest.Medication, opt => opt.MapFrom(src => src.Product != null ? $"{src.Concept.ConceptName} ({src.Concept.MedicationForm.Description}) ({src.Product.ProductName})" : $"{src.Concept.ConceptName} ({src.Concept.MedicationForm.Description})"))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate.ToString("yyyy-MM-dd")))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate.HasValue ? src.EndDate.Value.ToString("yyyy-MM-dd") : ""));
+
             CreateMap<AdverseEventList, AdverseEventReportDto>()
                 .ForMember(dest => dest.AdverseEvent, opt => opt.MapFrom(src => src.Description));
             CreateMap<AdverseEventQuarterlyList, AdverseEventFrequencyReportDto>()

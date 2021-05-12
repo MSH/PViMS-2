@@ -12,8 +12,7 @@ namespace PVIMS.Core.Entities
 
         public PatientCondition GetConditionForPatient(Patient patient)
         {
-            PatientCondition tempCondition = patient.PatientConditions.OrderByDescending(pc => pc.OnsetDate).Where(pc => TerminologyMedDra.Id == pc.TerminologyMedDra.Id && pc.OutcomeDate == null).FirstOrDefault();
-            return tempCondition;
+            return patient.PatientConditions.OrderByDescending(pc => pc.OnsetDate).Where(pc => TerminologyMedDra.Id == pc.TerminologyMedDra.Id && pc.OutcomeDate == null).FirstOrDefault();
         }
 
         public PatientCondition GetConditionForEncounter(Encounter encounter)

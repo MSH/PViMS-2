@@ -58,7 +58,7 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreatePatientAppointmentResourceUri(long patientId, long resourceId);
 
-        string CreatePatientsResourceUri(ResourceUriType type, PatientResourceParameters patientResourceParameters);
+        string CreatePatientsResourceUri(ResourceUriType type, string orderBy, string facilityName, int pageNumber, int pageSize);
 
         string CreatePatientMedicationReportResourceUri(ResourceUriType type, PatientMedicationReportResourceParameters patientMedicationReportResourceParameters);
 
