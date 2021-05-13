@@ -22,6 +22,11 @@ namespace PVIMS.Infrastructure.Repositories
             dbSet = context.Set<TEntity>();
         }
 
+        public IQueryable<TEntity> Queryable()
+        {
+            return dbSet;
+        }
+
         public ICollection<TEntity> List()
         {
             return List(null, null, (string)null);
@@ -30,11 +35,6 @@ namespace PVIMS.Infrastructure.Repositories
         public async Task<ICollection<TEntity>> ListAsync()
         {
             return await ListAsync(null, null, (string)null);
-        }
-
-        public IQueryable<TEntity> Queryable()
-        {
-            return dbSet;
         }
 
         public ICollection<TEntity> List(Expression<Func<TEntity, bool>> filter,
@@ -158,6 +158,37 @@ namespace PVIMS.Infrastructure.Repositories
                 pagingInfo.PageSize);
         }
 
+        public async Task<PagedCollection<TEntity>> ListAsync(IPagingInfo pagingInfo,
+            Expression<Func<TEntity, bool>> filter,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
+            params string[] includeExpressions)
+        {
+            IQueryable<TEntity> queryBeforePaging = dbSet;
+
+            if (filter != null)
+            {
+                queryBeforePaging = queryBeforePaging.Where(filter);
+            }
+
+            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
+            {
+                queryBeforePaging = queryBeforePaging.Include(include);
+            }
+
+            var count = await queryBeforePaging.CountAsync();
+
+            if (orderBy != null)
+            {
+                queryBeforePaging = orderBy(queryBeforePaging);
+            }
+            else
+                queryBeforePaging = queryBeforePaging.OrderBy(h => h.Id);
+
+            return PagedCollection<TEntity>.Create(queryBeforePaging,
+                pagingInfo.PageNumber,
+                pagingInfo.PageSize);
+        }
+
         public PagedCollection<TEntity> List<TProperty>(IPagingInfo pagingInfo,
             Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
@@ -186,45 +217,14 @@ namespace PVIMS.Infrastructure.Repositories
                 pagingInfo.PageSize);
         }
 
-        public async Task<TEntity> GetAsync(object entityId)
-        {
-            return await dbSet.FindAsync(entityId);
-        }
-
-        public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> filter)
-        {
-            IQueryable<TEntity> query = dbSet;
-
-            return await query.SingleOrDefaultAsync(filter);
-        }
-
-        public async Task<TEntity> GetAsync(object entityId, string[] includeExpressions)
-        {
-            var query = Queryable();
-
-            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
-            {
-                query = query.Include(include);
-            }
-
-            return await query.SingleOrDefaultAsync(q => q.Id == (long)entityId);
-        }
-
-        public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> filter, string[] includeExpressions)
-        {
-            var query = Queryable();
-
-            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
-            {
-                query = query.Include(include);
-            }
-
-            return await query.SingleOrDefaultAsync(filter);
-        }
-
         public TEntity Get(object entityId)
         {
             return dbSet.Find(entityId);
+        }
+
+        public async Task<TEntity> GetAsync(object entityId)
+        {
+            return await dbSet.FindAsync(entityId);
         }
 
         public TEntity Get(Expression<Func<TEntity, bool>> filter)
@@ -232,6 +232,13 @@ namespace PVIMS.Infrastructure.Repositories
             IQueryable<TEntity> query = dbSet;
 
             return query.SingleOrDefault(filter);
+        }
+
+        public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> filter)
+        {
+            IQueryable<TEntity> query = dbSet;
+
+            return await query.SingleOrDefaultAsync(filter);
         }
 
         public TEntity Get(object entityId, string[] includeExpressions)
@@ -246,6 +253,18 @@ namespace PVIMS.Infrastructure.Repositories
             return query.SingleOrDefault(q => q.Id == (long)entityId);
         }
 
+        public async Task<TEntity> GetAsync(object entityId, string[] includeExpressions)
+        {
+            var query = Queryable();
+
+            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
+            {
+                query = query.Include(include);
+            }
+
+            return await query.SingleOrDefaultAsync(q => q.Id == (long)entityId);
+        }
+
         public TEntity Get(Expression<Func<TEntity, bool>> filter, string[] includeExpressions)
         {
             var query = Queryable();
@@ -256,6 +275,18 @@ namespace PVIMS.Infrastructure.Repositories
             }
 
             return query.SingleOrDefault(filter);
+        }
+
+        public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> filter, string[] includeExpressions)
+        {
+            var query = Queryable();
+
+            foreach (var include in includeExpressions.Where(s => !string.IsNullOrEmpty(s)))
+            {
+                query = query.Include(include);
+            }
+
+            return await query.SingleOrDefaultAsync(filter);
         }
 
         public void Save(TEntity entityToSave)
