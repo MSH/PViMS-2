@@ -8,15 +8,11 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The name of the cohort group
         /// </summary>
-        [Required]
-        [StringLength(50)]
         public string CohortName { get; set; }
 
         /// <summary>
         /// The code of the cohort group
         /// </summary>
-        [Required]
-        [StringLength(5)]
         public string CohortCode { get; set; }
 
         /// <summary>

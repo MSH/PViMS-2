@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using PVIMS.API.Application.Commands.CohortGroupAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
@@ -18,6 +20,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using MediatR;
 
 namespace PVIMS.API.Controllers
 {
@@ -26,29 +29,26 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class CohortGroupsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
-        private readonly IRepositoryInt<CohortGroupEnrolment> _cohortGroupEnrolmentRepository;
-        private readonly IRepositoryInt<Condition> _conditionRepository;
-        private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
+        private readonly ILogger<CohortGroupsController> _logger;
 
-        public CohortGroupsController(ITypeHelperService typeHelperService,
+        public CohortGroupsController(IMediator mediator,
+            ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<CohortGroup> cohortGroupRepository,
-            IRepositoryInt<CohortGroupEnrolment> cohortGroupEnrolmentRepository,
-            IRepositoryInt<Condition> conditionRepository,
-            IUnitOfWorkInt unitOfWork)
+            ILogger<CohortGroupsController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
-            _cohortGroupEnrolmentRepository = cohortGroupEnrolmentRepository ?? throw new ArgumentNullException(nameof(cohortGroupEnrolmentRepository));
-            _conditionRepository = conditionRepository ?? throw new ArgumentNullException(nameof(conditionRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -174,75 +174,24 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            if (Regex.Matches(cohortGroupForUpdate.CohortName, @"[a-zA-Z0-9 ']").Count < cohortGroupForUpdate.CohortName.Length)
+            var command = new AddCohortGroupCommand(cohortGroupForUpdate.CohortName, cohortGroupForUpdate.CohortCode, cohortGroupForUpdate.StartDate, cohortGroupForUpdate.FinishDate, cohortGroupForUpdate.ConditionName);
+
+            _logger.LogInformation(
+                "----- Sending command: AddCohortGroupCommand - {cohortName}",
+                command.CohortName);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                ModelState.AddModelError("Message", "Cohort name contains invalid characters (Enter A-Z, a-z, 0-9, space, apostrophe)");
-                return BadRequest(ModelState);
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(cohortGroupForUpdate.CohortCode, @"[-a-zA-Z0-9 ]").Count < cohortGroupForUpdate.CohortCode.Length)
-            {
-                ModelState.AddModelError("Message", "Cohort code contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen)");
-                return BadRequest(ModelState);
-            }
-
-            if (cohortGroupForUpdate.StartDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Start Date should be before current date");
-            }
-
-            if (cohortGroupForUpdate.FinishDate.HasValue)
-            {
-                if (cohortGroupForUpdate.FinishDate < cohortGroupForUpdate.StartDate)
+            return CreatedAtRoute("GetCohortGroupByDetail",
+                new
                 {
-                    ModelState.AddModelError("Message", "Finish Date should be after Start Date");
-                }
-            }
-
-            Condition conditionFromRepo = null;
-            conditionFromRepo = _conditionRepository.Get(c => c.Description == cohortGroupForUpdate.ConditionName);
-            if (conditionFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate primary condition group");
-            }
-
-            if (_unitOfWork.Repository<CohortGroup>().Queryable().
-                Where(l => l.CohortName == cohortGroupForUpdate.CohortName || l.CohortCode == cohortGroupForUpdate.CohortCode)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Item with same name already exists");
-            }
-
-            if (ModelState.IsValid)
-            {
-                var newCohortGroup = new CohortGroup()
-                {
-                    CohortName = cohortGroupForUpdate.CohortName,
-                    CohortCode = cohortGroupForUpdate.CohortCode,
-                    Condition = conditionFromRepo,
-                    StartDate = cohortGroupForUpdate.StartDate,
-                    FinishDate = cohortGroupForUpdate.FinishDate,
-                    MaxEnrolment = 0,
-                    MinEnrolment = 0, 
-                    LastPatientNo = 0
-                };
-
-                _cohortGroupRepository.Save(newCohortGroup);
-
-                var mappedCohortGroup = await GetCohortGroupAsync<CohortGroupIdentifierDto>(newCohortGroup.Id);
-                if (mappedCohortGroup == null)
-                {
-                    return StatusCode(500, "Unable to locate newly added item");
-                }
-
-                return CreatedAtRoute("GetCohortGroupByIdentifier",
-                    new
-                    {
-                        id = mappedCohortGroup.Id
-                    }, CreateLinksForCohortGroup<CohortGroupIdentifierDto>(mappedCohortGroup));
-            }
-
-            return BadRequest(ModelState);
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -254,7 +203,7 @@ namespace PVIMS.API.Controllers
         [HttpPut("{id}", Name = "UpdateCohortGroup")]
         [Consumes("application/json")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateCohortGroup(long id,
+        public async Task<IActionResult> UpdateCohortGroup(int id,
             [FromBody] CohortGroupForUpdateDto cohortGroupForUpdate)
         {
             if (cohortGroupForUpdate == null)
@@ -262,66 +211,20 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var cohortGroupFromRepo = await _cohortGroupRepository.GetAsync(f => f.Id == id);
-            if (cohortGroupFromRepo == null)
+            var command = new ChangeCohortGroupDetailsCommand(id, cohortGroupForUpdate.CohortName, cohortGroupForUpdate.CohortCode, cohortGroupForUpdate.StartDate, cohortGroupForUpdate.FinishDate, cohortGroupForUpdate.ConditionName);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeCohortGroupDetailsCommand - {Id}",
+                command.Id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(cohortGroupForUpdate.CohortName, @"[a-zA-Z0-9 ']").Count < cohortGroupForUpdate.CohortName.Length)
-            {
-                ModelState.AddModelError("Message", "Cohort name contains invalid characters (Enter A-Z, a-z, 0-9, space, apostrophe)");
-                return BadRequest(ModelState);
-            }
-
-            if (Regex.Matches(cohortGroupForUpdate.CohortCode, @"[-a-zA-Z0-9 ]").Count < cohortGroupForUpdate.CohortCode.Length)
-            {
-                ModelState.AddModelError("Message", "Cohort code contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen)");
-                return BadRequest(ModelState);
-            }
-
-            if (cohortGroupForUpdate.StartDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Start Date should be before current date");
-            }
-
-            if (cohortGroupForUpdate.FinishDate.HasValue)
-            {
-                if (cohortGroupForUpdate.FinishDate < cohortGroupForUpdate.StartDate)
-                {
-                    ModelState.AddModelError("Message", "Finish Date should be after Start Date");
-                }
-            }
-
-            Condition conditionFromRepo = null;
-            conditionFromRepo = _conditionRepository.Get(c => c.Description == cohortGroupForUpdate.ConditionName);
-            if (conditionFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate primary condition group");
-            }
-
-            if (_unitOfWork.Repository<CohortGroup>().Queryable().
-                Where(l => (l.CohortName == cohortGroupForUpdate.CohortName || l.CohortCode == cohortGroupForUpdate.CohortCode) && l.Id != id)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Item with same name already exists");
-            }
-
-            if (ModelState.IsValid)
-            {
-                cohortGroupFromRepo.CohortName = cohortGroupForUpdate.CohortName;
-                cohortGroupFromRepo.CohortCode = cohortGroupForUpdate.CohortCode;
-                cohortGroupFromRepo.StartDate = cohortGroupForUpdate.StartDate;
-                cohortGroupFromRepo.FinishDate = cohortGroupForUpdate.FinishDate;
-                cohortGroupFromRepo.Condition = conditionFromRepo;
-
-                _cohortGroupRepository.Update(cohortGroupFromRepo);
-                await _unitOfWork.CompleteAsync();
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -331,23 +234,19 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpDelete("{id}", Name = "DeleteCohortGroup")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteCohortGroup(long id)
+        public async Task<IActionResult> DeleteCohortGroup(int id)
         {
-            var cohortGroupFromRepo = await _cohortGroupRepository.GetAsync(f => f.Id == id);
-            if (cohortGroupFromRepo == null)
-            {
-                return NotFound();
-            }
+            var command = new DeleteCohortGroupCommand(id);
 
-            if (_cohortGroupEnrolmentRepository.Exists(cge => cge.CohortGroup.Id == id))
-            {
-                ModelState.AddModelError("Message", "Unable to delete the Cohort Group as it is currently in use");
-            }
+            _logger.LogInformation(
+                "----- Sending command: DeleteCohortGroupCommand - {Id}",
+                command.Id);
 
-            if (ModelState.IsValid)
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                _cohortGroupRepository.Delete(cohortGroupFromRepo);
-                await _unitOfWork.CompleteAsync();
+                return BadRequest("Command not created");
             }
 
             return NoContent();
