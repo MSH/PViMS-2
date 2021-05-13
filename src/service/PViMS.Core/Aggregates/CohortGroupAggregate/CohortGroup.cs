@@ -37,7 +37,7 @@ namespace PVIMS.Core.Entities
         public int MaxEnrolment { get; private set; }
 
         public int? ConditionId { get; private set; }
-        public virtual Condition Condition { get; set; }
+        public virtual Condition Condition { get; private set; }
 
         public virtual ICollection<CohortGroupEnrolment> CohortGroupEnrolments { get; set; }
         public virtual ICollection<EncounterTypeWorkPlan> EncounterTypeWorkPlans { get; set; }

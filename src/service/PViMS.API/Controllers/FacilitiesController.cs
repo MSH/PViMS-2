@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
 using LinqKit;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using PVIMS.API.Application.Commands.FacilityAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
@@ -16,8 +19,6 @@ using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
@@ -27,29 +28,32 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class FacilitiesController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly IRepositoryInt<FacilityType> _facilityTypeRepository;
-        private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
+        private readonly ILogger<FacilitiesController> _logger;
 
-        public FacilitiesController(IPropertyMappingService propertyMappingService,
+        public FacilitiesController(IMediator mediator, 
+            IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Facility> facilityRepository,
             IRepositoryInt<FacilityType> facilityTypeRepository,
-            IUnitOfWorkInt unitOfWork)
+            ILogger<FacilitiesController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
             _facilityTypeRepository = facilityTypeRepository ?? throw new ArgumentNullException(nameof(facilityTypeRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -196,89 +200,24 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Custom validation
-            if (_facilityRepository.Queryable().Any(f => f.FacilityName == facilityForUpdate.FacilityName))
+            var command = new AddFacilityCommand(facilityForUpdate.FacilityName, facilityForUpdate.FacilityCode, facilityForUpdate.FacilityType, facilityForUpdate.TelNumber, facilityForUpdate.MobileNumber, facilityForUpdate.FaxNumber);
+
+            _logger.LogInformation(
+                "----- Sending command: AddFacilityCommand - {facilityName}",
+                command.FacilityName);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                ModelState.AddModelError("Message", "A facility with the specified facility name already exists.");
-                return BadRequest(ModelState);
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(facilityForUpdate.FacilityName, @"[-a-zA-Z0-9. '()]").Count < facilityForUpdate.FacilityName.Length)
-            {
-                ModelState.AddModelError("Message", "Facility name contains invalid characters (Enter A-Z, a-z, 0-9, space, period, apostrophe, round brackets)");
-                return BadRequest(ModelState);
-            }
-
-            if (_facilityRepository.Queryable().Any(f => f.FacilityCode == facilityForUpdate.FacilityCode))
-            {
-                ModelState.AddModelError("Message", "A facility with the specified facility code already exists.");
-                return BadRequest(ModelState);
-            }
-
-            if (Regex.Matches(facilityForUpdate.FacilityCode, @"[-a-zA-Z0-9]").Count < facilityForUpdate.FacilityCode.Length)
-            {
-                ModelState.AddModelError("Message", "Facility code contains invalid characters (Enter A-Z, a-z, 0-9)");
-                return BadRequest(ModelState);
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.ContactNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.ContactNumber, @"[-a-zA-Z0-9]").Count < facilityForUpdate.ContactNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Telephone number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.MobileNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.MobileNumber, @"[-a-zA-Z0-9]").Count < facilityForUpdate.MobileNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Mobile number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.FaxNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.FaxNumber, @"[a-zA-Z0-9]").Count < facilityForUpdate.FaxNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Fax number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            long id = 0;
-
-            if (ModelState.IsValid)
-            {
-                var facilityType = _facilityTypeRepository.Get(ft => ft.Description == facilityForUpdate.FacilityType);
-
-                var newFacility = new Facility()
-                {
-                    FacilityName = facilityForUpdate.FacilityName,
-                    FacilityCode = facilityForUpdate.FacilityCode,
-                    FacilityType = facilityType,
-                    FaxNumber = facilityForUpdate.FaxNumber,
-                    MobileNumber = facilityForUpdate.MobileNumber,
-                    TelNumber = facilityForUpdate.ContactNumber
-                };
-
-                _facilityRepository.Save(newFacility);
-                id = newFacility.Id;
-            }
-
-            var mappedFacility = await GetFacilityAsync<FacilityIdentifierDto>(id);
-            if (mappedFacility == null)
-            {
-                return StatusCode(500, "Unable to locate newly added facility");
-            }
-
-            return CreatedAtRoute("GetFacilityByIdentifier",
+            return CreatedAtRoute("GetFacilityByDetail",
                 new
                 {
-                    id = mappedFacility.Id
-                }, CreateLinksForFacility<FacilityIdentifierDto>(mappedFacility));
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -289,7 +228,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPut("facilities/{id}", Name = "UpdateFacility")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdateFacility(long id,
+        public async Task<IActionResult> UpdateFacility(int id,
             [FromBody] FacilityForUpdateDto facilityForUpdate)
         {
             if (facilityForUpdate == null)
@@ -298,77 +237,17 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var facilityFromRepo = await _facilityRepository.GetAsync(f => f.Id == id);
-            if (facilityFromRepo == null)
+            var command = new ChangeFacilityDetailsCommand(id, facilityForUpdate.FacilityName, facilityForUpdate.FacilityCode, facilityForUpdate.FacilityType, facilityForUpdate.TelNumber, facilityForUpdate.MobileNumber, facilityForUpdate.FaxNumber);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeFacilityDetailsCommand - {Id}",
+                command.Id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
-            }
-
-            var type = _facilityTypeRepository.Get(ft => ft.Description == facilityForUpdate.FacilityType);
-
-            // Custom validation
-            if (_facilityRepository.Queryable().Any(f => f.Id != id && f.FacilityName == facilityForUpdate.FacilityName))
-            {
-                ModelState.AddModelError("Message", "Another facility with the specified name already exists.");
-                return BadRequest(ModelState);
-            }
-
-            if (Regex.Matches(facilityForUpdate.FacilityName, @"[-a-zA-Z0-9. '()]").Count < facilityForUpdate.FacilityName.Length)
-            {
-                ModelState.AddModelError("Message", "Facility name contains invalid characters (Enter A-Z, a-z, 0-9, space, period, apostrophe, round brackets)");
-                return BadRequest(ModelState);
-            }
-
-            if (_facilityRepository.Queryable().Any(f => f.Id != id && f.FacilityCode == facilityForUpdate.FacilityCode))
-            {
-                ModelState.AddModelError("Message", "Another facility with the specified code already exists.");
-                return BadRequest(ModelState);
-            }
-
-            if (Regex.Matches(facilityForUpdate.FacilityCode, @"[-a-zA-Z0-9]").Count < facilityForUpdate.FacilityCode.Length)
-            {
-                ModelState.AddModelError("Message", "Facility code contains invalid characters (Enter A-Z, a-z, 0-9)");
-                return BadRequest(ModelState);
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.ContactNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.ContactNumber, @"[-a-zA-Z0-9]").Count < facilityForUpdate.ContactNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Telephone number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.MobileNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.MobileNumber, @"[-a-zA-Z0-9]").Count < facilityForUpdate.MobileNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Mobile number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.FaxNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.FaxNumber, @"[a-zA-Z0-9]").Count < facilityForUpdate.FaxNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Fax number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (ModelState.IsValid)
-            {
-                facilityFromRepo.FacilityName = facilityForUpdate.FacilityName;
-                facilityFromRepo.FacilityCode = facilityForUpdate.FacilityCode;
-                facilityFromRepo.FacilityType = type;
-                facilityFromRepo.FaxNumber = facilityForUpdate.FaxNumber;
-                facilityFromRepo.MobileNumber = facilityForUpdate.MobileNumber;
-                facilityFromRepo.TelNumber = facilityForUpdate.ContactNumber;
-
-                _facilityRepository.Update(facilityFromRepo);
-                await _unitOfWork.CompleteAsync();
+                return BadRequest("Command not created");
             }
 
             return Ok();
@@ -380,24 +259,19 @@ namespace PVIMS.API.Controllers
         /// <param name="id">The unique id of the facility</param>
         /// <returns></returns>
         [HttpDelete("facilities/{id}", Name = "DeleteFacility")]
-        public async Task<IActionResult> DeleteFacility(long id)
+        public async Task<IActionResult> DeleteFacility(int id)
         {
-            var facilityFromRepo = await _facilityRepository.GetAsync(f => f.Id == id);
-            if (facilityFromRepo == null)
-            {
-                return NotFound();
-            }
+            var command = new DeleteFacilityCommand(id);
 
-            if (facilityFromRepo.PatientFacilities.Count > 0 || facilityFromRepo.UserFacilities.Count > 0)
-            {
-                ModelState.AddModelError("Message", "Unable to delete as item is in use.");
-                return BadRequest(ModelState);
-            }
+            _logger.LogInformation(
+                "----- Sending command: DeleteFacilityCommand - {Id}",
+                command.Id);
 
-            if (ModelState.IsValid)
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                _facilityRepository.Delete(facilityFromRepo);
-                await _unitOfWork.CompleteAsync();
+                return BadRequest("Command not created");
             }
 
             return NoContent();
