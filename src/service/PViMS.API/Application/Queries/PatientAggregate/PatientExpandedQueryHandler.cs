@@ -16,8 +16,8 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Queries.PatientAggregate
 {
-    public class GetPatientExpandedQueryHandler
-        : IRequestHandler<GetPatientExpandedQuery, PatientExpandedDto>
+    public class PatientExpandedQueryHandler
+        : IRequestHandler<PatientExpandedQuery, PatientExpandedDto>
     {
         private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
         private readonly IRepositoryInt<CohortGroupEnrolment> _cohortGroupEnrolmentRepository;
@@ -31,10 +31,10 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetPatientExpandedQueryHandler> _logger;
+        private readonly ILogger<PatientExpandedQueryHandler> _logger;
         private readonly ICustomAttributeService _customAttributeService;
 
-        public GetPatientExpandedQueryHandler(
+        public PatientExpandedQueryHandler(
             IRepositoryInt<CohortGroup> cohortGroupRepository,
             IRepositoryInt<CohortGroupEnrolment> cohortGroupEnrolmentRepository,
             IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
@@ -47,7 +47,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             ITypeExtensionHandler modelExtensionBuilder,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<GetPatientExpandedQueryHandler> logger,
+            ILogger<PatientExpandedQueryHandler> logger,
             ICustomAttributeService customAttributeService)
         {
             _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
@@ -66,7 +66,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _customAttributeService = customAttributeService ?? throw new ArgumentNullException(nameof(customAttributeService));
         }
 
-        public async Task<PatientExpandedDto> Handle(GetPatientExpandedQuery message, CancellationToken cancellationToken)
+        public async Task<PatientExpandedDto> Handle(PatientExpandedQuery message, CancellationToken cancellationToken)
         {
             var patientFromRepo = await _patientRepository.GetAsync(p => p.Archived == false
                     && p.Id == message.PatientId, 

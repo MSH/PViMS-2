@@ -21,8 +21,8 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Queries.EncounterAggregate
 {
-    public class GetEncountersDetailQueryHandler
-        : IRequestHandler<GetEncountersDetailQuery, LinkedCollectionResourceWrapperDto<EncounterDetailDto>>
+    public class EncountersDetailQueryHandler
+        : IRequestHandler<EncountersDetailQuery, LinkedCollectionResourceWrapperDto<EncounterDetailDto>>
     {
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
@@ -31,9 +31,9 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
         private readonly PVIMSDbContext _context;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetEncountersDetailQueryHandler> _logger;
+        private readonly ILogger<EncountersDetailQueryHandler> _logger;
 
-        public GetEncountersDetailQueryHandler(
+        public EncountersDetailQueryHandler(
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<Encounter> encounterRepository,
@@ -41,7 +41,7 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
             PVIMSDbContext dbContext,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<GetEncountersDetailQueryHandler> logger)
+            ILogger<EncountersDetailQueryHandler> logger)
         {
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
@@ -53,7 +53,7 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<LinkedCollectionResourceWrapperDto<EncounterDetailDto>> Handle(GetEncountersDetailQuery message, CancellationToken cancellationToken)
+        public async Task<LinkedCollectionResourceWrapperDto<EncounterDetailDto>> Handle(EncountersDetailQuery message, CancellationToken cancellationToken)
         {
             return await GetEncountersAsync(message.PageNumber, message.PageSize, message.OrderBy, message.FacilityName, message.CustomAttributeId, message.CustomAttributeValue, message.PatientId, message.FirstName, message.LastName, message.SearchFrom, message.SearchTo);
         }

@@ -15,21 +15,21 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Queries.EncounterAggregate
 {
-    public class GetEncounterDetailQueryHandler
-        : IRequestHandler<GetEncounterDetailQuery, EncounterDetailDto>
+    public class EncounterDetailQueryHandler
+        : IRequestHandler<EncounterDetailQuery, EncounterDetailDto>
     {
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<Encounter> _encounterRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetEncounterDetailQueryHandler> _logger;
+        private readonly ILogger<EncounterDetailQueryHandler> _logger;
 
-        public GetEncounterDetailQueryHandler(
+        public EncounterDetailQueryHandler(
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<Encounter> encounterRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<GetEncounterDetailQueryHandler> logger)
+            ILogger<EncounterDetailQueryHandler> logger)
         {
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _encounterRepository = encounterRepository ?? throw new ArgumentNullException(nameof(encounterRepository));
@@ -38,7 +38,7 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<EncounterDetailDto> Handle(GetEncounterDetailQuery message, CancellationToken cancellationToken)
+        public async Task<EncounterDetailDto> Handle(EncounterDetailQuery message, CancellationToken cancellationToken)
         {
             var encounterFromRepo = await _encounterRepository.GetAsync(e => e.Patient.Id == message.PatientId
                     && e.Archived == false

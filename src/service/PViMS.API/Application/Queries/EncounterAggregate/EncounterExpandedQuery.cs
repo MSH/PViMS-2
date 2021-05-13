@@ -5,8 +5,8 @@ using System.Runtime.Serialization;
 namespace PVIMS.API.Application.Queries.EncounterAggregate
 {
     [DataContract]
-    public class GetEncounterDetailQuery
-        : IRequest<EncounterDetailDto>
+    public class EncounterExpandedQuery
+        : IRequest<EncounterExpandedDto>
     {
         [DataMember]
         public int PatientId { get; private set; }
@@ -14,11 +14,11 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
         [DataMember]
         public int EncounterId { get; private set; }
 
-        public GetEncounterDetailQuery()
+        public EncounterExpandedQuery()
         {
         }
 
-        public GetEncounterDetailQuery(int patientId, int encounterId) : this()
+        public EncounterExpandedQuery(int patientId, int encounterId) : this()
         {
             PatientId = patientId;
             EncounterId = encounterId;

@@ -3,11 +3,11 @@ using PVIMS.API.Models;
 using System;
 using System.Runtime.Serialization;
 
-namespace PVIMS.API.Application.Queries.PatientAggregate
+namespace PVIMS.API.Application.Queries.EncounterAggregate
 {
     [DataContract]
-    public class GetPatientsDetailQuery
-        : IRequest<LinkedCollectionResourceWrapperDto<PatientDetailDto>>
+    public class EncountersDetailQuery
+        : IRequest<LinkedCollectionResourceWrapperDto<EncounterDetailDto>>
     {
         [DataMember]
         public string OrderBy { get; private set; }
@@ -31,7 +31,10 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         public string LastName { get; private set; }
 
         [DataMember]
-        public DateTime DateOfBirth { get; private set; }
+        public DateTime SearchFrom { get; private set; }
+
+        [DataMember]
+        public DateTime SearchTo { get; private set; }
 
         [DataMember]
         public int PageNumber { get; private set; }
@@ -39,18 +42,19 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         [DataMember]
         public int PageSize { get; private set; }
 
-        public GetPatientsDetailQuery()
+        public EncountersDetailQuery()
         {
         }
 
-        public GetPatientsDetailQuery(string orderBy, string facilityName, int customAttributeId, string customAttributeValue, int patientId, DateTime dateOfBirth, string firstName, string lastName, int pageNumber, int pageSize) : this()
+        public EncountersDetailQuery(string orderBy, string facilityName, int customAttributeId, string customAttributeValue, int patientId, DateTime searchFrom, DateTime searchTo, string firstName, string lastName, int pageNumber, int pageSize) : this()
         {
             OrderBy = orderBy;
             FacilityName = facilityName;
             CustomAttributeId = customAttributeId;
             CustomAttributeValue = customAttributeValue;
             PatientId = patientId;
-            DateOfBirth = dateOfBirth;
+            SearchFrom = searchFrom;
+            SearchTo = searchTo;
             FirstName = firstName;
             LastName = lastName;
             PageNumber = pageNumber;

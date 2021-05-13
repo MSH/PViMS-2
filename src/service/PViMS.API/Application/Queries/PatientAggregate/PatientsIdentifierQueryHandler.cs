@@ -20,23 +20,23 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Queries.PatientAggregate
 {
-    public class GetPatientsIdentifierQueryHandler
-        : IRequestHandler<GetPatientsIdentifierQuery, LinkedCollectionResourceWrapperDto<PatientIdentifierDto>>
+    public class PatientsIdentifierQueryHandler
+        : IRequestHandler<PatientsIdentifierQuery, LinkedCollectionResourceWrapperDto<PatientIdentifierDto>>
     {
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly PVIMSDbContext _context;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetPatientsIdentifierQueryHandler> _logger;
+        private readonly ILogger<PatientsIdentifierQueryHandler> _logger;
 
-        public GetPatientsIdentifierQueryHandler(
+        public PatientsIdentifierQueryHandler(
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<Facility> facilityRepository,
             PVIMSDbContext dbContext,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<GetPatientsIdentifierQueryHandler> logger)
+            ILogger<PatientsIdentifierQueryHandler> logger)
         {
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
@@ -46,7 +46,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<LinkedCollectionResourceWrapperDto<PatientIdentifierDto>> Handle(GetPatientsIdentifierQuery message, CancellationToken cancellationToken)
+        public async Task<LinkedCollectionResourceWrapperDto<PatientIdentifierDto>> Handle(PatientsIdentifierQuery message, CancellationToken cancellationToken)
         {
             var pagingInfo = new PagingInfo()
             {

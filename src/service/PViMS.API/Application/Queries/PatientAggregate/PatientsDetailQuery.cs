@@ -3,11 +3,11 @@ using PVIMS.API.Models;
 using System;
 using System.Runtime.Serialization;
 
-namespace PVIMS.API.Application.Queries.EncounterAggregate
+namespace PVIMS.API.Application.Queries.PatientAggregate
 {
     [DataContract]
-    public class GetEncountersDetailQuery
-        : IRequest<LinkedCollectionResourceWrapperDto<EncounterDetailDto>>
+    public class PatientsDetailQuery
+        : IRequest<LinkedCollectionResourceWrapperDto<PatientDetailDto>>
     {
         [DataMember]
         public string OrderBy { get; private set; }
@@ -31,10 +31,7 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
         public string LastName { get; private set; }
 
         [DataMember]
-        public DateTime SearchFrom { get; private set; }
-
-        [DataMember]
-        public DateTime SearchTo { get; private set; }
+        public DateTime DateOfBirth { get; private set; }
 
         [DataMember]
         public int PageNumber { get; private set; }
@@ -42,19 +39,18 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
         [DataMember]
         public int PageSize { get; private set; }
 
-        public GetEncountersDetailQuery()
+        public PatientsDetailQuery()
         {
         }
 
-        public GetEncountersDetailQuery(string orderBy, string facilityName, int customAttributeId, string customAttributeValue, int patientId, DateTime searchFrom, DateTime searchTo, string firstName, string lastName, int pageNumber, int pageSize) : this()
+        public PatientsDetailQuery(string orderBy, string facilityName, int customAttributeId, string customAttributeValue, int patientId, DateTime dateOfBirth, string firstName, string lastName, int pageNumber, int pageSize) : this()
         {
             OrderBy = orderBy;
             FacilityName = facilityName;
             CustomAttributeId = customAttributeId;
             CustomAttributeValue = customAttributeValue;
             PatientId = patientId;
-            SearchFrom = searchFrom;
-            SearchTo = searchTo;
+            DateOfBirth = dateOfBirth;
             FirstName = firstName;
             LastName = lastName;
             PageNumber = pageNumber;

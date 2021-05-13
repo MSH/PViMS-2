@@ -173,7 +173,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var query = new GetPatientsIdentifierQuery(patientResourceParameters.OrderBy,
+            var query = new PatientsIdentifierQuery(patientResourceParameters.OrderBy,
                 patientResourceParameters.FacilityName,
                 patientResourceParameters.CustomAttributeId,
                 patientResourceParameters.CustomAttributeValue,
@@ -231,7 +231,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var query = new GetPatientsDetailQuery(patientResourceParameters.OrderBy,
+            var query = new PatientsDetailQuery(patientResourceParameters.OrderBy,
                 patientResourceParameters.FacilityName,
                 patientResourceParameters.CustomAttributeId,
                 patientResourceParameters.CustomAttributeValue,
@@ -303,7 +303,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<PatientDetailDto>> GetPatientByDetail(int id)
         {
-            var query = new GetPatientDetailQuery(id);
+            var query = new PatientDetailQuery(id);
 
             _logger.LogInformation(
                 "----- Sending query: GetPatientDetailQuery - {id}",
@@ -333,7 +333,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<PatientExpandedDto>> GetPatientByExpanded(int id)
         {
-            var query = new GetPatientExpandedQuery(id);
+            var query = new PatientExpandedQuery(id);
 
             _logger.LogInformation(
                 "----- Sending query: GetPatientExpandedQuery - {id}",

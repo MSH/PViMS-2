@@ -114,7 +114,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var query = new GetEncountersDetailQuery(encounterResourceParameters.OrderBy,
+            var query = new EncountersDetailQuery(encounterResourceParameters.OrderBy,
                 encounterResourceParameters.FacilityName,
                 encounterResourceParameters.CustomAttributeId,
                 encounterResourceParameters.CustomAttributeValue,
@@ -195,7 +195,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<EncounterDetailDto>> GetEncounterByDetail(int patientId, int id)
         {
-            var query = new GetEncounterDetailQuery(patientId, id);
+            var query = new EncounterDetailQuery(patientId, id);
 
             _logger.LogInformation(
                 "----- Sending query: GetEncounterDetailQuery - {patientId}: {id}",
@@ -227,7 +227,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<EncounterExpandedDto>> GetEncounterByExpanded(int patientId, int id)
         {
-            var query = new GetEncounterExpandedQuery(patientId, id);
+            var query = new EncounterExpandedQuery(patientId, id);
 
             _logger.LogInformation(
                 "----- Sending query: GetEncounterExpandedQuery - {patientId}: {id}",

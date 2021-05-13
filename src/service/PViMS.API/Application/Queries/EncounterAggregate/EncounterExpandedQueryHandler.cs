@@ -16,8 +16,8 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Queries.EncounterAggregate
 {
-    public class GetEncounterExpandedQueryHandler
-        : IRequestHandler<GetEncounterExpandedQuery, EncounterExpandedDto>
+    public class EncounterExpandedQueryHandler
+        : IRequestHandler<EncounterExpandedQuery, EncounterExpandedDto>
     {
         private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
@@ -25,17 +25,17 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetEncounterExpandedQueryHandler> _logger;
+        private readonly ILogger<EncounterExpandedQueryHandler> _logger;
         private readonly IPatientService _patientService;
 
-        public GetEncounterExpandedQueryHandler(
+        public EncounterExpandedQueryHandler(
             IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<Encounter> encounterRepository,
             IRepositoryInt<PatientCondition> patientConditionRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<GetEncounterExpandedQueryHandler> logger,
+            ILogger<EncounterExpandedQueryHandler> logger,
             IPatientService patientService)
         {
             _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
@@ -48,7 +48,7 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
         }
 
-        public async Task<EncounterExpandedDto> Handle(GetEncounterExpandedQuery message, CancellationToken cancellationToken)
+        public async Task<EncounterExpandedDto> Handle(EncounterExpandedQuery message, CancellationToken cancellationToken)
         {
             var encounterFromRepo = await _encounterRepository.GetAsync(e => e.Patient.Id == message.PatientId
                     && e.Archived == false

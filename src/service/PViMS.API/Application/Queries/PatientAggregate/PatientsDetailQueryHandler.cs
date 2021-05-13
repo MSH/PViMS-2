@@ -21,8 +21,8 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Queries.PatientAggregate
 {
-    public class GetPatientsDetailQueryHandler
-        : IRequestHandler<GetPatientsDetailQuery, LinkedCollectionResourceWrapperDto<PatientDetailDto>>
+    public class PatientsDetailQueryHandler
+        : IRequestHandler<PatientsDetailQuery, LinkedCollectionResourceWrapperDto<PatientDetailDto>>
     {
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<Facility> _facilityRepository;
@@ -32,9 +32,9 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetPatientsDetailQueryHandler> _logger;
+        private readonly ILogger<PatientsDetailQueryHandler> _logger;
 
-        public GetPatientsDetailQueryHandler(
+        public PatientsDetailQueryHandler(
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<Facility> facilityRepository,
             IRepositoryInt<Patient> patientRepository,
@@ -43,7 +43,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             ITypeExtensionHandler modelExtensionBuilder,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<GetPatientsDetailQueryHandler> logger)
+            ILogger<PatientsDetailQueryHandler> logger)
         {
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
@@ -56,7 +56,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<LinkedCollectionResourceWrapperDto<PatientDetailDto>> Handle(GetPatientsDetailQuery message, CancellationToken cancellationToken)
+        public async Task<LinkedCollectionResourceWrapperDto<PatientDetailDto>> Handle(PatientsDetailQuery message, CancellationToken cancellationToken)
         {
             var pagingInfo = new PagingInfo()
             {

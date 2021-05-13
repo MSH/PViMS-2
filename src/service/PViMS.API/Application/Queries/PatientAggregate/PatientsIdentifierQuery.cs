@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace PVIMS.API.Application.Queries.PatientAggregate
 {
     [DataContract]
-    public class GetPatientsIdentifierQuery
+    public class PatientsIdentifierQuery
         : IRequest<LinkedCollectionResourceWrapperDto<PatientIdentifierDto>>
     {
         [DataMember]
@@ -39,11 +39,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         [DataMember]
         public int PageSize { get; private set; }
 
-        public GetPatientsIdentifierQuery()
+        public PatientsIdentifierQuery()
         {
         }
 
-        public GetPatientsIdentifierQuery(string orderBy, string facilityName, int customAttributeId, string customAttributeValue, int patientId, DateTime dateOfBirth, string firstName, string lastName, int pageNumber, int pageSize) : this()
+        public PatientsIdentifierQuery(string orderBy, string facilityName, int customAttributeId, string customAttributeValue, int patientId, DateTime dateOfBirth, string firstName, string lastName, int pageNumber, int pageSize) : this()
         {
             OrderBy = orderBy;
             FacilityName = facilityName;

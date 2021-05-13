@@ -5,17 +5,17 @@ using System.Runtime.Serialization;
 namespace PVIMS.API.Application.Queries.PatientAggregate
 {
     [DataContract]
-    public class GetPatientExpandedQuery
+    public class PatientExpandedQuery
         : IRequest<PatientExpandedDto>
     {
         [DataMember]
         public int PatientId { get; private set; }
 
-        public GetPatientExpandedQuery()
+        public PatientExpandedQuery()
         {
         }
 
-        public GetPatientExpandedQuery(int patientId) : this()
+        public PatientExpandedQuery(int patientId) : this()
         {
             PatientId = patientId;
         }

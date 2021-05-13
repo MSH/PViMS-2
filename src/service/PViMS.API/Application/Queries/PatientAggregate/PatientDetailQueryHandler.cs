@@ -15,23 +15,23 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Queries.PatientAggregate
 {
-    public class GetPatientDetailQueryHandler
-        : IRequestHandler<GetPatientDetailQuery, PatientDetailDto>
+    public class PatientDetailQueryHandler
+        : IRequestHandler<PatientDetailQuery, PatientDetailDto>
     {
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetPatientDetailQueryHandler> _logger;
+        private readonly ILogger<PatientDetailQueryHandler> _logger;
 
-        public GetPatientDetailQueryHandler(
+        public PatientDetailQueryHandler(
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
             ITypeExtensionHandler modelExtensionBuilder,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<GetPatientDetailQueryHandler> logger)
+            ILogger<PatientDetailQueryHandler> logger)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
@@ -41,7 +41,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<PatientDetailDto> Handle(GetPatientDetailQuery message, CancellationToken cancellationToken)
+        public async Task<PatientDetailDto> Handle(PatientDetailQuery message, CancellationToken cancellationToken)
         {
             var patientFromRepo = await _patientRepository.GetAsync(p => p.Archived == false
                     && p.Id == message.PatientId);

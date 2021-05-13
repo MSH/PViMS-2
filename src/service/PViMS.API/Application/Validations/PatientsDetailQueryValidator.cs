@@ -4,9 +4,9 @@ using PVIMS.API.Application.Queries.PatientAggregate;
 
 namespace PVIMS.API.Application.Validations
 {
-    public class GetPatientsDetailQueryValidator : AbstractValidator<GetPatientsDetailQuery>
+    public class PatientsDetailQueryValidator : AbstractValidator<PatientsDetailQuery>
     {
-        public GetPatientsDetailQueryValidator(ILogger<GetPatientsDetailQueryValidator> logger)
+        public PatientsDetailQueryValidator(ILogger<PatientsDetailQueryValidator> logger)
         {
             RuleFor(query => query.FirstName).Matches(@"[-a-zA-Z ']").When(v => !string.IsNullOrEmpty(v.FirstName));
             RuleFor(query => query.LastName).Matches(@"[-a-zA-Z ']").When(v => !string.IsNullOrEmpty(v.LastName));
