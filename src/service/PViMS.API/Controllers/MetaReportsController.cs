@@ -1009,14 +1009,14 @@ namespace PVIMS.API.Controllers
         {
             wrapper.Links.Add(
                new LinkDto(
-                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaReportsByIdentifier", metaResourceParameters),
+                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaReportsByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                    "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaReportsByIdentifier", metaResourceParameters),
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaReportsByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                        "nextPage", "GET"));
             }
 
@@ -1024,7 +1024,7 @@ namespace PVIMS.API.Controllers
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaReportsByIdentifier", metaResourceParameters),
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaReportsByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                        "previousPage", "GET"));
             }
 

@@ -4,23 +4,19 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using PVIMS.API.Application.Commands.CohortGroupAggregate;
+using PVIMS.API.Application.Queries.CohortGroupAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediatR;
+using Newtonsoft.Json;
 
 namespace PVIMS.API.Controllers
 {
@@ -31,23 +27,14 @@ namespace PVIMS.API.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ITypeHelperService _typeHelperService;
-        private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
-        private readonly IMapper _mapper;
-        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly ILogger<CohortGroupsController> _logger;
 
         public CohortGroupsController(IMediator mediator,
             ITypeHelperService typeHelperService,
-            IMapper mapper,
-            ILinkGeneratorService linkGeneratorService,
-            IRepositoryInt<CohortGroup> cohortGroupRepository,
             ILogger<CohortGroupsController> logger)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
-            _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -63,7 +50,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<CohortGroupIdentifierDto>> GetCohortGroupsByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<CohortGroupIdentifierDto>>> GetCohortGroupsByIdentifier(
             [FromQuery] IdResourceParameters cohortGroupResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<CohortGroupIdentifierDto>
@@ -72,13 +59,34 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedCohortGroupsWithLinks = GetCohortGroups<CohortGroupIdentifierDto>(cohortGroupResourceParameters);
+            var query = new CohortGroupsIdentifierQuery(
+                cohortGroupResourceParameters.OrderBy,
+                cohortGroupResourceParameters.PageNumber,
+                cohortGroupResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<CohortGroupIdentifierDto>(mappedCohortGroupsWithLinks.TotalCount, mappedCohortGroupsWithLinks);
-            var wrapperWithLinks = CreateLinksForCohortGroups(wrapper, cohortGroupResourceParameters,
-                mappedCohortGroupsWithLinks.HasNext, mappedCohortGroupsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: CohortGroupsIdentifierQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = cohortGroupResourceParameters.PageSize,
+                currentPage = cohortGroupResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -94,7 +102,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<CohortGroupDetailDto>> GetCohortGroupsByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<CohortGroupDetailDto>>> GetCohortGroupsByDetail(
             [FromQuery] IdResourceParameters cohortGroupResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<CohortGroupDetailDto>
@@ -103,13 +111,34 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedCohortGroupsWithLinks = GetCohortGroups<CohortGroupDetailDto>(cohortGroupResourceParameters);
+            var query = new CohortGroupsDetailQuery(
+                cohortGroupResourceParameters.OrderBy,
+                cohortGroupResourceParameters.PageNumber,
+                cohortGroupResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<CohortGroupDetailDto>(mappedCohortGroupsWithLinks.TotalCount, mappedCohortGroupsWithLinks);
-            var wrapperWithLinks = CreateLinksForCohortGroups(wrapper, cohortGroupResourceParameters,
-                mappedCohortGroupsWithLinks.HasNext, mappedCohortGroupsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: CohortGroupsDetailQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = cohortGroupResourceParameters.PageSize,
+                currentPage = cohortGroupResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -125,13 +154,20 @@ namespace PVIMS.API.Controllers
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<CohortGroupIdentifierDto>> GetCohortGroupByIdentifier(int id)
         {
-            var mappedCohortGroup = await GetCohortGroupAsync<CohortGroupIdentifierDto>(id);
-            if (mappedCohortGroup == null)
+            var query = new CohortGroupIdentifierQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: CohortGroupIdentifierQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForCohortGroup<CohortGroupIdentifierDto>(mappedCohortGroup));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -148,13 +184,20 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<CohortGroupDetailDto>> GetCohortGroupByDetail(int id)
         {
-            var mappedCohortGroup = await GetCohortGroupAsync<CohortGroupDetailDto>(id);
-            if (mappedCohortGroup == null)
+            var query = new CohortGroupDetailQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: CohortGroupDetailQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForCohortGroup<CohortGroupDetailDto>(mappedCohortGroup));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -250,124 +293,6 @@ namespace PVIMS.API.Controllers
             }
 
             return NoContent();
-        }
-
-        /// <summary>
-        /// Get single cohort group from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private async Task<T> GetCohortGroupAsync<T>(int id) where T : class
-        {
-            var cohortGroupFromRepo = await _cohortGroupRepository.GetAsync(f => f.Id == id);
-
-            if (cohortGroupFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedCohortGroup = _mapper.Map<T>(cohortGroupFromRepo);
-
-                return mappedCohortGroup;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get cohort groups from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="cohortGroupResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetCohortGroups<T>(IdResourceParameters cohortGroupResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = cohortGroupResourceParameters.PageNumber,
-                PageSize = cohortGroupResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<CohortGroup>(cohortGroupResourceParameters.OrderBy, "asc");
-
-            var pagedCohortGroupsFromRepo = _cohortGroupRepository.List(pagingInfo, null, orderby, "");
-            if (pagedCohortGroupsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedCohortGroups = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedCohortGroupsFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedCohortGroupsFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedCohortGroups.TotalCount,
-                    pageSize = mappedCohortGroups.PageSize,
-                    currentPage = mappedCohortGroups.CurrentPage,
-                    totalPages = mappedCohortGroups.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedCohortGroups.ForEach(dto => CreateLinksForCohortGroup(dto));
-
-                return mappedCohortGroups;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private CohortGroupIdentifierDto CreateLinksForCohortGroup<T>(T dto)
-        {
-            CohortGroupIdentifierDto identifier = (CohortGroupIdentifierDto)(object)dto;
-
-            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("CohortGroup", identifier.Id), "self", "GET"));
-
-            return identifier;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="cohortGroupResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForCohortGroups(
-            LinkedResourceBaseDto wrapper,
-            IdResourceParameters cohortGroupResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetCohortGroupsByDetail", cohortGroupResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetCohortGroupsByDetail", cohortGroupResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetCohortGroupsByDetail", cohortGroupResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
         }
     }
 }

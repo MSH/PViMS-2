@@ -5,8 +5,8 @@ using System.Runtime.Serialization;
 namespace PVIMS.API.Application.Queries.CohortGroupAggregate
 {
     [DataContract]
-    public class CohortGroupsIdentifierQuery
-        : IRequest<LinkedCollectionResourceWrapperDto<CohortGroupIdentifierDto>>
+    public class CohortGroupsDetailQuery
+        : IRequest<LinkedCollectionResourceWrapperDto<CohortGroupDetailDto>>
     {
         [DataMember]
         public string OrderBy { get; private set; }
@@ -17,11 +17,11 @@ namespace PVIMS.API.Application.Queries.CohortGroupAggregate
         [DataMember]
         public int PageSize { get; private set; }
 
-        public CohortGroupsIdentifierQuery()
+        public CohortGroupsDetailQuery()
         {
         }
 
-        public CohortGroupsIdentifierQuery(string orderBy, int pageNumber, int pageSize) : this()
+        public CohortGroupsDetailQuery(string orderBy, int pageNumber, int pageSize) : this()
         {
             OrderBy = orderBy;
             PageNumber = pageNumber;

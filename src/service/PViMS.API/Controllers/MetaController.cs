@@ -402,14 +402,14 @@ namespace PVIMS.API.Controllers
         {
             wrapper.Links.Add(
                new LinkDto(
-                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaTablesByIdentifier", metaResourceParameters),
+                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaTablesByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                    "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaTablesByIdentifier", metaResourceParameters),
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaTablesByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                        "nextPage", "GET"));
             }
 
@@ -417,7 +417,7 @@ namespace PVIMS.API.Controllers
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaTablesByIdentifier", metaResourceParameters),
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaTablesByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                        "previousPage", "GET"));
             }
 

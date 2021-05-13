@@ -6,7 +6,7 @@ namespace PVIMS.API.Infrastructure.Services
 {
     public interface ILinkGeneratorService
     {
-        string CreateIdResourceUriForWrapper(ResourceUriType type, string actionName, IdResourceParameters idResourceParameters);
+        string CreateIdResourceUriForWrapper(ResourceUriType type, string actionName, string orderBy, int pageNumber, int pageSize);
 
         string CreateReportResourceUriForWrapper(ResourceUriType type, string actionName, BaseReportResourceParameters baseReportResourceParameters);
 

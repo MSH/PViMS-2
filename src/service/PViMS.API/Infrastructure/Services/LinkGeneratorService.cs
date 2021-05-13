@@ -21,7 +21,9 @@ namespace PVIMS.API.Infrastructure.Services
 
         public string CreateIdResourceUriForWrapper(ResourceUriType type,
             string actionName,
-            IdResourceParameters idResourceParameters)
+            string orderBy, 
+            int pageNumber, 
+            int pageSize)
         {
             switch (type)
             {
@@ -29,26 +31,26 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, actionName, 
                       new
                       {
-                          orderBy = idResourceParameters.OrderBy,
-                          pageNumber = idResourceParameters.PageNumber - 1,
-                          pageSize = idResourceParameters.PageSize
+                          orderBy,
+                          pageNumber = pageNumber - 1,
+                          pageSize
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, actionName,
                       new
                       {
-                          orderBy = idResourceParameters.OrderBy,
-                          pageNumber = idResourceParameters.PageNumber + 1,
-                          pageSize = idResourceParameters.PageSize
+                          orderBy,
+                          pageNumber = pageNumber + 1,
+                          pageSize
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, actionName,
                       new
                       {
-                          orderBy = idResourceParameters.OrderBy,
-                          pageNumber = idResourceParameters.PageNumber,
-                          pageSize = idResourceParameters.PageSize
+                          orderBy,
+                          pageNumber,
+                          pageSize
                       });
             }
         }
