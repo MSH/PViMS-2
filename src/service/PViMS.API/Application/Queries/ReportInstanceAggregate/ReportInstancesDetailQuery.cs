@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
     [DataContract]
-    public class GetReportInstancesDetailQuery
+    public class ReportInstancesDetailQuery
         : IRequest<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>>
     {
         [DataMember]
@@ -39,11 +39,11 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         [DataMember]
         public int PageSize { get; private set; }
 
-        public GetReportInstancesDetailQuery()
+        public ReportInstancesDetailQuery()
         {
         }
 
-        public GetReportInstancesDetailQuery(Guid workFlowGuid, bool newReportsOnly, bool feedbackReportsOnly, bool activeReportsOnly, DateTime searchFrom, DateTime searchTo, string searchTerm, string qualifiedName, int pageNumber, int pageSize) : this()
+        public ReportInstancesDetailQuery(Guid workFlowGuid, bool newReportsOnly, bool feedbackReportsOnly, bool activeReportsOnly, DateTime searchFrom, DateTime searchTo, string searchTerm, string qualifiedName, int pageNumber, int pageSize) : this()
         {
             WorkFlowGuid = workFlowGuid;
             NewReportsOnly = newReportsOnly;

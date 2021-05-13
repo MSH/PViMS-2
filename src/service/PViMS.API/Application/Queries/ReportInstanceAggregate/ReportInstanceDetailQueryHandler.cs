@@ -5,22 +5,18 @@ using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using LinqKit;
-using System.Linq;
-using PVIMS.API.Helpers;
 
 namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
-    public class GetReportInstancesDetailQueryHandler
-        : IRequestHandler<GetReportInstancesDetailQuery, LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>>
+    public class ReportInstanceDetailQueryHandler
+        : IRequestHandler<ReportInstanceDetailQuery, ReportInstanceDetailDto>
     {
         private readonly IRepositoryInt<Config> _configRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
@@ -29,17 +25,17 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetReportInstancesDetailQueryHandler> _logger;
+        private readonly ILogger<ReportInstanceDetailQueryHandler> _logger;
 
-        public GetReportInstancesDetailQueryHandler(
+        public ReportInstanceDetailQueryHandler(
             IRepositoryInt<Config> configRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
-            IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository,
+            IRepositoryInt<ReportInstance> reportInstanceRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<GetReportInstancesDetailQueryHandler> logger)
+            ILogger<ReportInstanceDetailQueryHandler> logger)
         {
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
@@ -51,120 +47,23 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> Handle(GetReportInstancesDetailQuery message, CancellationToken cancellationToken)
+        public async Task<ReportInstanceDetailDto> Handle(ReportInstanceDetailQuery message, CancellationToken cancellationToken)
         {
-            var searchFrom = message.SearchFrom;
-            var searchTo = message.SearchTo;
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == message.WorkFlowGuid
+                && f.Id == message.ReportInstanceId, 
+                new string[] { "WorkFlow", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks", "Medications" });
 
-            if (message.NewReportsOnly || message.FeedbackReportsOnly)
+            if (reportInstanceFromRepo == null)
             {
-                var config = await _configRepository.GetAsync(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
-                if (config == null)
-                {
-                    return null;
-                }
-
-                if (String.IsNullOrEmpty(config.ConfigValue))
-                {
-                    return null;
-                }
-
-                var alertCount = Convert.ToInt32(config.ConfigValue);
-
-                // How many instances within the last alertcount
-                searchFrom = DateTime.Now.AddDays(alertCount * -1);
-                searchTo = DateTime.Now;
+                throw new KeyNotFoundException("Unable to locate report instance");
             }
 
-            return await GetReportInstancesAsync(message.WorkFlowGuid, message.PageNumber, message.PageSize, message.SearchFrom, message.SearchTo, message.QualifiedName, message.SearchTerm, message.FeedbackReportsOnly, message.ActiveReportsOnly);
-        }
+            var mappedReport = _mapper.Map<ReportInstanceDetailDto>(reportInstanceFromRepo);
 
-        private async Task<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetReportInstancesAsync(Guid workFlowGuid, 
-            int pageNumber, 
-            int pageSize,
-            DateTime searchFrom,
-            DateTime searchTo,
-            string qualifiedName = "",
-            string searchTerm = "",
-            bool feedbackReportsOnly = false,
-            bool activeReportsOnly = false)
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            };
+            await CustomMapAsync(reportInstanceFromRepo, mappedReport);
+            await CreateLinksAsync(reportInstanceFromRepo, mappedReport);
 
-            var orderby = Extensions.GetOrderBy<ReportInstance>("Created", "desc");
-
-            // Filter list
-            var predicate = PredicateBuilder.New<ReportInstance>(true);
-            predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
-            predicate = predicate.And(f => f.Created >= searchFrom && f.Created <= searchTo);
-            if(feedbackReportsOnly)
-            {
-                predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == "Set MedDRA and Causality" && a.CurrentStatus.Description == "CAUSALITYSET"));
-            }
-
-            if (!String.IsNullOrWhiteSpace(qualifiedName))
-            {
-                if (activeReportsOnly)
-                {
-                    switch (qualifiedName)
-                    {
-                        case "Confirm Report Data":
-                            predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true && a.CurrentStatus.Description != "DELETED"));
-                            break;
-
-                        case "Extract E2B":
-                            predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true && a.CurrentStatus.Description != "E2BSUBMITTED"));
-                            break;
-
-                        default:
-                            predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true));
-                            break;
-                    }
-                }
-                else
-                {
-                    predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true));
-                }
-            }
-
-            if (!String.IsNullOrWhiteSpace(searchTerm))
-            {
-                predicate = predicate.And(f => f.PatientIdentifier.Contains(searchTerm)
-                                || f.SourceIdentifier.Contains(searchTerm)
-                                || f.TerminologyMedDra.MedDraTerm.Contains(searchTerm)
-                                || f.Identifier.Contains(searchTerm)
-                                || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(searchTerm)));
-            }
-
-            var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "WorkFlow", "Medications", "TerminologyMedDra", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
-            if (pagedReportsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedReportsWithLinks = new List<ReportInstanceDetailDto>();
-
-                foreach (var pagedReport in pagedReportsFromRepo)
-                {
-                    var mappedReport = _mapper.Map<ReportInstanceDetailDto>(pagedReport);
-
-                    await CustomMapAsync(pagedReport, mappedReport);
-                    await CreateLinksAsync(pagedReport, mappedReport);
-
-                    mappedReportsWithLinks.Add(mappedReport);
-                }
-
-                var wrapper = new LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>(pagedReportsFromRepo.TotalCount, mappedReportsWithLinks, pagedReportsFromRepo.TotalPages);
-
-                CreateLinksForReportInstances(workFlowGuid, wrapper, "Created", "", DateTime.MinValue, DateTime.MaxValue, pageNumber, pageSize,
-                    pagedReportsFromRepo.HasNext, pagedReportsFromRepo.HasPrevious);
-                
-                return wrapper;
-            }
-
-            return null;
+            return mappedReport;
         }
 
         private async Task CustomMapAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto mappedReportInstanceDto)
@@ -423,31 +322,6 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
                             reportInstanceFromRepo.WorkFlow.WorkFlowGuid, reportInstanceFromRepo.Id, executionEvent.Id, e2bAttachment.Id), "downloadxml", "GET"));
                     }
                 }
-            }
-        }
-
-        private void CreateLinksForReportInstances(Guid workFlowGuid,
-            LinkedResourceBaseDto wrapper, string orderBy, string qualifiedName, DateTime searchFrom, DateTime searchTo, int pageNumber, int pageSize, bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateReportInstancesResourceUri(workFlowGuid, ResourceUriType.Current, orderBy, qualifiedName, searchFrom, searchTo, pageNumber, pageSize),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateReportInstancesResourceUri(workFlowGuid, ResourceUriType.NextPage, orderBy, qualifiedName, searchFrom, searchTo, pageNumber, pageSize),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateReportInstancesResourceUri(workFlowGuid, ResourceUriType.PreviousPage, orderBy, qualifiedName, searchFrom, searchTo, pageNumber, pageSize),
-                       "previousPage", "GET"));
             }
         }
     }

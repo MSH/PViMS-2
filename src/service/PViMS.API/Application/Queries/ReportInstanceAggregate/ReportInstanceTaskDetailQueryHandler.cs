@@ -12,19 +12,19 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
-    public class GetReportInstanceTaskIdentifierQueryHandler
-        : IRequestHandler<GetReportInstanceTaskIdentifierQuery, ReportInstanceTaskIdentifierDto>
+    public class ReportInstanceTaskDetailQueryHandler
+        : IRequestHandler<ReportInstanceTaskDetailQuery, TaskDto>
     {
         private readonly IRepositoryInt<ReportInstanceTask> _reportInstanceTaskRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetReportInstanceTaskIdentifierQueryHandler> _logger;
+        private readonly ILogger<ReportInstanceTaskDetailQueryHandler> _logger;
 
-        public GetReportInstanceTaskIdentifierQueryHandler(
+        public ReportInstanceTaskDetailQueryHandler(
             IRepositoryInt<ReportInstanceTask> reportInstanceTaskRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<GetReportInstanceTaskIdentifierQueryHandler> logger)
+            ILogger<ReportInstanceTaskDetailQueryHandler> logger)
         {
             _reportInstanceTaskRepository = reportInstanceTaskRepository ?? throw new ArgumentNullException(nameof(reportInstanceTaskRepository));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
@@ -32,23 +32,24 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<ReportInstanceTaskIdentifierDto> Handle(GetReportInstanceTaskIdentifierQuery message, CancellationToken cancellationToken)
+        public async Task<TaskDto> Handle(ReportInstanceTaskDetailQuery message, CancellationToken cancellationToken)
         {
             var reportInstanceTaskFromRepo = await _reportInstanceTaskRepository.GetAsync(rit => rit.ReportInstance.WorkFlow.WorkFlowGuid == message.WorkFlowGuid
                     && rit.ReportInstance.Id == message.ReportInstanceId
-                    && rit.Id == message.Id);
+                    && rit.Id == message.Id,
+                    new string[] { "Comments.CreatedBy" });
 
             if(reportInstanceTaskFromRepo == null)
             {
                 throw new KeyNotFoundException("Unable to locate report instance task");
             }
 
-            var mappedReportInstanceTask = _mapper.Map<ReportInstanceTaskIdentifierDto>(reportInstanceTaskFromRepo);
+            var mappedReportInstanceTask = _mapper.Map<TaskDto>(reportInstanceTaskFromRepo);
 
             return CreateLinks(mappedReportInstanceTask);
         }
 
-        private ReportInstanceTaskIdentifierDto CreateLinks(ReportInstanceTaskIdentifierDto dto)
+        private TaskDto CreateLinks(TaskDto dto)
         {
             dto.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("ReportInstanceTask", dto.Id), "self", "GET"));
 

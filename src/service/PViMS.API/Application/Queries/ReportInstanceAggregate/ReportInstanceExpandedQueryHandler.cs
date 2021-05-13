@@ -15,8 +15,8 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
-    public class GetReportInstanceExpandedQueryHandler
-        : IRequestHandler<GetReportInstanceExpandedQuery, ReportInstanceExpandedDto>
+    public class ReportInstanceExpandedQueryHandler
+        : IRequestHandler<ReportInstanceExpandedQuery, ReportInstanceExpandedDto>
     {
         private readonly IRepositoryInt<ActivityExecutionStatusEvent> _activityExecutionStatusEventRepository;
         private readonly IRepositoryInt<Config> _configRepository;
@@ -26,9 +26,9 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetReportInstanceExpandedQueryHandler> _logger;
+        private readonly ILogger<ReportInstanceExpandedQueryHandler> _logger;
 
-        public GetReportInstanceExpandedQueryHandler(
+        public ReportInstanceExpandedQueryHandler(
             IRepositoryInt<ActivityExecutionStatusEvent> activityExecutionStatusEventRepository,
             IRepositoryInt<Config> configRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
@@ -37,7 +37,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<GetReportInstanceExpandedQueryHandler> logger)
+            ILogger<ReportInstanceExpandedQueryHandler> logger)
         {
             _activityExecutionStatusEventRepository = activityExecutionStatusEventRepository ?? throw new ArgumentNullException(nameof(activityExecutionStatusEventRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
@@ -50,7 +50,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<ReportInstanceExpandedDto> Handle(GetReportInstanceExpandedQuery message, CancellationToken cancellationToken)
+        public async Task<ReportInstanceExpandedDto> Handle(ReportInstanceExpandedQuery message, CancellationToken cancellationToken)
         {
             var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == message.WorkFlowGuid
                 && f.Id == message.ReportInstanceId, 

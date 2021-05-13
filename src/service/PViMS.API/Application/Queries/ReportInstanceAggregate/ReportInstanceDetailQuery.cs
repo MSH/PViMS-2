@@ -6,8 +6,8 @@ using System.Runtime.Serialization;
 namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
     [DataContract]
-    public class GetReportInstanceExpandedQuery
-        : IRequest<ReportInstanceExpandedDto>
+    public class ReportInstanceDetailQuery
+        : IRequest<ReportInstanceDetailDto>
     {
         [DataMember]
         public Guid WorkFlowGuid { get; private set; }
@@ -15,11 +15,11 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         [DataMember]
         public int ReportInstanceId { get; private set; }
 
-        public GetReportInstanceExpandedQuery()
+        public ReportInstanceDetailQuery()
         {
         }
 
-        public GetReportInstanceExpandedQuery(Guid workFlowGuid, int reportInstanceId) : this()
+        public ReportInstanceDetailQuery(Guid workFlowGuid, int reportInstanceId) : this()
         {
             WorkFlowGuid = workFlowGuid;
             ReportInstanceId = reportInstanceId;

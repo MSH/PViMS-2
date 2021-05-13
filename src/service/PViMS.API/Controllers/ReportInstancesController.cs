@@ -64,7 +64,7 @@ namespace PVIMS.API.Controllers
         private readonly ILogger<ReportInstancesController> _logger;
 
         public ReportInstancesController(
-            IMediator mediator, 
+            IMediator mediator,
             IPropertyMappingService propertyMappingService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
@@ -147,7 +147,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<ReportInstanceDetailDto>> GetReportInstanceByDetail(Guid workFlowGuid, int id)
         {
-            var query = new GetReportInstanceDetailQuery(workFlowGuid, id);
+            var query = new ReportInstanceDetailQuery(workFlowGuid, id);
 
             _logger.LogInformation(
                 "----- Sending query: GetReportInstanceDetailQuery - {workFlowGuid}: {id}",
@@ -179,7 +179,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<ReportInstanceExpandedDto>> GetReportInstanceByExpanded(Guid workFlowGuid, int id)
         {
-            var query = new GetReportInstanceExpandedQuery(workFlowGuid, id);
+            var query = new ReportInstanceExpandedQuery(workFlowGuid, id);
 
             _logger.LogInformation(
                 "----- Sending query: GetReportInstanceExpandedQuery - {workFlowGuid}: {id}",
@@ -246,7 +246,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var query = new GetReportInstancesDetailQuery(workFlowGuid, 
+            var query = new ReportInstancesDetailQuery(workFlowGuid, 
                 false, 
                 false,
                 reportInstanceResourceParameters.ActiveReportsOnly == Models.ValueTypes.YesNoValueType.Yes, 
@@ -306,7 +306,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var query = new GetReportInstancesDetailQuery(workFlowGuid, true, false, false, DateTime.MinValue, DateTime.MaxValue, "", "", reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
+            var query = new ReportInstancesDetailQuery(workFlowGuid, true, false, false, DateTime.MinValue, DateTime.MaxValue, "", "", reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
 
             _logger.LogInformation(
                 "----- Sending query: GetReportInstancesDetailQuery - {workFlowGuid}",
@@ -357,7 +357,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var query = new GetReportInstancesDetailQuery(workFlowGuid, false, true, false, DateTime.MinValue, DateTime.MaxValue, "", "", reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
+            var query = new ReportInstancesDetailQuery(workFlowGuid, false, true, false, DateTime.MinValue, DateTime.MaxValue, "", "", reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
 
             _logger.LogInformation(
                 "----- Sending query: GetReportInstancesDetailQuery - {workFlowGuid}",
@@ -719,7 +719,7 @@ namespace PVIMS.API.Controllers
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<ReportInstanceTaskIdentifierDto>> GetReportInstanceTaskByIdentifier(Guid workFlowGuid, int reportInstanceId, int id)
         {
-            var query = new GetReportInstanceTaskIdentifierQuery(workFlowGuid, reportInstanceId, id);
+            var query = new ReportInstanceTaskIdentifierQuery(workFlowGuid, reportInstanceId, id);
 
             _logger.LogInformation(
                 "----- Sending query: GetReportInstanceTaskIdentifierQuery - {workFlowGuid}: {reportInstanceId}: {id}",
@@ -752,7 +752,7 @@ namespace PVIMS.API.Controllers
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public async Task<ActionResult<TaskDto>> GetReportInstanceTaskByDetail(Guid workFlowGuid, int reportInstanceId, int id)
         {
-            var query = new GetReportInstanceTaskDetailQuery(workFlowGuid, reportInstanceId, id);
+            var query = new ReportInstanceTaskDetailQuery(workFlowGuid, reportInstanceId, id);
 
             _logger.LogInformation(
                 "----- Sending query: GetReportInstanceTaskDetailQuery - {workFlowGuid}: {reportInstanceId}: {id}",
@@ -891,7 +891,7 @@ namespace PVIMS.API.Controllers
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<ReportInstanceTaskCommentIdentifierDto>> GetReportInstanceTaskCommentByIdentifier(Guid workFlowGuid, int reportInstanceId, int reportInstanceTaskId, int id)
         {
-            var query = new GetReportInstanceTaskCommentIdentifierQuery(workFlowGuid, reportInstanceId, reportInstanceTaskId, id);
+            var query = new ReportInstanceTaskCommentIdentifierQuery(workFlowGuid, reportInstanceId, reportInstanceTaskId, id);
 
             _logger.LogInformation(
                 "----- Sending query: GetReportInstanceTaskCommentIdentifierQuery - {workFlowGuid}: {reportInstanceId}: {reportInstanceTaskId}: {id}",
