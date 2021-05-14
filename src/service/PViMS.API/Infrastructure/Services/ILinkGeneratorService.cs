@@ -46,8 +46,6 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateEnrolmentForPatientResourceUri(long patientId, long enrolmentId);
 
-        string CreateFacilitiesResourceUri(ResourceUriType type, FacilityResourceParameters facilityResourceParameters);
-
         string CreateMetaWidgetResourceUri(long metaPageId, long metaWidgetId);
 
         string CreateNewAppointmentForPatientResourceUri(long patientId);

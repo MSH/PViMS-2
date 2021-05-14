@@ -549,39 +549,6 @@ namespace PVIMS.API.Infrastructure.Services
               new { patientId, id = enrolmentId });
         }
 
-        public string CreateFacilitiesResourceUri(ResourceUriType type,
-           FacilityResourceParameters facilityResourceParameters)
-        {
-            switch (type)
-            {
-                case ResourceUriType.PreviousPage:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetFacilitiesByIdentifier",
-                      new
-                      {
-                          orderBy = facilityResourceParameters.OrderBy,
-                          pageNumber = facilityResourceParameters.PageNumber - 1,
-                          pageSize = facilityResourceParameters.PageSize
-                      });
-                case ResourceUriType.NextPage:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetFacilitiesByIdentifier",
-                      new
-                      {
-                          orderBy = facilityResourceParameters.OrderBy,
-                          pageNumber = facilityResourceParameters.PageNumber + 1,
-                          pageSize = facilityResourceParameters.PageSize
-                      });
-                case ResourceUriType.Current:
-                default:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetFacilitiesByIdentifier",
-                      new
-                      {
-                          orderBy = facilityResourceParameters.OrderBy,
-                          pageNumber = facilityResourceParameters.PageNumber,
-                          pageSize = facilityResourceParameters.PageSize
-                      });
-            }
-        }
-
         public string CreateMetaWidgetResourceUri(long metaPageId, long metaWidgetId)
         {
             return _linkGenerator.GetPathByName(_accessor.HttpContext, $"GetMetaWidgetByIdentifier",
