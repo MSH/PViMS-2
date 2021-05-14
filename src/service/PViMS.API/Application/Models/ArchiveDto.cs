@@ -7,8 +7,6 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The reason for archiving the resource
         /// </summary>
-        [Required]
-        [StringLength(200)]
         public string Reason { get; set; }
     }
 }

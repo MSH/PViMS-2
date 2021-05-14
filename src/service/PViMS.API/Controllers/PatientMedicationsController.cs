@@ -1,26 +1,22 @@
 ﻿using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using PVIMS.API.Application.Commands.PatientAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
-using PVIMS.API.Helpers;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
-using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using PVIMS.API.Infrastructure.Services;
 
 namespace PVIMS.API.Controllers
 {
@@ -29,53 +25,32 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class PatientMedicationsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
-        private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
-        private readonly IRepositoryInt<Concept> _conceptRepository;
-        private readonly IRepositoryInt<Product> _productRepository;
-        private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<Config> _configRepository;
-        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
-        private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly ICustomAttributeService _customAttributeService;
-        private readonly IWorkFlowService _workFlowService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<PatientMedicationsController> _logger;
 
-        public PatientMedicationsController(IMapper mapper,
+        public PatientMedicationsController(IMediator mediator,
+            IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             ITypeExtensionHandler modelExtensionBuilder,
-            IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository,
-            IRepositoryInt<Concept> conceptRepository,
-            IRepositoryInt<Product> productRepository,
-            IRepositoryInt<User> userRepository,
-            IRepositoryInt<Config> configRepository,
-            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
-            IUnitOfWorkInt unitOfWork,
             ICustomAttributeService customAttributeService,
-            IWorkFlowService workFlowService,
-            IHttpContextAccessor httpContextAccessor)
+            ILogger<PatientMedicationsController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
-            _conceptRepository = conceptRepository ?? throw new ArgumentNullException(nameof(conceptRepository));
-            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
-            _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _customAttributeService = customAttributeService ?? throw new ArgumentNullException(nameof(customAttributeService));
-            _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -143,87 +118,26 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var command = new AddMedicationToPatientCommand(patientId, 
+                medicationForUpdate.SourceDescription, medicationForUpdate.ConceptId, medicationForUpdate.ProductId, medicationForUpdate.StartDate, medicationForUpdate.EndDate, medicationForUpdate.Dose,
+                medicationForUpdate.DoseFrequency, medicationForUpdate.DoseUnit, medicationForUpdate.Attributes);
+
+            _logger.LogInformation(
+                "----- Sending command: AddMedicationToPatientCommand - {conceptId}",
+                command.ConceptId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            Concept conceptFromRepo = null;
-            if (medicationForUpdate.ConceptId > 0)
-            {
-                conceptFromRepo = _conceptRepository.Get(medicationForUpdate.ConceptId);
-                if (conceptFromRepo == null)
+            return CreatedAtRoute("GetPatientMedicationByIdentifier",
+                new
                 {
-                    ModelState.AddModelError("Message", "Unable to locate concept");
-                }
-            }
-
-            Product productFromRepo = null;
-            if(medicationForUpdate.ProductId.HasValue && medicationForUpdate.ProductId > 0)
-            {
-                productFromRepo = _productRepository.Get(p => p.Id == medicationForUpdate.ProductId);
-                if (productFromRepo == null)
-                {
-                    ModelState.AddModelError("Message", "Unable to locate product");
-                }
-                conceptFromRepo = productFromRepo.Concept;
-            }
-
-            // Ensure we always have a concept - even if the user selected a product
-            if (conceptFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate concept");
-            }
-
-            ValidateMedicationForUpdateModel(patientFromRepo, medicationForUpdate, 0);
-
-            if (ModelState.IsValid)
-            {
-                var medicationDetail = PrepareMedicationDetail(medicationForUpdate);
-                if (!medicationDetail.IsValid())
-                {
-                    medicationDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
-
-                if (ModelState.IsValid)
-                {
-                    var patientMedication = new PatientMedication
-                    {
-                        MedicationSource = medicationForUpdate.SourceDescription,
-                        Concept = conceptFromRepo,
-                        Product = productFromRepo,
-                        StartDate = medicationForUpdate.StartDate,
-                        EndDate = medicationForUpdate.EndDate,
-                        Dose = medicationForUpdate.Dose,
-                        DoseFrequency = medicationForUpdate.DoseFrequency,
-                        DoseUnit = medicationForUpdate.DoseUnit,
-                        Patient = patientFromRepo
-                    };
-
-                    //throw new Exception(JsonConvert.SerializeObject(patientMedication));
-                    _modelExtensionBuilder.UpdateExtendable(patientMedication, medicationDetail.CustomAttributes, "Admin");
-
-                    _patientMedicationRepository.Save(patientMedication);
-                    await AddOrUpdateMedicationsToReportInstanceAsync(patientMedication);
-                    
-                    await _unitOfWork.CompleteAsync();
-
-                    var mappedPatientMedication = _mapper.Map<PatientMedicationIdentifierDto>(patientMedication);
-                    if (mappedPatientMedication == null)
-                    {
-                        return StatusCode(500, "Unable to locate newly added medication");
-                    }
-
-                    return CreatedAtRoute("GetPatientMedicationByIdentifier",
-                        new
-                        {
-                            id = mappedPatientMedication.Id
-                        }, CreateLinksForPatientMedication<PatientMedicationIdentifierDto>(mappedPatientMedication));
-                }
-            }
-
-            return BadRequest(ModelState);
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -235,7 +149,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPut("{patientId}/medications/{id}", Name = "UpdatePatientMedication")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdatePatientMedication(long patientId, long id,
+        public async Task<IActionResult> UpdatePatientMedication(int patientId, int id,
             [FromBody] PatientMedicationForUpdateDto medicationForUpdate)
         {
             if (medicationForUpdate == null)
@@ -243,79 +157,21 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var command = new ChangeMedicationDetailsCommand(patientId, id, medicationForUpdate.StartDate, medicationForUpdate.EndDate, medicationForUpdate.Dose, medicationForUpdate.DoseFrequency, medicationForUpdate.DoseUnit, medicationForUpdate.Attributes);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeMedicationDetailsCommand - {patientId}: {patientMedicationId}",
+                command.PatientId,
+                command.PatientMedicationId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            var medicationFromRepo = await _patientMedicationRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (medicationFromRepo == null)
-            {
-                return NotFound();
-            }
-
-            Concept conceptFromRepo = null;
-            if (medicationForUpdate.ConceptId > 0)
-            {
-                conceptFromRepo = _conceptRepository.Get(medicationForUpdate.ConceptId);
-                if (conceptFromRepo == null)
-                {
-                    ModelState.AddModelError("Message", "Unable to locate concept");
-                }
-            }
-
-            Product productFromRepo = null;
-            if (medicationForUpdate.ProductId.HasValue && medicationForUpdate.ProductId > 0)
-            {
-                productFromRepo = _productRepository.Get(p => p.Id == medicationForUpdate.ProductId);
-                if (productFromRepo == null)
-                {
-                    ModelState.AddModelError("Message", "Unable to locate product");
-                }
-                conceptFromRepo = productFromRepo.Concept;
-            }
-
-            // Ensure we always have a concept - even if the user selected a product
-            if (conceptFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate concept");
-            }
-
-            ValidateMedicationForUpdateModel(patientFromRepo, medicationForUpdate, id);
-
-            if (ModelState.IsValid)
-            {
-                var medicationDetail = PrepareMedicationDetail(medicationForUpdate);
-                if (!medicationDetail.IsValid())
-                {
-                    medicationDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
-
-                if (ModelState.IsValid)
-                {
-                    medicationFromRepo.MedicationSource = medicationForUpdate.SourceDescription;
-                    medicationFromRepo.Concept = conceptFromRepo;
-                    medicationFromRepo.Product = productFromRepo;
-                    medicationFromRepo.StartDate = medicationForUpdate.StartDate;
-                    medicationFromRepo.EndDate = medicationForUpdate.EndDate;
-                    medicationFromRepo.Dose = medicationForUpdate.Dose;
-                    medicationFromRepo.DoseFrequency = medicationForUpdate.DoseFrequency;
-                    medicationFromRepo.DoseUnit = medicationForUpdate.DoseUnit;
-
-                    //throw new Exception(JsonConvert.SerializeObject(patientMedication));
-                    _modelExtensionBuilder.UpdateExtendable(medicationFromRepo, medicationDetail.CustomAttributes, "Admin");
-
-                    _patientMedicationRepository.Update(medicationFromRepo);
-                    await AddOrUpdateMedicationsToReportInstanceAsync(medicationFromRepo);
-
-                    await _unitOfWork.CompleteAsync();
-
-                    return Ok();
-                }
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -328,42 +184,26 @@ namespace PVIMS.API.Controllers
         [HttpPut("{patientId}/medications/{id}/archive", Name = "ArchivePatientMedication")]
         [Consumes("application/json")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<IActionResult> ArchivePatientMedication(long patientId, long id,
+        public async Task<IActionResult> ArchivePatientMedication(int patientId, int id,
             [FromBody] ArchiveDto medicationForDelete)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            if (medicationForDelete == null)
             {
-                return NotFound();
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var medicationFromRepo = await _patientMedicationRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (medicationFromRepo == null)
-            {
-                return NotFound();
-            }
+            var command = new ArchivePatientMedicationCommand(patientId, id, medicationForDelete.Reason);
 
-            if (Regex.Matches(medicationForDelete.Reason, @"[-a-zA-Z0-9 .']").Count < medicationForDelete.Reason.Length)
-            {
-                ModelState.AddModelError("Message", "Reason contains invalid characters (Enter A-Z, a-z, space, period, apostrophe)");
-            }
+            _logger.LogInformation(
+                "----- Sending command: ArchivePatientMedicationCommand - {patientId}: {patientMedicationId}",
+                command.PatientId,
+                command.PatientMedicationId);
 
-            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var user = _userRepository.Get(u => u.UserName == userName);
-            if (user == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate user");
-                return BadRequest(ModelState);
-            }
+            var commandResult = await _mediator.Send(command);
 
-            if (ModelState.IsValid)
+            if (!commandResult)
             {
-                medicationFromRepo.Archived = true;
-                medicationFromRepo.ArchivedDate = DateTime.Now;
-                medicationFromRepo.ArchivedReason = medicationForDelete.Reason;
-                medicationFromRepo.AuditUser = user;
-                _patientMedicationRepository.Update(medicationFromRepo);
-                await _unitOfWork.CompleteAsync();
+                return BadRequest("Command not created");
             }
 
             return Ok();
@@ -435,126 +275,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Validate the input model for updating a medication
-        /// </summary>
-        private void ValidateMedicationForUpdateModel(Patient patientFromRepo, PatientMedicationForUpdateDto medicationForUpdateDto, long patientMedicationId)
-        {
-            if (Regex.Matches(medicationForUpdateDto.SourceDescription, @"[-a-zA-Z0-9 .,()']").Count < medicationForUpdateDto.SourceDescription.Length)
-            {
-                ModelState.AddModelError("Message", "Source description contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, space, period, comma, parentheses, apostrophe)");
-            }
-
-            if (medicationForUpdateDto.StartDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Start Date should be before current date");
-            }
-            if (medicationForUpdateDto.StartDate < patientFromRepo.DateOfBirth)
-            {
-                ModelState.AddModelError("Message", "Start Date should be after Date Of Birth");
-            }
-
-            if(medicationForUpdateDto.EndDate.HasValue)
-            {
-                if (medicationForUpdateDto.EndDate > DateTime.Today)
-                {
-                    ModelState.AddModelError("Message", "End Date should be before current date");
-                }
-                if (medicationForUpdateDto.EndDate < patientFromRepo.DateOfBirth)
-                {
-                    ModelState.AddModelError("Message", "End Date should be after Date Of Birth");
-                }
-                if (medicationForUpdateDto.EndDate < medicationForUpdateDto.StartDate)
-                {
-                    ModelState.AddModelError("Message", "End Date should be after Start Date");
-                }
-            }
-
-            // validate source term, check medication overlapping - START DATE
-            if (patientFromRepo.CheckMedicationStartDateAgainstStartDateWithNoEndDate(medicationForUpdateDto.ConceptId, medicationForUpdateDto.StartDate, patientMedicationId))
-            {
-                ModelState.AddModelError("Message", "Duplication of medication. Please check start and end dates...");
-            }
-            else
-            {
-                if (patientFromRepo.CheckMedicationStartDateWithinRange(medicationForUpdateDto.ConceptId, medicationForUpdateDto.StartDate, patientMedicationId))
-                {
-                    ModelState.AddModelError("Message", "Duplication of medication. Please check start and end dates...");
-                }
-                else
-                {
-                    if (medicationForUpdateDto.EndDate.HasValue)
-                    {
-                        if (patientFromRepo.CheckMedicationStartDateWithNoEndDateBeforeStart(medicationForUpdateDto.ConceptId, medicationForUpdateDto.StartDate, patientMedicationId))
-                        {
-                            ModelState.AddModelError("Message", "Duplication of medication. Please check start and end dates...");
-                        }
-                    }
-                }
-            }
-
-            // Check medication overlapping - END DATE
-            if (medicationForUpdateDto.EndDate.HasValue)
-            {
-                if (patientFromRepo.CheckMedicationEndDateAgainstStartDateWithNoEndDate(medicationForUpdateDto.ConceptId, Convert.ToDateTime(medicationForUpdateDto.EndDate), patientMedicationId))
-                {
-                    ModelState.AddModelError("Message", "Duplication of medication. Please check start and end dates...");
-                }
-                else
-                {
-                    if (patientFromRepo.CheckMedicationEndDateWithinRange(medicationForUpdateDto.ConceptId, Convert.ToDateTime(medicationForUpdateDto.EndDate), patientMedicationId))
-                    {
-                        ModelState.AddModelError("Message", "Duplication of medication. Please check start and end dates...");
-                    }
-                }
-            }
-
-            if (Regex.Matches(medicationForUpdateDto.Dose, @"[a-zA-Z0-9.]").Count < medicationForUpdateDto.Dose.Length)
-            {
-                ModelState.AddModelError("Message", "Dose contains invalid characters (Enter A-Z, a-z, 0-9, period)");
-            }
-
-            if (Regex.Matches(medicationForUpdateDto.DoseFrequency, @"[a-zA-Z0-9.]").Count < medicationForUpdateDto.DoseFrequency.Length)
-            {
-                ModelState.AddModelError("Message", "Dose frequency contains invalid characters (Enter A-Z, a-z, 0-9, period)");
-            }
-        }
-
-        /// <summary>
-        /// Prepare the model for the medication
-        /// </summary>
-        private MedicationDetail PrepareMedicationDetail(PatientMedicationForUpdateDto medicationForUpdate)
-        {
-            var medicationDetail = new MedicationDetail();
-            medicationDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<PatientMedication>();
-
-            //medicationDetail = _mapper.Map<MedicationDetail>(medicationForUpdate);
-            foreach (var newAttribute in medicationForUpdate.Attributes)
-            {
-                var customAttribute = _customAttributeRepository.Get(ca => ca.Id == newAttribute.Key);
-                if (customAttribute != null)
-                {
-                // Validate attribute exists for household entity and is a PMT attribute
-                var attributeDetail = medicationDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
-                    
-                if (attributeDetail == null)
-                    {
-                        ModelState.AddModelError("Message", $"Unable to locate custom attribute on patient medication {newAttribute.Key}");
-                    }
-                    else
-                    {
-                        attributeDetail.Value = newAttribute.Value;
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("Message", $"Unable to locate custom attribute {newAttribute.Key}");
-                }
-            }
-            // Update patient custom attributes from source
-            return medicationDetail;
-        }
-
-        /// <summary>
         /// Get the corresponding selection value
         /// </summary>
         /// <param name="attributeKey">The custom attribute key look up value</param>
@@ -565,49 +285,6 @@ namespace PVIMS.API.Controllers
             var selectionitem = _selectionDataItemRepository.Get(s => s.AttributeKey == attributeKey && s.SelectionKey == selectionKey);
 
             return (selectionitem == null) ? string.Empty : selectionitem.Value;
-        }
-
-        /// <summary>
-        /// Modify source report instance with medification changes
-        /// </summary>
-        /// <param name="patientMedication">The medication to be updated</param>
-        /// <returns></returns>
-        private async Task AddOrUpdateMedicationsToReportInstanceAsync(PatientMedication patientMedication)
-        {
-            var weeks = 0;
-            var config = _configRepository.Get(c => c.ConfigType == ConfigType.MedicationOnsetCheckPeriodWeeks);
-            if (config != null)
-            {
-                if (!String.IsNullOrEmpty(config.ConfigValue))
-                {
-                    weeks = Convert.ToInt32(config.ConfigValue);
-                }
-            }
-
-            // Manage modifications to report instance - if one exists
-            IEnumerable<PatientClinicalEvent> events;
-            if (!patientMedication.EndDate.HasValue)
-            {
-                events = patientMedication.Patient.PatientClinicalEvents.Where(pce => pce.OnsetDate >= patientMedication.StartDate.AddDays(weeks * -7) && pce.Archived == false);
-            }
-            else
-            {
-                events = patientMedication.Patient.PatientClinicalEvents.Where(pce => pce.OnsetDate >= patientMedication.StartDate.AddDays(weeks * -7) && pce.OnsetDate <= Convert.ToDateTime(patientMedication.EndDate).AddDays(weeks * 7) && pce.Archived == false);
-            }
-
-            // Prepare medications
-            List<ReportInstanceMedicationListItem> instanceMedications = new List<ReportInstanceMedicationListItem>();
-            var item = new ReportInstanceMedicationListItem()
-            {
-                MedicationIdentifier = patientMedication.DisplayName,
-                ReportInstanceMedicationGuid = patientMedication.PatientMedicationGuid
-            };
-            instanceMedications.Add(item);
-
-            foreach (var evt in events)
-            {
-                await _workFlowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(evt.PatientClinicalEventGuid, instanceMedications);
-            }
         }
     }
 }

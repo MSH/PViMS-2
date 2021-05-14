@@ -154,7 +154,7 @@ namespace PVIMS.API.Helpers
 
             if (_patientDetailForCreation != null)
             {
-                _patientService.AddPatient(_patientDetailForCreation);
+                await _patientService.AddPatientAsync(_patientDetailForCreation);
             }
             if (_patientDetailForUpdate != null)
             {

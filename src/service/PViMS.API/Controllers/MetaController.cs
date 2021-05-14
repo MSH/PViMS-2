@@ -650,19 +650,18 @@ namespace PVIMS.API.Controllers
 
         private void CheckColumnsExist()
         {
-            ProcessEntity(new Patient(), "Patient");
-            ProcessEntity(new PatientMedication(), "PatientMedication");
-            ProcessEntity(new PatientClinicalEvent(), "PatientClinicalEvent");
-            ProcessEntity(new PatientCondition(), "PatientCondition");
-            ProcessEntity(new PatientLabTest(), "PatientLabTest");
-            ProcessEntity(new Encounter(new Patient()), "Encounter");
-            ProcessEntity(new CohortGroupEnrolment(), "CohortGroupEnrolment");
-            ProcessEntity(new PatientFacility(), "PatientFacility");
+            ProcessEntity(typeof(Patient), "Patient");
+            ProcessEntity(typeof(PatientMedication), "PatientMedication");
+            ProcessEntity(typeof(PatientClinicalEvent), "PatientClinicalEvent");
+            ProcessEntity(typeof(PatientCondition), "PatientCondition");
+            ProcessEntity(typeof(PatientLabTest), "PatientLabTest");
+            ProcessEntity(typeof(Encounter), "Encounter");
+            ProcessEntity(typeof(CohortGroupEnrolment), "CohortGroupEnrolment");
+            ProcessEntity(typeof(PatientFacility), "PatientFacility");
         }
 
-        private void ProcessEntity(Object obj, string entityName)
+        private void ProcessEntity(Type type, string entityName)
         {
-            Type type = obj.GetType();
             PropertyInfo[] properties = type.GetProperties();
             var invalidProperties = new[] { "CustomAttributesXmlSerialised", "Archived", "ArchivedReason", "ArchivedDate", "AuditUser", "Age", "FullName", "DisplayName", "CurrentFacilityName", "LatestEncounterDate" };
 
@@ -911,14 +910,14 @@ namespace PVIMS.API.Controllers
 
         private void PopulateMetaTables()
         {
-            ProcessInsertEntity(new Patient(), "Patient");
-            ProcessInsertEntity(new PatientMedication(), "PatientMedication");
-            ProcessInsertEntity(new PatientClinicalEvent(), "PatientClinicalEvent");
-            ProcessInsertEntity(new PatientCondition(), "PatientCondition");
-            ProcessInsertEntity(new PatientLabTest(), "PatientLabTest");
-            ProcessInsertEntity(new Encounter(new Patient()), "Encounter");
-            ProcessInsertEntity(new CohortGroupEnrolment(), "CohortGroupEnrolment");
-            ProcessInsertEntity(new PatientFacility(), "PatientFacility");
+            ProcessInsertEntity(typeof(Patient), "Patient");
+            ProcessInsertEntity(typeof(PatientMedication), "PatientMedication");
+            ProcessInsertEntity(typeof(PatientClinicalEvent), "PatientClinicalEvent");
+            ProcessInsertEntity(typeof(PatientCondition), "PatientCondition");
+            ProcessInsertEntity(typeof(PatientLabTest), "PatientLabTest");
+            ProcessInsertEntity(typeof(Encounter), "Encounter");
+            ProcessInsertEntity(typeof(CohortGroupEnrolment), "CohortGroupEnrolment");
+            ProcessInsertEntity(typeof(PatientFacility), "PatientFacility");
         }
 
         private void UpdateCustomAttributes()
@@ -936,9 +935,8 @@ namespace PVIMS.API.Controllers
             ProcessUpdateSelection("PatientLabTest", "mplt");
         }
 
-        private void ProcessInsertEntity(Object obj, string entityName)
+        private void ProcessInsertEntity(Type type, string entityName)
         {
-            Type type = obj.GetType();
             PropertyInfo[] properties = type.GetProperties();
             var invalidProperties = new[] { "CustomAttributesXmlSerialised", "Archived", "ArchivedReason", "ArchivedDate", "AuditUser", "Age", "FullName", "AgeGroup", "DisplayName", "CurrentFacilityName", "LatestEncounterDate" };
 
