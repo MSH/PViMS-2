@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models.Parameters;
+using PVIMS.API.Models.ValueTypes;
 using System;
 
 namespace PVIMS.API.Infrastructure.Services
@@ -364,7 +365,11 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreateConceptsResourceUri(ResourceUriType type,
-           ConceptResourceParameters conceptResourceParameters)
+            string orderBy,
+            string searchTerm,
+            YesNoBothValueType active,
+            int pageNumber,
+            int pageSize)
         {
             switch (type)
             {
@@ -372,32 +377,32 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetConceptsByIdentifier",
                       new
                       {
-                          orderBy = conceptResourceParameters.OrderBy,
-                          pageNumber = conceptResourceParameters.PageNumber - 1,
-                          pageSize = conceptResourceParameters.PageSize,
-                          SearchTerm = conceptResourceParameters.SearchTerm,
-                          Active = conceptResourceParameters.Active
+                          orderBy,
+                          pageNumber = pageNumber - 1,
+                          pageSize,
+                          searchTerm,
+                          active
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetConceptsByIdentifier",
                       new
                       {
-                          orderBy = conceptResourceParameters.OrderBy,
-                          pageNumber = conceptResourceParameters.PageNumber + 1,
-                          pageSize = conceptResourceParameters.PageSize,
-                          SearchTerm = conceptResourceParameters.SearchTerm,
-                          Active = conceptResourceParameters.Active
+                          orderBy,
+                          pageNumber = pageNumber + 1,
+                          pageSize,
+                          searchTerm,
+                          active
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetConceptsByIdentifier",
                       new
                       {
-                          orderBy = conceptResourceParameters.OrderBy,
-                          pageNumber = conceptResourceParameters.PageNumber,
-                          pageSize = conceptResourceParameters.PageSize,
-                          SearchTerm = conceptResourceParameters.SearchTerm,
-                          Active = conceptResourceParameters.Active
+                          orderBy,
+                          pageNumber,
+                          pageSize,
+                          searchTerm,
+                          active
                       });
             }
         }

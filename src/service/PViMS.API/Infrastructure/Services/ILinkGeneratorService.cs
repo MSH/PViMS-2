@@ -1,5 +1,6 @@
 ﻿using PVIMS.API.Helpers;
 using PVIMS.API.Models.Parameters;
+using PVIMS.API.Models.ValueTypes;
 using System;
 
 namespace PVIMS.API.Infrastructure.Services
@@ -28,7 +29,7 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateCausalityReportResourceUri(Guid workFlowGuid, ResourceUriType type, CausalityReportResourceParameters causalityReportResourceParameters);
 
-        string CreateConceptsResourceUri(ResourceUriType type, ConceptResourceParameters conceptResourceParameters);
+        string CreateConceptsResourceUri(ResourceUriType type, string orderBy, string searchTerm, YesNoBothValueType active, int pageNumber, int pageSize);
 
         string CreateConditionsResourceUri(ResourceUriType type, ConditionResourceParameters conditionResourceParameters);
 

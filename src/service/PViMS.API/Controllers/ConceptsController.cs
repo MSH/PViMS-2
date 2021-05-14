@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using LinqKit;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
@@ -19,6 +21,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PVIMS.API.Application.Queries.ConceptAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -27,6 +30,7 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class ConceptsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<Product> _productRepository;
@@ -35,16 +39,20 @@ namespace PVIMS.API.Controllers
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
+        private readonly ILogger<ConceptsController> _logger;
 
-        public ConceptsController(IPropertyMappingService propertyMappingService, 
+        public ConceptsController(IMediator mediator,
+            IPropertyMappingService propertyMappingService, 
             ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Product> productRepository,
             IRepositoryInt<Concept> conceptRepository,
             IRepositoryInt<MedicationForm> medicationFormRepository,
-            IUnitOfWorkInt unitOfWork)
+            IUnitOfWorkInt unitOfWork,
+            ILogger<ConceptsController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -53,6 +61,7 @@ namespace PVIMS.API.Controllers
             _conceptRepository = conceptRepository ?? throw new ArgumentNullException(nameof(conceptRepository));
             _medicationFormRepository = medicationFormRepository ?? throw new ArgumentNullException(nameof(medicationFormRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -67,7 +76,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ConceptIdentifierDto>> GetConceptsByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ConceptIdentifierDto>>> GetConceptsByIdentifier(
             [FromQuery] ConceptResourceParameters conceptResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<ConceptIdentifierDto>
@@ -76,13 +85,36 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedConceptsWithLinks = GetConcepts<ConceptIdentifierDto>(conceptResourceParameters);
+            var query = new ConceptsIdentifierQuery(
+                conceptResourceParameters.OrderBy,
+                conceptResourceParameters.SearchTerm,
+                conceptResourceParameters.Active,
+                conceptResourceParameters.PageNumber,
+                conceptResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ConceptIdentifierDto>(mappedConceptsWithLinks.TotalCount, mappedConceptsWithLinks);
-            var wrapperWithLinks = CreateLinksForConcepts(wrapper, conceptResourceParameters,
-                mappedConceptsWithLinks.HasNext, mappedConceptsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: ConceptsIdentifierQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = conceptResourceParameters.PageSize,
+                currentPage = conceptResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -98,7 +130,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ConceptDetailDto>> GetConceptsByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ConceptDetailDto>>> GetConceptsByDetail(
             [FromQuery] ConceptResourceParameters conceptResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<ConceptDetailDto>
@@ -107,13 +139,36 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedConceptsWithLinks = GetConcepts<ConceptDetailDto>(conceptResourceParameters);
+            var query = new ConceptsDetailQuery(
+                conceptResourceParameters.OrderBy,
+                conceptResourceParameters.SearchTerm,
+                conceptResourceParameters.Active,
+                conceptResourceParameters.PageNumber,
+                conceptResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ConceptDetailDto>(mappedConceptsWithLinks.TotalCount, mappedConceptsWithLinks);
-            var wrapperWithLinks = CreateLinksForConcepts(wrapper, conceptResourceParameters,
-                mappedConceptsWithLinks.HasNext, mappedConceptsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: ConceptsDetailQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = conceptResourceParameters.PageSize,
+                currentPage = conceptResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -215,15 +270,22 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public async Task<ActionResult<ConceptIdentifierDto>> GetConceptByIdentifier(long id)
+        public async Task<ActionResult<ConceptIdentifierDto>> GetConceptByIdentifier(int id)
         {
-            var mappedConcept = await GetConceptAsync<ConceptIdentifierDto>(id);
-            if (mappedConcept == null)
+            var query = new ConceptIdentifierQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: ConceptIdentifierQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForConcept<ConceptIdentifierDto>(mappedConcept));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -692,62 +754,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Get concepts from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="conceptResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetConcepts<T>(ConceptResourceParameters conceptResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = conceptResourceParameters.PageNumber,
-                PageSize = conceptResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<Concept>(conceptResourceParameters.OrderBy, "asc");
-
-            var predicate = PredicateBuilder.New<Concept>(true);
-            if (!String.IsNullOrWhiteSpace(conceptResourceParameters.SearchTerm))
-            {
-                predicate = predicate.And(f => f.ConceptName.Contains(conceptResourceParameters.SearchTerm.Trim()));
-            }
-            if (conceptResourceParameters.Active != Models.ValueTypes.YesNoBothValueType.Both)
-            {
-                predicate = predicate.And(f => f.Active == (conceptResourceParameters.Active == Models.ValueTypes.YesNoBothValueType.Yes));
-            }
-
-            var pagedConceptsFromRepo = _conceptRepository.List(pagingInfo, predicate, orderby, "");
-            if (pagedConceptsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedConcepts = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedConceptsFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedConceptsFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedConcepts.TotalCount,
-                    pageSize = mappedConcepts.PageSize,
-                    currentPage = mappedConcepts.CurrentPage,
-                    totalPages = mappedConcepts.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedConcepts.ForEach(dto => CreateLinksForConcept(dto));
-
-                return mappedConcepts;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Get products from repository and auto map to Dto
         /// </summary>
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
@@ -870,14 +876,14 @@ namespace PVIMS.API.Controllers
         {
             wrapper.Links.Add(
                new LinkDto(
-                   _linkGeneratorService.CreateConceptsResourceUri(ResourceUriType.Current, conceptResourceParameters),
+                   _linkGeneratorService.CreateConceptsResourceUri(ResourceUriType.Current, conceptResourceParameters.OrderBy, conceptResourceParameters.SearchTerm, conceptResourceParameters.Active, conceptResourceParameters.PageNumber, conceptResourceParameters.PageSize),
                    "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateConceptsResourceUri(ResourceUriType.NextPage, conceptResourceParameters),
+                       _linkGeneratorService.CreateConceptsResourceUri(ResourceUriType.NextPage, conceptResourceParameters.OrderBy, conceptResourceParameters.SearchTerm, conceptResourceParameters.Active, conceptResourceParameters.PageNumber, conceptResourceParameters.PageSize),
                        "nextPage", "GET"));
             }
 
@@ -885,7 +891,7 @@ namespace PVIMS.API.Controllers
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateConceptsResourceUri(ResourceUriType.PreviousPage, conceptResourceParameters),
+                       _linkGeneratorService.CreateConceptsResourceUri(ResourceUriType.PreviousPage, conceptResourceParameters.OrderBy, conceptResourceParameters.SearchTerm, conceptResourceParameters.Active, conceptResourceParameters.PageNumber, conceptResourceParameters.PageSize),
                        "previousPage", "GET"));
             }
 
