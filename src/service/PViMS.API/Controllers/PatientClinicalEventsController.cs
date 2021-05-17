@@ -253,7 +253,7 @@ namespace PVIMS.API.Controllers
                         return StatusCode(500, "Unable to locate newly added clinical event");
                     }
 
-                    return CreatedAtRoute("GetPatientClinicalEventByIdentifier",
+                    return CreatedAtAction("GetPatientClinicalEventByIdentifier",
                         new
                         {
                             id = mappedPatientClinicalEvent.Id

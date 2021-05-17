@@ -437,7 +437,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetDatasetByIdentifier",
+                return CreatedAtAction("GetDatasetByIdentifier",
                     new
                     {
                         id = mappedDataset.Id
@@ -524,7 +524,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetDatasetCategoryByIdentifier",
+                return CreatedAtAction("GetDatasetCategoryByIdentifier",
                     new
                     {
                         datasetId,
@@ -614,7 +614,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetDatasetCategoryElementByIdentifier",
+                return CreatedAtAction("GetDatasetCategoryElementByIdentifier",
                     new
                     {
                         datasetId,

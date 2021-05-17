@@ -228,7 +228,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetEncounterTypeByIdentifier",
+                return CreatedAtAction("GetEncounterTypeByIdentifier",
                     new
                     {
                         id = mappedEncounterType.Id

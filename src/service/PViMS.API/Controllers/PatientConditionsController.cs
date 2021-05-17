@@ -223,7 +223,7 @@ namespace PVIMS.API.Controllers
                         return StatusCode(500, "Unable to locate newly added condition");
                     }
 
-                    return CreatedAtRoute("GetPatientConditionByIdentifier",
+                    return CreatedAtAction("GetPatientConditionByIdentifier",
                         new
                         {
                             id = mappedPatientCondition.Id

@@ -246,7 +246,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetMetaReportByIdentifier",
+                return CreatedAtAction("GetMetaReportByIdentifier",
                     new
                     {
                         id = mappedMetaReport.Id

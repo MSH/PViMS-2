@@ -390,7 +390,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetConceptByIdentifier",
+                return CreatedAtAction("GetConceptByIdentifier",
                     new
                     {
                         id = mappedConcept.Id
@@ -579,7 +579,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetProductByIdentifier",
+                return CreatedAtAction("GetProductByIdentifier",
                     new
                     {
                         id = mappedProduct.Id

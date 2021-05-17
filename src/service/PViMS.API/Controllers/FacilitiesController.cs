@@ -273,7 +273,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest("Command not created");
             }
 
-            return CreatedAtRoute("GetFacilityByDetail",
+            return CreatedAtAction("GetFacilityByDetail",
                 new
                 {
                     id = commandResult.Id

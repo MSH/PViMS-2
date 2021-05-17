@@ -208,7 +208,7 @@ namespace PVIMS.API.Controllers
                 return StatusCode(500, "Unable to locate newly added enrolment");
             }
 
-            return CreatedAtRoute("GetPatientEnrolmentByIdentifier",
+            return CreatedAtAction("GetPatientEnrolmentByIdentifier",
                 new
                 {
                     patientId,
@@ -271,7 +271,7 @@ namespace PVIMS.API.Controllers
                 await _unitOfWork.CompleteAsync();
             }
 
-            return CreatedAtRoute("GetPatientEnrolmentByIdentifier",
+            return CreatedAtAction("GetPatientEnrolmentByIdentifier",
                 new
                 {
                     patientId,

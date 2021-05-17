@@ -11,8 +11,6 @@ using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.Core.Entities;
-using PVIMS.Core.Repositories;
 using System;
 using System.Threading.Tasks;
 using MediatR;
@@ -230,7 +228,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest("Command not created");
             }
 
-            return CreatedAtRoute("GetCohortGroupByDetail",
+            return CreatedAtAction("GetCohortGroupByDetail",
                 new
                 {
                     id = commandResult.Id

@@ -289,7 +289,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added appointment");
                 }
 
-                return CreatedAtRoute("GetAppointmentByIdentifier",
+                return CreatedAtAction("GetAppointmentByIdentifier",
                     new
                     {
                         patientId,

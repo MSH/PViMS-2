@@ -259,7 +259,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetMetaPageByIdentifier",
+                return CreatedAtAction("GetMetaPageByIdentifier",
                     new
                     {
                         id = mappedMetaPage.Id
@@ -477,7 +477,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetMetaWidgetByIdentifier",
+                return CreatedAtAction("GetMetaWidgetByIdentifier",
                     new
                     {
                         metaPageId,

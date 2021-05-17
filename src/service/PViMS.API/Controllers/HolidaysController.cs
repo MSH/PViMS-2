@@ -141,7 +141,7 @@ namespace PVIMS.API.Controllers
                 return StatusCode(500, "Unable to locate newly added item");
             }
 
-            return CreatedAtRoute("GetHolidayByIdentifier",
+            return CreatedAtAction("GetHolidayByIdentifier",
                 new
                 {
                     id = mappedHoliday.Id

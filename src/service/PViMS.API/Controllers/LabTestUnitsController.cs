@@ -145,7 +145,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetLabTestUnitByIdentifier",
+                return CreatedAtAction("GetLabTestUnitByIdentifier",
                     new
                     {
                         id = mappedLabTestUnit.Id

@@ -803,7 +803,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest("Command not created");
             }
 
-            return CreatedAtRoute("GetReportInstanceTaskByIdentifier",
+            return CreatedAtAction("GetReportInstanceTaskByIdentifier",
                 new
                 {
                     workFlowGuid,
@@ -944,7 +944,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest("Command not created");
             }
 
-            return CreatedAtRoute("GetReportInstanceTaskCommentByIdentifier",
+            return CreatedAtAction("GetReportInstanceTaskCommentByIdentifier",
                 new
                 {
                     workFlowGuid,

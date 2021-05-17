@@ -190,7 +190,7 @@ namespace PVIMS.API.Controllers
                         return StatusCode(500, "Unable to locate newly added lab test");
                     }
 
-                    return CreatedAtRoute("GetPatientLabTestByIdentifier",
+                    return CreatedAtAction("GetPatientLabTestByIdentifier",
                         new
                         {
                             id = mappedPatientLabTest.Id

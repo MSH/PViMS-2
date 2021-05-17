@@ -125,7 +125,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest("Command not created");
             }
 
-            return CreatedAtRoute("GetPatientMedicationByIdentifier",
+            return CreatedAtAction("GetPatientMedicationByIdentifier",
                 new
                 {
                     id = commandResult.Id

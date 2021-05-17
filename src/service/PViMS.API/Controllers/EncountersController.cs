@@ -295,7 +295,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 var encounterDetail = PrepareEncounterDetail(encounterForCreation);
-                id = _patientService.AddEncounter(patientFromRepo, encounterDetail);
+                id = await _patientService.AddEncounterAsync(patientFromRepo, encounterDetail);
                 await _unitOfWork.CompleteAsync();
 
                 var mappedEncounter = await GetEncounterAsync<EncounterIdentifierDto>(patientId, id);
@@ -304,7 +304,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added encounter");
                 }
 
-                return CreatedAtRoute("GetEncounterByIdentifier",
+                return CreatedAtAction("GetEncounterByIdentifier",
                     new
                     {
                         id = mappedEncounter.Id

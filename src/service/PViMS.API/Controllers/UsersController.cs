@@ -248,7 +248,7 @@ namespace PVIMS.API.Controllers
 
                         var mappedUser = _mapper.Map<UserIdentifierDto>(userFromRepo);
 
-                        return CreatedAtRoute("GetUserByIdentifier",
+                        return CreatedAtAction("GetUserByIdentifier",
                             new
                             {
                                 id = mappedUser.Id
