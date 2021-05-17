@@ -41,7 +41,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using System.Text.Json.Serialization;
 
 namespace PViMS.API
 {
@@ -247,11 +246,7 @@ namespace PViMS.API
             })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
                 .AddXmlDataContractSerializerFormatters()
-                .AddJsonOptions(opts =>
-                {
-                    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                })
-            ;
+                .AddNewtonsoftJson();
 
             services.AddCors(options =>
             {
