@@ -56,7 +56,7 @@ namespace PVIMS.API.Application.Queries.ConceptAggregate
                 predicate = predicate.And(c => c.ConceptName.Contains(message.SearchTerm.Trim()));
             }
 
-            var pagedConceptsFromRepo = await _conceptRepository.ListAsync(pagingInfo, null, orderby, new string[] { "MedicationForm" });
+            var pagedConceptsFromRepo = await _conceptRepository.ListAsync(pagingInfo, predicate, orderby, new string[] { "MedicationForm" });
             if (pagedConceptsFromRepo != null)
             {
                 // Map EF entity to Dto
