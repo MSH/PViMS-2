@@ -37,9 +37,9 @@ namespace PVIMS.API.Application.Validations
 
             RuleFor(command => command.DoseFrequency)
                 .Length(0, 30)
-                .Matches(@"[a-zA-Z0-9.]")
+                .Matches(@"[a-zA-Z0-9. ]")
                 .When(c => !string.IsNullOrEmpty(c.DoseFrequency))
-                .WithMessage("Dose frequency contains invalid characters (Enter A-Z, a-z, 0-9, period)");
+                .WithMessage("Dose frequency contains invalid characters (Enter A-Z, a-z, 0-9, period, space)");
 
             logger.LogTrace("----- INSTANCE CREATED - {ClassName}", GetType().Name);
         }
