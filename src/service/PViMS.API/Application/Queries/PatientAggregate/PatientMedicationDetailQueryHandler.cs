@@ -46,7 +46,8 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
         public async Task<PatientMedicationDetailDto> Handle(PatientMedicationDetailQuery message, CancellationToken cancellationToken)
         {
-            var patientMedicationFromRepo = await _patientMedicationRepository.GetAsync(pm => pm.Patient.Id == message.PatientId && pm.Id == message.PatientMedicationId);
+            var patientMedicationFromRepo = await _patientMedicationRepository.GetAsync(pm => pm.Patient.Id == message.PatientId && pm.Id == message.PatientMedicationId, 
+                new string[] { "Concept.MedicationForm", "Product" } );
 
             if (patientMedicationFromRepo == null)
             {

@@ -45,7 +45,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
         public async Task<bool> Handle(ChangeMedicationDetailsCommand message, CancellationToken cancellationToken)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] { "PatientClinicalEvents", "PatientMedications.Concept", "PatientMedications.Product" });
+            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] { "PatientClinicalEvents", "PatientMedications.Concept.MedicationForm", "PatientMedications.Product" });
             if (patientFromRepo == null)
             {
                 throw new KeyNotFoundException("Unable to locate patient");

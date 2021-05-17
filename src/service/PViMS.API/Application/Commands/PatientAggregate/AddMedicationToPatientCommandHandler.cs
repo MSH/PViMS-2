@@ -60,7 +60,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
         public async Task<PatientMedicationIdentifierDto> Handle(AddMedicationToPatientCommand message, CancellationToken cancellationToken)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] { "PatientClinicalEvents", "PatientMedications.Concept" });
+            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] { "PatientClinicalEvents", "PatientMedications.Concept.MedicationForm" });
             if (patientFromRepo == null)
             {
                 throw new KeyNotFoundException("Unable to locate patient"); 
@@ -69,7 +69,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             Concept conceptFromRepo = null;
             if (message.ConceptId > 0)
             {
-                conceptFromRepo = await _conceptRepository.GetAsync(message.ConceptId);
+                conceptFromRepo = await _conceptRepository.GetAsync(message.ConceptId, new string[] { "MedicationForm" });
                 if (conceptFromRepo == null)
                 {
                     throw new KeyNotFoundException("Unable to locate concept");
