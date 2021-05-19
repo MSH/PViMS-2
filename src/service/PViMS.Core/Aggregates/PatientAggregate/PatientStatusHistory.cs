@@ -5,6 +5,25 @@ namespace PVIMS.Core.Entities
 {
     public class PatientStatusHistory : AuditedEntityBase
 	{
+        public PatientStatusHistory()
+        {
+        }
+
+        public PatientStatusHistory(PatientStatus patientStatus, DateTime effectiveDate, string comments)
+        {
+            if(patientStatus == null)
+            {
+                throw new ArgumentNullException(nameof(patientStatus));
+            }
+
+            PatientStatus = patientStatus;
+            PatientStatusId = patientStatus.Id;
+
+            EffectiveDate = effectiveDate;
+
+            Archived = false;
+        }
+
         public DateTime EffectiveDate { get; set; }
         public string Comments { get; set; }
         public int PatientId { get; set; }

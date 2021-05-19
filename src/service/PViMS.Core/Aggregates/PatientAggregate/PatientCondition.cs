@@ -12,6 +12,15 @@ namespace PVIMS.Core.Entities
             PatientConditionGuid = Guid.NewGuid();
         }
 
+        public void ChangeConditionDetails(DateTime onsetDate, DateTime? outcomeDate, Outcome outcome, TreatmentOutcome treatmentOutcome, string comments)
+        {
+            OnsetDate = onsetDate;
+            OutcomeDate = outcomeDate;
+            Outcome = outcome;
+            TreatmentOutcome = treatmentOutcome;
+            Comments = comments;
+        }
+
         public DateTime OnsetDate { get; set; }
         public DateTime? OutcomeDate { get; set; }
         public string Comments { get; set; }

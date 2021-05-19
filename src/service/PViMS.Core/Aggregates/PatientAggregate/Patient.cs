@@ -282,21 +282,6 @@ namespace PVIMS.Core.Entities
 
                 PatientConditions.Add(patientCondition);
             }
-            else
-            {
-                patientCondition = PatientConditions.SingleOrDefault(pc => pc.Id == id);
-                if(patientCondition == null)
-                {
-                    throw new ArgumentException(nameof(id));
-                }
-
-                patientCondition.ConditionSource = conditionSource;
-                patientCondition.OnsetDate = onsetDate;
-                patientCondition.OutcomeDate = outComeDate;
-                patientCondition.Outcome = outcome;
-                patientCondition.TreatmentOutcome = treatmentOutcome;
-                patientCondition.Comments = comments;
-            }
 
             // Has person died
             if (outcome?.Description == "Fatal" && GetCurrentStatus()?.PatientStatus.Description != "Died")
@@ -482,6 +467,67 @@ namespace PVIMS.Core.Entities
             return newPatientMedication;
         }
 
+        public void ChangeConditionDetails(int patientConditionId, int sourceTerminologyMedDraId, DateTime startDate, DateTime? outcomeDate, Outcome outcome, TreatmentOutcome treatmentOutcome, string comments)
+        {
+            var patientCondition = PatientConditions.SingleOrDefault(t => t.Id == patientConditionId);
+            if (patientCondition == null)
+            {
+                throw new KeyNotFoundException(nameof(patientConditionId));
+            }
+
+            if (startDate < DateOfBirth)
+            {
+                throw new DomainException("Start Date should be after Date Of Birth");
+            }
+
+            if (outcomeDate.HasValue)
+            {
+                if (outcomeDate < DateOfBirth)
+                {
+                    throw new DomainException("Outcome Date should be after Date Of Birth");
+                }
+            }
+
+            if (CheckConditionStartDateAgainstStartDateWithNoEndDate(sourceTerminologyMedDraId, startDate, patientConditionId))
+            {
+                throw new DomainException("Duplication of condition. Please check condition start and outcome dates");
+            }
+            else
+            {
+                if (CheckConditionStartDateWithinRange(sourceTerminologyMedDraId, startDate, patientConditionId))
+                {
+                    throw new DomainException("Duplication of condition. Please check condition start and outcome dates");
+                }
+                else
+                {
+                    if (outcomeDate.HasValue)
+                    {
+                        if (CheckConditionStartDateWithNoEndDateBeforeStart(sourceTerminologyMedDraId, startDate, patientConditionId))
+                        {
+                            throw new DomainException("Duplication of condition. Please check condition start and outcome dates");
+                        }
+                    }
+                }
+            }
+
+            if (outcomeDate.HasValue)
+            {
+                if (CheckConditionEndDateAgainstStartDateWithNoEndDate(sourceTerminologyMedDraId, outcomeDate.Value, patientConditionId))
+                {
+                    throw new DomainException("Duplication of condition. Please check condition start and outcome dates");
+                }
+                else
+                {
+                    if (CheckConditionEndDateWithinRange(sourceTerminologyMedDraId, outcomeDate.Value, patientConditionId))
+                    {
+                        throw new DomainException("Duplication of condition. Please check condition start and outcome dates");
+                    }
+                }
+            }
+
+            patientCondition.ChangeConditionDetails(startDate, outcomeDate, outcome, treatmentOutcome, comments);
+        }
+
         public void ChangeMedicationDetails(int patientMedicationId, DateTime startDate, DateTime? endDate, string dose, string doseFrequency, string doseUnit)
         {
             var patientMedication = PatientMedications.SingleOrDefault(t => t.Id == patientMedicationId);
@@ -543,6 +589,12 @@ namespace PVIMS.Core.Entities
             patientMedication.ChangeMedicationDetails(startDate, endDate, dose, doseFrequency, doseUnit);
         }
 
+        public void ChangePatientStatus(PatientStatus patientStatus, DateTime effectiveDate, string comments)
+        {
+            var newPatientStatusHistory = new PatientStatusHistory(patientStatus, effectiveDate, comments);
+            PatientStatusHistories.Add(newPatientStatusHistory);
+        }
+
         public void ArchiveMedication(int patientMedicationId, string reason, User user)
         {
             var patientMedication = PatientMedications.SingleOrDefault(t => t.Id == patientMedicationId);
@@ -554,7 +606,7 @@ namespace PVIMS.Core.Entities
             patientMedication.ArchiveMedication(user, reason);
         }
 
-        public Boolean CheckConditionStartDateAgainstStartDateWithNoEndDate(int sourceTerminologyMedDraId, DateTime startDate, long patientConditionId)
+        private Boolean CheckConditionStartDateAgainstStartDateWithNoEndDate(int sourceTerminologyMedDraId, DateTime startDate, long patientConditionId)
         {
             if (patientConditionId > 0)
             {
@@ -579,7 +631,7 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public Boolean CheckConditionStartDateWithinRange(int sourceTerminologyMedDraId, DateTime startDate, long patientConditionId)
+        private Boolean CheckConditionStartDateWithinRange(int sourceTerminologyMedDraId, DateTime startDate, long patientConditionId)
         {
             if (patientConditionId > 0)
             {
@@ -604,7 +656,7 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public Boolean CheckConditionStartDateWithNoEndDateBeforeStart(int sourceTerminologyMedDraId, DateTime startDate, long patientConditionId)
+        private Boolean CheckConditionStartDateWithNoEndDateBeforeStart(int sourceTerminologyMedDraId, DateTime startDate, long patientConditionId)
         {
             if (patientConditionId > 0)
             {
@@ -627,7 +679,7 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public Boolean CheckConditionEndDateAgainstStartDateWithNoEndDate(int sourceTerminologyMedDraId, DateTime outcomeDate, long patientConditionId)
+        private Boolean CheckConditionEndDateAgainstStartDateWithNoEndDate(int sourceTerminologyMedDraId, DateTime outcomeDate, long patientConditionId)
         {
             if (patientConditionId > 0)
             {
@@ -652,7 +704,7 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public Boolean CheckConditionEndDateWithinRange(int sourceTerminologyMedDraId, DateTime outcomeDate, long patientConditionId)
+        private Boolean CheckConditionEndDateWithinRange(int sourceTerminologyMedDraId, DateTime outcomeDate, long patientConditionId)
         {
             if (patientConditionId > 0)
             {
