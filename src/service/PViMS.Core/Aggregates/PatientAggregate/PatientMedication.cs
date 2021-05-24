@@ -85,8 +85,8 @@ namespace PVIMS.Core.Entities
             {
                 if(Product == null && Concept == null) { return ""; };
                 return Product != null 
-                    ? $"{Concept.ConceptName} ({Concept.MedicationForm.Description}) ({Product.ProductName}); {Dose} {DoseUnit}" 
-                    : $"{Concept.ConceptName} ({Concept.MedicationForm.Description}); {Dose} {DoseUnit}";
+                    ? $"{Concept.ConceptName} ({Concept.MedicationForm?.Description}) ({Product.ProductName}); {Dose} {DoseUnit}" 
+                    : $"{Concept.ConceptName} ({Concept.MedicationForm?.Description}); {Dose} {DoseUnit}";
             }
         }
 
