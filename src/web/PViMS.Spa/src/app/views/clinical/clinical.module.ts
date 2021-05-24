@@ -44,6 +44,8 @@ import { CohortSearchComponent } from './cohort/cohort-search/cohort-search.comp
 import { CohortPopupComponent } from './cohort/cohort-search/cohort-popup/cohort.popup.component';
 import { CohortDeletePopupComponent } from './cohort/cohort-search/cohort-delete-popup/cohort-delete.popup.component';
 import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/cohort-enrolment-list.component';
+import { FormADRComponent } from './form/form-adr/form-adr.component';
+import { LandingComponent } from './form/landing/landing.component';
 
 @NgModule({
   imports: [
@@ -60,38 +62,40 @@ import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/coh
   ],
   declarations: 
   [
-    PatientSearchComponent,
-    EncounterSearchComponent,
     AppointmentSearchComponent,
+    AttachmentCaptureComponent,
+    AttachmentViewComponent,
+    ClinicalEventPopupComponent,
+    ClinicalEventViewPopupComponent,
+    CohortEnrolmentListComponent,
     CohortSearchComponent,
     CohortPopupComponent,
     CohortDeletePopupComponent,
-    PatientViewComponent,
-    EncounterViewComponent,
-    FormListComponent,
-    FormAComponent,
-    FormBComponent,
-    FormCComponent,
-    SynchroniseComponent,
-    AttachmentCaptureComponent,
-    AttachmentViewComponent,
-    PatientAddPopupComponent,
-    PatientUpdatePopupComponent,
-    GenericDeletePopupComponent,
-    GenericArchivePopupComponent,
-    ClinicalEventPopupComponent,
-    ClinicalEventViewPopupComponent,
     ConditionPopupComponent,
     ConditionViewPopupComponent,
-    MedicationPopupComponent,
-    LabTestPopupComponent,
-    EncounterPopupComponent,
-    EncounterUpdatePopupComponent,
-    EncounterDeletePopupComponent,
     DnaPopupComponent,
-    FormDeletePopupComponent,
+    EncounterDeletePopupComponent,
+    EncounterPopupComponent,
+    EncounterSearchComponent,
+    EncounterUpdatePopupComponent,
+    EncounterViewComponent,
     FeedbackSearchComponent,
-    CohortEnrolmentListComponent
+    FormAComponent,
+    FormADRComponent,
+    FormBComponent,
+    FormCComponent,
+    FormDeletePopupComponent,
+    FormListComponent,
+    GenericArchivePopupComponent,
+    GenericDeletePopupComponent,
+    LabTestPopupComponent,
+    LandingComponent,
+    MedicationPopupComponent,
+    PatientAddPopupComponent,
+    PatientSearchComponent,
+    PatientUpdatePopupComponent,
+    PatientViewComponent,
+    SynchroniseComponent
   ],
   entryComponents:
   [

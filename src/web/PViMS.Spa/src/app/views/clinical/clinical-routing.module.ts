@@ -13,6 +13,8 @@ import { PatientViewComponent } from './patient/patient-view/patient-view.compon
 import { FeedbackSearchComponent } from './feedback/feedback-search/feedback-search.component';
 import { CohortSearchComponent } from './cohort/cohort-search/cohort-search.component';
 import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/cohort-enrolment-list.component';
+import { FormADRComponent } from './form/form-adr/form-adr.component';
+import { LandingComponent } from './form/landing/landing.component';
 
 export const ClinicalRoutes: Routes = [
   {
@@ -58,6 +60,11 @@ export const ClinicalRoutes: Routes = [
       data: { title: 'Encounter View', breadcrumb: 'Encounter View' }
     },
     {
+      path: 'formlanding',
+      component: LandingComponent,
+      data: { title: 'List All Forms for Capture', breadcrumb: 'Forms' }
+    },
+    {
       path: 'formlist',
       component: FormListComponent,
       data: { title: 'List All Forms for Capture', breadcrumb: 'Forms' }
@@ -81,6 +88,11 @@ export const ClinicalRoutes: Routes = [
       path: 'formc/:id',
       component: FormCComponent,
       data: { title: 'Pregnancy Form C', breadcrumb: 'Pregnancy Form C' }
+    },
+    {
+      path: 'formadr/:id',
+      component: FormADRComponent,
+      data: { title: 'Adverse Drug Reaction Form', breadcrumb: 'Adverse Drug Reaction Form' }
     }
   ]
   }
