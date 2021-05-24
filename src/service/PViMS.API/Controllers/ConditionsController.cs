@@ -3,9 +3,11 @@ using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using PVIMS.API.Application.Queries.ConditionAggregate;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
@@ -20,6 +22,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Extensions = PVIMS.Core.Utilities.Extensions;
+using MediatR;
 
 namespace PVIMS.API.Controllers
 {
@@ -28,6 +31,7 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class ConditionsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<Condition> _conditionRepository;
@@ -41,8 +45,10 @@ namespace PVIMS.API.Controllers
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IUnitOfWorkInt _unitOfWork;
+        private readonly ILogger<ConditionsController> _logger;
 
-        public ConditionsController(IPropertyMappingService propertyMappingService,
+        public ConditionsController(IMediator mediator, 
+            IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
@@ -54,8 +60,10 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<LabTest> labTestRepository,
             IRepositoryInt<Product> productRepository,
             IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
-            IUnitOfWorkInt unitOfWork)
+            IUnitOfWorkInt unitOfWork,
+            ILogger<ConditionsController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -69,6 +77,7 @@ namespace PVIMS.API.Controllers
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _terminologyMeddraRepository = terminologyMeddraRepository ?? throw new ArgumentNullException(nameof(terminologyMeddraRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -108,7 +117,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ConditionDetailDto>> GetConditionsByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ConditionDetailDto>>> GetConditionsByDetail(
             [FromQuery] ConditionResourceParameters conditionResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<ConditionDetailDto>
@@ -117,16 +126,35 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedConditionsWithLinks = GetConditions<ConditionDetailDto>(conditionResourceParameters);
+            var query = new ConditionsDetailQuery(
+                conditionResourceParameters.OrderBy,
+                conditionResourceParameters.Active,
+                conditionResourceParameters.PageNumber,
+                conditionResourceParameters.PageSize);
 
-            // Add custom mappings to conditions
-            mappedConditionsWithLinks.ForEach(dto => CustomConditionMap(dto));
+            _logger.LogInformation(
+                "----- Sending query: ConditionsDetailQuery");
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ConditionDetailDto>(mappedConditionsWithLinks.TotalCount, mappedConditionsWithLinks);
-            var wrapperWithLinks = CreateLinksForConditions(wrapper, conditionResourceParameters,
-                mappedConditionsWithLinks.HasNext, mappedConditionsWithLinks.HasPrevious);
+            var queryResult = await _mediator.Send(query);
 
-            return Ok(wrapperWithLinks);
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = conditionResourceParameters.PageSize,
+                currentPage = conditionResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -246,7 +274,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetConditionByIdentifier",
+                return CreatedAtAction("GetConditionByIdentifier",
                     new
                     {
                         id = mappedCondition.Id

@@ -64,6 +64,16 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.OnsetDate, opt => opt.MapFrom(src => src.OnsetDate.HasValue ? Convert.ToDateTime(src.OnsetDate).ToString("yyyy-MM-dd") : ""))
                 .ForMember(dest => dest.ResolutionDate, opt => opt.MapFrom(src => src.ResolutionDate.HasValue ? Convert.ToDateTime(src.ResolutionDate).ToString("yyyy-MM-dd") : ""));
 
+            CreateMap<PatientCondition, PatientConditionIdentifierDto>();
+            CreateMap<PatientCondition, PatientConditionDetailDto>()
+                .ForMember(dest => dest.SourceDescription, opt => opt.MapFrom(src => src.ConditionSource))
+                .ForMember(dest => dest.MedDraTerm, opt => opt.MapFrom(src => src.TerminologyMedDra.MedDraTerm))
+                .ForMember(dest => dest.SourceTerminologyMedDraId, opt => opt.MapFrom(src => src.TerminologyMedDra.Id))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.OnsetDate.ToString("yyyy-MM-dd")))
+                .ForMember(dest => dest.Outcome, opt => opt.MapFrom(src => src.Outcome.Description))
+                .ForMember(dest => dest.OutcomeDate, opt => opt.MapFrom(src => src.OutcomeDate.HasValue ? Convert.ToDateTime(src.OutcomeDate).ToString("yyyy-MM-dd") : ""))
+                .ForMember(dest => dest.TreatmentOutcome, opt => opt.MapFrom(src => src.TreatmentOutcome.Description));
+
             CreateMap<PatientMedication, PatientMedicationIdentifierDto>();
             CreateMap<PatientMedication, PatientMedicationDetailDto>()
                 .ForMember(dest => dest.SourceDescription, opt => opt.MapFrom(src => src.MedicationSource))
