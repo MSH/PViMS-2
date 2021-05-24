@@ -10,15 +10,15 @@
 
   <mat-card-content>
 
-    <div class="m-333" *ngIf="!this.synchRequired">
+    <!-- <div class="m-333" *ngIf="!this.synchRequired">
       <button mat-raised-button color="accent" *ngFor="let action of formList" (click)="addForm(action.actionName)" class="m-8">
         {{'Add ' + action.actionName | translate }}
       </button>
-    </div>
+    </div> -->
 
     <form [formGroup]="viewModelForm">
 
-      <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.1%" fxLayoutAlign="spave-evenly start" class="p-8 default-light-bg rounded">
+      <div fxLayout="row" fxLayout.sm="column" fxLayoutWrap fxLayoutGap="0.1%" fxLayoutAlign="space-evenly start" class="p-8 default-light-bg rounded">
         <mat-form-field class="p-8" floatLabel="always" appearance="none">
           <mat-slide-toggle formControlName="synchForms">
             {{'Synchronised Forms' | translate}}

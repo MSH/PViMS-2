@@ -47,7 +47,10 @@ export const _routes = {
           },
           viewFormC(formId: number): string {
               return `${_paths.clinical}/${_paths.clinicalPath.forms.formc.replace(':formId', formId.toString())}`;
-          }
+          },
+          viewFormADR(formId: number): string {
+            return `${_paths.clinical}/${_paths.clinicalPath.forms.formadr.replace(':formId', formId.toString())}`;
+        }
       }
     },
     analytical: {

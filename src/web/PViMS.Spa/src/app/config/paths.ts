@@ -37,7 +37,8 @@ export const _paths = {
           list: `formlist`,
           forma: `forma/:formId`,
           formb: `formb/:formId`,
-          formc: `formc/:formId`
+          formc: `formc/:formId`,
+          formadr: `formadr/:formId`
       }
   },
   analytical: `analytical`,

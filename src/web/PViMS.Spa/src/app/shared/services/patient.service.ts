@@ -25,7 +25,6 @@ export class PatientService extends BaseService {
 
     searchPatient(filterModel: any): any {
       let parameters: ParameterKeyValueModel[] = [];
-      console.log(filterModel);
       parameters.push(<ParameterKeyValueModel> { key: 'facilityName', value: filterModel.facilityName });
       if (filterModel.patientId != null && filterModel.patientId != '') {
           parameters.push(<ParameterKeyValueModel> { key: 'patientId', value: filterModel.patientId });
@@ -48,6 +47,17 @@ export class PatientService extends BaseService {
 
       return this.Get<PatientDetailWrapperModel>('', 'application/vnd.pvims.detail.v1+json', parameters);
     }
+
+    searchPatientByCondition(filterModel: any): any {
+      let parameters: ParameterKeyValueModel[] = [];
+      console.log(filterModel);
+      parameters.push(<ParameterKeyValueModel> { key: 'customAttributeKey', value: filterModel.customAttributeKey });
+      parameters.push(<ParameterKeyValueModel> { key: 'customAttributeValue', value: filterModel.customAttributeValue });
+      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: '1'});
+      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: '10'});
+
+      return this.Get<PatientExpandedModel>('', 'application/vnd.pvims.expanded.v1+json', parameters);
+    }    
 
     getPatientExpanded(id: number): any {
         let parameters: ParameterKeyValueModel[] = [];
@@ -200,6 +210,7 @@ export class PatientService extends BaseService {
 
     savePatientMedication(patientId: number, id: number, model: any): any {
       let shallowModel = this.transformModelForDate(model);
+      console.log(shallowModel);
       if(id == 0) {
         return this.Post(`${patientId}/medications`, shallowModel);
       }

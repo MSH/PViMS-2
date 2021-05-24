@@ -1,0 +1,30 @@
+<div class="flex-container">
+  <div class="m-333">
+    <mat-card class="flex-item p-12 mat-elevation-z6 rounded" *ngFor="let action of formList">
+      <mat-card-title class="text-center">
+        <div class="card-title-text light-gray p-12">
+          {{action.formName | translate}}
+        </div>
+      </mat-card-title>              
+      <mat-card-content>
+        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
+          <div fxFlex="50" class="text-center pt-16 pb-16 border-right-light">
+            <mat-icon class="text-red">cloud_download</mat-icon>
+            <h4 class="m-0">0</h4>
+            <small class="m-0 text-muted">Forms unsynched</small>
+          </div>        
+          <div fxFlex="50" class="text-center pt-16 pb-16 border-right-light">
+            <mat-icon class="text-blue">cloud_done</mat-icon>
+            <h4 class="m-0">0</h4>
+            <small class="m-0 text-muted">Forms synched</small>
+          </div>        
+        </div>
+        <div class="m-8 text-center">
+          <button mat-raised-button color="accent"  (click)="addForm(action.actionName)" >
+            {{'Add Form' | translate }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>  
+  </div>  
+</div>

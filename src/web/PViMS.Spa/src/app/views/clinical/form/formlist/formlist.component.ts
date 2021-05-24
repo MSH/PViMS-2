@@ -120,7 +120,7 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
         }, error => {
             self.throwError(error, error.statusText);
         });
-  }  
+  }
 
   loadGrid(): void {
     let self = this;
@@ -144,20 +144,6 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
       }
       else {
         self._router.navigate([_routes.clinical.forms.viewFormC(model.id)]);
-      }
-    }
-  }
-
-  addForm(selectedOption: string): void {
-    let self = this;
-    if (selectedOption == 'Form A') {
-      self._router.navigate([_routes.clinical.forms.viewFormA(0)]);
-    } else {
-      if (selectedOption == 'Form B') {
-        self._router.navigate([_routes.clinical.forms.viewFormB(0)]);
-      }
-      else {
-        self._router.navigate([_routes.clinical.forms.viewFormC(0)]);
       }
     }
   }
