@@ -109,12 +109,21 @@ export class NavigationService {
       icon: "extension",
       state: "administration/reference",
       sub: [
-        { name: "Active Ingredients", state: "concept" },
         { name: "Condition Groups", state: "condition" },
         { name: "MedDRA Terms", state: "meddra" },
-        { name: "Medications", state: "medicine" },
         { name: "Tests and Procedures", state: "labtest" },
         { name: "Test Results", state: "labresult" }
+      ]
+    },
+    {
+      name: "Medicines",
+      type: "dropDown",
+      tooltip: "",
+      icon: "local_hospital",
+      state: "administration/reference",
+      sub: [
+        { name: "Active Ingredients", state: "concept" },
+        { name: "Products", state: "medicine" },
       ]
     },
     {
@@ -349,7 +358,7 @@ export class NavigationService {
         type: "link",
         tooltip: "View Forms for Capture",
         icon: "content_copy",
-        state: "clinical/formlist"
+        state: "clinical/formlanding"
       };      
       this.clinicalMenu.push(newMenu);
 
