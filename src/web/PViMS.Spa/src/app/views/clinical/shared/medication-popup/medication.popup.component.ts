@@ -59,7 +59,7 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
       endDate: [''],
       dose: ['', [Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9.]*")]],
       doseUnit: [''],
-      doseFrequency: ['', [Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9.]*")]],
+      doseFrequency: ['', [Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9. ]*")]],
       attributes: this._formBuilder.group([])
     })
 

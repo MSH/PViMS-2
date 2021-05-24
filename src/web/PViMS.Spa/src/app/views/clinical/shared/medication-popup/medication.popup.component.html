@@ -4,7 +4,7 @@
 
   <form [formGroup]="viewModelForm">
     <div fxLayout="row wrap" fxLayout.lt-sm="column">
-      <div fxFlex="100" class="card-title-text mat-bg-accent p-24 mb-24">
+      <div fxFlex="100" class="card-title-text light-gray p-24 mb-24">
         {{"L_TEXT_8" | translate }}
       </div>
 
@@ -114,7 +114,7 @@
                       {{'Maximum length exceeded' | translate}}
                     </mat-error>            
                     <mat-error *ngIf="viewModelForm.get('doseFrequency').hasError('pattern')">
-                      {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, period)
+                      {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, period, space)
                     </mat-error>            
                   </mat-form-field>        
                 </div>
