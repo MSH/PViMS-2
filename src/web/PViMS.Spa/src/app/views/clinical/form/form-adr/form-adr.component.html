@@ -22,63 +22,51 @@
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 1" class="mr-12">brightness_1</mat-icon>
             <mat-icon color="warn" *ngIf="viewModel.currentStep > 1 && firstFormGroup.invalid" class="mr-12">error</mat-icon>
             <mat-icon color="accent" *ngIf="viewModel.currentStep > 1 && firstFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <a routerLink="" (click)="viewModel.currentStep = 1">
-              <span [class.font-weight-bold]="viewModel.currentStep == 1">Patient selection</span>
-            </a>
+            <span [class.font-weight-bold]="viewModel.currentStep == 1">Patient selection</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 2" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 2" class="mr-12">brightness_1</mat-icon>
             <mat-icon color="warn" *ngIf="viewModel.currentStep > 2 && secondFormGroup.invalid" class="mr-12">error</mat-icon>
             <mat-icon color="accent" *ngIf="viewModel.currentStep > 2 && secondFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <a routerLink="" (click)="viewModel.currentStep = 2">
-              <span [class.font-weight-bold]="viewModel.currentStep == 2">Patient particulars</span>
-            </a>
+            <span [class.font-weight-bold]="viewModel.currentStep == 2">Patient particulars</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 3" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 3" class="mr-12">brightness_1</mat-icon>
             <mat-icon color="warn" *ngIf="viewModel.currentStep > 3 && thirdFormGroup.invalid" class="mr-12">error</mat-icon>
             <mat-icon color="accent" *ngIf="viewModel.currentStep > 3 && thirdFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <a routerLink="" (click)="viewModel.currentStep = 3">
-              <span [class.font-weight-bold]="viewModel.currentStep == 3">Adverse event details</span>
-            </a>
+            <span [class.font-weight-bold]="viewModel.currentStep == 3">Adverse event details</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 4" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 4" class="mr-12">brightness_1</mat-icon>
             <mat-icon color="warn" *ngIf="viewModel.currentStep > 4 && fourthFormGroup.invalid" class="mr-12">error</mat-icon>
             <mat-icon color="accent" *ngIf="viewModel.currentStep > 4 && fourthFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <a routerLink="" (click)="viewModel.currentStep = 4">
-              <span [class.font-weight-bold]="viewModel.currentStep == 4">Management of the reaction</span>
-            </a>
+            <span [class.font-weight-bold]="viewModel.currentStep == 4">Management of the reaction</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 5" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 5" class="mr-12">brightness_1</mat-icon>
             <mat-icon color="warn" *ngIf="viewModel.currentStep > 5 && fifthFormGroup.invalid" class="mr-12">error</mat-icon>
             <mat-icon color="accent" *ngIf="viewModel.currentStep > 5 && fifthFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <a routerLink="" (click)="viewModel.currentStep = 5">
-              <span [class.font-weight-bold]="viewModel.currentStep == 5">Suspected medication</span>
-            </a>
+            <span [class.font-weight-bold]="viewModel.currentStep == 5">Suspected medication</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 6" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 6" class="mr-12">brightness_1</mat-icon>
             <mat-icon color="accent" *ngIf="viewModel.currentStep > 6" class="mr-12">check_circle</mat-icon>
-            <a routerLink="" (click)="viewModel.currentStep = 6">
-              <span [class.font-weight-bold]="viewModel.currentStep == 6">Reporter particulars</span>
-            </a>
+            <span [class.font-weight-bold]="viewModel.currentStep == 6">Reporter particulars</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 7" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 7" class="mr-12">brightness_1</mat-icon>
             <span [class.font-weight-bold]="viewModel.currentStep == 7">Finish</span>
           </div>
-          <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="center" class="p-2">
+          <div fxLayout="row" fxLayoutGap="1.0%" fxLayoutAlign="center" class="p-2">
             <button mat-flat-button color="" class="mr-12" (click)="previousStep()" [disabled]="viewModel.currentStep == 1">Previous</button>
             <button mat-flat-button color="accent" (click)="nextStep()" [disabled]="viewModel.currentStep > 6 || !viewModel.patientFound">Next</button>
-            <button mat-flat-button color="primary" (click)="finish()" *ngIf="viewModel.currentStep > 6" [disabled]="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid">Finish</button>
+            <button mat-flat-button color="primary" (click)="save()" *ngIf="viewModel.currentStep > 6" [disabled]="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid">Save</button>
           </div>
         </div>
       </div>
@@ -194,7 +182,7 @@
                   </mat-select>
                   <mat-error *ngIf="secondFormGroup.get('ethnicGroup').hasError('required')">
                     Field is required
-                  </mat-error>            
+                  </mat-error>
                 </mat-form-field>
               </div>
             </div>                      
@@ -202,162 +190,253 @@
         </form>
       </div>
   
-      <div fxFlex="80" *ngIf="viewModel.currentStep == 3">
+      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 3">
         <form [formGroup]="thirdFormGroup" [@fadeInOut2]="">
   
-          <div class="p-24">
-            <span class="mat-title">Caregiver programme details</span>
-  
-            <div class="pt-24 pb-24">
-              <span class="text-muted">Please specify the details of the caregiver programme</span> 
-            </div>
-  
-            <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the status of the program</mat-label>
-                  <mat-select formControlName="programStatus" required>
-                    <mat-option value=""></mat-option>
-                    <mat-option value="New Beneficiary">
-                      New Beneficiary
-                    </mat-option>
-                    <mat-option value="Continuing Beneficiary">
-                      Continuing Beneficiary
-                    </mat-option>
-                  </mat-select>                        
-                </mat-form-field>
+          <mat-tab-group>
+            <mat-tab label="{{'Adverse event details' | translate}}">
+              <div class="p-24">
+                <div class="p-24 light-gray rounded">
+                  Please specify the details of the adverse event below
+                </div>
+      
+                <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+                  <div fxFlex="50">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>Date of onset</mat-label>
+                      <input matInput formControlName="dateOfOnset" [matDatepicker]="onsetDatepicker" required>
+                      <mat-datepicker-toggle matSuffix [for]="onsetDatepicker"></mat-datepicker-toggle>
+                    </mat-form-field>
+                    <mat-datepicker #onsetDatepicker></mat-datepicker>
+                  </div>
+                  <div fxFlex="50">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>Regimen</mat-label>
+                      <mat-select formControlName="regimen" required>
+                        <mat-option value=""></mat-option>
+                        <mat-option value="CTR">Conventional Treatment Regimen (CTR)</mat-option>
+                        <mat-option value="SSTR">Standard Short Treatment Regimen (SSTR)</mat-option>
+                        <mat-option value="SRDR">Standard Regimen Drug Resistant (SRDR)</mat-option>
+                        <mat-option value="9MTR">9 Month Treatment Regimen (9MTR)</mat-option>
+                        <mat-option value="ITR">Individualized Treatment Regimen (ITR)</mat-option>
+                        <mat-option value="FQS">Standard Long Oral Regimen FQS</mat-option>
+                        <mat-option value="FQR">Standard Long Oral Regimen FQR</mat-option>
+                        <mat-option value="SSOR">Standard Short Oral Regimen</mat-option>
+                        <mat-option value="BPaL">BPaL</mat-option>
+                      </mat-select>
+                      <mat-error *ngIf="thirdFormGroup.get('regimen').hasError('required')">
+                        Field is required
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+    
+                <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+                  <div fxFlex="100">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>Event description</mat-label>
+                      <textarea matInput formControlName="sourceDescription" rows="3" required></textarea>
+                      <mat-hint>Maximum length 500</mat-hint> 
+                      <mat-error *ngIf="thirdFormGroup.get('sourceDescription').hasError('required')">
+                        Field is required
+                      </mat-error>
+                      <mat-error *ngIf="thirdFormGroup.get('sourceDescription').hasError('maxlength')">
+                        Maximum length exceeded
+                      </mat-error>
+                      <mat-error *ngIf="thirdFormGroup.get('sourceDescription').hasError('pattern')">
+                        {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, parenthesis, forward slash, space, comma, period)
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+    
+                <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+                  <div fxFlex="50">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>Do you consider the reaction to be serious?</mat-label>
+                      <mat-select formControlName="isSerious">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="1">Yes</mat-option>
+                        <mat-option value="2">No</mat-option>
+                        <mat-option value="3">Unknown</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="50">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>What is the seriousness of the event?</mat-label>
+                      <mat-select formControlName="seriousness">
+                        <mat-option value="0"></mat-option>
+                        <mat-option value="1">A congenital anomaly or birth defect</mat-option>
+                        <mat-option value="2">Persistent or significant disability or incapacity</mat-option>
+                        <mat-option value="3">Death</mat-option>
+                        <mat-option value="4">Hospitalisation</mat-option>
+                        <mat-option value="5">Prolonged hospitalisation</mat-option>
+                        <mat-option value="6">Life threatening</mat-option>
+                        <mat-option value="7">A medically important event</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
               </div>
-              <div fxFlex="50" *ngIf="thirdFormGroup.get('programStatus').value == 'New Beneficiary'">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the date of enrolment</mat-label>
-                  <input matInput formControlName="enrolmentDate" [matDatepicker]="enrolmentDatepicker">
-                  <mat-datepicker-toggle matSuffix [for]="enrolmentDatepicker"></mat-datepicker-toggle>
-                </mat-form-field>
-                <mat-datepicker #enrolmentDatepicker></mat-datepicker>
+            </mat-tab>
+            <mat-tab label="{{'Other clinical details' | translate}}">
+              <div class="p-24">
+                <div class="p-24 light-gray rounded">
+                  Please specify any clinical details important to the adverse event
+                </div>
+
+                <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+                  <div fxFlex="50">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>Weight (kg)</mat-label>
+                      <input matInput formControlName="weight" type="number" required>
+                      <mat-hint>
+                        {{'Valid between ' | translate}} 0 {{'and ' | translate}} 159
+                      </mat-hint>
+                      <mat-error *ngIf="thirdFormGroup.get('weight').hasError('required')">
+                        Field is required
+                      </mat-error>
+                      <mat-error *ngIf="thirdFormGroup.get('weight').hasError('min')">
+                        Minimum value exceeded
+                      </mat-error>
+                      <mat-error *ngIf="thirdFormGroup.get('weight').hasError('max')">
+                        Maximum value exceeded
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="50">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>Height (cm)</mat-label>
+                      <input matInput formControlName="height" type="number" required>
+                      <mat-hint>
+                        {{'Valid between ' | translate}} 1 {{'and ' | translate}} 259
+                      </mat-hint>
+                      <mat-error *ngIf="thirdFormGroup.get('height').hasError('required')">
+                        Field is required
+                      </mat-error>
+                      <mat-error *ngIf="thirdFormGroup.get('height').hasError('min')">
+                        Minimum value exceeded
+                      </mat-error>
+                      <mat-error *ngIf="thirdFormGroup.get('height').hasError('max')">
+                        Maximum value exceeded
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>                      
+      
+                <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+                  <div fxFlex="100">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>Any known allergies</mat-label>
+                      <textarea matInput formControlName="allergy" rows="3"></textarea>
+                      <mat-hint>Maximum length 500</mat-hint> 
+                      <mat-error *ngIf="thirdFormGroup.get('allergy').hasError('maxlength')">
+                        Maximum length exceeded
+                      </mat-error>            
+                    </mat-form-field>
+                  </div>
+                </div>
+    
+                <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+                  <div fxFlex="50">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>Pregnancy status</mat-label>
+                      <mat-select formControlName="pregnancyStatus">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="0">No</mat-option>
+                        <mat-option value="1">1st trimester</mat-option>
+                        <mat-option value="2">2nd trimester</mat-option>
+                        <mat-option value="3">3rd trimester</mat-option>
+                        <mat-option value="4">Unknown</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+    
+                <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+                  <div fxFlex="100">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>Comorbidities</mat-label>
+                      <textarea matInput formControlName="comorbidities" rows="3"></textarea>
+                      <mat-hint>Maximum length 500</mat-hint> 
+                      <mat-error *ngIf="thirdFormGroup.get('comorbidities').hasError('maxlength')">
+                        Maximum length exceeded
+                      </mat-error>
+                      <mat-error *ngIf="thirdFormGroup.get('comorbidities').hasError('pattern')">
+                        {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, parenthesis, forward slash, space, comma, period)
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>    
+            </mat-tab>
+            <mat-tab label="{{'Lab results' | translate}}">
+              <div class="p-24">
+                <div class="p-24 light-gray rounded">
+                  Please add lab result documentation pertinent to the adverse event
+                </div>
+                <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="end" class="p-2 mt-12">
+                  <button mat-flat-button color="accent" class="mr-12" (click)="openAttachmentPopUp()" [disabled]="firstFormGroup.invalid">Add Attachment</button>
+                </div>
+    
               </div>
-            </div>                      
-  
-            <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the org caregiver ID</mat-label>
-                  <input matInput formControlName="orgCaregiverId" required>
-                  <mat-hint>Maximum length 21</mat-hint> 
-                  <mat-error *ngIf="thirdFormGroup.get('orgCaregiverId').hasError('required')">
-                    Field is required
-                  </mat-error>            
-                  <mat-error *ngIf="thirdFormGroup.get('orgCaregiverId').hasError('maxlength')">
-                    Maximum length exceeded
-                  </mat-error>            
-                </mat-form-field>
-              </div>
-            </div>                      
-          </div>
+            </mat-tab>
+          </mat-tab-group>
         </form>
       </div>
   
-      <div fxFlex="80" *ngIf="viewModel.currentStep == 4">
+      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 4">
         <form [formGroup]="fourthFormGroup" [@fadeInOut2]="">
   
           <div class="p-24">
-            <span class="mat-title">Caregiver details</span>
+            <span class="mat-title">Management of the reaction</span>
   
-            <div class="pt-24 pb-24">
-              <span class="text-muted">Please specify the details of the caregiver</span> 
+            <div class="p-24 light-gray rounded">
+              Please specify details on how the adverse event was managed
             </div>
-    
+            
             <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
               <div fxFlex="50">
                 <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the first name of the caregiver</mat-label>
-                  <input matInput formControlName="caregiverFirstName" required>
-                  <mat-hint>Specify a valid name with a maximum length of 21</mat-hint> 
-                  <mat-error *ngIf="fourthFormGroup.get('caregiverFirstName').hasError('required')">
-                    Field is required
-                  </mat-error>            
-                  <mat-error *ngIf="fourthFormGroup.get('caregiverFirstName').hasError('maxlength')">
-                    Maximum length exceeded
-                  </mat-error>            
-                </mat-form-field>
-              </div>
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the last name of the caregiver</mat-label>
-                  <input matInput formControlName="caregiverLastName" required>
-                  <mat-hint>Specify a valid name with a maximum length of 21</mat-hint> 
-                  <mat-error *ngIf="fourthFormGroup.get('caregiverLastName').hasError('required')">
-                    Field is required
-                  </mat-error>            
-                  <mat-error *ngIf="fourthFormGroup.get('caregiverLastName').hasError('maxlength')">
-                    Maximum length exceeded
-                  </mat-error>            
+                  <mat-label>Was treatment given?</mat-label>
+                  <mat-select formControlName="treatmentGiven">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="1">Yes</mat-option>
+                    <mat-option value="2">No</mat-option>
+                    <mat-option value="3">Unknown</mat-option>
+                  </mat-select>
                 </mat-form-field>
               </div>
             </div>                      
   
             <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
+              <div fxFlex="100">
                 <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Is the caregiver know by another name</mat-label>
-                  <input matInput formControlName="caregiverKnownAs">
-                  <mat-hint>Maximum length 21</mat-hint> 
-                  <mat-error *ngIf="fourthFormGroup.get('caregiverKnownAs').hasError('maxlength')">
+                  <mat-label>Treatment details</mat-label>
+                  <textarea matInput formControlName="treatmentDetails" rows="2"></textarea>
+                  <mat-hint>Maximum length 300</mat-hint> 
+                  <mat-error *ngIf="fourthFormGroup.get('treatmentDetails').hasError('maxlength')">
                     Maximum length exceeded
                   </mat-error>            
-                </mat-form-field>
+                </mat-form-field>                
               </div>
             </div>
-  
+
             <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
               <div fxFlex="50">
                 <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the date of birth of the caregiver</mat-label>
-                  <input matInput formControlName="dateOfBirth" [matDatepicker]="birthDatepicker">
-                  <mat-datepicker-toggle matSuffix [for]="birthDatepicker"></mat-datepicker-toggle>
-                </mat-form-field>
-                <mat-datepicker #birthDatepicker></mat-datepicker>
-              </div>
-            </div>        
-  
-            <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the gender of the caregiver</mat-label>
-                  <mat-select formControlName="sex" required>
+                  <mat-label>Outcome of the adverse event</mat-label>
+                  <mat-select formControlName="outcome" required>
                     <mat-option value=""></mat-option>
-                    <mat-option value="Male">
-                      Male
-                    </mat-option>
-                    <mat-option value="Female">
-                      Female
-                    </mat-option>
+                    <mat-option value="1">Resolved</mat-option>
+                    <mat-option value="2">Resolved with sequelae</mat-option>
+                    <mat-option value="3">Fatal</mat-option>
+                    <mat-option value="4">Resolving</mat-option>
+                    <mat-option value="5">Not resolved</mat-option>
+                    <mat-option value="6">Unknown</mat-option>
                   </mat-select>                        
-                  <mat-error *ngIf="fourthFormGroup.get('sex').hasError('required')">
-                    Field is required
-                  </mat-error>            
-                </mat-form-field>
-              </div>
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the race of the caregiver</mat-label>
-                  <mat-select formControlName="race" required>
-                    <mat-option value="African">
-                      African
-                    </mat-option>
-                    <mat-option value="Indian">
-                      Indian
-                    </mat-option>
-                    <mat-option value="White">
-                      White
-                    </mat-option>
-                    <mat-option value="Coloured">
-                      Coloured
-                    </mat-option>
-                    <mat-option value="Asian">
-                      Asian
-                    </mat-option>
-                  </mat-select>                        
-                  <mat-error *ngIf="fourthFormGroup.get('race').hasError('required')">
+                  <mat-error *ngIf="fourthFormGroup.get('outcome').hasError('required')">
                     Field is required
                   </mat-error>            
                 </mat-form-field>
@@ -367,285 +446,136 @@
             <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
               <div fxFlex="50">
                 <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the type of ID</mat-label>
-                  <mat-select formControlName="idType" required>
-                    <mat-option value=""></mat-option>
-                    <mat-option value="SA ID Number">
-                      SA ID Number
-                    </mat-option>
-                    <mat-option value="Passport Number">
-                      Passport Number
-                    </mat-option>
-                    <mat-option value="Permit">
-                      Permit
-                    </mat-option>
-                  </mat-select>                        
-                  <mat-error *ngIf="fourthFormGroup.get('idType').hasError('required')">
-                    Field is required
-                  </mat-error>            
+                  <mat-label>Date of recovery</mat-label>
+                  <input matInput formControlName="dateOfRecovery" [matDatepicker]="recoveryDatepicker" required>
+                  <mat-datepicker-toggle matSuffix [for]="recoveryDatepicker"></mat-datepicker-toggle>
                 </mat-form-field>
+                <mat-datepicker #recoveryDatepicker></mat-datepicker>
               </div>
               <div fxFlex="50">
                 <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the ID number</mat-label>
-                  <input matInput formControlName="idNumber" required>
-                  <mat-hint>Specify a valid ID number with a maximum length of 13</mat-hint> 
-                  <mat-error *ngIf="fourthFormGroup.get('idNumber').hasError('required')">
-                    Field is required
-                  </mat-error>
-                  <mat-error *ngIf="fourthFormGroup.get('idNumber').hasError('idNumberError')">
-                    Invalid ID number specified, check ID format, date of birth and gender
-                  </mat-error>
-                  <mat-error *ngIf="fourthFormGroup.get('idNumber').hasError('maxlength')">
-                    Maximum length exceeded
-                  </mat-error>
+                  <mat-label>Date of death</mat-label>
+                  <input matInput formControlName="dateOfDeath" [matDatepicker]="deathDatepicker" required>
+                  <mat-datepicker-toggle matSuffix [for]="deathDatepicker"></mat-datepicker-toggle>
                 </mat-form-field>
+                <mat-datepicker #deathDatepicker></mat-datepicker>
               </div>
             </div>                      
   
             <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
+              <div fxFlex="100">
                 <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the nationality</mat-label>
-                  <mat-select formControlName="nationality" required>
-                    <mat-option value=""></mat-option>
-                    <mat-option value="South African">
-                      South African
-                    </mat-option>
-                    <mat-option value="Other">
-                      Other
-                    </mat-option>
-                  </mat-select>                        
-                  <mat-error *ngIf="fourthFormGroup.get('nationality').hasError('required')">
-                    Field is required
-                  </mat-error>            
-                </mat-form-field>
-              </div>
-              <div fxFlex="50" *ngIf="fourthFormGroup.get('nationality').value == 'Other'">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Other nationality</mat-label>
-                  <input matInput formControlName="nationalityOther">
-                  <mat-hint>Maximum length 50</mat-hint> 
-                  <mat-error *ngIf="fourthFormGroup.get('nationalityOther').hasError('maxlength')">
+                  <mat-label>Sequlae</mat-label>
+                  <textarea matInput formControlName="sequlae" rows="2"></textarea>
+                  <mat-hint>Maximum length 300</mat-hint> 
+                  <mat-error *ngIf="fourthFormGroup.get('sequlae').hasError('maxlength')">
                     Maximum length exceeded
-                  </mat-error>            
-                </mat-form-field>
-              </div>
-            </div>             
-  
-            <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the marital status of the caregiver</mat-label>
-                  <mat-select formControlName="maritalStatus" required>
-                    <mat-option value=""></mat-option>
-                    <mat-option value="Married">
-                      Married
-                    </mat-option>
-                    <mat-option value="Divorced">
-                      Divorced
-                    </mat-option>
-                    <mat-option value="Widowed">
-                      Widowed
-                    </mat-option>
-                    <mat-option value="Separated">
-                      Separated
-                    </mat-option>
-                    <mat-option value="Single">
-                      Single
-                    </mat-option>
-                    <mat-option value="Cohabiting">
-                      Cohabiting
-                    </mat-option>
-                  </mat-select>                        
-                  <mat-error *ngIf="fourthFormGroup.get('maritalStatus').hasError('required')">
-                    Field is required
-                  </mat-error>            
+                  </mat-error>
+                  <mat-error *ngIf="fourthFormGroup.get('sequlae').hasError('pattern')">
+                    {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, parenthesis, forward slash, space, comma, period)
+                  </mat-error>
                 </mat-form-field>
               </div>
             </div>
-  
+
             <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
+              <div fxFlex="100">
                 <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the home language of the caregiver</mat-label>
-                  <mat-select formControlName="homeLanguage" required>
-                    <mat-option value=""></mat-option>
-                    <mat-option value="English">
-                      English
-                    </mat-option>
-                    <mat-option value="Afrikaans">
-                      Afrikaans
-                    </mat-option>
-                    <mat-option value="isiZulu">
-                      isiZulu
-                    </mat-option>
-                    <mat-option value="isiXhosa">
-                      isiXhosa
-                    </mat-option>
-                    <mat-option value="isiNdebele">
-                      isiNdebele
-                    </mat-option>
-                    <mat-option value="SiSwati">
-                      SiSwati
-                    </mat-option>
-                    <mat-option value="Sesotho">
-                      Sesotho
-                    </mat-option>
-                    <mat-option value="Sesotho sa Leboa">
-                      Sesotho sa Leboa
-                    </mat-option>
-                    <mat-option value="Setswana">
-                      Setswana
-                    </mat-option>
-                    <mat-option value="Xitsonga">
-                      Xitsonga
-                    </mat-option>
-                    <mat-option value="Venda">
-                      Venda
-                    </mat-option>
-                    <mat-option value="Other">
-                      Other
-                    </mat-option>
-                  </mat-select>                        
-                  <mat-error *ngIf="fourthFormGroup.get('homeLanguage').hasError('required')">
-                    Field is required
-                  </mat-error>            
-                </mat-form-field>
-              </div>
-              <div fxFlex="50" *ngIf="fourthFormGroup.get('homeLanguage').value == 'Other'">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Other language</mat-label>
-                  <input matInput formControlName="homeLanguageOther">
-                  <mat-hint>Maximum length 50</mat-hint> 
-                  <mat-error *ngIf="fourthFormGroup.get('homeLanguageOther').hasError('maxlength')">
+                  <mat-label>Interventions performed</mat-label>
+                  <textarea matInput formControlName="interventions" rows="2"></textarea>
+                  <mat-hint>Maximum length 300</mat-hint> 
+                  <mat-error *ngIf="fourthFormGroup.get('interventions').hasError('maxlength')">
                     Maximum length exceeded
-                  </mat-error>            
+                  </mat-error>
+                  <mat-error *ngIf="fourthFormGroup.get('interventions').hasError('pattern')">
+                    {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, parenthesis, forward slash, space, comma, period)
+                  </mat-error>
                 </mat-form-field>
               </div>
-            </div>
-  
-            <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Does the caregiver have any disabilities</mat-label>
-                  <mat-select formControlName="disability" required multiple>
-                    <mat-option value="None">
-                      None
-                    </mat-option>
-                    <mat-option value="Sight/Vision">
-                      Sight/Vision
-                    </mat-option>
-                    <mat-option value="Hearing">
-                      Hearing
-                    </mat-option>
-                    <mat-option value="Communication/Speech">
-                      Communication/Speech
-                    </mat-option>
-                    <mat-option value="Physical">
-                      Physical
-                    </mat-option>
-                    <mat-option value="Cognitive">
-                      Cognitive
-                    </mat-option>
-                    <mat-option value="Neurological">
-                      Neurological
-                    </mat-option>
-                    <mat-option value="Other">
-                      Neurological
-                    </mat-option>
-                  </mat-select>                        
-                  <mat-error *ngIf="fourthFormGroup.get('disability').hasError('required')">
-                    Field is required
-                  </mat-error>            
-                </mat-form-field>
-              </div>
-              <div fxFlex="50" *ngIf="fourthFormGroup.get('disability').value.includes('Other')">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Other disability</mat-label>
-                  <input matInput formControlName="disabilityOther">
-                  <mat-hint>Maximum length 50</mat-hint> 
-                  <mat-error *ngIf="fourthFormGroup.get('disabilityOther').hasError('maxlength')">
-                    Maximum length exceeded
-                  </mat-error>            
-                </mat-form-field>
-              </div>
-            </div> 
-  
-            <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the cell number</mat-label>
-                  <input matInput formControlName="cellNumber">
-                  <mat-hint>Specify a valid 10 digit number number (no spaces or hyphens)</mat-hint> 
-                  <mat-error *ngIf="fourthFormGroup.get('cellNumber').hasError('invalidMobileNumber')">
-                    Invalid number specified
-                  </mat-error>            
-                </mat-form-field>
-              </div>
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please specify the alternate cell number</mat-label>
-                  <input matInput formControlName="altCellNumber">
-                  <mat-hint>Specify a valid 10 digit number number (no spaces or hyphens)</mat-hint> 
-                  <mat-error *ngIf="fourthFormGroup.get('altCellNumber').hasError('invalidMobileNumber')">
-                    Invalid number specified
-                  </mat-error>            
-                </mat-form-field>
-              </div>
-            </div>
+            </div>            
           </div>
         </form>
       </div>
   
-      <div fxFlex="80" *ngIf="viewModel.currentStep == 5">
+      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 5">
         <form [formGroup]="fifthFormGroup" [@fadeInOut2]="">
   
           <div class="p-24">
-            <span class="mat-title">Household background</span>
+            <span class="mat-title">Suspected medication</span>
   
-            <div class="pt-24 pb-24">
-              <span class="text-muted">Please specify the background of the household</span> 
+            <div class="p-24 light-gray rounded">
+              Please add any suspected medications to any existing medications the patient is on
             </div>
-  
-            <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Please select the headship for the household</mat-label>
-                  <mat-select formControlName="headship">
-                    <mat-option value=""></mat-option>
-                    <mat-option value="Child-headed (less than 18)">
-                      Child-headed (less than 18)
-                    </mat-option>
-                    <mat-option value="Youth-headed (18 to 24)">
-                      Youth-headed (18 to 24)
-                    </mat-option>
-                    <mat-option value="Adult-headed (25 to 59)">
-                      Adult-headed (25 to 59)
-                    </mat-option>
-                    <mat-option value="Older-headed (greater than 59)">
-                      Older-headed (greater than 59)
-                    </mat-option>
-                  </mat-select>                        
-                </mat-form-field>
-              </div>
-            </div>                      
+
           </div>
         </form>
       </div>
   
-      <div fxFlex="80" *ngIf="viewModel.currentStep == 6">
-        <div class="p-24">
-          <span class="mat-title">Consent</span>
+      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 6">
+        <form [formGroup]="sixthFormGroup" [@fadeInOut2]="">
+          <div class="p-24">
+            <span class="mat-title">Reporter particulars</span>
   
-          <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6" [@fadeInOut2]="">
-            <div fxFlex="50">
-              <div class="card-title-text mat-bg-accent p-24 rounded text-center">
-                To be implemented
+            <div class="p-24 light-gray rounded">
+              Please enter the details of the person reporting the adverse event
+            </div>
+  
+            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-label>Name of the reporter</mat-label>
+                  <input matInput formControlName="reporterName">
+                  <mat-hint>Maximum length 100</mat-hint> 
+                  <mat-error *ngIf="sixthFormGroup.get('reporterName').hasError('maxlength')">
+                    {{'Maximum length exceeded' | translate}}
+                  </mat-error>
+                  <mat-error *ngIf="sixthFormGroup.get('reporterName').hasError('pattern')">
+                    {{'Value contains invalid characters' | translate}} (A-Z, a-z, hyphen, space)
+                  </mat-error>
+                </mat-form-field>            
+              </div>
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-label>Contact number</mat-label>
+                  <input matInput formControlName="contactNumber">
+                  <mat-hint>Maximum length 30</mat-hint> 
+                  <mat-error *ngIf="sixthFormGroup.get('contactNumber').hasError('maxlength')">
+                    {{'Maximum length exceeded' | translate}}
+                  </mat-error>
+                  <mat-error *ngIf="sixthFormGroup.get('contactNumber').hasError('pattern')">
+                    {{'Value contains invalid characters' | translate}} (0-9, hyphen, plus sign)
+                  </mat-error>
+                </mat-form-field>            
               </div>
             </div>
-          </div>                      
-        </div>
+
+            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-label>Email address</mat-label>
+                  <input matInput formControlName="emailAddress">
+                  <mat-hint>Maximum length 100</mat-hint> 
+                  <mat-error *ngIf="sixthFormGroup.get('emailAddress').hasError('maxlength')">
+                    {{'Maximum length exceeded' | translate}}
+                  </mat-error>            
+                </mat-form-field>            
+              </div>
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-label>Profession</mat-label>
+                  <mat-select formControlName="profession" required>
+                    <mat-option value=""></mat-option>
+                    <mat-option value="1">Medical Doctor</mat-option>
+                    <mat-option value="2">RPh</mat-option>
+                    <mat-option value="3">RN</mat-option>
+                    <mat-option value="4">Patient</mat-option>
+                    <mat-option value="5">Dentist</mat-option>
+                  </mat-select>                        
+                </mat-form-field>
+              </div>              
+            </div>
+          </div>
+        </form>
       </div>
   
       <div fxFlex="80" *ngIf="viewModel.currentStep == 7">
@@ -654,11 +584,11 @@
   
           <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
             <div fxFlex="50">
-              <div *ngIf="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid" class="card-title-text mat-bg-warn p-24 rounded text-center"  [@fadeInOut2]="">
+              <div *ngIf="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || sixthFormGroup.invalid" class="card-title-text mat-bg-warn p-24 rounded text-center mt-12"  [@fadeInOut2]="">
                 Please ensure all sections are completed successfully
               </div>
-              <div *ngIf="firstFormGroup.valid && secondFormGroup.valid && thirdFormGroup.valid && fourthFormGroup.valid && fifthFormGroup.valid" class="card-title-text mat-bg-primary p-24 rounded text-center"  [@fadeInOut2]="">
-                Please click on the finish button to complete the enrollment
+              <div *ngIf="firstFormGroup.valid && secondFormGroup.valid && thirdFormGroup.valid && fourthFormGroup.valid && fifthFormGroup.valid && sixthFormGroup.valid" class="card-title-text light-gray p-24 rounded text-center mt-12"  [@fadeInOut2]="">
+                Please click on the finish button to complete the capturing of the adverse event
               </div>
             </div>
           </div>                      

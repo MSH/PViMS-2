@@ -11,6 +11,8 @@ import { PatientService } from 'app/shared/services/patient.service';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { PatientExpandedModel } from 'app/shared/models/patient/patient.expanded.model';
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { AttachmentAddPopupComponent } from '../attachment-add-popup/attachment-add.popup.component';
 
 @Component({
   templateUrl: './form-adr.component.html',
@@ -28,6 +30,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
   public thirdFormGroup: FormGroup;
   public fourthFormGroup: FormGroup;
   public fifthFormGroup: FormGroup;
+  public sixthFormGroup: FormGroup;
 
   constructor(
     protected _router: Router,
@@ -36,7 +39,8 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     protected popupService: PopupService,
     protected accountService: AccountService,
     protected eventService: EventService,
-    protected patientService: PatientService) 
+    protected patientService: PatientService,
+    protected dialog: MatDialog) 
   { 
     super(_router, _location, popupService, accountService, eventService);
   }
@@ -60,36 +64,38 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       facilityRegion: [''],
     });
     self.secondFormGroup = this._formBuilder.group({
-      ethnicGroup: ['', Validators.required],
+      ethnicGroup: [null, Validators.required],
     });
     self.thirdFormGroup = this._formBuilder.group({
-      programStatus: ['', Validators.required],
-      enrolmentDate: [''],
-      orgCaregiverId: ['', [Validators.required, Validators.maxLength(21)]],
+      dateOfOnset: ['', Validators.required],
+      regimen: [null, Validators.required],
+      sourceDescription: [null, [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
+      isSerious: [null],
+      seriousness: [null],
+      weight: [null, [Validators.required, Validators.min(0), Validators.max(159)]],
+      height: [null, [Validators.required, Validators.min(1), Validators.max(259)]],
+      allergy: ['', Validators.maxLength(500)],
+      pregnancyStatus: [null],
+      comorbidities: ['', [Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
     });
     self.fourthFormGroup = this._formBuilder.group({
-      caregiverFirstName: ['', [Validators.required, Validators.maxLength(21), Validators.pattern(/^[a-zA-Z][a-zA-Z\-' ]*[a-zA-Z ]$/)]],
-      caregiverLastName: ['', [Validators.required, Validators.maxLength(21), Validators.pattern(/^[a-zA-Z][a-zA-Z\-' ]*[a-zA-Z ]$/)]],
-      caregiverKnownAs: ['', Validators.maxLength(21)],
-      dateOfBirth: [''],
-      idType: ['', Validators.required],
-      idNumber: ['', Validators.required],
-      nationality: ['', Validators.required],
-      nationalityOther: ['', Validators.maxLength(50)],
-      sex: ['', Validators.required],
-      race: ['', Validators.required],
-      maritalStatus: ['', Validators.required],
-      disability: ['', Validators.required],
-      disabilityOther: ['', Validators.maxLength(50)],
-      homeLanguage: ['', Validators.required],
-      homeLanguageOther: ['', Validators.maxLength(50)],
-      cellNumber: ['', Validators.pattern(/^0[87][23467]((\d{7})|((\d{3}))(\d{4})|(\d{7}))/)],
-      altCellNumber: ['', Validators.pattern(/^0[87][23467]((\d{7})|((\d{3}))(\d{4})|(\d{7}))/)],
+      treatmentGiven: [null],
+      treatmentDetails: ['', [Validators.maxLength(300), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
+      outcome: [null, Validators.required],
+      dateOfRecovery: [''],
+      dateOfDeath: [''],
+      sequlae: ['', [Validators.maxLength(300), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
+      interventions: ['', [Validators.maxLength(300), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
     });
     self.fifthFormGroup = this._formBuilder.group({
       headship: ['', Validators.required]
     });
-
+    self.sixthFormGroup = this._formBuilder.group({
+      reporterName: ['', [Validators.maxLength(100), Validators.pattern("[-a-zA-Z ']*")]],
+      contactNumber: ['', [Validators.maxLength(30), Validators.pattern("[-0-9+']*")]],
+      emailAddress: ['', Validators.maxLength(100)],
+      profession: [null]
+    });
   }
 
   ngAfterViewInit(): void {
@@ -157,7 +163,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       });
   }  
 
-  finish(): void{
+  save(): void{
     let self = this;
 
     // self.entityService.saveNewHousehold(this.firstFormGroup.value, this.secondFormGroup.value, this.thirdFormGroup.value, this.fourthFormGroup.value, this.fifthFormGroup.value).then(response =>
@@ -179,6 +185,24 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     }
      return attribute?.value;
   }
+
+  openAttachmentPopUp() {
+    let self = this;
+    let title = 'Add Attachment';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(AttachmentAddPopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        //self.loadData();
+      })
+  }  
 }
 
 class ViewModel {
