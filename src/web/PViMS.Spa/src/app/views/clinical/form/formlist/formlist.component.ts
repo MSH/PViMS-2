@@ -17,8 +17,8 @@ import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { MetaFormService } from 'app/shared/services/meta-form.service';
 import { takeUntil } from 'rxjs/operators';
 import { MetaFormDetailModel } from 'app/shared/models/meta/meta-form.detail.model';
-import { AttachmentCaptureComponent } from '../attachment-capture/attachment-capture.component';
-import { AttachmentViewComponent } from '../attachment-view/attachment-view.component';
+import { AttachmentCapturePopupComponent } from '../attachment-capture-popup/attachment-capture.popup.component';
+import { AttachmentViewPopupComponent } from '../attachment-view-popup/attachment-view.popup.component';
 import { FormDeletePopupComponent } from '../form-delete-popup/form-delete.popup.component';
 
 @Component({
@@ -151,7 +151,7 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
   openCameraPopup(id: number, index: number) {
     let self = this;
     let title = "Capture Image";
-    let dialogRef: MatDialogRef<any> = self.dialog.open(AttachmentCaptureComponent, {
+    let dialogRef: MatDialogRef<any> = self.dialog.open(AttachmentCapturePopupComponent, {
       width: '720px',
       disableClose: true,
       data: { formId: id, title, index }
@@ -169,7 +169,7 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
   openImageView(id: number, index: number) {
     let self = this;
     let title = "View Image";
-    let dialogRef: MatDialogRef<any> = self.dialog.open(AttachmentViewComponent, {
+    let dialogRef: MatDialogRef<any> = self.dialog.open(AttachmentViewPopupComponent, {
       width: '720px',
       disableClose: true,
       data: { formId: id, title, index }

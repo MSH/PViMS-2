@@ -89,7 +89,7 @@
               </mat-form-field>              
             </div>
             <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="end" class="p-2">
-              <button mat-flat-button color="accent" class="mr-12" (click)="loadData()" [disabled]="firstFormGroup.invalid">Search for Patient</button>
+              <button mat-raised-button color="accent" class="mr-12" (click)="loadData()" [disabled]="firstFormGroup.invalid">Search for Patient</button>
             </div>
             <div class="p-24 mat-bg-warn rounded mt-12" *ngIf="viewModel.errorFindingPatient">
               Unable to locate the patient using the case identifier specified ...
@@ -333,7 +333,10 @@
                       <mat-hint>Maximum length 500</mat-hint> 
                       <mat-error *ngIf="thirdFormGroup.get('allergy').hasError('maxlength')">
                         Maximum length exceeded
-                      </mat-error>            
+                      </mat-error>
+                      <mat-error *ngIf="thirdFormGroup.get('allergy').hasError('pattern')">
+                        {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, parenthesis, forward slash, space, comma, period)
+                      </mat-error>
                     </mat-form-field>
                   </div>
                 </div>
@@ -374,12 +377,34 @@
             <mat-tab label="{{'Lab results' | translate}}">
               <div class="p-24">
                 <div class="p-24 light-gray rounded">
-                  Please add lab result documentation pertinent to the adverse event
+                  Please add lab result documentation pertinent to the adverse event <span class="font-weight-bold text-red">(maximum of 5 attachments)</span>
                 </div>
                 <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="end" class="p-2 mt-12">
-                  <button mat-flat-button color="accent" class="mr-12" (click)="openAttachmentPopUp()" [disabled]="firstFormGroup.invalid">Add Attachment</button>
+                  <button mat-raised-button color="accent" class="mr-12" (click)="openAttachmentPopUp()" [disabled]="viewModel.attachments.length >= 5">Add Attachment</button>
                 </div>
-    
+                <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-2 mt-12">
+                  <div fxFlex="20" *ngFor="let attachment of viewModel?.attachments; let i = index;">
+                    <mat-card class="flex-item p-12 mat-elevation-z6 rounded">
+                      <mat-card-title class="text-center">
+                        <div class="card-title-text light-gray p-12">
+                          {{attachment.file.name}}
+                        </div>
+                      </mat-card-title>                       
+                      <mat-card-content>
+                        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
+                          <div fxFlex="100" class="text-center pt-16 pb-16 border-right-light">
+                            <span class="m-0 text-muted">{{attachment.description}}</span>
+                          </div>        
+                        </div>
+                        <div class="m-8 text-center">
+                          <button mat-mini-fab color="warn" (click)="removeAttachment(i)">
+                            <mat-icon>clear</mat-icon>
+                          </button>
+                        </div>
+                      </mat-card-content>
+                    </mat-card>
+                  </div>
+                </div>
               </div>
             </mat-tab>
           </mat-tab-group>
@@ -418,7 +443,10 @@
                   <mat-hint>Maximum length 300</mat-hint> 
                   <mat-error *ngIf="fourthFormGroup.get('treatmentDetails').hasError('maxlength')">
                     Maximum length exceeded
-                  </mat-error>            
+                  </mat-error>
+                  <mat-error *ngIf="fourthFormGroup.get('treatmentDetails').hasError('pattern')">
+                    {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, parenthesis, forward slash, space, comma, period)
+                  </mat-error>
                 </mat-form-field>                
               </div>
             </div>
@@ -447,7 +475,7 @@
               <div fxFlex="50">
                 <mat-form-field class="full-width" appearance="outline">
                   <mat-label>Date of recovery</mat-label>
-                  <input matInput formControlName="dateOfRecovery" [matDatepicker]="recoveryDatepicker" required>
+                  <input matInput formControlName="dateOfRecovery" [matDatepicker]="recoveryDatepicker">
                   <mat-datepicker-toggle matSuffix [for]="recoveryDatepicker"></mat-datepicker-toggle>
                 </mat-form-field>
                 <mat-datepicker #recoveryDatepicker></mat-datepicker>
@@ -455,7 +483,7 @@
               <div fxFlex="50">
                 <mat-form-field class="full-width" appearance="outline">
                   <mat-label>Date of death</mat-label>
-                  <input matInput formControlName="dateOfDeath" [matDatepicker]="deathDatepicker" required>
+                  <input matInput formControlName="dateOfDeath" [matDatepicker]="deathDatepicker">
                   <mat-datepicker-toggle matSuffix [for]="deathDatepicker"></mat-datepicker-toggle>
                 </mat-form-field>
                 <mat-datepicker #deathDatepicker></mat-datepicker>
@@ -563,7 +591,7 @@
               <div fxFlex="50">
                 <mat-form-field class="full-width" appearance="outline">
                   <mat-label>Profession</mat-label>
-                  <mat-select formControlName="profession" required>
+                  <mat-select formControlName="profession">
                     <mat-option value=""></mat-option>
                     <mat-option value="1">Medical Doctor</mat-option>
                     <mat-option value="2">RPh</mat-option>

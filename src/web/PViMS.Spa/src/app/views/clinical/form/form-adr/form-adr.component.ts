@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Inject, OnDestroy, OnInit, SkipSelf } from '@angular/core';
 import { Location } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -13,6 +13,7 @@ import { PatientExpandedModel } from 'app/shared/models/patient/patient.expanded
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AttachmentAddPopupComponent } from '../attachment-add-popup/attachment-add.popup.component';
+import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
 
 @Component({
   templateUrl: './form-adr.component.html',
@@ -74,7 +75,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       seriousness: [null],
       weight: [null, [Validators.required, Validators.min(0), Validators.max(159)]],
       height: [null, [Validators.required, Validators.min(1), Validators.max(259)]],
-      allergy: ['', Validators.maxLength(500)],
+      allergy: ['', [Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
       pregnancyStatus: [null],
       comorbidities: ['', [Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
     });
@@ -200,17 +201,30 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           // If user press cancel
           return;
         }
-        //self.loadData();
+        self.viewModel.attachments.push(res);
+        self.CLog(self.viewModel.attachments);
       })
-  }  
+  }
+
+  removeAttachment(index: number): void {
+    let self = this;
+    self.viewModel.attachments.splice(index, 1)
+
+    this.notify("Attachment removed successfully!", "Success");
+  }    
 }
 
 class ViewModel {
+  id: number;
+
   patientFound = false;
   errorFindingPatient = false;
+
   currentStep = 1;
   isComplete = false;
   isSynched = false;
-  id: number;
+
   customAttributeKey = 'Case Number';
+
+  attachments: FormAttachmentModel[] = [];
 }

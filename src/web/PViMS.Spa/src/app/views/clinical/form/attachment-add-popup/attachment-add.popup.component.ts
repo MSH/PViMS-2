@@ -7,6 +7,7 @@ import { AccountService } from 'app/shared/services/account.service';
 import { Router } from '@angular/router';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
+import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
 
 @Component({
   templateUrl: './attachment-add.popup.component.html',
@@ -20,8 +21,6 @@ export class AttachmentAddPopupComponent extends BasePopupComponent implements O
 
   fileToUpload: File = null;
   
-  protected busy: boolean = false;
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: AttachmentAddPopupData,
     public dialogRef: MatDialogRef<AttachmentAddPopupComponent>,
@@ -44,11 +43,17 @@ export class AttachmentAddPopupComponent extends BasePopupComponent implements O
     this.fileToUpload = files.item(0);
   }
 
-  submit() {
+  addAttachment() {
     let self = this;
     self.setBusy(true);
 
-
+    const attachmentModel: FormAttachmentModel = {
+      description: self.itemForm.get('description').value,
+      file: self.fileToUpload
+    };
+    
+    self.notify("Attachment successfully added!", "Success");
+    self.dialogRef.close(attachmentModel);
   }  
 }
 

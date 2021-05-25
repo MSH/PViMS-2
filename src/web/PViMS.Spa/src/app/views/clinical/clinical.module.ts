@@ -20,8 +20,8 @@ import { FormBComponent } from './form/form-b/form-b.component';
 import { FormCComponent } from './form/form-c/form-c.component';
 import { SynchroniseComponent } from './form/synchronise/synchronise.component';
 import { WebcamModule } from 'ngx-webcam';
-import { AttachmentCaptureComponent } from './form/attachment-capture/attachment-capture.component';
-import { AttachmentViewComponent } from './form/attachment-view/attachment-view.component';
+import { AttachmentCapturePopupComponent } from './form/attachment-capture-popup/attachment-capture.popup.component';
+import { AttachmentViewPopupComponent } from './form/attachment-view-popup/attachment-view.popup.component';
 import { PatientSearchComponent } from './patient/patient-search/patient-search.component';
 import { PatientViewComponent } from './patient/patient-view/patient-view.component';
 import { PatientUpdatePopupComponent } from './patient/patient-view/patient-update-popup/patient-update.popup.component';
@@ -65,8 +65,8 @@ import { AttachmentAddPopupComponent } from './form/attachment-add-popup/attachm
   [
     AppointmentSearchComponent,
     AttachmentAddPopupComponent,
-    AttachmentCaptureComponent,
-    AttachmentViewComponent,
+    AttachmentCapturePopupComponent,
+    AttachmentViewPopupComponent,
     ClinicalEventPopupComponent,
     ClinicalEventViewPopupComponent,
     CohortEnrolmentListComponent,
@@ -102,8 +102,8 @@ import { AttachmentAddPopupComponent } from './form/attachment-add-popup/attachm
   entryComponents:
   [
     AttachmentAddPopupComponent,
-    AttachmentCaptureComponent,
-    AttachmentViewComponent,
+    AttachmentCapturePopupComponent,
+    AttachmentViewPopupComponent,
     PatientAddPopupComponent,
     PatientUpdatePopupComponent,
     GenericDeletePopupComponent,
