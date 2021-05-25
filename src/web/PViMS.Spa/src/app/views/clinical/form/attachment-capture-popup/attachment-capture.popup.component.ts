@@ -12,12 +12,12 @@ import { Router } from '@angular/router';
 import { AccountService } from 'app/shared/services/account.service';
 
 @Component({
-  templateUrl: './attachment-capture.component.html',
-  styleUrls: ['./attachment-capture.component.scss'], 
+  templateUrl: './attachment-capture.popup.component.html',
+  styleUrls: ['./attachment-capture.popup.component.scss'], 
   encapsulation: ViewEncapsulation.None,
   animations: egretAnimations  
 })
-export class AttachmentCaptureComponent extends BasePopupComponent implements OnInit {
+export class AttachmentCapturePopupComponent extends BasePopupComponent implements OnInit {
 
 
   // toggle webcam on/off
@@ -41,7 +41,7 @@ export class AttachmentCaptureComponent extends BasePopupComponent implements On
       
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ImageCapturePopupData,
-    public dialogRef: MatDialogRef<AttachmentCaptureComponent>,
+    public dialogRef: MatDialogRef<AttachmentCapturePopupComponent>,
     protected _router: Router,
     protected _location: Location,
     protected accountService: AccountService,

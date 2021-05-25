@@ -11,16 +11,16 @@ import { AccountService } from 'app/shared/services/account.service';
 import { Form } from 'app/shared/indexed-db/appdb';
 
 @Component({
-  templateUrl: './attachment-view.component.html',
-  styleUrls: ['./attachment-view.component.scss'], 
+  templateUrl: './attachment-view.popup.component.html',
+  styleUrls: ['./attachment-view.popup.component.scss'], 
   encapsulation: ViewEncapsulation.None,
   animations: egretAnimations  
 })
-export class AttachmentViewComponent extends BasePopupComponent implements OnInit, AfterViewInit {
+export class AttachmentViewPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ImageViewPopupData,
-    public dialogRef: MatDialogRef<AttachmentViewComponent>,
+    public dialogRef: MatDialogRef<AttachmentViewPopupComponent>,
     protected _router: Router,
     protected _location: Location,
     protected metaFormService: MetaFormService,
