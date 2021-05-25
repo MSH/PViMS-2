@@ -46,6 +46,7 @@ import { CohortDeletePopupComponent } from './cohort/cohort-search/cohort-delete
 import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/cohort-enrolment-list.component';
 import { FormADRComponent } from './form/form-adr/form-adr.component';
 import { LandingComponent } from './form/landing/landing.component';
+import { AttachmentAddPopupComponent } from './form/attachment-add-popup/attachment-add.popup.component';
 
 @NgModule({
   imports: [
@@ -63,6 +64,7 @@ import { LandingComponent } from './form/landing/landing.component';
   declarations: 
   [
     AppointmentSearchComponent,
+    AttachmentAddPopupComponent,
     AttachmentCaptureComponent,
     AttachmentViewComponent,
     ClinicalEventPopupComponent,
@@ -99,6 +101,7 @@ import { LandingComponent } from './form/landing/landing.component';
   ],
   entryComponents:
   [
+    AttachmentAddPopupComponent,
     AttachmentCaptureComponent,
     AttachmentViewComponent,
     PatientAddPopupComponent,
