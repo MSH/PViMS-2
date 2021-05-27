@@ -41,6 +41,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using PVIMS.API.Infrastructure.Configs.ExceptionHandler;
 
 namespace PViMS.API
 {
@@ -120,7 +121,7 @@ namespace PViMS.API
                 });
             });
 
-            //app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseStaticFiles(new StaticFileOptions
             {

@@ -287,5 +287,35 @@ namespace PVIMS.Infrastructure
 
             return true;
         }
+
+        public bool SaveEntities(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            foreach (var changedEntity in ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified))
+            {
+                if (typeof(AuditedEntity<int, User>).IsAssignableFrom(changedEntity.Entity.GetType()))
+                {
+                    var changedAuditedEntity = (AuditedEntity<int, User>)changedEntity.Entity;
+
+                    try
+                    {
+                        User currentUser = null;
+
+                        var userName = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier).Value;
+                        currentUser = String.IsNullOrWhiteSpace(userName) ? Users.SingleOrDefault(u => u.UserName == "Admin") : Users.SingleOrDefault(u => u.UserName == userName);
+
+                        changedAuditedEntity.AuditStamp(currentUser);
+                    }
+                    catch (Exception)
+                    {
+                        changedAuditedEntity.AuditStamp(null);
+                    }
+                }
+            }
+
+            var result = base.SaveChanges();
+
+            return true;
+        }
     }
 }

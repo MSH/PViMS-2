@@ -62,7 +62,7 @@ namespace PVIMS.API.Infrastructure.Configs.ExceptionHandler
                         InnerExceptionStackTrace = exception.InnerException?.StackTrace,
                         RemoteIpAddress = context?.Connection?.RemoteIpAddress?.ToString(),
                     });
-                    _AppDbContext.SaveChanges();
+                    _AppDbContext.SaveEntities();
                 }
             }
             catch (Exception) { }
