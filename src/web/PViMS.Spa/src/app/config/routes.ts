@@ -39,6 +39,7 @@ export const _routes = {
       },      
       forms: {
           list: `${_paths.clinical}/${_paths.clinicalPath.forms.list}`,
+          landing: `${_paths.clinical}/${_paths.clinicalPath.forms.landing}`,
           viewFormA(formId: number): string {
               return `${_paths.clinical}/${_paths.clinicalPath.forms.forma.replace(':formId', formId.toString())}`;
           },

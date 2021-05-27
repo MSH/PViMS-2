@@ -175,7 +175,7 @@
                 <mat-form-field class="full-width" appearance="outline">
                   <mat-label>Ethnic group</mat-label>
                   <mat-select formControlName="ethnicGroup" required>
-                    <mat-option value=""></mat-option>
+                    <mat-option value="0"></mat-option>
                     <mat-option value="1">Filipino</mat-option>
                     <mat-option value="2">Chinese</mat-option>
                     <mat-option value="3">Caucasian</mat-option>
@@ -213,16 +213,16 @@
                     <mat-form-field class="full-width" appearance="outline">
                       <mat-label>Regimen</mat-label>
                       <mat-select formControlName="regimen" required>
-                        <mat-option value=""></mat-option>
-                        <mat-option value="CTR">Conventional Treatment Regimen (CTR)</mat-option>
-                        <mat-option value="SSTR">Standard Short Treatment Regimen (SSTR)</mat-option>
-                        <mat-option value="SRDR">Standard Regimen Drug Resistant (SRDR)</mat-option>
-                        <mat-option value="9MTR">9 Month Treatment Regimen (9MTR)</mat-option>
-                        <mat-option value="ITR">Individualized Treatment Regimen (ITR)</mat-option>
-                        <mat-option value="FQS">Standard Long Oral Regimen FQS</mat-option>
-                        <mat-option value="FQR">Standard Long Oral Regimen FQR</mat-option>
-                        <mat-option value="SSOR">Standard Short Oral Regimen</mat-option>
-                        <mat-option value="BPaL">BPaL</mat-option>
+                        <mat-option value="0"></mat-option>
+                        <mat-option value="1">Conventional Treatment Regimen (CTR)</mat-option>
+                        <mat-option value="2">Standard Short Treatment Regimen (SSTR)</mat-option>
+                        <mat-option value="3">Standard Regimen Drug Resistant (SRDR)</mat-option>
+                        <mat-option value="4">9 Month Treatment Regimen (9MTR)</mat-option>
+                        <mat-option value="5">Individualized Treatment Regimen (ITR)</mat-option>
+                        <mat-option value="6">Standard Long Oral Regimen FQS</mat-option>
+                        <mat-option value="7">Standard Long Oral Regimen FQR</mat-option>
+                        <mat-option value="8">Standard Short Oral Regimen</mat-option>
+                        <mat-option value="9">BPaL</mat-option>
                       </mat-select>
                       <mat-error *ngIf="thirdFormGroup.get('regimen').hasError('required')">
                         Field is required
@@ -255,7 +255,7 @@
                     <mat-form-field class="full-width" appearance="outline">
                       <mat-label>Do you consider the reaction to be serious?</mat-label>
                       <mat-select formControlName="isSerious">
-                        <mat-option value=""></mat-option>
+                        <mat-option value="0"></mat-option>
                         <mat-option value="1">Yes</mat-option>
                         <mat-option value="2">No</mat-option>
                         <mat-option value="3">Unknown</mat-option>
@@ -426,7 +426,7 @@
                 <mat-form-field class="full-width" appearance="outline">
                   <mat-label>Was treatment given?</mat-label>
                   <mat-select formControlName="treatmentGiven">
-                    <mat-option value=""></mat-option>
+                    <mat-option value="0"></mat-option>
                     <mat-option value="1">Yes</mat-option>
                     <mat-option value="2">No</mat-option>
                     <mat-option value="3">Unknown</mat-option>
@@ -456,7 +456,7 @@
                 <mat-form-field class="full-width" appearance="outline">
                   <mat-label>Outcome of the adverse event</mat-label>
                   <mat-select formControlName="outcome" required>
-                    <mat-option value=""></mat-option>
+                    <mat-option value="0"></mat-option>
                     <mat-option value="1">Resolved</mat-option>
                     <mat-option value="2">Resolved with sequelae</mat-option>
                     <mat-option value="3">Fatal</mat-option>
@@ -647,7 +647,7 @@
                 <mat-form-field class="full-width" appearance="outline">
                   <mat-label>Profession</mat-label>
                   <mat-select formControlName="profession">
-                    <mat-option value=""></mat-option>
+                    <mat-option value="0"></mat-option>
                     <mat-option value="1">Medical Doctor</mat-option>
                     <mat-option value="2">RPh</mat-option>
                     <mat-option value="3">RN</mat-option>

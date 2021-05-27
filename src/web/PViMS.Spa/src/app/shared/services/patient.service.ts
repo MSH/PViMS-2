@@ -50,7 +50,7 @@ export class PatientService extends BaseService {
 
     searchPatientByCondition(filterModel: any): any {
       let parameters: ParameterKeyValueModel[] = [];
-      console.log(filterModel);
+
       parameters.push(<ParameterKeyValueModel> { key: 'customAttributeKey', value: filterModel.customAttributeKey });
       parameters.push(<ParameterKeyValueModel> { key: 'customAttributeValue', value: filterModel.customAttributeValue });
       parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: '1'});

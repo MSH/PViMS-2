@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { EventService } from 'app/shared/services/event.service';
 import { PatientService } from 'app/shared/services/patient.service';
-import { finalize, takeUntil } from 'rxjs/operators';
+import { finalize, map, takeUntil } from 'rxjs/operators';
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AttachmentAddPopupComponent } from '../attachment-add-popup/attachment-add.popup.component';
@@ -16,6 +16,19 @@ import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.mode
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormADRMedicationPopupComponent } from './form-adr-medication-popup/form-adr-medication.popup.component';
 import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
+import { PatientClinicalEventForUpdateModel } from 'app/shared/models/patient/patient-clinical-event-for-update.model';
+import { forkJoin } from 'rxjs';
+
+// Depending on whether rollup is used, moment needs to be imported differently.
+// Since Moment.js doesn't have a default export, we normally need to import using the `* as`
+// syntax. However, rollup creates a synthetic default module and we thus need to import it using
+// the `default as` syntax.
+import * as _moment from 'moment';
+import { CustomAttributeDetailModel } from 'app/shared/models/custom-attribute/custom-attribute.detail.model';
+import { CustomAttributeService } from 'app/shared/services/custom-attribute.service';
+import { _routes } from 'app/config/routes';
+import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
+const moment =  _moment;
 
 @Component({
   templateUrl: './form-adr.component.html',
@@ -43,6 +56,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     protected accountService: AccountService,
     protected eventService: EventService,
     protected patientService: PatientService,
+    protected customAttributeService: CustomAttributeService,
     protected dialog: MatDialog) 
   { 
     super(_router, _location, popupService, accountService, eventService);
@@ -98,6 +112,8 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       emailAddress: ['', Validators.maxLength(100)],
       profession: [null]
     });
+
+    self.getCustomAttributeList();
   }
 
   ngAfterViewInit(): void {
@@ -134,6 +150,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.viewModel.patientFound = false;
         }
         else {
+          self.viewModel.patientId = result.id;
           self.viewModel.errorFindingPatient = false;
           self.viewModel.patientFound = true;
 
@@ -144,34 +161,45 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           
           self.viewModel.medicationGrid.updateBasic(result.patientMedications);
           self.viewModel.medications = result.patientMedications;
-          console.log(self.viewModel.medications);
         }
       }, error => {
         self.handleError(error, "Error fetching patient");
+      });
+  }
+
+  getCustomAttributeList(): void {
+    let self = this;
+
+    self.customAttributeService.getAllCustomAttributes('PatientClinicalEvent')
+      .subscribe(result => {
+        self.viewModel.customAttributeList = result;
+      }, error => {
+        self.throwError(error, error.statusText);
       });
   }  
 
   save(): void{
     let self = this;
+    self.setBusy(true);
 
-    // self.entityService.saveNewHousehold(this.firstFormGroup.value, this.secondFormGroup.value, this.thirdFormGroup.value, this.fourthFormGroup.value, this.fifthFormGroup.value).then(response =>
-    //   {
-    //     if (response) {
-    //       self.notify('Household successfully registered!', 'Success');
-    //       self.dialogRef.close("Saved");
-    //     }
-    //     else {
-    //       self.showError('There was an error registering the household, please try again !', 'Error');
-    //     }
-    //   });
-  }
+    var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel();
+    let firstSubmission = this.patientService.savePatientClinicalEvent(self.viewModel.patientId, 0, clinicalEventForUpdate);
+    
+    const requestArray = [];
+    requestArray.push(firstSubmission);
+    //requestArray.push(request2);
 
-  private getValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
-    let attribute = attributes.find(a => a.key == key);
-    if(attribute?.selectionValue != '') {
-      return attribute?.selectionValue;
-    }
-     return attribute?.value;
+    forkJoin(requestArray)
+    .subscribe(
+      data => {
+        console.log(data);
+        self.setBusy(false);
+        self.notify('Form added successfully!', 'Success');
+        self._router.navigate([_routes.clinical.forms.landing]);
+      },
+      error => {
+        this.handleError(error, "Error adding form");
+      });
   }
 
   openAttachmentPopUp() {
@@ -243,12 +271,84 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     this.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
 
     this.notify("Medication removed successfully!", "Medication");
-  }  
+  }
+
+  private getValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
+    let attribute = attributes.find(a => a.key == key);
+    if(attribute?.selectionValue != '') {
+      return attribute?.selectionValue;
+    }
+     return attribute?.value;
+  }
+
+  private prepareClinicalEventForUpdateModel(): PatientClinicalEventForUpdateModel {
+    let self = this;
+    let onsetDate = self.thirdFormGroup.get('dateOfOnset').value.format('YYYY-MM-DD');
+    let resolutionDate = '';
+    if(moment.isMoment(self.fourthFormGroup.get('dateOfRecovery').value)) {
+      resolutionDate = self.fourthFormGroup.get('dateOfRecovery').value.format('YYYY-MM-DD');
+    }
+    else {
+      if (self.fourthFormGroup.get('dateOfRecovery').value != '') {
+        resolutionDate = self.fourthFormGroup.get('dateOfRecovery').value;
+      }
+    }
+
+    const attributesForUpdate: AttributeValueForPostModel[] = [];
+
+    attributesForUpdate.push(self.prepareAttributeValue('regimen', 'regimen', self.thirdFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('is the adverse event serious?', 'isSerious', self.thirdFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('seriousness', 'seriousness', self.thirdFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('weight (kg)', 'weight', self.thirdFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('height (cm)', 'height', self.thirdFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('any known allergy', 'allergy', self.thirdFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('pregnancy status', 'pregnancyStatus', self.thirdFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('comorbidities', 'comorbidities', self.thirdFormGroup));
+    
+    attributesForUpdate.push(self.prepareAttributeValue('was treatment given?', 'treatmentGiven', self.fourthFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('treatment details', 'treatmentDetails', self.fourthFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('outcome', 'outcome', self.fourthFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('sequlae details', 'sequlae', self.fourthFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('interventions', 'interventions', self.fourthFormGroup));
+
+    attributesForUpdate.push(self.prepareAttributeValue('name of reporter', 'reporterName', self.sixthFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('contact number', 'contactNumber', self.sixthFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('email address', 'emailAddress', self.sixthFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('profession', 'profession', self.sixthFormGroup));
+
+    const clinicalEventForUpdate: PatientClinicalEventForUpdateModel = 
+    {
+      id: 0,
+      index: 1,
+      onsetDate,
+      sourceDescription: self.thirdFormGroup.get('sourceDescription').value,
+      resolutionDate,
+      sourceTerminologyMedDraId: null,
+      attributes: attributesForUpdate
+    };
+    console.log('for update');
+    console.log(clinicalEventForUpdate);
+
+    return clinicalEventForUpdate;
+  }
+
+  private prepareAttributeValue(attributeKey: string, formKey: string, sourceForm: FormGroup): AttributeValueForPostModel {
+    const self = this;
+    let customAttribute = self.viewModel.customAttributeList.find(ca => ca.attributeKey.toLowerCase() == attributeKey.toLowerCase());
+    if(customAttribute == null) {
+      return null;
+    }
+
+    const attributeForPost: AttributeValueForPostModel = {
+      id: customAttribute.id,
+      value: sourceForm.get(formKey).value
+    }    
+    return attributeForPost;
+  }
 }
 
 class ViewModel {
-  id: number;
-
+  patientId: number;
   patientFound = false;
   errorFindingPatient = false;
 
@@ -257,7 +357,8 @@ class ViewModel {
   isSynched = false;
 
   customAttributeKey = 'Case Number';
-
+  customAttributeList: CustomAttributeDetailModel[] = [];
+  
   attachments: FormAttachmentModel[] = [];
 
   medicationGrid: GridModel<MedicationGridRecordModel> =

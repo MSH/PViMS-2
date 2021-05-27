@@ -35,6 +35,7 @@ export const _paths = {
       },
       forms: {
           list: `formlist`,
+          landing: `formlanding`,
           forma: `forma/:formId`,
           formb: `formb/:formId`,
           formc: `formc/:formId`,
