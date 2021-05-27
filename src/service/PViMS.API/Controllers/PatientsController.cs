@@ -268,6 +268,34 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Get a single patient by searching for a matching concomitant condition
+        /// </summary>
+        /// <param name="patientByConditionResourceParameters">
+        /// Specify condition search term
+        /// </param>
+        /// <returns>An ActionResult of type PatientExpandedDto</returns>
+        [HttpGet(Name = "GetPatientByCondition")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult<PatientExpandedDto>> GetPatientByCondition(
+            [FromQuery] PatientByConditionResourceParameters patientByConditionResourceParameters)
+        {
+            var query = new PatientExpandedByConditionTermQuery(
+                patientByConditionResourceParameters.CustomAttributeKey,
+                patientByConditionResourceParameters.CustomAttributeValue);
+
+            _logger.LogInformation(
+                "----- Sending query: PatientExpandedByConditionTermQuery");
+
+            var queryResult = await _mediator.Send(query);
+
+            return Ok(queryResult);
+        }
+
+        /// <summary>
         /// Get a single Patient using it's unique id and valid media type 
         /// </summary>
         /// <param name="id">The unique identifier for the Patient</param>
@@ -686,10 +714,10 @@ namespace PVIMS.API.Controllers
             parameters.Add(new CustomAttributeParameter() { AttributeKey = "Medical Record Number", AttributeValue = identifier_record });
             parameters.Add(new CustomAttributeParameter() { AttributeKey = "Patient Identity Number", AttributeValue = identifier_id });
 
-            if (!_patientService.isUnique(parameters))
-            {
-                ModelState.AddModelError("Message", "Potential duplicate patient. Check medical record number and patient identity number.");
-            }
+            //if (!_patientService.isUnique(parameters))
+            //{
+            //    ModelState.AddModelError("Message", "Potential duplicate patient. Check medical record number and patient identity number.");
+            //}
 
             ValidatePatientForCreationModel(patientForCreation);
 
@@ -716,7 +744,7 @@ namespace PVIMS.API.Controllers
                     patientDetail.PriorityId = patientForCreation.PriorityId;
                     patientDetail.EncounterDate = patientForCreation.EncounterDate;
 
-                    id = _patientService.AddPatient(patientDetail);
+                    id = await _patientService.AddPatientAsync(patientDetail);
                     await _unitOfWork.CompleteAsync();
 
                     var mappedPatient = await GetPatientAsync<PatientIdentifierDto>(id);
@@ -725,7 +753,7 @@ namespace PVIMS.API.Controllers
                         return StatusCode(500, "Unable to locate newly added patient");
                     }
 
-                    return CreatedAtRoute("GetPatientByIdentifier",
+                    return CreatedAtAction("GetPatientByIdentifier",
                         new
                         {
                             id = mappedPatient.Id
@@ -914,10 +942,7 @@ namespace PVIMS.API.Controllers
 
                 foreach (var patientMedication in patientFromRepo.PatientMedications.Where(x => !x.Archived))
                 {
-                    patientMedication.Archived = true;
-                    patientMedication.ArchivedDate = DateTime.Now;
-                    patientMedication.ArchivedReason = patientForDelete.Reason;
-                    patientMedication.AuditUser = user;
+                    patientMedication.ArchiveMedication(user, patientForDelete.Reason);
                     _patientMedicationRepository.Update(patientMedication);
                 }
 
@@ -1015,7 +1040,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added attachment");
                 }
 
-                return CreatedAtRoute("GetPatientAttachmentByIdentifier",
+                return CreatedAtAction("GetPatientAttachmentByIdentifier",
                     new
                     {
                         id = mappedAttachment.Id
