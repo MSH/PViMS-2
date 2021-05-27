@@ -410,6 +410,67 @@ namespace PVIMS.Core.Entities
             this.PatientStatusHistories.Add(patientStatusHistory);
         }
 
+        public PatientClinicalEvent AddClinicalEvent(DateTime? onsetDate, DateTime? resolutionDate, TerminologyMedDra sourceTerminology, string sourceDescription)
+        {
+            if (onsetDate < DateOfBirth)
+            {
+                throw new DomainException("Onset Date should be after Date Of Birth");
+            }
+
+            if (resolutionDate.HasValue)
+            {
+                if (resolutionDate < DateOfBirth)
+                {
+                    throw new DomainException("Resolution Date should be after Date Of Birth");
+                }
+            }
+
+            if(sourceTerminology != null && onsetDate.HasValue)
+            {
+                if (CheckEventOnsetDateAgainstOnsetDateWithNoResolutionDate(sourceTerminology.Id, onsetDate.Value, 0))
+                {
+                    throw new DomainException("Duplication of adverse event. Please check onset and resolution dates");
+                }
+                else
+                {
+                    if (CheckEventOnsetDateWithinRange(sourceTerminology.Id, onsetDate.Value, 0))
+                    {
+                        throw new DomainException("Duplication of adverse event. Please check onset and resolution dates");
+                    }
+                    else
+                    {
+                        if (resolutionDate.HasValue)
+                        {
+                            if (CheckEventOnsetDateWithNoResolutionDateBeforeOnset(sourceTerminology.Id, onsetDate.Value, 0))
+                            {
+                                throw new DomainException("Duplication of adverse event. Please check onset and resolution dates");
+                            }
+                        }
+                    }
+                }
+
+                // Check clinical event overlapping - RESOLUTION DATE
+                if (resolutionDate.HasValue)
+                {
+                    if (CheckEventResolutionDateAgainstOnsetDateWithNoResolutionDate(sourceTerminology.Id, resolutionDate.Value, 0))
+                    {
+                        throw new DomainException("Duplication of adverse event. Please check onset and resolution dates");
+                    }
+                    else
+                    {
+                        if (CheckEventResolutionDateWithinRange(sourceTerminology.Id, resolutionDate.Value, 0))
+                        {
+                            throw new DomainException("Duplication of adverse event. Please check onset and resolution dates");
+                        }
+                    }
+                }
+            }
+
+            var newPatientClinicalEvent = new PatientClinicalEvent(onsetDate, resolutionDate, sourceTerminology, sourceDescription);
+            PatientClinicalEvents.Add(newPatientClinicalEvent);
+            return newPatientClinicalEvent;
+        }
+
         public PatientMedication AddMedication(Concept concept, DateTime startDate, DateTime? endDate, string dose, string doseFrequency, string doseUnit, Product product, string medicationSource)
         {
             if (startDate < DateOfBirth)
@@ -465,6 +526,71 @@ namespace PVIMS.Core.Entities
             var newPatientMedication = new PatientMedication(concept, startDate, endDate, dose, doseFrequency, doseUnit, product, medicationSource);
             PatientMedications.Add(newPatientMedication);
             return newPatientMedication;
+        }
+
+        public void ChangeClinicalEventDetails(int patientClinicalEventId, DateTime? onsetDate, DateTime? resolutionDate, TerminologyMedDra sourceTerminology, string sourceDescription)
+        {
+            var patientClinicalEvent = PatientClinicalEvents.SingleOrDefault(t => t.Id == patientClinicalEventId);
+            if (patientClinicalEvent == null)
+            {
+                throw new KeyNotFoundException(nameof(patientClinicalEventId));
+            }
+
+            if (onsetDate < DateOfBirth)
+            {
+                throw new DomainException("Onset Date should be after Date Of Birth");
+            }
+
+            if (resolutionDate.HasValue)
+            {
+                if (resolutionDate < DateOfBirth)
+                {
+                    throw new DomainException("Resolution Date should be after Date Of Birth");
+                }
+            }
+
+            if (sourceTerminology != null && onsetDate.HasValue)
+            {
+                if (CheckEventOnsetDateAgainstOnsetDateWithNoResolutionDate(sourceTerminology.Id, onsetDate.Value, patientClinicalEventId))
+                {
+                    throw new DomainException("Duplication of adverse event. Please check onset and resolution dates");
+                }
+                else
+                {
+                    if (CheckEventOnsetDateWithinRange(sourceTerminology.Id, onsetDate.Value, patientClinicalEventId))
+                    {
+                        throw new DomainException("Duplication of adverse event. Please check onset and resolution dates");
+                    }
+                    else
+                    {
+                        if (resolutionDate.HasValue)
+                        {
+                            if (CheckEventOnsetDateWithNoResolutionDateBeforeOnset(sourceTerminology.Id, onsetDate.Value, patientClinicalEventId))
+                            {
+                                throw new DomainException("Duplication of adverse event. Please check onset and resolution dates");
+                            }
+                        }
+                    }
+                }
+
+                // Check clinical event overlapping - RESOLUTION DATE
+                if (resolutionDate.HasValue)
+                {
+                    if (CheckEventResolutionDateAgainstOnsetDateWithNoResolutionDate(sourceTerminology.Id, resolutionDate.Value, patientClinicalEventId))
+                    {
+                        throw new DomainException("Duplication of adverse event. Please check onset and resolution dates");
+                    }
+                    else
+                    {
+                        if (CheckEventResolutionDateWithinRange(sourceTerminology.Id, resolutionDate.Value, patientClinicalEventId))
+                        {
+                            throw new DomainException("Duplication of adverse event. Please check onset and resolution dates");
+                        }
+                    }
+                }
+            }
+
+            patientClinicalEvent.ChangeClinicalEventDetails(onsetDate, resolutionDate, sourceTerminology, sourceDescription);
         }
 
         public void ChangeConditionDetails(int patientConditionId, int sourceTerminologyMedDraId, DateTime startDate, DateTime? outcomeDate, Outcome outcome, TreatmentOutcome treatmentOutcome, string comments)
@@ -593,6 +719,17 @@ namespace PVIMS.Core.Entities
         {
             var newPatientStatusHistory = new PatientStatusHistory(patientStatus, effectiveDate, comments);
             PatientStatusHistories.Add(newPatientStatusHistory);
+        }
+
+        public void ArchiveClinicalEvent(int patientClinicalEventId, string reason, User user)
+        {
+            var patientClinicalEvent = PatientClinicalEvents.SingleOrDefault(t => t.Id == patientClinicalEventId);
+            if (patientClinicalEvent == null)
+            {
+                throw new KeyNotFoundException(nameof(patientClinicalEventId));
+            }
+
+            patientClinicalEvent.ArchiveClinicalEvent(user, reason);
         }
 
         public void ArchiveMedication(int patientMedicationId, string reason, User user)
@@ -729,7 +866,7 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public Boolean CheckEventOnsetDateAgainstOnsetDateWithNoResolutionDate(int sourceTerminologyMedDraId, DateTime onsetDate, long patientClinicalEventId)
+        private Boolean CheckEventOnsetDateAgainstOnsetDateWithNoResolutionDate(int sourceTerminologyMedDraId, DateTime onsetDate, long patientClinicalEventId)
         {
             if (patientClinicalEventId > 0)
             {
@@ -754,7 +891,7 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public Boolean CheckEventOnsetDateWithinRange(int sourceTerminologyMedDraId, DateTime onsetDate, long patientClinicalEventId)
+        private Boolean CheckEventOnsetDateWithinRange(int sourceTerminologyMedDraId, DateTime onsetDate, long patientClinicalEventId)
         {
             if (patientClinicalEventId > 0)
             {
@@ -779,7 +916,7 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public Boolean CheckEventOnsetDateWithNoResolutionDateBeforeOnset(int sourceTerminologyMedDraId, DateTime onsetDate, long patientClinicalEventId)
+        private Boolean CheckEventOnsetDateWithNoResolutionDateBeforeOnset(int sourceTerminologyMedDraId, DateTime onsetDate, long patientClinicalEventId)
         {
             if (patientClinicalEventId > 0)
             {
@@ -802,7 +939,7 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public Boolean CheckEventResolutionDateAgainstOnsetDateWithNoResolutionDate(int sourceTerminologyMedDraId, DateTime resolutionDate, long patientClinicalEventId)
+        private Boolean CheckEventResolutionDateAgainstOnsetDateWithNoResolutionDate(int sourceTerminologyMedDraId, DateTime resolutionDate, long patientClinicalEventId)
         {
             if (patientClinicalEventId > 0)
             {
@@ -827,7 +964,7 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public Boolean CheckEventResolutionDateWithinRange(int sourceTerminologyMedDraId, DateTime resolutionDate, long patientClinicalEventId)
+        private Boolean CheckEventResolutionDateWithinRange(int sourceTerminologyMedDraId, DateTime resolutionDate, long patientClinicalEventId)
         {
             if (patientClinicalEventId > 0)
             {

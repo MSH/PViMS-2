@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using PVIMS.API.Application.Commands.PatientAggregate;
 using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
@@ -11,16 +14,11 @@ using PVIMS.API.Models;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
-using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
@@ -30,62 +28,38 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class PatientClinicalEventsController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
-        private readonly ITypeHelperService _typeHelperService;
+        private readonly IMediator _mediator;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
-        private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
-        private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
-        private readonly IRepositoryInt<Config> _configRepository;
-        private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IReportInstanceQueries _reportInstanceQueries;
-        private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
-        private readonly IWorkFlowService _workFlowService;
         private readonly ICustomAttributeService _customAttributeService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<PatientClinicalEventsController> _logger;
 
-        public PatientClinicalEventsController(IPropertyMappingService propertyMappingService,
-            ITypeHelperService typeHelperService,
+        public PatientClinicalEventsController(IMediator mediator, 
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             ITypeExtensionHandler modelExtensionBuilder,
-            IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
-            IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
-            IRepositoryInt<Config> configRepository,
-            IRepositoryInt<User> userRepository,
-            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
             IReportInstanceQueries reportInstanceQueries,
-            IWorkFlowService workFlowService,
-            IUnitOfWorkInt unitOfWork,
             ICustomAttributeService customAttributeService,
-            IHttpContextAccessor httpContextAccessor)
+            ILogger<PatientClinicalEventsController> logger)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
-            _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
-            _terminologyMeddraRepository = terminologyMeddraRepository ?? throw new ArgumentNullException(nameof(terminologyMeddraRepository));
-            _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
             _reportInstanceQueries = reportInstanceQueries ?? throw new ArgumentNullException(nameof(reportInstanceQueries));
-            _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _customAttributeService = customAttributeService ?? throw new ArgumentNullException(nameof(customAttributeService));
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -177,91 +151,27 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var command = new AddClinicalEventToPatientCommand(patientId,
+                clinicalEventForUpdate.SourceDescription, clinicalEventForUpdate.SourceTerminologyMedDraId, clinicalEventForUpdate.OnsetDate, clinicalEventForUpdate.ResolutionDate, clinicalEventForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
+
+            _logger.LogInformation(
+                "----- Sending command: AddClinicalEventToPatientCommand - {sourceDescription}",
+                command.SourceDescription);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            var sourceTermFromRepo = _terminologyMeddraRepository.Get(clinicalEventForUpdate.SourceTerminologyMedDraId);
-            if (sourceTermFromRepo == null)
-            {
-                return BadRequest();
-            }
-
-            ValidateClinicalEventForUpdateModel(patientFromRepo, clinicalEventForUpdate, 0);
-
-            if (ModelState.IsValid)
-            {
-                var clinicalEventDetail = PrepareClinicalEventDetail(clinicalEventForUpdate);
-                if (!clinicalEventDetail.IsValid())
+            return CreatedAtAction("GetPatientClinicalEventByIdentifier",
+                new
                 {
-                    clinicalEventDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
+                    patientId,
+                    id = commandResult.Id
+                }, commandResult);
 
-                if (ModelState.IsValid)
-                {
-                    var patientClinicalEvent = new PatientClinicalEvent
-                    {
-                        SourceDescription = clinicalEventForUpdate.SourceDescription,
-                        SourceTerminologyMedDra = sourceTermFromRepo,
-                        OnsetDate = clinicalEventForUpdate.OnsetDate,
-                        ResolutionDate = clinicalEventForUpdate.ResolutionDate,
-                        Patient = patientFromRepo
-                    };
-
-                    _modelExtensionBuilder.UpdateExtendable(patientClinicalEvent, clinicalEventDetail.CustomAttributes, "Admin");
-
-                    _patientClinicalEventRepository.Save(patientClinicalEvent);
-
-                    await _workFlowService.CreateWorkFlowInstanceAsync("New Active Surveilliance Report", 
-                        patientClinicalEvent.PatientClinicalEventGuid, 
-                        patientFromRepo.FullName, 
-                        patientClinicalEvent.SourceTerminologyMedDra.DisplayName);
-
-                    var weeks = 0;
-                    var config = _configRepository.Get(c => c.ConfigType == ConfigType.MedicationOnsetCheckPeriodWeeks);
-                    if (config != null)
-                    {
-                        if (!String.IsNullOrEmpty(config.ConfigValue))
-                        {
-                            weeks = Convert.ToInt32(config.ConfigValue);
-                        }
-                    }
-
-                    // Prepare medications
-                    List<ReportInstanceMedicationListItem> medications = new List<ReportInstanceMedicationListItem>();
-                    foreach (var med in patientFromRepo.PatientMedications.Where(m => m.Archived == false 
-                            && (m.EndDate == null && m.StartDate.AddDays(weeks * -7) <= patientClinicalEvent.OnsetDate) 
-                            || (m.EndDate != null && m.StartDate.AddDays(weeks * -7) <= patientClinicalEvent.OnsetDate && Convert.ToDateTime(m.EndDate).AddDays(weeks * 7) >= patientClinicalEvent.OnsetDate))
-                        .OrderBy(m => m.Concept.ConceptName))
-                    {
-                        var item = new ReportInstanceMedicationListItem()
-                        {
-                            MedicationIdentifier = med.DisplayName,
-                            ReportInstanceMedicationGuid = med.PatientMedicationGuid
-                        };
-                        medications.Add(item);
-                    }
-                    await _workFlowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(patientClinicalEvent.PatientClinicalEventGuid, medications);
-
-                    await _unitOfWork.CompleteAsync();
-
-                    var mappedPatientClinicalEvent = _mapper.Map<PatientClinicalEventIdentifierDto>(patientClinicalEvent);
-                    if (mappedPatientClinicalEvent == null)
-                    {
-                        return StatusCode(500, "Unable to locate newly added clinical event");
-                    }
-
-                    return CreatedAtAction("GetPatientClinicalEventByIdentifier",
-                        new
-                        {
-                            id = mappedPatientClinicalEvent.Id
-                        }, CreateLinksForPatientClinicalEvent<PatientClinicalEventIdentifierDto>(mappedPatientClinicalEvent));
-                }
-            }
-
-            return BadRequest(ModelState);
         }
 
         /// <summary>
@@ -273,7 +183,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPut("{patientId}/clinicalevents/{id}", Name = "UpdatePatientClinicalEvent")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdatePatientClinicalEvent(long patientId, long id,
+        public async Task<IActionResult> UpdatePatientClinicalEvent(int patientId, int id,
             [FromBody] PatientClinicalEventForUpdateDto clinicalEventForUpdate)
         {
             if (clinicalEventForUpdate == null)
@@ -281,55 +191,21 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var command = new ChangeClinicalEventDetailsCommand(patientId, id, clinicalEventForUpdate.SourceDescription, clinicalEventForUpdate.SourceTerminologyMedDraId, clinicalEventForUpdate.OnsetDate, clinicalEventForUpdate.ResolutionDate, clinicalEventForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeClinicalEventDetailsCommand - {patientId}: {patientClinicalEventId}",
+                command.PatientId,
+                command.PatientClinicalEventId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            var clinicalEventFromRepo = await _patientClinicalEventRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (clinicalEventFromRepo == null)
-            {
-                return NotFound();
-            }
-
-            var sourceTermFromRepo = _terminologyMeddraRepository.Get(clinicalEventForUpdate.SourceTerminologyMedDraId);
-            if (sourceTermFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate source term");
-            }
-
-            ValidateClinicalEventForUpdateModel(patientFromRepo, clinicalEventForUpdate, id);
-
-            if (ModelState.IsValid)
-            {
-                var clinicalEventDetail = PrepareClinicalEventDetail(clinicalEventForUpdate);
-                if (!clinicalEventDetail.IsValid())
-                {
-                    clinicalEventDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
-
-                if (ModelState.IsValid)
-                {
-                    clinicalEventFromRepo.SourceDescription = clinicalEventForUpdate.SourceDescription;
-                    clinicalEventFromRepo.OnsetDate = clinicalEventForUpdate.OnsetDate;
-                    clinicalEventFromRepo.ResolutionDate = clinicalEventForUpdate.ResolutionDate;
-
-                    _modelExtensionBuilder.UpdateExtendable(clinicalEventFromRepo, clinicalEventDetail.CustomAttributes, "Admin");
-
-                    _patientClinicalEventRepository.Update(clinicalEventFromRepo);
-
-                    _workFlowService.UpdateIdentifiersForWorkFlowInstance(clinicalEventFromRepo.PatientClinicalEventGuid,
-                        clinicalEventFromRepo.Patient.FullName,
-                        clinicalEventFromRepo.SourceTerminologyMedDra.DisplayName);
-
-                    await _unitOfWork.CompleteAsync();
-
-                    return Ok();
-                }
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -342,46 +218,29 @@ namespace PVIMS.API.Controllers
         [HttpPut("{patientId}/clinicalevents/{id}/archive", Name = "ArchivePatientClinicalEvent")]
         [Consumes("application/json")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<IActionResult> ArchivePatientClinicalEvent(long patientId, long id,
+        public async Task<IActionResult> ArchivePatientClinicalEvent(int patientId, int id,
             [FromBody] ArchiveDto conditionForDelete)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            if (conditionForDelete == null)
             {
-                return NotFound();
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var clinicalEventFromRepo = await _patientClinicalEventRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (clinicalEventFromRepo == null)
+            var command = new ArchivePatientClinicalEventCommand(patientId, id, conditionForDelete.Reason);
+
+            _logger.LogInformation(
+                "----- Sending command: ArchivePatientClinicalEventCommand - {patientId}: {patientClinicalEventId}",
+                command.PatientId,
+                command.PatientClinicalEventId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(conditionForDelete.Reason, @"[-a-zA-Z0-9 .']").Count < conditionForDelete.Reason.Length)
-            {
-                ModelState.AddModelError("Message", "Reason contains invalid characters (Enter A-Z, a-z, space, period, apostrophe)");
-            }
-
-            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var user = _userRepository.Get(u => u.UserName == userName);
-            if (user == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate user");
-            }
-
-            if (ModelState.IsValid)
-            {
-                clinicalEventFromRepo.Archived = true;
-                clinicalEventFromRepo.ArchivedDate = DateTime.Now;
-                clinicalEventFromRepo.ArchivedReason = conditionForDelete.Reason;
-                clinicalEventFromRepo.AuditUser = user;
-                _patientClinicalEventRepository.Update(clinicalEventFromRepo);
-                await _unitOfWork.CompleteAsync();
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -506,116 +365,6 @@ namespace PVIMS.API.Controllers
             var selectionitem = _selectionDataItemRepository.Get(s => s.AttributeKey == attributeKey && s.SelectionKey == selectionKey);
 
             return (selectionitem == null) ? string.Empty : selectionitem.Value;
-        }
-
-        /// <summary>
-        /// Validate the input model for updating a clinical event
-        /// </summary>
-        private void ValidateClinicalEventForUpdateModel(Patient patientFromRepo, PatientClinicalEventForUpdateDto clinicalEventForUpdateDto, long patientClinicalEventId)
-        {
-            if (Regex.Matches(clinicalEventForUpdateDto.SourceDescription, @"[-a-zA-Z0-9 .,()']").Count < clinicalEventForUpdateDto.SourceDescription.Length)
-            {
-                ModelState.AddModelError("Message", "Source description contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, space, period, comma, parentheses, apostrophe)");
-            }
-
-            if (clinicalEventForUpdateDto.OnsetDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Onset Date should be before current date");
-            }
-            if (clinicalEventForUpdateDto.OnsetDate < patientFromRepo.DateOfBirth)
-            {
-                ModelState.AddModelError("Message", "Onset Date should be after Date Of Birth");
-            }
-
-            if(clinicalEventForUpdateDto.ResolutionDate.HasValue)
-            {
-                if (clinicalEventForUpdateDto.ResolutionDate > DateTime.Today)
-                {
-                    ModelState.AddModelError("Message", "Resolution Date should be before current date");
-                }
-                if (clinicalEventForUpdateDto.ResolutionDate < patientFromRepo.DateOfBirth)
-                {
-                    ModelState.AddModelError("Message", "Resolution Date should be after Date Of Birth");
-                }
-                if (clinicalEventForUpdateDto.ResolutionDate < clinicalEventForUpdateDto.OnsetDate)
-                {
-                    ModelState.AddModelError("Message", "Resolution Date should be after Onset Date");
-                }
-            }
-
-            // Check clinical event overlapping - ONSET DATE
-            if (patientFromRepo.CheckEventOnsetDateAgainstOnsetDateWithNoResolutionDate(clinicalEventForUpdateDto.SourceTerminologyMedDraId, clinicalEventForUpdateDto.OnsetDate, patientClinicalEventId))
-            {
-                ModelState.AddModelError("Message", "Duplication of adverse event. Please check onset and resolution dates...");
-            }
-            else
-            {
-                if (patientFromRepo.CheckEventOnsetDateWithinRange(clinicalEventForUpdateDto.SourceTerminologyMedDraId, clinicalEventForUpdateDto.OnsetDate, patientClinicalEventId))
-                {
-                    ModelState.AddModelError("Message", "Duplication of adverse event. Please check onset and resolution dates...");
-                }
-                else
-                {
-                    if (clinicalEventForUpdateDto.ResolutionDate.HasValue)
-                    {
-                        if (patientFromRepo.CheckEventOnsetDateWithNoResolutionDateBeforeOnset(clinicalEventForUpdateDto.SourceTerminologyMedDraId, clinicalEventForUpdateDto.OnsetDate, patientClinicalEventId))
-                        {
-                            ModelState.AddModelError("Message", "Duplication of adverse event. Please check onset and resolution dates...");
-                        }
-                    }
-                }
-            }
-
-            // Check clinical event overlapping - RESOLUTION DATE
-            if (clinicalEventForUpdateDto.ResolutionDate.HasValue)
-            {
-                if (patientFromRepo.CheckEventResolutionDateAgainstOnsetDateWithNoResolutionDate(clinicalEventForUpdateDto.SourceTerminologyMedDraId, Convert.ToDateTime(clinicalEventForUpdateDto.ResolutionDate), patientClinicalEventId))
-                {
-                    ModelState.AddModelError("Message", "Duplication of adverse event. Please check onset and resolution dates...");
-                }
-                else
-                {
-                    if (patientFromRepo.CheckEventResolutionDateWithinRange(clinicalEventForUpdateDto.SourceTerminologyMedDraId, Convert.ToDateTime(clinicalEventForUpdateDto.ResolutionDate), patientClinicalEventId))
-                    {
-                        ModelState.AddModelError("Message", "Duplication of adverse event. Please check onset and resolution dates...");
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Prepare the model for the clinical event
-        /// </summary>
-        private ClinicalEventDetail PrepareClinicalEventDetail(PatientClinicalEventForUpdateDto clinicalEventForUpdate)
-        {
-            var clinicalEventDetail = new ClinicalEventDetail();
-            clinicalEventDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<PatientClinicalEvent>();
-
-            //clinicalEventDetail = _mapper.Map<ClinicalEventDetail>(clinicalEventForUpdate);
-            foreach (var newAttribute in clinicalEventForUpdate.Attributes)
-            {
-                var customAttribute = _customAttributeRepository.Get(ca => ca.Id == newAttribute.Key);
-                if (customAttribute != null)
-                {
-                // Validate attribute exists for household entity and is a PMT attribute
-                var attributeDetail = clinicalEventDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
-                    
-                if (attributeDetail == null)
-                    {
-                        ModelState.AddModelError("Message", $"Unable to locate custom attribute on patient clinical event {newAttribute.Key}");
-                    }
-                    else
-                    {
-                        attributeDetail.Value = newAttribute.Value;
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("Message", $"Unable to locate custom attribute {newAttribute.Key}");
-                }
-            }
-            // Update patient custom attributes from source
-            return clinicalEventDetail;
         }
     }
 }

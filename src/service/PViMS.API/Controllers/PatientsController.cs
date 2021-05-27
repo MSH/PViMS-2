@@ -915,10 +915,7 @@ namespace PVIMS.API.Controllers
 
                 foreach (var patientClinicalEvent in patientFromRepo.PatientClinicalEvents.Where(x => !x.Archived))
                 {
-                    patientClinicalEvent.Archived = true;
-                    patientClinicalEvent.ArchivedDate = DateTime.Now;
-                    patientClinicalEvent.ArchivedReason = patientForDelete.Reason;
-                    patientClinicalEvent.AuditUser = user;
+                    patientClinicalEvent.ArchiveClinicalEvent(user, patientForDelete.Reason);
                     _patientClinicalEventRepository.Update(patientClinicalEvent);
                 }
 

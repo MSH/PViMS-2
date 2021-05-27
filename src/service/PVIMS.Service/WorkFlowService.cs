@@ -104,7 +104,7 @@ namespace PVIMS.Services
             }
 
             // Ensure instance does not exist for this context
-            var workFlow = await _workFlowRepository.GetAsync(wf => wf.Description == workFlowName);
+            var workFlow = await _workFlowRepository.GetAsync(wf => wf.Description == workFlowName, new string[] { "Activities.ExecutionStatuses" });
             if (workFlow == null)
             {
                 throw new KeyNotFoundException($"{nameof(workFlowName)} Unable to locate work flow");

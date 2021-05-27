@@ -7,29 +7,70 @@ namespace PVIMS.Core.Entities
 {
     public class PatientClinicalEvent : EntityBase, IExtendable
 	{
-        public PatientClinicalEvent()
+        protected PatientClinicalEvent()
         {
-            PatientClinicalEventGuid = Guid.NewGuid();
         }
 
-        public DateTime? OnsetDate { get; set; }
-        public DateTime? ResolutionDate { get; set; }
-        public int? EncounterId { get; set; }
-        public int PatientId { get; set; }
-        public Guid PatientClinicalEventGuid { get; set; }
-        public int? SourceTerminologyMedDraId { get; set; }
-        public int? TerminologyMedDraId1 { get; set; }
-        public bool Archived { get; set; }
-        public DateTime? ArchivedDate { get; set; }
-        public string ArchivedReason { get; set; }
-        public int? AuditUserId { get; set; }
-        public string SourceDescription { get; set; }
+        public PatientClinicalEvent(DateTime? onsetDate, DateTime? resolutionDate, TerminologyMedDra sourceTerminology, string sourceDescription)
+        {
+            PatientClinicalEventGuid = Guid.NewGuid();
+            Archived = false;
 
-        public virtual TerminologyMedDra SourceTerminologyMedDra { get; set; }
+            OnsetDate = onsetDate;
+            ResolutionDate = resolutionDate;
 
-        public virtual Patient Patient { get; set; }
-        public virtual Encounter Encounter { get; set; }
-        public virtual User AuditUser { get; set; }
+            if (sourceTerminology != null)
+            {
+                SourceTerminologyMedDra = sourceTerminology;
+                SourceTerminologyMedDraId = sourceTerminology.Id;
+            }
+
+            SourceDescription = sourceDescription;
+        }
+
+        public void ChangeClinicalEventDetails(DateTime? onsetDate, DateTime? resolutionDate, TerminologyMedDra sourceTerminology, string sourceDescription)
+        {
+            OnsetDate = onsetDate;
+            ResolutionDate = resolutionDate;
+
+            SourceTerminologyMedDra = sourceTerminology;
+            SourceTerminologyMedDraId = sourceTerminology?.Id;
+
+            SourceDescription = sourceDescription;
+        }
+
+        public void ArchiveClinicalEvent(User user, string reason)
+        {
+            Archived = true;
+            ArchivedDate = DateTime.Now;
+            ArchivedReason = reason;
+            AuditUser = user;
+            AuditUserId = user.Id;
+        }
+
+        public DateTime? OnsetDate { get; private set; }
+        public DateTime? ResolutionDate { get; private set; }
+
+        public int? EncounterId { get; private set; }
+        public virtual Encounter Encounter { get; private set; }
+
+        public int PatientId { get; private set; }
+        public virtual Patient Patient { get; private set; }
+
+        public Guid PatientClinicalEventGuid { get; private set; }
+        
+        public int? SourceTerminologyMedDraId { get; private set; }
+        public virtual TerminologyMedDra SourceTerminologyMedDra { get; private set; }
+
+        public int? TerminologyMedDraId1 { get; private set; }
+        public bool Archived { get; private set; }
+        public DateTime? ArchivedDate { get; private set; }
+        public string ArchivedReason { get; private set; }
+        
+        public int? AuditUserId { get; private set; }
+        public virtual User AuditUser { get; private set; }
+
+        public string SourceDescription { get; private set; }
 
         private CustomAttributeSet customAttributes = new CustomAttributeSet();
 

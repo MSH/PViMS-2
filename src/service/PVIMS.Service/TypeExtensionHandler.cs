@@ -104,6 +104,7 @@ namespace PVIMS.Services
             foreach (var customAttributeConfig in attributeConfigs)
             {
                 var attributeDetail = new CustomAttributeDetail();
+                attributeDetail.Id = customAttributeConfig.Id;
                 attributeDetail.AttributeKey = customAttributeConfig.AttributeKey;
                 attributeDetail.Category = customAttributeConfig.Category;
                 attributeDetail.Type = customAttributeConfig.CustomAttributeType;

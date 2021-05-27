@@ -128,6 +128,7 @@ namespace PVIMS.API.Controllers
             return CreatedAtAction("GetPatientMedicationByIdentifier",
                 new
                 {
+                    patientId,
                     id = commandResult.Id
                 }, commandResult);
         }

@@ -137,7 +137,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                     throw new KeyNotFoundException($"Unable to locate custom attribute on patient condition {newAttribute.Key}");
                 }
 
-                attributeDetail.Value = newAttribute.Value;
+                attributeDetail.Value = newAttribute.Value.Trim();
             }
 
             return conditionDetail;
