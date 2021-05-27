@@ -5,6 +5,7 @@ namespace PVIMS.Core.CustomAttributes
     // MIKE: 1-1 between DTO and Attribute
     public class CustomAttributeDetail
     {
+        public int Id { get; set; }
         public string AttributeKey { get; set; }
         public string Category { get; set; }
         public bool IsRequired { get; set; }

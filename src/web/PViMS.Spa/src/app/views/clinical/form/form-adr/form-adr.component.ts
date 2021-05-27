@@ -9,11 +9,13 @@ import { BaseComponent } from 'app/shared/base/base.component';
 import { EventService } from 'app/shared/services/event.service';
 import { PatientService } from 'app/shared/services/patient.service';
 import { finalize, takeUntil } from 'rxjs/operators';
-import { PatientExpandedModel } from 'app/shared/models/patient/patient.expanded.model';
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AttachmentAddPopupComponent } from '../attachment-add-popup/attachment-add.popup.component';
 import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
+import { GridModel } from 'app/shared/models/grid.model';
+import { FormADRMedicationPopupComponent } from './form-adr-medication-popup/form-adr-medication.popup.component';
+import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
 
 @Component({
   templateUrl: './form-adr.component.html',
@@ -89,7 +91,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       interventions: ['', [Validators.maxLength(300), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
     });
     self.fifthFormGroup = this._formBuilder.group({
-      headship: ['', Validators.required]
     });
     self.sixthFormGroup = this._formBuilder.group({
       reporterName: ['', [Validators.maxLength(100), Validators.pattern("[-a-zA-Z ']*")]],
@@ -141,24 +142,10 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.updateForm(self.firstFormGroup, {contactNumber: self.getValueFromAttribute(result.patientAttributes, "Contact Number")});
           self.updateForm(self.firstFormGroup, {address: self.getValueFromAttribute(result.patientAttributes, "Address")});
           
+          self.viewModel.medicationGrid.updateBasic(result.patientMedications);
+          self.viewModel.medications = result.patientMedications;
+          console.log(self.viewModel.medications);
         }
-        // self.updateForm(self.viewNotesForm, (self.viewModel = result));
-        // self.updateForm(self.viewAuditForm, (self.viewModel = result));
-        
-        // self.viewGridModel.customGrid.updateBasic(result.patientAttributes);
-        // self.viewGridModel.appointmentGrid.updateBasic(result.appointments);
-        // self.viewGridModel.attachmentGrid.updateBasic(result.attachments);
-        // self.viewGridModel.statusGrid.updateBasic(result.patientStatusHistories);
-        // self.viewGridModel.encounterGrid.updateBasic(result.encounters);
-        // self.viewGridModel.cohortGrid.updateBasic(result.cohortGroups);
-        // self.viewGridModel.conditionGroupGrid.updateBasic(result.conditionGroups);
-        // self.viewGridModel.analyticalGrid.updateBasic(result.activity);
-
-        // self.viewGridModel.conditionGrid.updateBasic(result.patientConditions);
-        // self.viewGridModel.clinicalEventGrid.updateBasic(result.patientClinicalEvents);
-        // self.viewGridModel.medicationGrid.updateBasic(result.patientMedications);
-        // self.viewGridModel.labTestGrid.updateBasic(result.patientLabTests);
-
       }, error => {
         self.handleError(error, "Error fetching patient");
       });
@@ -211,7 +198,52 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     self.viewModel.attachments.splice(index, 1)
 
     this.notify("Attachment removed successfully!", "Success");
-  }    
+  }
+  
+  openMedicationPopup(data: any = {}, isNew?) {
+    let self = this;
+    let title = isNew ? 'Add Medication' : 'Update Medication';
+    let indexToUse = isNew ? self.viewModel.medications.length + 1 : data.index;
+    
+    let existingMedication = null;
+    if (!isNew) {
+      let actualIndex = self.viewModel.medications.findIndex(m => m.index == indexToUse);
+      existingMedication = self.viewModel.medications[actualIndex];
+    }
+    
+    let dialogRef: MatDialogRef<any> = self.dialog.open(FormADRMedicationPopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { title: title, medicationId: isNew ? 0: existingMedication.id, index: indexToUse, existingMedication }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        if(isNew) {
+          self.viewModel.medications.push(res);
+        }
+        else {
+          let actualIndex = self.viewModel.medications.findIndex(m => m.index == indexToUse);
+          self.viewModel.medications[actualIndex] = res;
+        }
+    
+        self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
+        self.fifthFormGroup.reset();
+      })
+  }
+
+  removeMedication(index: number): void {
+    let self = this;
+
+    let actualIndex = self.viewModel.medications.findIndex(m => m.index == index);
+    self.viewModel.medications.splice(actualIndex, 1)
+    this.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
+
+    this.notify("Medication removed successfully!", "Medication");
+  }  
 }
 
 class ViewModel {
@@ -227,4 +259,19 @@ class ViewModel {
   customAttributeKey = 'Case Number';
 
   attachments: FormAttachmentModel[] = [];
+
+  medicationGrid: GridModel<MedicationGridRecordModel> =
+  new GridModel<MedicationGridRecordModel>
+      (['medication', 'start-date', 'end-date', 'dose', 'actions']);
+  medications: PatientMedicationForUpdateModel[] = [];
+}
+
+class MedicationGridRecordModel {
+  id: number;
+  index: number;
+  medication: string;
+  dose: string;
+  doseUnit: string;
+  startDate: string;
+  endDate: string;
 }

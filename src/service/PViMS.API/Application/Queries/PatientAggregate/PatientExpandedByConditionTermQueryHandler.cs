@@ -243,7 +243,31 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
             IExtendable medicationExtended = medication;
 
+            // Map all custom attributes
+            dto.MedicationAttributes = _modelExtensionBuilder.BuildModelExtension(medicationExtended)
+                .Select(h => new AttributeValueDto()
+                {
+                    Id = h.Id,
+                    Key = h.AttributeKey,
+                    Value = h.TransformValueToString(),
+                    Category = h.Category,
+                    SelectionValue = GetSelectionValue(h.Type, h.AttributeKey, h.Value.ToString())
+                }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
+
+
             dto.IndicationType = _customAttributeService.GetCustomAttributeValue("PatientMedication", "Type of Indication", medicationExtended);
+        }
+
+        private string GetSelectionValue(CustomAttributeType attributeType, string attributeKey, string selectionKey)
+        {
+            if (attributeType == CustomAttributeType.Selection)
+            {
+                var selectionitem = _selectionDataItemRepository.Get(s => s.AttributeKey == attributeKey && s.SelectionKey == selectionKey);
+
+                return selectionitem == null ? string.Empty : selectionitem.Value;
+            }
+
+            return "";
         }
 
         private async Task CustomCohortMapAsync(Patient patientFromRepo, PatientExpandedDto mappedPatient)

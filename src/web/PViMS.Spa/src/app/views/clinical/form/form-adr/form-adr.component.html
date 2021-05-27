@@ -534,7 +534,62 @@
             <div class="p-24 light-gray rounded">
               Please add any suspected medications to any existing medications the patient is on
             </div>
+ 
+            <div class="ml-05 mr-05 mt-05 pb-1">
+              <div class="p-12 table-container">
+                  <div class="p-12" fxLayoutAlign="end">
+                    <button mat-mini-fab (click)="openMedicationPopup({}, true)"><mat-icon>add</mat-icon></button>
+                  </div>
+                  <mat-table [dataSource]="viewModel?.medicationGrid?.records"
+                          [@animate]="{value:'50'}">
+      
+                  <ng-container matColumnDef="medication">
+                      <mat-header-cell *matHeaderCellDef>{{'Medication' | translate}}</mat-header-cell>
+                      <mat-cell *matCellDef="let record">
+                          {{record.medication}}
+                      </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="start-date">
+                    <mat-header-cell *matHeaderCellDef>{{'Start date' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                        {{record.startDate | date:'yyyy-MM-dd'}}
+                    </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="end-date">
+                    <mat-header-cell *matHeaderCellDef>{{'End date' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                      {{record.endDate | date:'yyyy-MM-dd'}}
+                    </mat-cell>
+                  </ng-container>
 
+                  <ng-container matColumnDef="dose">
+                    <mat-header-cell *matHeaderCellDef>{{'Dose' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                      {{record.dose}} {{record.doseUnit}}
+                    </mat-cell>
+                  </ng-container>                  
+                  
+                  <ng-container matColumnDef="actions">
+                    <mat-header-cell *matHeaderCellDef>{{'Actions' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                      <button mat-icon-button color="primary" matTooltip="{{'Update Medication' | translate }}"
+                              (click)="openMedicationPopup(record, false)">
+                          <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" matTooltip="{{'Delete Medication' | translate}}"
+                          (click)="removeMedication(record.index)" *ngIf="record.id == 0">
+                          <mat-icon>delete</mat-icon>
+                      </button>
+                  </mat-cell>                    
+                  </ng-container>                        
+                
+                  <mat-header-row *matHeaderRowDef="viewModel?.medicationGrid?.displayedColumns; sticky:true"></mat-header-row>
+                  <mat-row *matRowDef="let record; columns: viewModel?.medicationGrid?.displayedColumns;"></mat-row>
+                </mat-table>
+              </div>
+            </div>              
           </div>
         </form>
       </div>

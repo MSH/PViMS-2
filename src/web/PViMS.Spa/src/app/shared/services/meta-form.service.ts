@@ -25,7 +25,6 @@ export class MetaFormService extends BaseService {
     }
 
     getAllMetaForms(): any {
-      // Return all outcomes from the API
       let filter = new FilterModel();
       filter.recordsPerPage = 50;
       filter.currentPage = 1;

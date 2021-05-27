@@ -9,6 +9,12 @@ namespace PVIMS.API.Models
     public class AttributeValueDto
     {
         /// <summary>
+        /// The unique id of the attribute
+        /// </summary>
+        [DataMember]
+        public int Id { get; set; }
+
+        /// <summary>
         /// The category that the attribute key has been associated to
         /// </summary>
         [DataMember]

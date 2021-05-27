@@ -69,6 +69,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             dto.MedicationAttributes = _modelExtensionBuilder.BuildModelExtension(patientMedicationExtended)
                 .Select(h => new AttributeValueDto()
                 {
+                    Id = h.Id,
                     Key = h.AttributeKey,
                     Value = h.TransformValueToString(),
                     Category = h.Category,

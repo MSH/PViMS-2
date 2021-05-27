@@ -1,4 +1,4 @@
-export interface AttributeValueModel {
+export interface AttributeValueForUpdateModel {
   id: number;  
   category: string;
   key: string;

@@ -47,6 +47,7 @@ import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/coh
 import { FormADRComponent } from './form/form-adr/form-adr.component';
 import { LandingComponent } from './form/landing/landing.component';
 import { AttachmentAddPopupComponent } from './form/attachment-add-popup/attachment-add.popup.component';
+import { FormADRMedicationPopupComponent } from './form/form-adr/form-adr-medication-popup/form-adr-medication.popup.component';
 
 @NgModule({
   imports: [
@@ -84,6 +85,7 @@ import { AttachmentAddPopupComponent } from './form/attachment-add-popup/attachm
     FeedbackSearchComponent,
     FormAComponent,
     FormADRComponent,
+    FormADRMedicationPopupComponent,
     FormBComponent,
     FormCComponent,
     FormDeletePopupComponent,
@@ -104,21 +106,22 @@ import { AttachmentAddPopupComponent } from './form/attachment-add-popup/attachm
     AttachmentAddPopupComponent,
     AttachmentCapturePopupComponent,
     AttachmentViewPopupComponent,
-    PatientAddPopupComponent,
-    PatientUpdatePopupComponent,
-    GenericDeletePopupComponent,
-    GenericArchivePopupComponent,
     ClinicalEventPopupComponent,
     ClinicalEventViewPopupComponent,
     ConditionPopupComponent,
     ConditionViewPopupComponent,
+    FormADRMedicationPopupComponent,
+    FormDeletePopupComponent,
+    PatientAddPopupComponent,
+    PatientUpdatePopupComponent,
+    GenericDeletePopupComponent,
+    GenericArchivePopupComponent,
     MedicationPopupComponent,
     LabTestPopupComponent,
     EncounterPopupComponent,
     EncounterUpdatePopupComponent,
     EncounterDeletePopupComponent,
     DnaPopupComponent,
-    FormDeletePopupComponent,
     CohortPopupComponent,
     CohortDeletePopupComponent
   ]
