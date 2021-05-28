@@ -11,6 +11,7 @@ using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Models;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace PVIMS.API.Controllers
 {
@@ -112,7 +113,7 @@ namespace PVIMS.API.Controllers
 
             var command = new AddMedicationToPatientCommand(patientId, 
                 medicationForUpdate.SourceDescription, medicationForUpdate.ConceptId, medicationForUpdate.ProductId, medicationForUpdate.StartDate, medicationForUpdate.EndDate, medicationForUpdate.Dose,
-                medicationForUpdate.DoseFrequency, medicationForUpdate.DoseUnit, medicationForUpdate.Attributes);
+                medicationForUpdate.DoseFrequency, medicationForUpdate.DoseUnit, medicationForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
 
             _logger.LogInformation(
                 "----- Sending command: AddMedicationToPatientCommand - {conceptId}",
@@ -150,7 +151,7 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var command = new ChangeMedicationDetailsCommand(patientId, id, medicationForUpdate.StartDate, medicationForUpdate.EndDate, medicationForUpdate.Dose, medicationForUpdate.DoseFrequency, medicationForUpdate.DoseUnit, medicationForUpdate.Attributes);
+            var command = new ChangeMedicationDetailsCommand(patientId, id, medicationForUpdate.StartDate, medicationForUpdate.EndDate, medicationForUpdate.Dose, medicationForUpdate.DoseFrequency, medicationForUpdate.DoseUnit, medicationForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
 
             _logger.LogInformation(
                 "----- Sending command: ChangeMedicationDetailsCommand - {patientId}: {patientMedicationId}",

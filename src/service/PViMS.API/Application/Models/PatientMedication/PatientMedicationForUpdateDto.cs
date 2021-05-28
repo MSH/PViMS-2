@@ -46,8 +46,8 @@ namespace PVIMS.API.Models
         public string DoseUnit { get; set; }
 
         /// <summary>
-        /// Condition custom attributes
+        /// Medication custom attributes
         /// </summary>
-        public IDictionary<int, string> Attributes { get; set; }
+        public ICollection<AttributeValueForPostDto> Attributes { get; set; }
     }
 }
