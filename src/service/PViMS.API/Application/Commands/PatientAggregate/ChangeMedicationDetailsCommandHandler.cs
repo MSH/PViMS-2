@@ -90,7 +90,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                     throw new KeyNotFoundException($"Unable to locate custom attribute on patient medication {newAttribute.Key}");
                 }
 
-                attributeDetail.Value = newAttribute.Value.Trim();
+                attributeDetail.Value = newAttribute.Value;
             }
 
             return medicationDetail;
