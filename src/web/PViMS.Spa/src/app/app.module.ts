@@ -24,6 +24,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { HttpInterceptorExtension } from './shared/interceptors/http.interceptor.extension';
 import { QuillModule } from 'ngx-quill';
+import { PendingChangesGuard } from './shared/guards/component-can-deactive';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(httpClient: HttpClient) {
@@ -59,6 +60,7 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
   ],
   providers: [
     DatePipe,
+    PendingChangesGuard,
     { provide: HTTP_INTERCEPTORS, useClass: HttpInterceptorExtension, multi: true },
     { provide: ErrorHandler, useClass: ErrorHandlerService },
     { provide: PERFECT_SCROLLBAR_CONFIG, useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG },

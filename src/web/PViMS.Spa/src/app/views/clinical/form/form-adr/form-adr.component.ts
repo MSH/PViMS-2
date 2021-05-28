@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Inject, OnDestroy, OnInit, SkipSelf } from '@angular/core';
+import { AfterViewInit, Component, HostListener, Inject, OnDestroy, OnInit, SkipSelf } from '@angular/core';
 import { Location } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -17,7 +17,7 @@ import { GridModel } from 'app/shared/models/grid.model';
 import { FormADRMedicationPopupComponent } from './form-adr-medication-popup/form-adr-medication.popup.component';
 import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
 import { PatientClinicalEventForUpdateModel } from 'app/shared/models/patient/patient-clinical-event-for-update.model';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 
 // Depending on whether rollup is used, moment needs to be imported differently.
 // Since Moment.js doesn't have a default export, we normally need to import using the `* as`
@@ -37,7 +37,9 @@ const moment =  _moment;
   styleUrls: ['./form-adr.component.scss'],  
 })
 export class FormADRComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
-
+  // @HostListener allows us to also guard against browser refresh, close, etc.
+  @HostListener('window:beforeunload')
+  
   public scrollConfig = {}
 
   viewModel: ViewModel = new ViewModel();
@@ -62,6 +64,20 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
   { 
     super(_router, _location, popupService, accountService, eventService);
   }
+
+  canDeactivate(): Observable<boolean> | boolean {
+    // returning true will navigate without confirmation
+    // returning false will show a confirm dialog before navigating away
+    if(this.firstFormGroup.dirty ||
+      this.secondFormGroup.dirty ||
+      this.thirdFormGroup.dirty ||
+      this.fourthFormGroup.dirty ||
+      this.fifthFormGroup.dirty ||
+      this.sixthFormGroup.dirty) {
+        return false;
+    }
+    return true;
+  }  
 
   ngOnInit(): void {
     const self = this;

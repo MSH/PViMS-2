@@ -15,6 +15,7 @@ import { CohortSearchComponent } from './cohort/cohort-search/cohort-search.comp
 import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/cohort-enrolment-list.component';
 import { FormADRComponent } from './form/form-adr/form-adr.component';
 import { LandingComponent } from './form/landing/landing.component';
+import { PendingChangesGuard } from 'app/shared/guards/component-can-deactive';
 
 export const ClinicalRoutes: Routes = [
   {
@@ -92,6 +93,7 @@ export const ClinicalRoutes: Routes = [
     {
       path: 'formadr/:id',
       component: FormADRComponent,
+      canDeactivate: [PendingChangesGuard],
       data: { title: 'Adverse Drug Reaction Form', breadcrumb: 'Adverse Drug Reaction Form' }
     }
   ]
