@@ -28,6 +28,7 @@ import { CustomAttributeDetailModel } from 'app/shared/models/custom-attribute/c
 import { CustomAttributeService } from 'app/shared/services/custom-attribute.service';
 import { _routes } from 'app/config/routes';
 import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
+import { PatientMedicationDetailModel } from 'app/shared/models/patient/patient-medication.detail.model';
 const moment =  _moment;
 
 @Component({
@@ -159,8 +160,10 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.updateForm(self.firstFormGroup, {contactNumber: self.getValueFromAttribute(result.patientAttributes, "Contact Number")});
           self.updateForm(self.firstFormGroup, {address: self.getValueFromAttribute(result.patientAttributes, "Address")});
           
-          self.viewModel.medicationGrid.updateBasic(result.patientMedications);
-          self.viewModel.medications = result.patientMedications;
+          self.viewModel.medications = self.mapMedicationForUpdateModels(result.patientMedications);
+          self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
+
+          self.CLog(self.viewModel.medications);
         }
       }, error => {
         self.handleError(error, "Error fetching patient");
@@ -177,30 +180,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
         self.throwError(error, error.statusText);
       });
   }  
-
-  save(): void{
-    let self = this;
-    self.setBusy(true);
-
-    var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel();
-    let firstSubmission = this.patientService.savePatientClinicalEvent(self.viewModel.patientId, 0, clinicalEventForUpdate);
-    
-    const requestArray = [];
-    requestArray.push(firstSubmission);
-    //requestArray.push(request2);
-
-    forkJoin(requestArray)
-    .subscribe(
-      data => {
-        console.log(data);
-        self.setBusy(false);
-        self.notify('Form added successfully!', 'Success');
-        self._router.navigate([_routes.clinical.forms.landing]);
-      },
-      error => {
-        this.handleError(error, "Error adding form");
-      });
-  }
 
   openAttachmentPopUp() {
     let self = this;
@@ -236,6 +215,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     let existingMedication = null;
     if (!isNew) {
       let actualIndex = self.viewModel.medications.findIndex(m => m.index == indexToUse);
+      self.CLog(actualIndex, 'actual index');
       existingMedication = self.viewModel.medications[actualIndex];
     }
     
@@ -271,6 +251,32 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     this.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
 
     this.notify("Medication removed successfully!", "Medication");
+  }
+
+  save(): void {
+    let self = this;
+    self.setBusy(true);
+
+    const requestArray = [];
+
+    var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel();
+    requestArray.push(this.patientService.savePatientClinicalEvent(self.viewModel.patientId, 0, clinicalEventForUpdate));
+
+    self.viewModel.medications.forEach(medicationForUpdate => {
+      requestArray.push(this.patientService.savePatientMedication(self.viewModel.patientId, medicationForUpdate.id, medicationForUpdate));
+    });
+
+    forkJoin(requestArray)
+    .subscribe(
+      data => {
+        console.log(data);
+        self.setBusy(false);
+        self.notify('Form added successfully!', 'Success');
+        self._router.navigate([_routes.clinical.forms.landing]);
+      },
+      error => {
+        this.handleError(error, "Error adding form");
+      });
   }
 
   private getValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
@@ -326,8 +332,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       sourceTerminologyMedDraId: null,
       attributes: attributesForUpdate
     };
-    console.log('for update');
-    console.log(clinicalEventForUpdate);
 
     return clinicalEventForUpdate;
   }
@@ -344,6 +348,41 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       value: sourceForm.get(formKey).value
     }    
     return attributeForPost;
+  }
+
+  private mapMedicationForUpdateModels(sourceMedications: PatientMedicationDetailModel[]): PatientMedicationForUpdateModel[] {
+    let medications: PatientMedicationForUpdateModel[] = [];
+
+    let index = 0;
+    sourceMedications.forEach(sourceMedication => {
+      index++;
+      let medication: PatientMedicationForUpdateModel = {
+        id: sourceMedication.id,
+        index,
+        medication: sourceMedication.medication,
+        sourceDescription: sourceMedication.sourceDescription,
+        conceptId: sourceMedication.conceptId,
+        productId: sourceMedication.productId,
+        startDate: sourceMedication.startDate,
+        endDate: sourceMedication.endDate,
+        dose: sourceMedication.dose,
+        doseFrequency: sourceMedication.doseFrequency,
+        doseUnit: sourceMedication.doseUnit,
+        attributes: []
+      };
+      
+      sourceMedication.medicationAttributes.forEach(sourceAttribute => {
+        let attribute: AttributeValueForPostModel = {
+          id: sourceAttribute.id,
+          value: sourceAttribute.value
+        };
+        medication.attributes.push(attribute);
+      });
+
+      medications.push(medication);
+    });
+
+    return medications;
   }
 }
 

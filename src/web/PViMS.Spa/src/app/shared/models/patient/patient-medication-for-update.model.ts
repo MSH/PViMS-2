@@ -1,4 +1,4 @@
-import { AttributeValueForUpdateModel } from "../custom-attribute/attribute-value-for-update.model";
+import { AttributeValueForPostModel } from "../custom-attribute/attribute-value-for-post.model";
 
 export interface PatientMedicationForUpdateModel {
   id: number;
@@ -12,5 +12,5 @@ export interface PatientMedicationForUpdateModel {
   dose: string;
   doseFrequency: string;
   doseUnit: string;
-  medicationAttributes: AttributeValueForUpdateModel[];
+  attributes: AttributeValueForPostModel[];
 }

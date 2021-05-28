@@ -13,14 +13,13 @@ import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
 import { ConceptSelectPopupComponent } from 'app/shared/components/popup/concept-select-popup/concept-select.popup.component';
 import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
+import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
 
-import { Moment } from 'moment';
 // Depending on whether rollup is used, moment needs to be imported differently.
 // Since Moment.js doesn't have a default export, we normally need to import using the `* as`
 // syntax. However, rollup creates a synthetic default module and we thus need to import it using
 // the `default as` syntax.
 import * as _moment from 'moment';
-import { AttributeValueForUpdateModel } from 'app/shared/models/custom-attribute/attribute-value-for-update.model';
 const moment =  _moment;
 
 @Component({
@@ -116,7 +115,7 @@ export class FormADRMedicationPopupComponent extends BasePopupComponent implemen
                 validators.push(Validators.min(attribute.numericMinValue));
               }
               if(self.data.existingMedication != null) {
-                let medicationAttribute = self.data.existingMedication.medicationAttributes.find(ma => ma.id == attribute.id);
+                let medicationAttribute = self.data.existingMedication.attributes.find(ma => ma.id == attribute.id);
                 attributes.addControl(attribute.id.toString(), new FormControl(medicationAttribute == null ? defaultValue : medicationAttribute.value, validators));
               }
               else {
@@ -190,26 +189,23 @@ export class FormADRMedicationPopupComponent extends BasePopupComponent implemen
       dose: self.viewModelForm.get('dose').value,
       doseFrequency: self.viewModelForm.get('doseFrequency').value,
       doseUnit: self.viewModelForm.get('doseUnit').value,
-      medicationAttributes: this.prepareAttributeForUpdateModel()
+      attributes: this.prepareAttributeForUpdateModel()
     };
 
     self.notify(self.data.existingMedication == null ? "Medication successfully added!" : "Medication successfully updated!", "Success");
     self.dialogRef.close(medicationModel);    
   }
 
-  private prepareAttributeForUpdateModel(): AttributeValueForUpdateModel[] {
-    const attributesForUpdateModel: AttributeValueForUpdateModel[] = [];
+  private prepareAttributeForUpdateModel(): AttributeValueForPostModel[] {
+    const attributesForPosts: AttributeValueForPostModel[] = [];
     this.customAttributeList.forEach(element => {
-      const attributeForUpdateModel: AttributeValueForUpdateModel = {
+      const attributeForUpdateModel: AttributeValueForPostModel = {
         id: element.id,
-        category: element.category,
-        key: element.attributeKey,
-        selectionValue: '',
         value: this.viewModelForm.get('attributes').value[element.id]
       }
-      attributesForUpdateModel.push(attributeForUpdateModel);
+      attributesForPosts.push(attributeForUpdateModel);
     });
-    return attributesForUpdateModel;
+    return attributesForPosts;
   }
 }
 
