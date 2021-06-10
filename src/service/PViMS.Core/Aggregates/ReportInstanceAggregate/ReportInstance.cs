@@ -44,6 +44,10 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         public ReportInstance(WorkFlow workFlow, User currentUser, Guid contextGuid, string patientIdentifier, string sourceIdentifier)
 		{
+            _activities = new List<ActivityInstance>();
+            _medications = new List<ReportInstanceMedication>();
+            _tasks = new List<ReportInstanceTask>();
+
             ReportInstanceGuid = Guid.NewGuid();
             Identifier = "TBD";
 

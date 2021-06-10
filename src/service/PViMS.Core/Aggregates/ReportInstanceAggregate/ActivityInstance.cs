@@ -29,6 +29,8 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         public ActivityInstance(string qualifiedName, ActivityExecutionStatus currentStatus, Activity activity, User currentUser)
         {
+            _executionEvents = new List<ActivityExecutionStatusEvent>();
+
             QualifiedName = qualifiedName;
             CurrentStatus = currentStatus;
 
