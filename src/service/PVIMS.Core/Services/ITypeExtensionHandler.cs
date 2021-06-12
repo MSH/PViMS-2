@@ -20,13 +20,6 @@ namespace PVIMS.Core.Services
         List<CustomAttributeDetail> BuildModelExtension(IExtendable extendableObject);
 
         /// <summary>
-        /// Refreshes the reference data for the selection type attributes in the specified collection of attributes.
-        /// </summary>
-        /// <param name="customAttributes">The custom attributes.</param>
-        /// <returns></returns>
-        List<CustomAttributeDetail> RefreshReferenceData(List<CustomAttributeDetail> customAttributes);
-
-        /// <summary>
         /// Updates the extendable object with values from the custom attribute collection.
         /// </summary>
         /// <param name="extendableToUpdate">The extendable to update.</param>
@@ -36,8 +29,12 @@ namespace PVIMS.Core.Services
         IExtendable UpdateExtendable(IExtendable extendableToUpdate, IEnumerable<CustomAttributeDetail> customAttributeDetails, string updatedByUser);
 
         /// <summary>
-        /// Caches all selection data items.
+        /// Validates and updates the extendable object with values from the custom attribute collection.
         /// </summary>
-        void CacheSelectionDataItems();
+        /// <param name="extendableToUpdate">The extendable to update.</param>
+        /// <param name="customAttributeDetails">The custom attribute details.</param>
+        /// <returns>The updated Extendable object</returns>
+        /// <exception cref="CustomAttributeException">Unknown AttributeType for AttributeKey: {0}</exception>
+        IExtendable ValidateAndUpdateExtendable(IExtendable extendableToUpdate, IEnumerable<CustomAttributeDetail> customAttributeDetails, string updatedByUser);
     }
 }

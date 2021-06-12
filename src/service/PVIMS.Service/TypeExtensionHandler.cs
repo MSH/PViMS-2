@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
 using PVIMS.Core.CustomAttributes;
 using CustomAttributeConfiguration = PVIMS.Core.Entities.CustomAttributeConfiguration;
@@ -26,14 +25,6 @@ namespace PVIMS.Services
         }
 
         /// <summary>
-        /// Caches all selection data items.
-        /// </summary>
-        public void CacheSelectionDataItems()
-        {
-            allSelectionDataItems = selectionDataRepository.RetrieveAllSelectionData();
-        }
-
-        /// <summary>
         /// Returns a list of unpopulated Custom Attributes for the specified type.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -49,66 +40,21 @@ namespace PVIMS.Services
 
             foreach (var customAttributeConfig in attributeConfigs)
             {
-                var attributeDetail = new CustomAttributeDetail();
-                attributeDetail.AttributeKey = customAttributeConfig.AttributeKey;
-                attributeDetail.Category = customAttributeConfig.Category;
-                attributeDetail.Type = customAttributeConfig.CustomAttributeType;
-                attributeDetail.Value = GetAttributeValue(null, customAttributeConfig);
-                attributeDetail.IsRequired = customAttributeConfig.IsRequired;
-
-                //if (customAttributeConfig.CustomAttributeType == CustomAttributeType.Selection)
-                //{
-                //    var refData = RetrieveSelectionDataForAttribute(customAttributeConfig.AttributeKey);
-
-                //    if (refData != null && refData.Any())
-                //        attributeDetail.RefData = refData.Select(s =>
-                //                new SelectListItem
-                //                {
-                //                    Value = s.SelectionKey.ToString(),
-                //                    Text = s.Value
-                //                }).ToList();
-                //}
-
-                modelExtension.Add(attributeDetail);
-            }
-
-            return modelExtension;
-        }
-
-        private ICollection<SelectionDataItem> RetrieveSelectionDataForAttribute(string attributeKey)
-        {
-            var selectionDataItems = allSelectionDataItems.Where(s => s.AttributeKey == attributeKey).ToList();
-
-            if (selectionDataItems != null && selectionDataItems.Count() > 0) return selectionDataItems;
-
-            return selectionDataRepository.RetrieveSelectionDataForAttribute(attributeKey);
-        }
-
-        /// <summary>
-        /// Returns list of Custom Attributes for the specified extendable object with the values prepopulated
-        /// </summary>
-        /// <param name="extendableObject">The extendable object.</param>
-        /// <returns></returns>
-        public List<CustomAttributeDetail> BuildModelExtension(IExtendable extendableObject)
-        {
-            var modelExtension = new List<CustomAttributeDetail>();
-
-            var attributeConfigs = attributeConfigRepository.RetrieveAttributeConfigurationsForType(extendableObject.GetType().Name);
-
-            if (attributeConfigs == null || !attributeConfigs.Any())
-                attributeConfigs = attributeConfigRepository.RetrieveAttributeConfigurationsForType(extendableObject.GetType().BaseType.Name);
-
-            if (attributeConfigs == null || !attributeConfigs.Any())
-                return modelExtension;
-
-            foreach (var customAttributeConfig in attributeConfigs)
-            {
-                var attributeDetail = new CustomAttributeDetail();
-                attributeDetail.Id = customAttributeConfig.Id;
-                attributeDetail.AttributeKey = customAttributeConfig.AttributeKey;
-                attributeDetail.Category = customAttributeConfig.Category;
-                attributeDetail.Type = customAttributeConfig.CustomAttributeType;
-                attributeDetail.Value = GetAttributeValue(extendableObject, customAttributeConfig);
+                var attributeDetail = new CustomAttributeDetail()
+                {
+                    Id = customAttributeConfig.Id,
+                    Type = customAttributeConfig.CustomAttributeType,
+                    Category = customAttributeConfig.Category,
+                    AttributeKey = customAttributeConfig.AttributeKey,
+                    IsRequired = customAttributeConfig.IsRequired,
+                    StringMaxLength = customAttributeConfig.StringMaxLength,
+                    NumericMinValue = customAttributeConfig.NumericMinValue,
+                    NumericMaxValue = customAttributeConfig.NumericMaxValue,
+                    FutureDateOnly = customAttributeConfig.FutureDateOnly,
+                    PastDateOnly = customAttributeConfig.PastDateOnly,
+                    IsSearchable = customAttributeConfig.IsSearchable,
+                    Value = GetAttributeValue(null, customAttributeConfig)
+                };
 
                 //if (customAttributeConfig.CustomAttributeType == CustomAttributeType.Selection)
                 //{
@@ -130,37 +76,59 @@ namespace PVIMS.Services
             return modelExtension;
         }
 
-
         /// <summary>
-        /// Refreshes the reference data for the selection type attributes in the specified collection of attributes.
+        /// Returns list of Custom Attributes for the specified extendable object with values prepopulated
         /// </summary>
-        /// <param name="customAttributes">The custom attributes.</param>
+        /// <param name="extendableObject">The extendable object.</param>
         /// <returns></returns>
-        public List<CustomAttributeDetail> RefreshReferenceData(List<CustomAttributeDetail> customAttributes)
+        public List<CustomAttributeDetail> BuildModelExtension(IExtendable extendableObject)
         {
-            if (customAttributes == null || !customAttributes.Any())
-                return new List<CustomAttributeDetail>();
+            var modelExtension = new List<CustomAttributeDetail>();
 
-            foreach (var customAttribute in customAttributes)
+            var attributeConfigs = attributeConfigRepository.RetrieveAttributeConfigurationsForType(extendableObject.GetType().Name);
+
+            if (attributeConfigs == null || !attributeConfigs.Any())
+                attributeConfigs = attributeConfigRepository.RetrieveAttributeConfigurationsForType(extendableObject.GetType().BaseType.Name);
+
+            if (attributeConfigs == null || !attributeConfigs.Any())
+                return modelExtension;
+
+            foreach (var customAttributeConfig in attributeConfigs)
             {
-                customAttribute.Value = ExtractValue(customAttribute);
+                var attributeDetail = new CustomAttributeDetail()
+                {
+                    Id = customAttributeConfig.Id,
+                    Type = customAttributeConfig.CustomAttributeType,
+                    Category = customAttributeConfig.Category,
+                    AttributeKey = customAttributeConfig.AttributeKey,
+                    IsRequired = customAttributeConfig.IsRequired,
+                    StringMaxLength = customAttributeConfig.StringMaxLength,
+                    NumericMinValue = customAttributeConfig.NumericMinValue,
+                    NumericMaxValue = customAttributeConfig.NumericMaxValue,
+                    FutureDateOnly = customAttributeConfig.FutureDateOnly,
+                    PastDateOnly = customAttributeConfig.PastDateOnly,
+                    IsSearchable = customAttributeConfig.IsSearchable,
+                    Value = GetAttributeValue(extendableObject, customAttributeConfig)
+                };
 
-                //if (customAttribute.Type == CustomAttributeType.Selection)
+                //if (customAttributeConfig.CustomAttributeType == CustomAttributeType.Selection)
                 //{
-                //    var refData = RetrieveSelectionDataForAttribute(customAttribute.AttributeKey);
+                //    var refData = RetrieveSelectionDataForAttribute(customAttributeConfig.AttributeKey);
 
                 //    if (refData != null && refData.Any())
-                //        customAttribute.RefData = refData.Select(s =>
+                //        attributeDetail.RefData = refData.Select(s =>
                 //                new SelectListItem
                 //                {
                 //                    Value = s.SelectionKey.ToString(),
                 //                    Text = s.Value,
-                //                    Selected = (customAttribute.Value != null && s.Id == Convert.ToInt32(ExtractValue(customAttribute)))
+                //                    Selected = (attributeDetail.Value != null && s.Id == Convert.ToInt32(attributeDetail.Value))
                 //                }).ToList();
                 //}
+
+                modelExtension.Add(attributeDetail);
             }
 
-            return customAttributes;
+            return modelExtension;
         }
 
         /// <summary>
@@ -206,6 +174,49 @@ namespace PVIMS.Services
             return extendableToUpdate;
         }
 
+        /// <summary>
+        /// Updates the extendable object with values from the custom attribute collection.
+        /// </summary>
+        /// <param name="extendableToUpdate">The extendable to update.</param>
+        /// <param name="customAttributeDetails">The custom attribute details.</param>
+        /// <returns>The updated Extendable object</returns>
+        /// <exception cref="CustomAttributeException">Unknown AttributeType for AttributeKey: {0}</exception>
+        public IExtendable ValidateAndUpdateExtendable(IExtendable extendableToUpdate, IEnumerable<CustomAttributeDetail> customAttributeDetails, string updatedByUser)
+        {
+            if (customAttributeDetails == null || !customAttributeDetails.Any())
+                return extendableToUpdate;
+
+            foreach (var customAttribute in customAttributeDetails)
+            {
+                try
+                {
+                    switch (customAttribute.Type)
+                    {
+                        case CustomAttributeType.Numeric:
+                            extendableToUpdate.ValidateAndSetAttributeValue<Decimal>(customAttribute, customAttribute.Value == null ? 0 : Convert.ToDecimal(customAttribute.Value), updatedByUser);
+                            break;
+                        case CustomAttributeType.String:
+                            extendableToUpdate.ValidateAndSetAttributeValue<String>(customAttribute, customAttribute.Value == null ? string.Empty : customAttribute.Value.ToString(), updatedByUser);
+                            break;
+                        case CustomAttributeType.Selection:
+                            extendableToUpdate.ValidateAndSetAttributeValue<Int32>(customAttribute, customAttribute.Value == null ? 0 : Convert.ToInt32(customAttribute.Value), updatedByUser);
+                            break;
+                        case CustomAttributeType.DateTime:
+                            extendableToUpdate.ValidateAndSetAttributeValue<DateTime>(customAttribute, customAttribute.Value == null || String.IsNullOrEmpty(customAttribute.Value.ToString()) ? DateTime.MinValue : Convert.ToDateTime(customAttribute.Value), updatedByUser);
+                            break;
+                        default:
+                            throw new CustomAttributeException("Unknown AttributeType for AttributeKey: {0}", customAttribute.AttributeKey);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Error setting attribute value for {customAttribute.AttributeKey} with error {ex.Message}");
+                }
+            }
+
+            return extendableToUpdate;
+        }
+
         private object GetAttributeValue(IExtendable extendable, CustomAttributeConfiguration config)
         {
             switch (config.CustomAttributeType)
@@ -229,41 +240,6 @@ namespace PVIMS.Services
                 default:
                     throw new CustomAttributeException("Unknown AttributeType for AttributeKey: {0}", config.AttributeKey);
             }
-        }
-
-        /// <summary>
-        /// This is to handle the issue where the MVC Razor Engine is rendering the values for custom attribute controls as Arrays. Need to determine why this is happening. 
-        /// </summary>
-        /// <param name="customAttributeDetail"></param>
-        /// <returns></returns>
-        private object ExtractValue(CustomAttributeDetail customAttributeDetail)
-        {
-            object returnValue = null;
-
-            if (customAttributeDetail.Value != null)
-            {
-                if (customAttributeDetail.Value.GetType().IsArray)
-                {
-                    if (customAttributeDetail.Value.GetType() == typeof(string[]) && ((string[])customAttributeDetail.Value).Length == 1)
-                        returnValue = ((string[])customAttributeDetail.Value).First();
-                }
-                else
-                    returnValue = customAttributeDetail.Value;
-            }
-
-            switch (customAttributeDetail.Type)
-            {
-                case CustomAttributeType.Numeric:
-                    return returnValue == null ? default(decimal) : Decimal.Parse(returnValue.ToString(), CultureInfo.InvariantCulture);
-                case CustomAttributeType.String:
-                    return returnValue == null ? string.Empty : returnValue.ToString();
-                case CustomAttributeType.Selection:
-                    return returnValue == null ? default(int) : Int32.Parse(returnValue.ToString(), CultureInfo.InvariantCulture);
-                case CustomAttributeType.DateTime:
-                    return returnValue == null ? default(DateTime) : Convert.ToDateTime(returnValue);
-            }
-
-            throw new CustomAttributeException("Unable to extract custom attribute value for attribute {0}", customAttributeDetail.AttributeKey);
         }
     }
 }
