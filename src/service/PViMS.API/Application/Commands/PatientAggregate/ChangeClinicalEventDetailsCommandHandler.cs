@@ -1,13 +1,14 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Exceptions;
-using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,6 +24,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IWorkFlowService _workFlowService;
         private readonly ILogger<ChangeMedicationDetailsCommandHandler> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public ChangeClinicalEventDetailsCommandHandler(
             ITypeExtensionHandler modelExtensionBuilder,
@@ -31,7 +33,8 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
             IUnitOfWorkInt unitOfWork,
             IWorkFlowService workFlowService,
-            ILogger<ChangeMedicationDetailsCommandHandler> logger)
+            ILogger<ChangeMedicationDetailsCommandHandler> logger,
+            IHttpContextAccessor httpContextAccessor)
         {
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
@@ -40,6 +43,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public async Task<bool> Handle(ChangeClinicalEventDetailsCommand message, CancellationToken cancellationToken)
@@ -60,31 +64,34 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                 }
             }
 
-            var clinicalEventDetail = await PrepareClinicalEventDetailAsync(message.Attributes);
-            if (!clinicalEventDetail.IsValid())
-            {
-                clinicalEventDetail.InvalidAttributes.ForEach(element => throw new DomainException(element));
-            }
+            var clinicalEventToUpdate = patientFromRepo.PatientClinicalEvents.Single(pce => pce.Id == message.PatientClinicalEventId);
+            var clinicalEventAttributes = await PrepareClinicalEventAttributesWithNewValuesAsync(clinicalEventToUpdate, message.Attributes);
+            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             patientFromRepo.ChangeClinicalEventDetails(message.PatientClinicalEventId, message.OnsetDate, message.ResolutionDate, sourceTermFromRepo, message.SourceDescription);
-            var clinicalEvent = patientFromRepo.PatientClinicalEvents.Single(pce => pce.Id == message.PatientClinicalEventId);
-            _modelExtensionBuilder.UpdateExtendable(clinicalEvent, clinicalEventDetail.CustomAttributes, "Admin");
+
+            _modelExtensionBuilder.ValidateAndUpdateExtendable(clinicalEventToUpdate, clinicalEventAttributes, userName);
 
             _patientRepository.Update(patientFromRepo);
 
-            _workFlowService.UpdateIdentifiersForWorkFlowInstance(clinicalEvent.PatientClinicalEventGuid, patientFromRepo.FullName, clinicalEvent.SourceTerminologyMedDra.DisplayName);
+            _workFlowService.UpdateIdentifiersForWorkFlowInstance(clinicalEventToUpdate.PatientClinicalEventGuid, patientFromRepo.FullName, clinicalEventToUpdate.SourceTerminologyMedDra.DisplayName);
 
             _logger.LogInformation($"----- Clinical Event {message.PatientClinicalEventId} details updated");
 
             return await _unitOfWork.CompleteAsync();
         }
 
-        private async Task<ClinicalEventDetail> PrepareClinicalEventDetailAsync(IDictionary<int, string> attributes)
+        private async Task<List<CustomAttributeDetail>> PrepareClinicalEventAttributesWithNewValuesAsync(IExtendable extendedEntity, IDictionary<int, string> newAttributes)
         {
-            var clinicalEventDetail = new ClinicalEventDetail();
-            clinicalEventDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<PatientClinicalEvent>();
+            var currentAttributes = _modelExtensionBuilder.BuildModelExtension(extendedEntity);
 
-            //clinicalEventDetail = _mapper.Map<ClinicalEventDetail>(clinicalEventForUpdate);
+            await PopulateAttributesWithNewValues(newAttributes, currentAttributes);
+
+            return currentAttributes;
+        }
+
+        private async Task PopulateAttributesWithNewValues(IDictionary<int, string> attributes, List<CustomAttributeDetail> customAttributes)
+        {
             foreach (var newAttribute in attributes)
             {
                 var customAttribute = await _customAttributeRepository.GetAsync(ca => ca.Id == newAttribute.Key);
@@ -93,17 +100,14 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                     throw new KeyNotFoundException($"Unable to locate custom attribute {newAttribute.Key}");
                 }
 
-                var attributeDetail = clinicalEventDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
-
+                var attributeDetail = customAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
                 if (attributeDetail == null)
                 {
-                    throw new KeyNotFoundException($"Unable to locate custom attribute on patient clinical event {newAttribute.Key}");
+                    throw new KeyNotFoundException($"Unable to locate custom attribute on patient {newAttribute.Key}");
                 }
 
                 attributeDetail.Value = newAttribute.Value;
             }
-
-            return clinicalEventDetail;
         }
     }
 }
