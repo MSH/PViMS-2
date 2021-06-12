@@ -75,9 +75,9 @@ namespace PVIMS.Services
             }
             if (medications.Count == 0) { return; };
 
-            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid);
+            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid, new string[] { "Medications" });
             if (reportInstance == null) {
-                throw new ArgumentException("contextGuid may not be null");
+                return;
             };
 
             foreach (ReportInstanceMedicationListItem medication in medications)
