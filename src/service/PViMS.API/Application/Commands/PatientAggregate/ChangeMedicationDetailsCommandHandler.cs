@@ -1,7 +1,8 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Exceptions;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
@@ -9,6 +10,7 @@ using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,6 +26,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IWorkFlowService _workFlowService;
         private readonly ILogger<ChangeMedicationDetailsCommandHandler> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public ChangeMedicationDetailsCommandHandler(
             ITypeExtensionHandler modelExtensionBuilder,
@@ -32,7 +35,8 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             IRepositoryInt<Patient> patientRepository,
             IUnitOfWorkInt unitOfWork,
             IWorkFlowService workFlowService,
-            ILogger<ChangeMedicationDetailsCommandHandler> logger)
+            ILogger<ChangeMedicationDetailsCommandHandler> logger,
+            IHttpContextAccessor httpContextAccessor)
         {
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
@@ -41,6 +45,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public async Task<bool> Handle(ChangeMedicationDetailsCommand message, CancellationToken cancellationToken)
@@ -51,30 +56,34 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                 throw new KeyNotFoundException("Unable to locate patient");
             }
 
-            var medicationDetail = await PrepareMedicationDetailAsync(message.Attributes);
-            if (!medicationDetail.IsValid())
-            {
-                medicationDetail.InvalidAttributes.ForEach(element => throw new DomainException(element));
-            }
+            var medicationToUpdate = patientFromRepo.PatientMedications.Single(pm => pm.Id == message.PatientMedicationId);
+            var medicationAttributes = await PrepareMedicationAttributesWithNewValuesAsync(medicationToUpdate, message.Attributes);
+            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             patientFromRepo.ChangeMedicationDetails(message.PatientMedicationId, message.StartDate, message.EndDate, message.Dose, message.DoseFrequency, message.DoseUnit);
-            _modelExtensionBuilder.UpdateExtendable(patientFromRepo.PatientMedications.Single(pm => pm.Id == message.PatientMedicationId), medicationDetail.CustomAttributes, "Admin");
+
+            _modelExtensionBuilder.ValidateAndUpdateExtendable(medicationToUpdate, medicationAttributes, userName);
 
             _patientRepository.Update(patientFromRepo);
 
-            await AddOrUpdateMedicationsOnReportInstanceAsync(patientFromRepo, message.StartDate, message.EndDate, patientFromRepo.PatientMedications.Single(pm => pm.Id == message.PatientMedicationId).DisplayName, patientFromRepo.PatientMedications.Single(pm => pm.Id == message.PatientMedicationId).PatientMedicationGuid);
+            await RefreshMedicationOnMatchingReportInstancesAsync(patientFromRepo, message.StartDate, message.EndDate, patientFromRepo.PatientMedications.Single(pm => pm.Id == message.PatientMedicationId).DisplayName, patientFromRepo.PatientMedications.Single(pm => pm.Id == message.PatientMedicationId).PatientMedicationGuid);
 
             _logger.LogInformation($"----- Medication {message.PatientMedicationId} details updated");
 
             return await _unitOfWork.CompleteAsync();
         }
 
-        private async Task<MedicationDetail> PrepareMedicationDetailAsync(IDictionary<int, string> attributes)
+        private async Task<List<CustomAttributeDetail>> PrepareMedicationAttributesWithNewValuesAsync(IExtendable extendedEntity, IDictionary<int, string> newAttributes)
         {
-            var medicationDetail = new MedicationDetail();
-            medicationDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<PatientMedication>();
+            var currentAttributes = _modelExtensionBuilder.BuildModelExtension(extendedEntity);
 
-            //medicationDetail = _mapper.Map<MedicationDetail>(medicationForUpdate);
+            await PopulateAttributesWithNewValues(newAttributes, currentAttributes);
+
+            return currentAttributes;
+        }
+
+        private async Task PopulateAttributesWithNewValues(IDictionary<int, string> attributes, List<CustomAttributeDetail> customAttributes)
+        {
             foreach (var newAttribute in attributes)
             {
                 var customAttribute = await _customAttributeRepository.GetAsync(ca => ca.Id == newAttribute.Key);
@@ -83,29 +92,24 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                     throw new KeyNotFoundException($"Unable to locate custom attribute {newAttribute.Key}");
                 }
 
-                var attributeDetail = medicationDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
-
+                var attributeDetail = customAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
                 if (attributeDetail == null)
                 {
-                    throw new KeyNotFoundException($"Unable to locate custom attribute on patient medication {newAttribute.Key}");
+                    throw new KeyNotFoundException($"Unable to locate custom attribute on patient {newAttribute.Key}");
                 }
 
                 attributeDetail.Value = newAttribute.Value;
             }
-
-            return medicationDetail;
         }
 
-        private async Task AddOrUpdateMedicationsOnReportInstanceAsync(Patient patientFromRepo, DateTime medicationStartDate, DateTime? medicationEndDate, string medicationDisplayName, Guid medicationGuid)
+        private async Task RefreshMedicationOnMatchingReportInstancesAsync(Patient patientFromRepo, DateTime medicationStartDate, DateTime? medicationEndDate, string medicationDisplayName, Guid medicationGuid)
         {
             var weeks = await GetNumberOfWeeksToCheckAsync();
-            var clinicalEvents = GetClinicalEventsWhichOccuredDuringMedicationPeriod(patientFromRepo, medicationStartDate, medicationEndDate, weeks);
-            var medications = PrepareMedicationsForLinkingToReport(medicationDisplayName, medicationGuid);
 
-            foreach (var clinicalEvent in clinicalEvents)
-            {
-                await _workFlowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(clinicalEvent.PatientClinicalEventGuid, medications);
-            }
+            var clinicalEventsToBeLinked = GetClinicalEventsWhichMatchMedicationPeriod(patientFromRepo, medicationStartDate, medicationEndDate, weeks);
+            var medicationToBeLinked = PrepareMedicationForLinkingToReportInstances(medicationDisplayName, medicationGuid);
+
+            await LinkMedicationToReportInstances(clinicalEventsToBeLinked, medicationToBeLinked);
         }
 
         private async Task<int> GetNumberOfWeeksToCheckAsync()
@@ -121,7 +125,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             return 0;
         }
 
-        private IEnumerable<PatientClinicalEvent> GetClinicalEventsWhichOccuredDuringMedicationPeriod(Patient patientFromRepo, DateTime medicationStartDate, DateTime? medicationEndDate, int weekCount)
+        private IEnumerable<PatientClinicalEvent> GetClinicalEventsWhichMatchMedicationPeriod(Patient patientFromRepo, DateTime medicationStartDate, DateTime? medicationEndDate, int weekCount)
         {
             if (!medicationEndDate.HasValue)
             {
@@ -131,7 +135,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             return patientFromRepo.PatientClinicalEvents.Where(pce => pce.OnsetDate >= medicationStartDate.AddDays(weekCount * -7) && pce.OnsetDate <= medicationEndDate.Value.AddDays(weekCount * 7) && pce.Archived == false);
         }
 
-        private List<ReportInstanceMedicationListItem> PrepareMedicationsForLinkingToReport(string displayName, Guid patientMedicationGuid)
+        private List<ReportInstanceMedicationListItem> PrepareMedicationForLinkingToReportInstances(string displayName, Guid patientMedicationGuid)
         {
             var instanceMedications = new List<ReportInstanceMedicationListItem>();
             instanceMedications.Add(new ReportInstanceMedicationListItem()
@@ -140,6 +144,14 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                 ReportInstanceMedicationGuid = patientMedicationGuid
             });
             return instanceMedications;
+        }
+
+        private async Task LinkMedicationToReportInstances(IEnumerable<PatientClinicalEvent> clinicalEvents, List<ReportInstanceMedicationListItem> medications)
+        {
+            foreach (var clinicalEvent in clinicalEvents)
+            {
+                await _workFlowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(clinicalEvent.PatientClinicalEventGuid, medications);
+            }
         }
     }
 }
