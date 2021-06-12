@@ -2,15 +2,19 @@
 
 namespace PVIMS.Core.CustomAttributes
 {
-    // MIKE: 1-1 between DTO and Attribute
     public class CustomAttributeDetail
     {
         public int Id { get; set; }
-        public string AttributeKey { get; set; }
-        public string Category { get; set; }
-        public bool IsRequired { get; set; }
-        public bool IsSearchable { get; set; }
         public CustomAttributeType Type { get; set; }
+        public string Category { get; set; }
+        public string AttributeKey { get; set; }
+        public bool IsRequired { get; set; }
+        public int? StringMaxLength { get; set; }
+        public int? NumericMinValue { get; set; }
+        public int? NumericMaxValue { get; set; }
+        public bool FutureDateOnly { get; set; }
+        public bool PastDateOnly { get; set; }
+        public bool IsSearchable { get; set; }
         public object Value { get; set; }
         //public List<SelectListItem> RefData { get; set; }
 

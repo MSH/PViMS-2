@@ -1,5 +1,4 @@
-﻿using PVIMS.Core.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
@@ -27,50 +26,50 @@ namespace PVIMS.Core.CustomAttributes
         [XmlElement(ElementName = "CustomNumericAttribute")]
         public List<CustomNumericAttribute> CustomNumericAttributes { get; set; }
 
-        public void ValidateAndSetAttributeValue<T>(CustomAttributeConfiguration attributeConfig, T attributeValue, string updatedByUser)
+        public void ValidateAndSetAttributeValue<T>(CustomAttributeDetail attributeDetail, T attributeValue, string updatedByUser)
         {
-            if (attributeConfig.IsRequired && attributeValue == null)
+            if (attributeDetail.IsRequired && attributeValue == null)
             {
-                throw new CustomAttributeValidationException(string.Format("{0} is required", attributeConfig.AttributeKey));
+                throw new CustomAttributeValidationException(string.Format("{0} is required", attributeDetail.AttributeKey));
             }
 
-            if (attributeValue.GetType() == typeof(string) && attributeConfig.StringMaxLength.HasValue)
+            if (attributeValue.GetType() == typeof(string) && attributeDetail.StringMaxLength.HasValue)
             {
-                if (attributeValue.ToString().Length > attributeConfig.StringMaxLength.Value)
-                    throw new CustomAttributeValidationException("Length of {0} may not exceed {1} characters", attributeConfig.AttributeKey, attributeConfig.StringMaxLength.Value);
+                if (attributeValue.ToString().Length > attributeDetail.StringMaxLength.Value)
+                    throw new CustomAttributeValidationException("Length of {0} may not exceed {1} characters", attributeDetail.AttributeKey, attributeDetail.StringMaxLength.Value);
             }
 
-            if (attributeValue.GetType() == typeof(decimal) && (attributeConfig.NumericMinValue.HasValue || attributeConfig.NumericMaxValue.HasValue))
+            if (attributeValue.GetType() == typeof(decimal) && (attributeDetail.NumericMinValue.HasValue || attributeDetail.NumericMaxValue.HasValue))
             {
                 var decimalValue = Convert.ToDecimal(attributeValue);
 
-                if (attributeConfig.NumericMinValue.HasValue && decimalValue < attributeConfig.NumericMinValue.Value)
+                if (attributeDetail.NumericMinValue.HasValue && decimalValue < attributeDetail.NumericMinValue.Value)
                 {
-                    throw new CustomAttributeValidationException("Value of {0} may not be lower than {1}", attributeConfig.AttributeKey, attributeConfig.NumericMinValue.Value);
+                    throw new CustomAttributeValidationException("Value of {0} may not be lower than {1}", attributeDetail.AttributeKey, attributeDetail.NumericMinValue.Value);
                 }
 
-                if (attributeConfig.NumericMaxValue.HasValue && decimalValue > attributeConfig.NumericMaxValue.Value)
+                if (attributeDetail.NumericMaxValue.HasValue && decimalValue > attributeDetail.NumericMaxValue.Value)
                 {
-                    throw new CustomAttributeValidationException("Value of {0} may not be higher than {1}", attributeConfig.AttributeKey, attributeConfig.NumericMaxValue.Value);
+                    throw new CustomAttributeValidationException("Value of {0} may not be higher than {1}", attributeDetail.AttributeKey, attributeDetail.NumericMaxValue.Value);
                 }
             }
 
-            if (attributeValue.GetType() == typeof(DateTime) && (attributeConfig.PastDateOnly || attributeConfig.FutureDateOnly))
+            if (attributeValue.GetType() == typeof(DateTime) && (attributeDetail.PastDateOnly || attributeDetail.FutureDateOnly))
             {
                 var dateTimeValue = Convert.ToDateTime(attributeValue);
 
-                if (attributeConfig.PastDateOnly && dateTimeValue.Date > DateTime.Now.Date)
+                if (attributeDetail.PastDateOnly && dateTimeValue.Date > DateTime.Now.Date)
                 {
-                    throw new CustomAttributeValidationException("{0} may only be in the past", attributeConfig.AttributeKey);
+                    throw new CustomAttributeValidationException("{0} may only be in the past", attributeDetail.AttributeKey);
                 }
 
-                if (attributeConfig.FutureDateOnly && dateTimeValue.Date < DateTime.Now.Date)
+                if (attributeDetail.FutureDateOnly && dateTimeValue.Date < DateTime.Now.Date)
                 {
-                    throw new CustomAttributeValidationException("{0} may only be in the future", attributeConfig.AttributeKey);
+                    throw new CustomAttributeValidationException("{0} may only be in the future", attributeDetail.AttributeKey);
                 }
             }
 
-            SetAttributeValue(attributeConfig.AttributeKey, attributeValue, updatedByUser);
+            SetAttributeValue(attributeDetail.AttributeKey, attributeValue, updatedByUser);
         }
 
         public void SetAttributeValue<T>(string attributeKey, T attributeValue, string updatedByUser)

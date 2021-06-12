@@ -134,9 +134,9 @@ namespace PVIMS.Core.Entities
             return customAttributes.GetAttributeValue(attributeKey);
         }
 
-        public void ValidateAndSetAttributeValue<T>(CustomAttributeConfiguration attributeConfig, T attributeValue, string updatedByUser)
+        public void ValidateAndSetAttributeValue<T>(CustomAttributeDetail attributeDetail, T attributeValue, string updatedByUser)
         {
-            customAttributes.ValidateAndSetAttributeValue(attributeConfig, attributeValue, updatedByUser);
+            customAttributes.ValidateAndSetAttributeValue(attributeDetail, attributeValue, updatedByUser);
         }
 
         public DateTime GetUpdatedDate(string attributeKey)

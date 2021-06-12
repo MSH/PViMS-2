@@ -32,7 +32,7 @@ namespace PVIMS.Core.Entities
                 ProductId = product.Id;
             }
 
-            MedicationSource = medicationSource;
+            MedicationSource = SetMedicationSource(medicationSource);
         }
 
         public void ChangeMedicationDetails(DateTime startDate, DateTime? endDate, string dose, string doseFrequency, string doseUnit)
@@ -124,9 +124,9 @@ namespace PVIMS.Core.Entities
             return customAttributes.GetAttributeValue(attributeKey);
         }
 
-        public void ValidateAndSetAttributeValue<T>(CustomAttributeConfiguration attributeConfig, T attributeValue, string updatedByUser)
+        public void ValidateAndSetAttributeValue<T>(CustomAttributeDetail attributeDetail, T attributeValue, string updatedByUser)
         {
-            customAttributes.ValidateAndSetAttributeValue(attributeConfig, attributeValue, updatedByUser);
+            customAttributes.ValidateAndSetAttributeValue(attributeDetail, attributeValue, updatedByUser);
         }
 
         public DateTime GetUpdatedDate(string attributeKey)
@@ -137,6 +137,16 @@ namespace PVIMS.Core.Entities
         public string GetUpdatedByUser(string attributeKey)
         {
             return customAttributes.GetUpdatedByUser(attributeKey);
+        }
+
+        private string SetMedicationSource(string medicationSource)
+        {
+            if (!String.IsNullOrWhiteSpace(medicationSource))
+            {
+                return medicationSource;
+            }
+
+            return DisplayName;
         }
     }
 }
