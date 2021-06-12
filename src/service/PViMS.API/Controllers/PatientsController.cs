@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Infrastructure.Attributes;
@@ -32,6 +30,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PVIMS.API.Application.Commands.AttachmentAggregate;
+using PVIMS.API.Application.Commands.PatientAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -582,7 +582,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult> DownloadSingleAttachment(int patientId, int id)
         {
-            var attachmentFromRepo = await _attachmentRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
+            var attachmentFromRepo = await _attachmentRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id, new string[] { "AttachmentType" });
             if (attachmentFromRepo == null)
             {
                 return NotFound();
@@ -765,76 +765,163 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Update an existing patient
+        /// Update the custom attributes of the patient
         /// </summary>
         /// <param name="id">The unique id of the patient</param>
-        /// <param name="patientForUpdate">The patient payload</param>
+        /// <param name="patientCustomAttributesForUpdate">The patient custom attributes payload</param>
         /// <returns></returns>
-        [HttpPut("{id}", Name = "UpdatePatient")]
+        [HttpPut("{id}/custom", Name = "UpdatePatientCustomAttributes")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdatePatient(int id,
-            [FromBody] PatientForUpdateDto patientForUpdate)
+        public async Task<IActionResult> UpdatePatientCustomAttributes(int id,
+            [FromBody] PatientCustomAttributesForUpdateDto patientCustomAttributesForUpdate)
         {
-            if (patientForUpdate == null)
+            if (patientCustomAttributesForUpdate == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == id);
-            if (patientFromRepo == null)
+            var command = new ChangePatientCustomAttributesCommand(id, patientCustomAttributesForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
+
+            _logger.LogInformation(
+                "----- Sending command: ChangePatientCustomAttributesCommand - {patientId}",
+                id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            var facilityFromRepo = _facilityRepository.Get(f => f.FacilityName == patientForUpdate.FacilityName);
-            if (facilityFromRepo == null)
+            return Ok();
+        }
+
+        /// <summary>
+        /// Update the date of the birth of the patient
+        /// </summary>
+        /// <param name="id">The unique id of the patient</param>
+        /// <param name="patientDateOfBirthForUpdate">The patient date of birth payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}/dateofbirth", Name = "UpdatePatientDateOfBirth")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdatePatientDateOfBirth(int id,
+            [FromBody] PatientDateOfBirthForUpdateDto patientDateOfBirthForUpdate)
+        {
+            if (patientDateOfBirthForUpdate == null)
             {
-                ModelState.AddModelError("Message", "Unable to locate facility");
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            // Ensure patient record does not exist
-            var identifier_record = patientForUpdate.Attributes[_customAttributeRepository.Get(ca => ca.AttributeKey == "Medical Record Number").Id];
-            var identifier_id = patientForUpdate.Attributes[_customAttributeRepository.Get(ca => ca.AttributeKey == "Patient Identity Number").Id];
+            var command = new ChangePatientDateOfBirthCommand(id, patientDateOfBirthForUpdate.DateOfBirth);
 
-            List<CustomAttributeParameter> parameters = new List<CustomAttributeParameter>();
-            parameters.Add(new CustomAttributeParameter() { AttributeKey = "Medical Record Number", AttributeValue = identifier_record });
-            parameters.Add(new CustomAttributeParameter() { AttributeKey = "Patient Identity Number", AttributeValue = identifier_id });
+            _logger.LogInformation(
+                "----- Sending command: ChangePatientDateOfBirthCommand - {patientId}",
+                id);
 
-            if (!_patientService.isUnique(parameters, id))
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                ModelState.AddModelError("Message", "Potential duplicate patient. Check medical record number and patient identity number.");
+                return BadRequest("Command not created");
             }
 
-            ValidatePatientForUpdateModel(patientForUpdate);
+            return Ok();
+        }
 
-            if (ModelState.IsValid)
+        /// <summary>
+        /// Update the current facility of the patient
+        /// </summary>
+        /// <param name="id">The unique id of the patient</param>
+        /// <param name="patientFacilityForUpdate">The patient facility payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}/facility", Name = "UpdatePatientFacility")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdatePatientFacility(int id,
+            [FromBody] PatientFacilityForUpdateDto patientFacilityForUpdate)
+        {
+            if (patientFacilityForUpdate == null)
             {
-                var patientDetail = PreparePatientDetail(patientForUpdate);
-                if (!patientDetail.IsValid())
-                {
-                    patientDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
-
-                if (ModelState.IsValid)
-                {
-                    patientFromRepo.FirstName = patientForUpdate.FirstName;
-                    patientFromRepo.Surname = patientForUpdate.LastName;
-                    patientFromRepo.MiddleName = patientForUpdate.MiddleName;
-                    patientFromRepo.DateOfBirth = patientForUpdate.DateOfBirth;
-                    patientFromRepo.Notes = patientForUpdate.Notes;
-
-                    patientFromRepo.SetPatientFacility(facilityFromRepo);
-
-                    _modelExtensionBuilder.UpdateExtendable(patientFromRepo, patientDetail.CustomAttributes, "Admin");
-
-                    _patientRepository.Update(patientFromRepo);
-                    await _unitOfWork.CompleteAsync();
-
-                    return Ok();
-                }
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            return BadRequest(ModelState);
+            var command = new ChangePatientFacilityCommand(id, patientFacilityForUpdate.FacilityId);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangePatientFacilityCommand - {patientId}",
+                id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Update the name of the patient
+        /// </summary>
+        /// <param name="id">The unique id of the patient</param>
+        /// <param name="patientNameForUpdate">The patient name payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}/name", Name = "UpdatePatientName")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdatePatientName(int id, 
+            [FromBody] PatientNameForUpdateDto patientNameForUpdate)
+        {
+            if (patientNameForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+            }
+
+            var command = new ChangePatientNameCommand(id, patientNameForUpdate.FirstName, patientNameForUpdate.MiddleName, patientNameForUpdate.LastName);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangePatientNameCommand - {patientId}",
+                id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Update the generic notes of the patient
+        /// </summary>
+        /// <param name="id">The unique id of the patient</param>
+        /// <param name="patientNotesForUpdate">The patient notes payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}/notes", Name = "UpdatePatientNotes")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdatePatientNotes(int id,
+            [FromBody] PatientNotesForUpdateDto patientNotesForUpdate)
+        {
+            if (patientNotesForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+            }
+
+            var command = new ChangePatientNotesCommand(id, patientNotesForUpdate.Notes);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangePatientNotesCommand - {patientId}",
+                id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
         }
 
         /// <summary>
@@ -879,10 +966,7 @@ namespace PVIMS.API.Controllers
 
                 foreach (var attachment in patientFromRepo.Attachments.Where(x => !x.Archived))
                 {
-                    attachment.Archived = true;
-                    attachment.ArchivedDate = DateTime.Now;
-                    attachment.ArchivedReason = patientForDelete.Reason;
-                    attachment.AuditUser = user;
+                    attachment.ArchiveAttachment(user, patientForDelete.Reason);
                     _attachmentRepository.Update(attachment);
                 }
 
@@ -980,73 +1064,25 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new attachment");
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var command = new AddAttachmentCommand(patientId, patientAttachmentForCreation.Description, patientAttachmentForCreation.Attachment);
+
+            _logger.LogInformation(
+                "----- Sending command: AddAttachmentCommand - {patientId}",
+                patientId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            if (!String.IsNullOrEmpty(patientAttachmentForCreation.Description))
-            {
-                if (Regex.Matches(patientAttachmentForCreation.Description, @"[a-zA-Z0-9 ]").Count < patientAttachmentForCreation.Description.Length)
+            return CreatedAtAction("GetPatientAttachmentByIdentifier",
+                new
                 {
-                    ModelState.AddModelError("Message", "Description contains invalid characters (Enter A-Z, a-z, 0-9, space)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (patientAttachmentForCreation.Attachment.Length > 0)
-            {
-                var fileExtension = Path.GetExtension(patientAttachmentForCreation.Attachment.FileName).Replace(".", "");
-                var attachmentType = _attachmentTypeRepository.Get(at => at.Key == fileExtension);
-
-                if (attachmentType == null)
-                {
-                    ModelState.AddModelError("Message", "Invalid file type, please select another file");
-                    return BadRequest(ModelState);
-                }
-
-                var fileName = ContentDispositionHeaderValue.Parse(patientAttachmentForCreation.Attachment.ContentDisposition).FileName.Trim();
-
-                if (fileName.Length > 50)
-                {
-                    ModelState.AddModelError("Message", "Maximumum file name length of 50 characters, please rename the file before uploading");
-                    return BadRequest(ModelState);
-                }
-
-                // Create the attachment
-                BinaryReader reader = new BinaryReader(patientAttachmentForCreation.Attachment.OpenReadStream());
-                byte[] buffer = reader.ReadBytes((int)patientAttachmentForCreation.Attachment.Length);
-
-                var attachment = new Attachment
-                {
-                    Patient = patientFromRepo,
-                    Description = patientAttachmentForCreation.Description,
-                    FileName = patientAttachmentForCreation.Attachment.FileName,
-                    AttachmentType = attachmentType,
-                    Size = patientAttachmentForCreation.Attachment.Length,
-                    Content = buffer
-                };
-
-                _attachmentRepository.Save(attachment);
-                await _unitOfWork.CompleteAsync();
-
-                var mappedAttachment = await GetAttachmentAsync<AttachmentIdentifierDto>(patientId, attachment.Id);
-                if (mappedAttachment == null)
-                {
-                    return StatusCode(500, "Unable to locate newly added attachment");
-                }
-
-                return CreatedAtAction("GetPatientAttachmentByIdentifier",
-                    new
-                    {
-                        id = mappedAttachment.Id
-                    }, CreateLinksForAttachment<AttachmentIdentifierDto>(patientId, mappedAttachment));
-            }
-            else
-            {
-                return BadRequest();
-            }
+                    patientId,
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -1057,40 +1093,29 @@ namespace PVIMS.API.Controllers
         /// <param name="attachmentForDelete">The deletion payload</param>
         /// <returns></returns>
         [HttpPut("{patientId}/attachments/{id}/archive", Name = "ArchivePatientAttachment")]
-        public async Task<IActionResult> ArchivePatientAttachment(long patientId, long id,
+        public async Task<IActionResult> ArchivePatientAttachment(int patientId, int id,
             [FromBody] ArchiveDto attachmentForDelete)
         {
-            var attachmentFromRepo = await _attachmentRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (attachmentFromRepo == null)
+            if (attachmentForDelete == null)
             {
-                return NotFound();
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            if (Regex.Matches(attachmentForDelete.Reason, @"[-a-zA-Z0-9 .']").Count < attachmentForDelete.Reason.Length)
+            var command = new ArchiveAttachmentCommand(patientId, id, attachmentForDelete.Reason);
+
+            _logger.LogInformation(
+                "----- Sending command: ArchiveAttachmentCommand - {patientId}: {attachmentId}",
+                command.PatientId,
+                command.AttachmentId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                ModelState.AddModelError("Message", "Reason contains invalid characters (Enter A-Z, a-z, space, period, apostrophe)");
+                return BadRequest("Command not created");
             }
 
-            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var user = _userRepository.Get(u => u.UserName == userName);
-            if (user == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate user");
-            }
-
-            if (ModelState.IsValid)
-            {
-                attachmentFromRepo.Archived = true;
-                attachmentFromRepo.ArchivedDate = DateTime.Now;
-                attachmentFromRepo.ArchivedReason = attachmentForDelete.Reason;
-                attachmentFromRepo.AuditUser = user;
-                _attachmentRepository.Update(attachmentFromRepo);
-                await _unitOfWork.CompleteAsync();
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -1700,40 +1725,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Validate the input model for updating an existing patient
-        /// </summary>
-        private void ValidatePatientForUpdateModel(PatientForUpdateDto patientForUpdate)
-        {
-            if (Regex.Matches(patientForUpdate.FirstName, @"[-a-zA-Z ']").Count < patientForUpdate.FirstName.Length)
-            {
-                ModelState.AddModelError("Message", "First name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-            }
-
-            if (!String.IsNullOrEmpty(patientForUpdate.MiddleName))
-            {
-                if (Regex.Matches(patientForUpdate.MiddleName, @"[-a-zA-Z ']").Count < patientForUpdate.MiddleName.Length)
-                {
-                    ModelState.AddModelError("Message", "Middle name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-                }
-            }
-
-            if (Regex.Matches(patientForUpdate.LastName, @"[-a-zA-Z ']").Count < patientForUpdate.LastName.Length)
-            {
-                ModelState.AddModelError("Message", "Last name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-            }
-
-            if (patientForUpdate.DateOfBirth > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Date of birth should be before current date");
-            }
-
-            if (patientForUpdate.DateOfBirth < DateTime.Today.AddYears(-120))
-            {
-                ModelState.AddModelError("Message", "Date of birth cannot be so far in the past");
-            }
-        }
-
-        /// <summary>
         /// Prepare the model for adding a new patient
         /// </summary>
         private PatientDetailForCreation PreparePatientDetail(PatientForCreationDto patientForCreation)
@@ -1775,40 +1766,6 @@ namespace PVIMS.API.Controllers
             conditionDetail.OutcomeDate = patientForCreation.OutcomeDate;
 
             patientDetail.Conditions.Add(conditionDetail);
-
-            return patientDetail;
-        }
-
-        /// <summary>
-        /// Prepare the model for updating an existing patient
-        /// </summary>
-        private PatientDetailForCreation PreparePatientDetail(PatientForUpdateDto patientForUpdate)
-        {
-            var patientDetail = new PatientDetailForCreation();
-            patientDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<Patient>();
-
-            // Update patient custom attributes from source
-            foreach (var newAttribute in patientForUpdate.Attributes)
-            {
-                var customAttribute = _customAttributeRepository.Get(ca => ca.Id == newAttribute.Key);
-                if (customAttribute != null)
-                {
-                    // Validate attribute exists for household entity and is a PMT attribute
-                    var attributeDetail = patientDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
-                    if (attributeDetail == null)
-                    {
-                        ModelState.AddModelError("Message", $"Unable to locate custom attribute on patient {newAttribute.Key}");
-                    }
-                    else
-                    {
-                        attributeDetail.Value = newAttribute.Value;
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("Message", $"Unable to locate custom attribute {newAttribute.Key}");
-                }
-            }
 
             return patientDetail;
         }

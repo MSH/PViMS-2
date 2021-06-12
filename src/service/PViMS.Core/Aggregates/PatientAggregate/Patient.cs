@@ -126,16 +126,6 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public Encounter GetEncounterForAppointment(Appointment app)
-        {
-            if (Encounters.Count == 0 || app == null) {
-                return null;
-            }
-            else {
-                return Encounters.FirstOrDefault(e => e.EncounterDate >= app.AppointmentDate.AddDays(-3) && e.EncounterDate <= app.AppointmentDate.AddDays(3));
-            }
-        }
-
         public PatientFacility GetCurrentFacility()
         {
             if (PatientFacilities.Count == 0) {
@@ -166,17 +156,6 @@ namespace PVIMS.Core.Entities
             else
             {
                 return PatientStatusHistories.OrderByDescending(psh => psh.EffectiveDate).ThenByDescending(psh => psh.Id).First();
-            }
-        }
-
-        public Encounter GetEncounterForToday()
-        {
-            if (Encounters.Count == 0) {
-                return null;
-            }
-            else
-            {
-                return Encounters.SingleOrDefault(e => e.EncounterDate == DateTime.Today);
             }
         }
 
@@ -214,9 +193,9 @@ namespace PVIMS.Core.Entities
             return customAttributes.GetAttributeValue(attributeKey);
         }
 
-        public void ValidateAndSetAttributeValue<T>(CustomAttributeConfiguration attributeConfig, T attributeValue, string updatedByUser)
+        public void ValidateAndSetAttributeValue<T>(CustomAttributeDetail attributeDetail, T attributeValue, string updatedByUser)
         {
-            customAttributes.ValidateAndSetAttributeValue(attributeConfig, attributeValue, updatedByUser);
+            customAttributes.ValidateAndSetAttributeValue(attributeDetail, attributeValue, updatedByUser);
         }
 
         public DateTime GetUpdatedDate(string attributeKey)
@@ -227,32 +206,6 @@ namespace PVIMS.Core.Entities
         public string GetUpdatedByUser(string attributeKey)
         {
             return customAttributes.GetUpdatedByUser(attributeKey);
-        }
-
-        public bool HasAppointment(int id, DateTime apptDate)
-        {
-            if (Appointments.Count == 0) {
-                return false;
-            }
-            else 
-            {
-                if(id > 0) {
-                    return Appointments.Any(a => a.AppointmentDate == apptDate && a.Id != id);
-                }
-                else {
-                    return Appointments.Any(a => a.AppointmentDate == apptDate);
-                }
-            }
-        }
-
-        public CohortGroupEnrolment GetCohortEnrolled(CohortGroup cohort)
-        {
-            if (CohortEnrolments.Count == 0) {
-                return null;
-            }
-            else {
-                return CohortEnrolments.FirstOrDefault(ce => ce.CohortGroup.Id == cohort.Id && !ce.Archived );
-            }
         }
 
         public PatientCondition AddOrUpdatePatientCondition(long id,
@@ -338,15 +291,6 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public bool HasClinicalData()
-        {
-            var hasData = false;
-
-            if (PatientClinicalEvents.Count() > 0 || PatientConditions.Count() > 0 || PatientLabTests.Count() > 0 || PatientMedications.Count() > 0 || Encounters.Count() > 0) { hasData = true; };
-
-            return hasData;
-        }
-
         public PatientEventSummary GetEventSummary()
         {
             var seriesCount = 0;
@@ -375,27 +319,6 @@ namespace PVIMS.Core.Entities
                 SeriesEventCount = seriesCount
             };
             return model;
-        }
-
-        public void SetPatientFacility(Facility facility)
-        {
-            if (facility == null)
-            {
-                throw new ArgumentNullException(nameof(facility));
-            }
-
-            // Exit if current facility is still the same
-            var currentFacility = GetCurrentFacility();
-            if(currentFacility?.Facility.Id == facility.Id) { return; };
-
-            // Link patient to new facility
-            var patientFacility = new PatientFacility 
-            {
-                Patient = this,
-                Facility = facility, 
-                EnrolledDate = DateTime.Today 
-            };
-            this.PatientFacilities.Add(patientFacility);
         }
 
         public void SetPatientStatus(PatientStatus patientStatus)
@@ -713,6 +636,46 @@ namespace PVIMS.Core.Entities
             }
 
             patientMedication.ChangeMedicationDetails(startDate, endDate, dose, doseFrequency, doseUnit);
+        }
+
+        public void ChangePatientDateOfBirth(DateTime dateOfBirth)
+        {
+            DateOfBirth = dateOfBirth;
+        }
+
+        public void ChangePatientFacility(Facility facility)
+        {
+            if (facility == null)
+            {
+                throw new ArgumentNullException(nameof(facility));
+            }
+
+            var currentFacility = GetCurrentFacility();
+            if (currentFacility?.Facility.Id == facility.Id) 
+            {
+                throw new DomainException("Unable to set the facility to the same facility");
+            };
+
+            // Link patient to new facility
+            var patientFacility = new PatientFacility
+            {
+                Patient = this,
+                Facility = facility,
+                EnrolledDate = DateTime.Today
+            };
+            this.PatientFacilities.Add(patientFacility);
+        }
+
+        public void ChangePatientName(string firstName, string middleName, string lastName)
+        {
+            FirstName = firstName;
+            MiddleName = middleName;
+            Surname = lastName;
+        }
+
+        public void ChangePatientNotes(string notes)
+        {
+            Notes = notes;
         }
 
         public void ChangePatientStatus(PatientStatus patientStatus, DateTime effectiveDate, string comments)
