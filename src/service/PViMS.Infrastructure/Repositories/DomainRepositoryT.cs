@@ -13,10 +13,10 @@ namespace PVIMS.Infrastructure.Repositories
 {
     public class DomainRepository<TEntity> : IRepositoryInt<TEntity> where TEntity : Entity<int>
     {
-        private readonly DbContext context;
+        private readonly PVIMSDbContext context;
         private readonly DbSet<TEntity> dbSet;
 
-        public DomainRepository(DbContext dbContext)
+        public DomainRepository(PVIMSDbContext dbContext)
         {
             context = dbContext;
             dbSet = context.Set<TEntity>();
@@ -262,7 +262,7 @@ namespace PVIMS.Infrastructure.Repositories
                 query = query.Include(include);
             }
 
-            return await query.SingleOrDefaultAsync(q => q.Id == (long)entityId);
+            return await query.SingleOrDefaultAsync(q => q.Id == (int)entityId);
         }
 
         public TEntity Get(Expression<Func<TEntity, bool>> filter, string[] includeExpressions)
@@ -302,7 +302,7 @@ namespace PVIMS.Infrastructure.Repositories
             dbSet.Add(entityToSave);
 
             // Need the Id to be returned.
-            await context.SaveChangesAsync();
+            await context.SaveEntitiesAsync();
         }
 
         public void Save(TEntity[] entitiesToSave)
