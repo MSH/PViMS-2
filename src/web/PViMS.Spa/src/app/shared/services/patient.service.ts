@@ -178,14 +178,18 @@ export class PatientService extends BaseService {
       return this.Download(`/patients/${patientId}/attachments`, 'application/vnd.pvims.attachment.v1+xml', parameters);
     }
 
-    savePatient(id: number, model: any): any {
+    savePatient(model: any): any {
+      let shallowModel = this.transformModelForDate(model);
+      return this.Post('', shallowModel);
+    }
+
+    updatePatientCustomAttributes(id: number, model: any): any {
+      console.log(model);
       let shallowModel = this.transformModelForDate(model);
       if(id == 0) {
-        return this.Post('', shallowModel);
+        return null;
       }
-      else {
-        return this.Put(`${id}`, shallowModel);
-      }
+      return this.Put(`${id}/custom`, shallowModel);
     }
 
     savePatientCondition(patientId: number, id: number, model: any): any {
@@ -229,9 +233,9 @@ export class PatientService extends BaseService {
       }
     }    
 
-    saveAttachment(patientId: number, fileToUpload: File, model: any): any {
+    saveAttachment(patientId: number, fileToUpload: File, description: string): any {
       const formData: FormData = new FormData();
-      formData.append('description', model.description);
+      formData.append('description', description);
       formData.append('attachment', fileToUpload, fileToUpload.name);
 
       return this.PostFile(`${patientId}/attachments`, formData);

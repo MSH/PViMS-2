@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { EventService } from 'app/shared/services/event.service';
 import { PatientService } from 'app/shared/services/patient.service';
-import { finalize, map, takeUntil } from 'rxjs/operators';
+import { finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AttachmentAddPopupComponent } from '../attachment-add-popup/attachment-add.popup.component';
@@ -17,7 +17,7 @@ import { GridModel } from 'app/shared/models/grid.model';
 import { FormADRMedicationPopupComponent } from './form-adr-medication-popup/form-adr-medication.popup.component';
 import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
 import { PatientClinicalEventForUpdateModel } from 'app/shared/models/patient/patient-clinical-event-for-update.model';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 
 // Depending on whether rollup is used, moment needs to be imported differently.
 // Since Moment.js doesn't have a default export, we normally need to import using the `* as`
@@ -29,6 +29,7 @@ import { CustomAttributeService } from 'app/shared/services/custom-attribute.ser
 import { _routes } from 'app/config/routes';
 import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
 import { PatientMedicationDetailModel } from 'app/shared/models/patient/patient-medication.detail.model';
+import { PatientCustomAttributesForUpdateModel } from 'app/shared/models/patient/patient-custom-attributes-for-update.model';
 const moment =  _moment;
 
 @Component({
@@ -189,12 +190,33 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
   getCustomAttributeList(): void {
     let self = this;
 
-    self.customAttributeService.getAllCustomAttributes('PatientClinicalEvent')
-      .subscribe(result => {
-        self.viewModel.customAttributeList = result;
-      }, error => {
-        self.throwError(error, error.statusText);
-      });
+    const requestArray = [];
+
+    requestArray.push(self.customAttributeService.getAllCustomAttributes('PatientClinicalEvent'));
+    requestArray.push(self.customAttributeService.getAllCustomAttributes('Patient'));
+
+    forkJoin(requestArray)
+      .pipe(
+        switchMap((values: any[]) => {
+          const mergeAttributeList: CustomAttributeDetailModel[] = [];
+
+          values[0].forEach((attribute) => {
+            mergeAttributeList.push(attribute);
+          });
+          values[1].forEach((attribute) => {
+            mergeAttributeList.push(attribute);
+          });
+
+          return of(mergeAttributeList);
+        })
+      )
+      .subscribe(
+        data => {
+          self.viewModel.customAttributeList = data;
+        },
+        error => {
+          this.handleError(error, "Error loading attributes");
+        });    
   }  
 
   openAttachmentPopUp() {
@@ -212,7 +234,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           return;
         }
         self.viewModel.attachments.push(res);
-        self.CLog(self.viewModel.attachments);
       })
   }
 
@@ -275,6 +296,9 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
     const requestArray = [];
 
+    var patientCustomAttributesForUpdate = self.preparePatientCustomAttributesForUpdateModel();
+    requestArray.push(this.patientService.updatePatientCustomAttributes(self.viewModel.patientId, patientCustomAttributesForUpdate));
+
     var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel();
     requestArray.push(this.patientService.savePatientClinicalEvent(self.viewModel.patientId, 0, clinicalEventForUpdate));
 
@@ -282,12 +306,23 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       requestArray.push(this.patientService.savePatientMedication(self.viewModel.patientId, medicationForUpdate.id, medicationForUpdate));
     });
 
+    self.viewModel.attachments.forEach(attachmentForUpdate => {
+      requestArray.push(this.patientService.saveAttachment(self.viewModel.patientId, attachmentForUpdate.file, attachmentForUpdate.description));
+    });
+
     forkJoin(requestArray)
     .subscribe(
       data => {
-        console.log(data);
         self.setBusy(false);
         self.notify('Form added successfully!', 'Success');
+
+        self.firstFormGroup.markAsPristine();
+        self.secondFormGroup.markAsPristine();
+        self.thirdFormGroup.markAsPristine();
+        self.fourthFormGroup.markAsPristine();
+        self.fifthFormGroup.markAsPristine();
+        self.sixthFormGroup.markAsPristine();
+
         self._router.navigate([_routes.clinical.forms.landing]);
       },
       error => {
@@ -301,6 +336,20 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       return attribute?.selectionValue;
     }
      return attribute?.value;
+  }
+
+  private preparePatientCustomAttributesForUpdateModel(): PatientCustomAttributesForUpdateModel {
+    let self = this;
+
+    const attributesForUpdate: AttributeValueForPostModel[] = [];
+    attributesForUpdate.push(self.prepareAttributeValue('ethnic group', 'ethnicGroup', self.secondFormGroup));
+    
+    const patientCustomAttributesForUpdate: PatientCustomAttributesForUpdateModel = 
+    {
+      attributes: attributesForUpdate
+    };
+
+    return patientCustomAttributesForUpdate;
   }
 
   private prepareClinicalEventForUpdateModel(): PatientClinicalEventForUpdateModel {
