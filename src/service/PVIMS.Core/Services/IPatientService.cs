@@ -13,8 +13,8 @@ namespace PVIMS.Core.Services
         bool isUnique(List<CustomAttributeParameter> parameters, int patientId = 0);
         bool Exists(List<CustomAttributeParameter> parameters);
         Patient GetPatientUsingAttributes(List<CustomAttributeParameter> parameters);
-        int AddPatient(PatientDetailForCreation patientDetail);
+        Task<int> AddPatientAsync(PatientDetailForCreation patientDetail);
         Task UpdatePatientAsync(PatientDetailForUpdate patientDetail);
-        int AddEncounter(Patient patient, EncounterDetail encounterDetail);
+        Task<int> AddEncounterAsync(Patient patient, EncounterDetail encounterDetail);
     }
 }

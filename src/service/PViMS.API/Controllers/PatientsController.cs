@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using PVIMS.API.Application.Queries.ReportInstanceAggregate;
+using PVIMS.API.Application.Commands.AttachmentAggregate;
+using PVIMS.API.Application.Commands.PatientAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
@@ -17,11 +18,9 @@ using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Entities.Keyless;
-using PVIMS.Core.Models;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using PVIMS.Infrastructure;
 using PVIMS.API.Application.Queries.PatientAggregate;
 using System;
 using System.Collections.Generic;
@@ -30,8 +29,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using PVIMS.API.Application.Commands.AttachmentAggregate;
-using PVIMS.API.Application.Commands.PatientAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -43,7 +40,6 @@ namespace PVIMS.API.Controllers
         private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
-        private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<Encounter> _encounterRepository;
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
@@ -52,29 +48,15 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<PatientLabTest> _patientLabTestRepository;
         private readonly IRepositoryInt<PatientFacility> _patientFacilityRepository;
         private readonly IRepositoryInt<PatientStatusHistory> _patientStatusHistoryRepository;
-        private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly IRepositoryInt<Appointment> _appointmentRepository;
         private readonly IRepositoryInt<Attachment> _attachmentRepository;
-        private readonly IRepositoryInt<AttachmentType> _attachmentTypeRepository;
-        private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
         private readonly IRepositoryInt<CohortGroupEnrolment> _cohortGroupEnrolmentRepository;
-        private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
-        private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
-        private readonly IRepositoryInt<EncounterType> _encounterTypeRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
-        private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
-        private readonly IReportInstanceQueries _reportInstanceQueries;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IReportService _reportService;
-        private readonly IPatientService _patientService;
-        private readonly IWorkFlowService _workFlowService;
-        private readonly IArtefactService _artefactService;
-        private readonly ICustomAttributeService _customAttributeService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly PVIMSDbContext _context;
         private readonly ILogger<PatientsController> _logger;
 
         public PatientsController(IMediator mediator, 
@@ -82,7 +64,6 @@ namespace PVIMS.API.Controllers
             ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
-            ITypeExtensionHandler modelExtensionBuilder,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<Encounter> encounterRepository,
             IRepositoryInt<PatientCondition> patientConditionRepository,
@@ -91,27 +72,13 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<PatientLabTest> patientLabTestRepository,
             IRepositoryInt<PatientFacility> patientFacilityRepository,
             IRepositoryInt<PatientStatusHistory> patientStatusHistoryRepository,
-            IRepositoryInt<Facility> facilityRepository,
             IRepositoryInt<Appointment> appointmentRepository,
             IRepositoryInt<Attachment> attachmentRepository,
-            IRepositoryInt<AttachmentType> attachmentTypeRepository,
-            IRepositoryInt<CohortGroup> cohortGroupRepository,
             IRepositoryInt<CohortGroupEnrolment> cohortGroupEnrolmentRepository,
-            IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
-            IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
-            IRepositoryInt<EncounterType> encounterTypeRepository,
             IRepositoryInt<User> userRepository,
-            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
-            IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
-            IReportInstanceQueries reportInstanceQueries,
             IReportService reportService,
-            IPatientService patientService,
-            IWorkFlowService workFlowService,
-            IArtefactService artefactService,
             IUnitOfWorkInt unitOfWork,
-            ICustomAttributeService customAttributeService,
             IHttpContextAccessor httpContextAccessor,
-            PVIMSDbContext dbContext,
             ILogger<PatientsController> logger)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
@@ -119,7 +86,6 @@ namespace PVIMS.API.Controllers
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
-            _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _encounterRepository = encounterRepository ?? throw new ArgumentNullException(nameof(encounterRepository));
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
@@ -128,27 +94,13 @@ namespace PVIMS.API.Controllers
             _patientLabTestRepository = patientLabTestRepository ?? throw new ArgumentNullException(nameof(patientLabTestRepository));
             _patientFacilityRepository = patientFacilityRepository ?? throw new ArgumentNullException(nameof(patientFacilityRepository));
             _patientStatusHistoryRepository = patientStatusHistoryRepository ?? throw new ArgumentNullException(nameof(patientStatusHistoryRepository));
-            _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
             _appointmentRepository = appointmentRepository ?? throw new ArgumentNullException(nameof(appointmentRepository));
             _attachmentRepository = attachmentRepository ?? throw new ArgumentNullException(nameof(attachmentRepository));
-            _attachmentTypeRepository = attachmentTypeRepository ?? throw new ArgumentNullException(nameof(attachmentTypeRepository));
-            _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
             _cohortGroupEnrolmentRepository = cohortGroupEnrolmentRepository ?? throw new ArgumentNullException(nameof(cohortGroupEnrolmentRepository));
-            _terminologyMeddraRepository = terminologyMeddraRepository ?? throw new ArgumentNullException(nameof(terminologyMeddraRepository));
-            _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
-            _encounterTypeRepository = encounterTypeRepository ?? throw new ArgumentNullException(nameof(encounterTypeRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
-            _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
-            _reportInstanceQueries = reportInstanceQueries ?? throw new ArgumentNullException(nameof(reportInstanceQueries));
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
-            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
-            _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
-            _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _customAttributeService = customAttributeService ?? throw new ArgumentNullException(nameof(customAttributeService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -706,62 +658,26 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Ensure patient record does not exist
-            var identifier_record = patientForCreation.Attributes[ _customAttributeRepository.Get(ca => ca.AttributeKey == "Medical Record Number").Id];
-            var identifier_id = patientForCreation.Attributes[_customAttributeRepository.Get(ca => ca.AttributeKey == "Patient Identity Number").Id];
+            var command = new AddPatientCommand(patientForCreation.FirstName, patientForCreation.LastName, patientForCreation.MiddleName, patientForCreation.DateOfBirth, patientForCreation.FacilityName,
+                patientForCreation.ConditionGroupId, patientForCreation.MeddraTermId, patientForCreation.CohortGroupId, patientForCreation.EnroledDate, patientForCreation.StartDate, patientForCreation.OutcomeDate, patientForCreation.Comments,
+                patientForCreation.EncounterTypeId, patientForCreation.PriorityId, patientForCreation.EncounterDate, patientForCreation.Attributes);
 
-            List<CustomAttributeParameter> parameters = new List<CustomAttributeParameter>();
-            parameters.Add(new CustomAttributeParameter() { AttributeKey = "Medical Record Number", AttributeValue = identifier_record });
-            parameters.Add(new CustomAttributeParameter() { AttributeKey = "Patient Identity Number", AttributeValue = identifier_id });
+            _logger.LogInformation(
+                "----- Sending command: AddPatientCommand - {lastName}",
+                command.LastName);
 
-            //if (!_patientService.isUnique(parameters))
-            //{
-            //    ModelState.AddModelError("Message", "Potential duplicate patient. Check medical record number and patient identity number.");
-            //}
+            var commandResult = await _mediator.Send(command);
 
-            ValidatePatientForCreationModel(patientForCreation);
-
-            long id = 0;
-
-            if (ModelState.IsValid)
+            if (commandResult == null)
             {
-                var patientDetail = PreparePatientDetail(patientForCreation);
-                if (!patientDetail.IsValid())
-                {
-                    patientDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
-
-                if (ModelState.IsValid)
-                {
-                    patientDetail.FirstName = patientForCreation.FirstName;
-                    patientDetail.Surname = patientForCreation.LastName;
-                    patientDetail.MiddleName = patientForCreation.MiddleName;
-                    patientDetail.DateOfBirth = patientForCreation.DateOfBirth;
-                    patientDetail.CurrentFacilityName = patientForCreation.FacilityName;
-                    patientDetail.CohortGroupId = patientForCreation.CohortGroupId;
-                    patientDetail.EnroledDate = patientForCreation.EnroledDate;
-                    patientDetail.EncounterTypeId = patientForCreation.EncounterTypeId;
-                    patientDetail.PriorityId = patientForCreation.PriorityId;
-                    patientDetail.EncounterDate = patientForCreation.EncounterDate;
-
-                    id = await _patientService.AddPatientAsync(patientDetail);
-                    await _unitOfWork.CompleteAsync();
-
-                    var mappedPatient = await GetPatientAsync<PatientIdentifierDto>(id);
-                    if (mappedPatient == null)
-                    {
-                        return StatusCode(500, "Unable to locate newly added patient");
-                    }
-
-                    return CreatedAtAction("GetPatientByIdentifier",
-                        new
-                        {
-                            id = mappedPatient.Id
-                        }, CreateLinksForPatient<PatientIdentifierDto>(mappedPatient));
-                }
+                return BadRequest("Command not created");
             }
 
-            return BadRequest(ModelState);
+            return CreatedAtAction("GetPatientByIdentifier",
+                new
+                {
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -1621,153 +1537,6 @@ namespace PVIMS.API.Controllers
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Validate the input model for adding a new patient
-        /// </summary>
-        private void ValidatePatientForCreationModel(PatientForCreationDto patientForCreation)
-        {
-            if (Regex.Matches(patientForCreation.FirstName, @"[-a-zA-Z ']").Count < patientForCreation.FirstName.Length)
-            {
-                ModelState.AddModelError("Message", "First name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-            }
-
-            if (!String.IsNullOrEmpty(patientForCreation.MiddleName))
-            {
-                if (Regex.Matches(patientForCreation.MiddleName, @"[-a-zA-Z ']").Count < patientForCreation.MiddleName.Length)
-                {
-                    ModelState.AddModelError("Message", "Middle name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-                }
-            }
-
-            if (Regex.Matches(patientForCreation.LastName, @"[-a-zA-Z ']").Count < patientForCreation.LastName.Length)
-            {
-                ModelState.AddModelError("Message", "Last name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-            }
-
-            if (patientForCreation.DateOfBirth > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Date of birth should be before current date");
-            }
-
-            if (patientForCreation.DateOfBirth < DateTime.Today.AddYears(-120))
-            {
-                ModelState.AddModelError("Message", "Date of birth cannot be so far in the past");
-            }
-
-            var termSource = _terminologyMeddraRepository.Get(tm => tm.Id == patientForCreation.MeddraTermId);
-            if (termSource == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate meddra term");
-            }
-
-            if (patientForCreation.CohortGroupId.HasValue && patientForCreation.CohortGroupId > 0)
-            {
-                var cohortGroup = _cohortGroupRepository.Get(cg => cg.Id == patientForCreation.CohortGroupId);
-                if (cohortGroup == null)
-                {
-                    ModelState.AddModelError("Message", "Unable to locate cohort group");
-                }
-
-                if (!patientForCreation.EnroledDate.HasValue)
-                {
-                    ModelState.AddModelError("Message", "Cohort enrollment date must be specified if cohort selected");
-                }
-                else
-                {
-                    if (patientForCreation.EnroledDate > DateTime.Today)
-                    {
-                        ModelState.AddModelError("Message", "Cohort enrollment date should be before current date");
-                    }
-                    if (patientForCreation.EnroledDate < patientForCreation.DateOfBirth)
-                    {
-                        ModelState.AddModelError("Message", "Cohort enrollment date should be after date of birth");
-                    }
-                }
-            }
-
-            if (patientForCreation.StartDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Condition start date should be before current date");
-            }
-            if (patientForCreation.StartDate < patientForCreation.DateOfBirth)
-            {
-                ModelState.AddModelError("Message", "Condition start date should be after date of birth");
-            }
-
-            if (patientForCreation.OutcomeDate.HasValue)
-            {
-                if (patientForCreation.OutcomeDate > DateTime.Today)
-                {
-                    ModelState.AddModelError("Message", "Condition outcome date should be before current date");
-                }
-                if (patientForCreation.OutcomeDate < patientForCreation.StartDate)
-                {
-                    ModelState.AddModelError("Message", "Condition outcome date should be after start date");
-                }
-            }
-
-            var encounterType = _encounterTypeRepository.Get(et => et.Id == patientForCreation.EncounterTypeId);
-            if (encounterType == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate encounter type");
-            }
-
-            if (patientForCreation.EncounterDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Encounter date should be before current date");
-            }
-            if (patientForCreation.EncounterDate < patientForCreation.DateOfBirth)
-            {
-                ModelState.AddModelError("Message", "Encounter date should be after date of birth");
-            }
-        }
-
-        /// <summary>
-        /// Prepare the model for adding a new patient
-        /// </summary>
-        private PatientDetailForCreation PreparePatientDetail(PatientForCreationDto patientForCreation)
-        {
-            var patientDetail = new PatientDetailForCreation();
-            patientDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<Patient>();
-
-            // Update patient custom attributes from source
-            foreach (var newAttribute in patientForCreation.Attributes)
-            {
-                var customAttribute = _customAttributeRepository.Get(ca => ca.Id == newAttribute.Key);
-                if (customAttribute != null)
-                {
-                    // Validate attribute exists for household entity and is a PMT attribute
-                    var attributeDetail = patientDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
-                    if (attributeDetail == null)
-                    {
-                        ModelState.AddModelError("Message", $"Unable to locate custom attribute on patient {newAttribute.Key}");
-                    }
-                    else
-                    {
-                        attributeDetail.Value = newAttribute.Value;
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("Message", $"Unable to locate custom attribute {newAttribute.Key}");
-                }
-            }
-
-            // Prepare primary condition
-            var conditionDetail = new ConditionDetail();
-            conditionDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<PatientCondition>();
-            var termSource = _terminologyMeddraRepository.Get(tm => tm.Id == patientForCreation.MeddraTermId);
-
-            conditionDetail.MeddraTermId = termSource.Id;
-            conditionDetail.ConditionSource = termSource.MedDraTerm;
-            conditionDetail.OnsetDate = patientForCreation.StartDate;
-            conditionDetail.OutcomeDate = patientForCreation.OutcomeDate;
-
-            patientDetail.Conditions.Add(conditionDetail);
-
-            return patientDetail;
         }
     }
 }
