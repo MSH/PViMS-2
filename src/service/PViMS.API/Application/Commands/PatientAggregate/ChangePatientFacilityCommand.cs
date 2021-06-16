@@ -11,16 +11,16 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         public int PatientId { get; private set; }
 
         [DataMember]
-        public int FacilityId { get; private set; }
+        public string FacilityName { get; private set; }
 
         public ChangePatientFacilityCommand()
         {
         }
 
-        public ChangePatientFacilityCommand(int patientId, int facilityId) : this()
+        public ChangePatientFacilityCommand(int patientId, string facilityName) : this()
         {
             PatientId = patientId;
-            FacilityId = facilityId;
+            FacilityName = facilityName;
         }
     }
 }

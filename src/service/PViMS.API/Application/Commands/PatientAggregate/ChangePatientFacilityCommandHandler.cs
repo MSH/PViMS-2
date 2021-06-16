@@ -37,7 +37,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                 throw new KeyNotFoundException("Unable to locate patient");
             }
 
-            var facilityFromRepo = _facilityRepository.Get(f => f.Id == message.FacilityId);
+            var facilityFromRepo = _facilityRepository.Get(f => f.FacilityName == message.FacilityName);
             if (facilityFromRepo == null)
             {
                 throw new KeyNotFoundException("Unable to locate facility");

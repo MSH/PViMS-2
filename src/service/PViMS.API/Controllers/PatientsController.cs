@@ -760,7 +760,7 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var command = new ChangePatientFacilityCommand(id, patientFacilityForUpdate.FacilityId);
+            var command = new ChangePatientFacilityCommand(id, patientFacilityForUpdate.FacilityName);
 
             _logger.LogInformation(
                 "----- Sending command: ChangePatientFacilityCommand - {patientId}",
