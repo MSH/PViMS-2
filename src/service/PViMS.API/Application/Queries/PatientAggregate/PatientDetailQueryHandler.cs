@@ -44,7 +44,8 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         public async Task<PatientDetailDto> Handle(PatientDetailQuery message, CancellationToken cancellationToken)
         {
             var patientFromRepo = await _patientRepository.GetAsync(p => p.Archived == false
-                    && p.Id == message.PatientId);
+                    && p.Id == message.PatientId,
+                    new string[] { "PatientFacilities.Facility" });
 
             if (patientFromRepo == null)
             {
@@ -60,21 +61,6 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         }
 
         private void CustomMap(Patient patientFromRepo, PatientDetailDto mappedPatient)
-        {
-            if (patientFromRepo == null)
-            {
-                throw new ArgumentNullException(nameof(patientFromRepo));
-            }
-
-            if (mappedPatient == null)
-            {
-                throw new ArgumentNullException(nameof(mappedPatient));
-            }
-
-            CustomAttributeMap(patientFromRepo, mappedPatient);
-        }
-
-        private void CustomAttributeMap(Patient patientFromRepo, PatientDetailDto mappedPatient)
         {
             IExtendable patientExtended = patientFromRepo;
 

@@ -74,6 +74,14 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.OutcomeDate, opt => opt.MapFrom(src => src.OutcomeDate.HasValue ? Convert.ToDateTime(src.OutcomeDate).ToString("yyyy-MM-dd") : ""))
                 .ForMember(dest => dest.TreatmentOutcome, opt => opt.MapFrom(src => src.TreatmentOutcome.Description));
 
+            CreateMap<PatientLabTest, PatientLabTestIdentifierDto>();
+            CreateMap<PatientLabTest, PatientLabTestDetailDto>()
+                .ForMember(dest => dest.TestDate, opt => opt.MapFrom(src => src.TestDate.ToString("yyyy-MM-dd")))
+                .ForMember(dest => dest.LabTest, opt => opt.MapFrom(src => src.LabTest.Description))
+                .ForMember(dest => dest.TestResultCoded, opt => opt.MapFrom(src => src.TestResult))
+                .ForMember(dest => dest.TestResultValue, opt => opt.MapFrom(src => src.LabValue))
+                .ForMember(dest => dest.TestUnit, opt => opt.MapFrom(src => src.TestUnit.Description));
+
             CreateMap<PatientMedication, PatientMedicationIdentifierDto>();
             CreateMap<PatientMedication, PatientMedicationDetailDto>()
                 .ForMember(dest => dest.SourceDescription, opt => opt.MapFrom(src => src.MedicationSource))

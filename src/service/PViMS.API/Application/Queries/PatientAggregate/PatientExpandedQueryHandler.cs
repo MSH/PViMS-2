@@ -70,7 +70,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         {
             var patientFromRepo = await _patientRepository.GetAsync(p => p.Archived == false
                     && p.Id == message.PatientId, 
-                new string[] { "PatientClinicalEvents.SourceTerminologyMedDra", "PatientConditions.TerminologyMedDra",  "PatientMedications.Concept.MedicationForm", "PatientMedications.Product", "Attachments.AttachmentType" });
+                new string[] { "PatientFacilities.Facility", "PatientClinicalEvents.SourceTerminologyMedDra", "PatientConditions.TerminologyMedDra", "PatientConditions.Outcome", "PatientConditions.TreatmentOutcome", "PatientMedications.Concept.MedicationForm", "PatientMedications.Product", "Attachments.AttachmentType", "PatientLabTests.LabTest", "PatientLabTests.TestUnit" });
 
             if (patientFromRepo == null)
             {

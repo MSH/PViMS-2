@@ -18,14 +18,6 @@ namespace PVIMS.API.MapperProfiles
 
             CreateMap<LabTestUnit, LabTestUnitIdentifierDto>()
                 .ForMember(dest => dest.LabTestUnitName, opt => opt.MapFrom(src => src.Description));
-
-            CreateMap<PatientLabTest, PatientLabTestIdentifierDto>();
-            CreateMap<PatientLabTest, PatientLabTestDetailDto>()
-                .ForMember(dest => dest.TestDate, opt => opt.MapFrom(src => src.TestDate.ToString("yyyy-MM-dd")))
-                .ForMember(dest => dest.LabTest, opt => opt.MapFrom(src => src.LabTest.Description))
-                .ForMember(dest => dest.TestResultCoded, opt => opt.MapFrom(src => src.TestResult))
-                .ForMember(dest => dest.TestResultValue, opt => opt.MapFrom(src => src.LabValue))
-                .ForMember(dest => dest.TestUnit, opt => opt.MapFrom(src => src.TestUnit.Description));
         }
     }
 }
