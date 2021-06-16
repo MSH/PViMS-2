@@ -24,6 +24,7 @@ export interface ReportInstanceDetailModel {
     spontaneousInstance?: DatasetInstanceModel;
     attachmentId: number;
     taskCount: number;
+    activeTaskCount: number;
     createdDetail: string;
     updatedDetail: string;
     qualifiedName: string;
