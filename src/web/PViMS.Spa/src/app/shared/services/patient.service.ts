@@ -13,6 +13,11 @@ import { PatientClinicalEventExpandedModel } from '../models/patient/patient-cli
 import { PatientLabTestDetailModel } from '../models/patient/patient-lab-test.detail.model';
 import { PatientMedicationReportWrapperModel } from '../models/patient/patient-medication.report.model';
 import { PatientTreatmentReportWrapperModel } from '../models/patient/patient-treatment.report.model';
+import { PatientCustomAttributesForUpdateModel } from '../models/patient/patient-custom-attributes-for-update.model';
+import { PatientDateOfBirthForUpdateModel } from '../models/patient/patient-date-of-birth-for-update.model';
+import { PatientFacilityForUpdateModel } from '../models/patient/patient-facility-for-update.model';
+import { PatientNotesForUpdateModel } from '../models/patient/patient-notes-for-update.model';
+import { PatientNameForUpdateModel } from '../models/patient/patient-name-for-update.model';
 
 @Injectable({ providedIn: 'root' })
 export class PatientService extends BaseService {
@@ -183,13 +188,40 @@ export class PatientService extends BaseService {
       return this.Post('', shallowModel);
     }
 
-    updatePatientCustomAttributes(id: number, model: any): any {
-      console.log(model);
+    updatePatientCustomAttributes(id: number, model: PatientCustomAttributesForUpdateModel): any {
       let shallowModel = this.transformModelForDate(model);
       if(id == 0) {
         return null;
       }
       return this.Put(`${id}/custom`, shallowModel);
+    }
+
+    updatePatientDateOfBirth(id: number, model: PatientDateOfBirthForUpdateModel): any {
+      if(id == 0) {
+        return null;
+      }
+      return this.Put(`${id}/dateofbirth`, model);
+    }
+
+    updatePatientFacility(id: number, model: PatientFacilityForUpdateModel): any {
+      if(id == 0) {
+        return null;
+      }
+      return this.Put(`${id}/facility`, model);
+    }
+
+    updatePatientName(id: number, model: PatientNameForUpdateModel): any {
+      if(id == 0) {
+        return null;
+      }
+      return this.Put(`${id}/name`, model);
+    }
+
+    updatePatientNotes(id: number, model: PatientNotesForUpdateModel): any {
+      if(id == 0) {
+        return null;
+      }
+      return this.Put(`${id}/notes`, model);
     }
 
     savePatientCondition(patientId: number, id: number, model: any): any {

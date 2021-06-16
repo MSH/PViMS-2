@@ -1,3 +1,3 @@
 export interface PatientFacilityForUpdateModel {
-  facilityId: number;
+  facilityName: string;
 }
