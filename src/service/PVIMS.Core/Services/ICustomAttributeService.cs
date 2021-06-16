@@ -55,6 +55,6 @@ namespace PVIMS.Core.Services
         /// Get custom attribute value
         /// </summary>
         /// <param name="selectionItem"></param>
-        string GetCustomAttributeValue(string extendableTypeName, string attributeKey, IExtendable extended);
+        Task<string> GetCustomAttributeValueAsync(string extendableTypeName, string attributeKey, IExtendable extended);
     }
 }

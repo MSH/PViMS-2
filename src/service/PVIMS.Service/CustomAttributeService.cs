@@ -195,10 +195,9 @@ namespace PVIMS.Services
             _selectionDataItemRepository.Save(newSelectionDataItem);
         }
 
-        public string GetCustomAttributeValue(string extendableTypeName, string attributeKey, IExtendable extended)
+        public async Task<string> GetCustomAttributeValueAsync(string extendableTypeName, string attributeKey, IExtendable extended)
         {
-            var configuration = _customAttributeConfigRepository.Get(c => c.ExtendableTypeName == extendableTypeName && c.AttributeKey == attributeKey);
-
+            var configuration = await _customAttributeConfigRepository.GetAsync(c => c.ExtendableTypeName == extendableTypeName && c.AttributeKey == attributeKey);
             if (configuration == null) return "";
 
             DateTime dttemp;
