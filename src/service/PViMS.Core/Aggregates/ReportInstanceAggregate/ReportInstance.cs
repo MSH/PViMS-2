@@ -61,12 +61,30 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             InitialiseWithFirstActivity(workFlow, currentUser);
         }
 
-        public void AddActivity(Activity activity, User currentUser)
+        public ActivityExecutionStatusEvent ExecuteNewEventForActivity(ActivityExecutionStatus newExecutionStatus, User currentUser, string comments, DateTime? contextDate, string contextCode)
         {
-            var status = activity.ExecutionStatuses.OrderBy(es => es.Id).First();
-            var activityInstance = new ActivityInstance(activity.QualifiedName, status, activity, currentUser);
+            if (CurrentActivity.CurrentStatus.Description == newExecutionStatus.Description) { return null; };
 
-            _activities.Add(activityInstance);
+            var activityExecutionStatusEvent = CurrentActivity.ExecuteEvent(newExecutionStatus, currentUser, comments, contextDate, contextCode);
+
+            switch (newExecutionStatus.Description)
+            {
+                case "CONFIRMED":
+                    CheckIfAbleToChangeFromConfirmationActivity();
+                    CurrentActivity.SetToOld();
+                    MoveToNextActivity(WorkFlow, currentUser);
+                    break;
+
+                case "CAUSALITYSET":
+                    CurrentActivity.SetToOld();
+                    MoveToNextActivity(WorkFlow, currentUser);
+                    break;
+
+                default:
+                    break;
+            }
+
+            return activityExecutionStatusEvent;
         }
 
         public void AddMedication(string medicationIdentifier, Guid reportInstanceMedicationGuid)
@@ -190,15 +208,14 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             task.DeleteComment(taskCommentId);
         }
 
+        public bool HasActiveTasks()
+        {
+            return _tasks.Any(t => t.TaskStatusId != TaskStatus.Completed.Id && t.TaskStatusId != TaskStatus.Cancelled.Id);
+        }
+
         public bool HasMedication(Guid reportInstanceMedicationGuid)
         {
             return _medications.Any(m => m.ReportInstanceMedicationGuid == reportInstanceMedicationGuid);
-        }
-
-        public void SetCurrentActivityToOld()
-        {
-            var activityInstance = _activities.Single(a => a.Current);
-            activityInstance.SetToOld();
         }
 
         public void SetEventIdentifiers(string patientIdentifier, string sourceIdentifier)
@@ -266,10 +283,44 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         private void InitialiseWithFirstActivity(WorkFlow workFlow, User currentUser)
         {
+            if(workFlow.Activities.Count == 0)
+            {
+                throw new DomainException($"Workflow {workFlow.Description} does not have any activities configured");
+            }
+
             var activity = workFlow.Activities.OrderBy(a => a.Id).First();
-            var status = activity.ExecutionStatuses.Single(es => es.Description == "UNCONFIRMED");
-            var activityInstance = new ActivityInstance(activity.QualifiedName, status, activity, currentUser);
+            var activityInstance = new ActivityInstance(activity, currentUser);
             _activities.Add(activityInstance);
+        }
+
+        private void MoveToNextActivity(WorkFlow workFlow, User currentUser)
+        {
+            if (workFlow.Activities.Count == 0)
+            {
+                throw new DomainException($"Workflow {workFlow.Description} does not have any activities configured");
+            }
+
+            if (CurrentActivity.QualifiedName == "Confirm Report Data")
+            {
+                var activity = workFlow.Activities.Single(a => a.QualifiedName == "Set MedDRA and Causality");
+                var activityInstance = new ActivityInstance(activity, currentUser);
+                _activities.Add(activityInstance);
+            }
+
+            if (CurrentActivity.QualifiedName == "Set MedDRA and Causality")
+            {
+                var activity = workFlow.Activities.Single(a => a.QualifiedName == "Extract E2B");
+                var activityInstance = new ActivityInstance(activity, currentUser);
+                _activities.Add(activityInstance);
+            }
+        }
+
+        private void CheckIfAbleToChangeFromConfirmationActivity()
+        {
+            if (HasActiveTasks())
+            {
+                throw new DomainException($"Unable to change activity from CONFIRMED as there are active tasks");
+            }
         }
     }
 }

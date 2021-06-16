@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
-using PVIMS.Core;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,9 +19,7 @@ namespace PVIMS.Services
         private readonly IUnitOfWorkInt _unitOfWork;
 
         private readonly IRepositoryInt<Activity> _activityRepository;
-        private readonly IRepositoryInt<ActivityInstance> _activityInstanceRepository;
         private readonly IRepositoryInt<ActivityExecutionStatusEvent> _activityExecutionStatusEventRepository;
-        private readonly IRepositoryInt<Config> _configRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
@@ -41,10 +36,8 @@ namespace PVIMS.Services
             IPatientService patientService, 
             IArtefactService artefactService, 
             IRepositoryInt<Activity> activityRepository,
-            IRepositoryInt<ActivityInstance> activityInstanceRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<ActivityExecutionStatusEvent> activityExecutionStatusEventRepository,
-            IRepositoryInt<Config> configRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<WorkFlow> workFlowRepository,
@@ -56,13 +49,11 @@ namespace PVIMS.Services
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
             _activityRepository = activityRepository ?? throw new ArgumentNullException(nameof(activityRepository));
-            _activityInstanceRepository = activityInstanceRepository ?? throw new ArgumentNullException(nameof(activityInstanceRepository));
             _activityExecutionStatusEventRepository = activityExecutionStatusEventRepository ?? throw new ArgumentNullException(nameof(activityExecutionStatusEventRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
-            _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
@@ -130,47 +121,29 @@ namespace PVIMS.Services
             }
         }
 
-        public async Task<ActivityExecutionStatusEvent> ExecuteActivityAsync(Guid contextGuid, string newStatus, string comments, DateTime? contextDate, string contextCode)
+        public async Task<ActivityExecutionStatusEvent> ExecuteActivityAsync(Guid contextGuid, string newExecutionStatus, string comments, DateTime? contextDate, string contextCode)
         {
-            var reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().Single(ri => ri.ContextGuid == contextGuid);
-            var newExecutionStatus = GetExecutionStatusForActivity(reportInstance, newStatus);
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid, new string[] { "Activities.CurrentStatus", "WorkFlow" });
+            if (reportInstanceFromRepo == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate report instance using contextGuid {contextGuid}");
+            }
+
+            var newActivityExecutionStatus = await GetExecutionStatusForActivityAsync(reportInstanceFromRepo.CurrentActivity.QualifiedName, reportInstanceFromRepo.WorkFlowId, newExecutionStatus);
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var currentUser = await _userRepository.GetAsync(u => u.UserName == userName);
 
-            var newEvent = reportInstance.CurrentActivity.AddNewEvent(newExecutionStatus, currentUser, comments, contextDate, contextCode);
+            var activityExecutionStatusEvent = reportInstanceFromRepo.ExecuteNewEventForActivity(newActivityExecutionStatus, currentUser, comments, contextDate, contextCode);
+            _reportInstanceRepository.Update(reportInstanceFromRepo);
 
-            _activityInstanceRepository.Update(reportInstance.CurrentActivity);
-
-            if (reportInstance.CurrentActivity.CurrentStatus.Description == "E2BGENERATED")
+            if (newActivityExecutionStatus.Description == "E2BGENERATED")
             {
-                await CreatePatientSummaryAndLinkToExecutionEventAsync(reportInstance, newEvent);
-                await CreatePatientExtractAndLinkToExecutionEventAsync(reportInstance, newEvent);
-                await CreateE2BExtractAndLinkToExecutionEventAsync(reportInstance, newEvent);
-            }
-
-            if (reportInstance.CurrentActivity.CurrentStatus.Description == "CONFIRMED")
-            {
-                reportInstance.SetCurrentActivityToOld();
-
-                var newActivity = _activityRepository.Get(a => a.WorkFlow.Id == reportInstance.WorkFlowId && a.QualifiedName == "Set MedDRA and Causality");
-                reportInstance.AddActivity(newActivity, currentUser);
-
-                _reportInstanceRepository.Update(reportInstance);
-            }
-
-            if (reportInstance.CurrentActivity.CurrentStatus.Description == "CAUSALITYSET")
-            {
-                reportInstance.SetCurrentActivityToOld();
-
-                var newActivity = _activityRepository.Get(a => a.WorkFlow.Id == reportInstance.WorkFlowId && a.QualifiedName == "Extract E2B");
-                reportInstance.AddActivity(newActivity, currentUser);
-
-                _reportInstanceRepository.Update(reportInstance);
+                await ProcessE2BGenerationActivityAsync(reportInstanceFromRepo, activityExecutionStatusEvent);
             }
 
             await _unitOfWork.CompleteAsync();
 
-            return newEvent;
+            return activityExecutionStatusEvent;
         }
 
         public TerminologyMedDra GetCurrentAdverseReaction(Patient patient)
@@ -184,22 +157,21 @@ namespace PVIMS.Services
             return null;
         }
 
-        public bool ValidateExecutionStatusForCurrentActivity(Guid contextGuid, string validateStatus)
+        public async Task<bool> ValidateExecutionStatusForCurrentActivityAsync(Guid contextGuid, string executionStatusToBeValidated)
         {
-            var reportInstance = _unitOfWork.Repository<ReportInstance>()
-                .Queryable()
-                .Single(ri => ri.ContextGuid == contextGuid);
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid, new string[] { "Activities" } );
+            if(reportInstanceFromRepo == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate report instance using contextGuid {contextGuid}");
+            }    
 
-            var activityInstance = reportInstance.Activities
-                .Single(a => a.Current == true);
+            var activity = await _activityRepository.GetAsync(a => a.QualifiedName == reportInstanceFromRepo.CurrentActivity.QualifiedName && a.WorkFlow.Id == reportInstanceFromRepo.WorkFlowId, new string[] { "ExecutionStatuses" });
+            if (activity == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate activity using QualifiedName {reportInstanceFromRepo.CurrentActivity.QualifiedName}");
+            }
 
-            var activity = _unitOfWork.Repository<Activity>()
-                .Queryable()
-                .Single(a => a.QualifiedName == activityInstance.QualifiedName && a.WorkFlow.Id == reportInstance.WorkFlowId);
-
-            return _unitOfWork.Repository<ActivityExecutionStatus>()
-                .Queryable()
-                .Any(aes => aes.Activity.Id == activity.Id && aes.Description == validateStatus);
+            return activity.ExecutionStatuses.Any(aes => aes.Description == executionStatusToBeValidated);
         }
 
         public TerminologyMedDra GetTerminologyMedDraForReportInstance(Guid contextGuid)
@@ -237,6 +209,13 @@ namespace PVIMS.Services
             reportInstance.SetEventIdentifiers(patientIdentifier, sourceIdentifier);
 
             _reportInstanceRepository.Update(reportInstance);
+        }
+
+        private async Task ProcessE2BGenerationActivityAsync(ReportInstance reportInstanceFromRepo, ActivityExecutionStatusEvent activityExecutionStatusEvent)
+        {
+            await CreatePatientSummaryAndLinkToExecutionEventAsync(reportInstanceFromRepo, activityExecutionStatusEvent);
+            await CreatePatientExtractAndLinkToExecutionEventAsync(reportInstanceFromRepo, activityExecutionStatusEvent);
+            await CreateE2BExtractAndLinkToExecutionEventAsync(reportInstanceFromRepo, activityExecutionStatusEvent);
         }
 
         private async Task CreatePatientSummaryAndLinkToExecutionEventAsync(ReportInstance reportInstance, ActivityExecutionStatusEvent executionEvent)
@@ -360,18 +339,15 @@ namespace PVIMS.Services
             }
         }
 
-        private ActivityExecutionStatus GetExecutionStatusForActivity(ReportInstance reportInstance, string getStatus)
+        private async Task<ActivityExecutionStatus> GetExecutionStatusForActivityAsync(string qualifiedName, int workFlowId, string newExecutionStatus)
         {
-            var activityInstance = reportInstance.Activities
-                .Single(a => a.Current == true);
+            var activity = await _activityRepository.GetAsync(a => a.QualifiedName == qualifiedName && a.WorkFlow.Id == workFlowId, new string[] { "ExecutionStatuses" });
+            if (activity == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate activity using QualifiedName {qualifiedName}");
+            }
 
-            var activity = _unitOfWork.Repository<Activity>()
-                .Queryable()
-                .Single(a => a.QualifiedName == activityInstance.QualifiedName && a.WorkFlow.Id == reportInstance.WorkFlow.Id);
-
-            return _unitOfWork.Repository<ActivityExecutionStatus>()
-                .Queryable()
-                .Single(aes => aes.Activity.Id == activity.Id && aes.Description == getStatus);
+            return activity.ExecutionStatuses.Single(aes => aes.Description == newExecutionStatus);
         }
     }
 }

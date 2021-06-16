@@ -1,5 +1,6 @@
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,39 +28,41 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             _executionEvents = new List<ActivityExecutionStatusEvent>();
         }
 
-        public ActivityInstance(string qualifiedName, ActivityExecutionStatus currentStatus, Activity activity, User currentUser)
+        public ActivityInstance(Activity activity, User currentUser)
         {
+            if(activity.ExecutionStatuses.Count == 0)
+            {
+                throw new DomainException($"Cannot initialise activity instance as activity is not configure with any execution statuses {activity.QualifiedName}");
+            }
+
             _executionEvents = new List<ActivityExecutionStatusEvent>();
 
-            QualifiedName = qualifiedName;
-            CurrentStatus = currentStatus;
-
+            QualifiedName = activity.QualifiedName;
             Current = true;
+
             InitialiseWithFirstExecutionStatus(activity, currentUser);
         }
 
         private void InitialiseWithFirstExecutionStatus(Activity activity, User currentUser)
         {
-            var status = activity.ExecutionStatuses.OrderBy(es => es.Id).First();
-            var statusEvent = new ActivityExecutionStatusEvent(status, currentUser, "", "", null);
-            _executionEvents.Add(statusEvent);
-        }
-
-        public ActivityExecutionStatusEvent AddNewEvent(ActivityExecutionStatus newStatus, User currentUser, string comments, DateTime? contextDate, string contextCode)
-        {
-            if(CurrentStatus.Description == newStatus.Description) { return null; };
-
-            var statusEvent = new ActivityExecutionStatusEvent(newStatus, currentUser, comments, contextCode, contextDate);
-
-            CurrentStatus = newStatus;
-            _executionEvents.Add(statusEvent);
-
-            return statusEvent;
+            var executionStatus = activity.ExecutionStatuses.OrderBy(es => es.Id).First();
+            var executionStatusEvent = new ActivityExecutionStatusEvent(executionStatus, currentUser, "", "", null);
+            _executionEvents.Add(executionStatusEvent);
         }
 
         public void SetToOld()
         {
             Current = false;
+        }
+
+        public ActivityExecutionStatusEvent ExecuteEvent(ActivityExecutionStatus newExecutionStatus, User currentUser, string comments, DateTime? contextDate, string contextCode)
+        {
+            var newExecutionStatusEvent = new ActivityExecutionStatusEvent(newExecutionStatus, currentUser, comments, contextCode, contextDate);
+
+            CurrentStatus = newExecutionStatus;
+            _executionEvents.Add(newExecutionStatusEvent);
+
+            return newExecutionStatusEvent;
         }
 
         public ActivityExecutionStatusEvent GetLatestEvent()

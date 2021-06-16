@@ -13,11 +13,11 @@ namespace PVIMS.Core.Services
 
         Task CreateWorkFlowInstanceAsync(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier);
 
-        Task<ActivityExecutionStatusEvent> ExecuteActivityAsync(Guid contextGuid, string newStatus, string comments, DateTime? contextDate, string contextCode);
+        Task<ActivityExecutionStatusEvent> ExecuteActivityAsync(Guid contextGuid, string newExecutionStatus, string comments, DateTime? contextDate, string contextCode);
 
         TerminologyMedDra GetCurrentAdverseReaction(Patient patient);
 
-        bool ValidateExecutionStatusForCurrentActivity(Guid contextGuid, string validateStatus);
+        Task<bool> ValidateExecutionStatusForCurrentActivityAsync(Guid contextGuid, string executionStatusToBeValidated);
 
         TerminologyMedDra GetTerminologyMedDraForReportInstance(Guid contextGuid);
 

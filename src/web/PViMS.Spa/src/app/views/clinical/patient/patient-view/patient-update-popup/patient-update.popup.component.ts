@@ -13,7 +13,6 @@ import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
 import { PatientCustomAttributesForUpdateModel } from 'app/shared/models/patient/patient-custom-attributes-for-update.model';
-import { concat, forkJoin } from 'rxjs';
 import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
 import { PatientNameForUpdateModel } from 'app/shared/models/patient/patient-name-for-update.model';
 import { PatientDateOfBirthForUpdateModel } from 'app/shared/models/patient/patient-date-of-birth-for-update.model';

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using LinqKit;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -31,7 +30,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
@@ -512,15 +510,15 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Set report instance status
+        /// Change report instance activity
         /// </summary>
         /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
         /// <param name="id">The unique identifier of the reporting instance</param>
         /// <param name="activityChange">The payload for setting the new status</param>
         /// <returns></returns>
-        [HttpPut("workflow/{workFlowGuid}/reportinstances/{id}/status", Name = "UpdateReportInstanceStatus")]
+        [HttpPut("workflow/{workFlowGuid}/reportinstances/{id}/activity", Name = "UpdateReportInstanceStage")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdateReportInstanceStatus(Guid workFlowGuid, int id,
+        public async Task<IActionResult> UpdateReportInstanceActivity(Guid workFlowGuid, int id,
             [FromBody] ActivityChangeDto activityChange)
         {
             if (activityChange == null)
@@ -528,38 +526,20 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id);
-            if (reportInstanceFromRepo == null)
+            var command = new ChangeReportInstanceActivityCommand(workFlowGuid, id, activityChange.Comments, activityChange.CurrentExecutionStatus, activityChange.NewExecutionStatus, activityChange.ContextCode, activityChange.ContextDate);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeReportInstanceActivityCommand - {id}",
+                id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(activityChange.Comments, @"[-a-zA-Z0-9 .,()']").Count < activityChange.Comments.Length)
-            {
-                ModelState.AddModelError("Message", "Comments contains invalid characters (Enter A-Z, a-z, 0-9, period, comma, parentheses, space, apostrophe)");
-            }
-
-            if(!String.IsNullOrWhiteSpace(activityChange.ContextCode))
-            {
-                if (Regex.Matches(activityChange.ContextCode, @"[-a-zA-Z0-9']").Count < activityChange.ContextCode.Length)
-                {
-                    ModelState.AddModelError("Message", "Comments contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
-                }
-            }
-
-            if (!_workFlowService.ValidateExecutionStatusForCurrentActivity(reportInstanceFromRepo.ContextGuid, activityChange.NewExecutionStatus))
-            {
-                ModelState.AddModelError("Message", "Invalid status for activity");
-            }
-
-            if (ModelState.IsValid)
-            {
-                await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, activityChange.NewExecutionStatus, activityChange.Comments, activityChange.ContextDate, activityChange.ContextCode);
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -585,7 +565,7 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            if (!_workFlowService.ValidateExecutionStatusForCurrentActivity(reportInstanceFromRepo.ContextGuid, "MEDDRASET"))
+            if (await _workFlowService.ValidateExecutionStatusForCurrentActivityAsync(reportInstanceFromRepo.ContextGuid, "MEDDRASET") == false)
             {
                 ModelState.AddModelError("Message", "Invalid status for activity");
             }
@@ -627,7 +607,7 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            if (!_workFlowService.ValidateExecutionStatusForCurrentActivity(reportInstanceFromRepo.ContextGuid, "E2BINITIATED"))
+            if (await _workFlowService.ValidateExecutionStatusForCurrentActivityAsync(reportInstanceFromRepo.ContextGuid, "E2BINITIATED") == false)
             {
                 ModelState.AddModelError("Message", "Invalid status for activity");
             }
@@ -679,7 +659,7 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            if (!_workFlowService.ValidateExecutionStatusForCurrentActivity(reportInstanceFromRepo.ContextGuid, "CAUSALITYSET"))
+            if (await _workFlowService.ValidateExecutionStatusForCurrentActivityAsync(reportInstanceFromRepo.ContextGuid, "CAUSALITYSET") == false)
             {
                 ModelState.AddModelError("Message", "Invalid status for activity");
             }
@@ -1159,11 +1139,11 @@ namespace PVIMS.API.Controllers
             var patientClinicalEvent = await _patientClinicalEventRepository.GetAsync(p => p.PatientClinicalEventGuid == reportInstanceFromRepo.ContextGuid, new string[] { "Patient" });
             
             // Add activity and link E2B to new element
-            var evt = await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "E2BINITIATED", "AUTOMATION: E2B dataset created", null, "");
+            var newActivityExecutionStatusEvent = await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "E2BINITIATED", "AUTOMATION: E2B dataset created", null, "");
 
             if (dataset != null && patientClinicalEvent != null)
             {
-                datasetInstance = dataset.CreateInstance(evt.Id, null);
+                datasetInstance = dataset.CreateInstance(newActivityExecutionStatusEvent.Id, null);
                 datasetInstance.Tag = "Active";
                 
                 _unitOfWork.Repository<DatasetInstance>().Save(datasetInstance);
