@@ -86,6 +86,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
 
   navigationSubscription;
   workflowId: string = null;
+  qualifiedName: string = null;
 
   currentScreenWidth: string = '';
   flexMediaWatcher: Subscription;
@@ -117,6 +118,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     }
 
     self.workflowId = self._activatedRoute.snapshot.paramMap.get('wuid');
+    self.qualifiedName = self._activatedRoute.snapshot.paramMap.get('qualifiedName');
 
     self.viewModelForm = self._formBuilder.group({
       qualifiedName: [self.viewModel.qualifiedName || ''],
@@ -230,6 +232,9 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.workFlow = result;
+        if(self.qualifiedName != null) {
+          self.selectActivity(self.qualifiedName);
+        }
       }, error => {
         this.handleError(error, "Error fetching work flow");
       });

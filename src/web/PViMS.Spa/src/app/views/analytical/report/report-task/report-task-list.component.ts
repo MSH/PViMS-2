@@ -17,6 +17,7 @@ import { ReportTaskAddPopupComponent } from './report-task-add-popup/report-task
 import { ChangeTaskDetailsPopupComponent } from './change-task-details-popup/change-task-details.popup.component';
 import { ChangeTaskStatusPopupComponent } from './change-task-status-popup/change-task-status.popup.component';
 import { TaskCommentsPopupComponent } from './task-comments-popup/task-comments.popup.component';
+import { _routes } from 'app/config/routes';
 
 @Component({
   templateUrl: './report-task-list.component.html',
@@ -57,6 +58,7 @@ export class ReportTaskListComponent extends BaseComponent implements OnInit, Af
   showProgress: boolean;
 
   workFlowId: string;
+  qualifiedName: string;
   reportInstanceId: number;
   viewModel: ViewModel = new ViewModel();
 
@@ -84,6 +86,7 @@ export class ReportTaskListComponent extends BaseComponent implements OnInit, Af
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         this.CLog(result);
+        self.qualifiedName = result.qualifiedName;
         self.updateForm(self.itemForm, result);
         self.viewModel.mainGrid.updateBasic(result.tasks);
       }, error => {
@@ -170,6 +173,11 @@ export class ReportTaskListComponent extends BaseComponent implements OnInit, Af
       .subscribe(res => {
         self.loadData();
       })
+  }
+
+  navigateToReportSearch(): void {
+    let self = this;
+    self._router.navigate([_routes.analytical.reports.searchByQualifiedName(self.workFlowId, self.qualifiedName)]);
   }  
 }
 

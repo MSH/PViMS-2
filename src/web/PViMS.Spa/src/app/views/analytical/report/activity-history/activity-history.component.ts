@@ -14,6 +14,7 @@ import { finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { ProgressStatusEnum, ProgressStatus } from 'app/shared/models/program-status.model';
 import { HttpEventType } from '@angular/common/http';
+import { _routes } from 'app/config/routes';
 
 @Component({
   templateUrl: './activity-history.component.html',
@@ -53,6 +54,7 @@ export class ActivityHistoryComponent extends BaseComponent implements OnInit, A
   showProgress: boolean;
 
   workFlowId: string;
+  qualifiedName: string;
   reportInstanceId: number;
   viewModel: ViewModel = new ViewModel();
 
@@ -79,6 +81,8 @@ export class ActivityHistoryComponent extends BaseComponent implements OnInit, A
     self.reportInstanceService.getReportInstanceExpanded(self.workFlowId, self.reportInstanceId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
+        self.CLog(result, 'result');
+        self.qualifiedName = result.qualifiedName;
         self.updateForm(self.itemForm, result);
         self.viewModel.mainGrid.updateBasic(result.events);
       }, error => {
@@ -161,6 +165,11 @@ export class ActivityHistoryComponent extends BaseComponent implements OnInit, A
         break;
     }
   } 
+
+  navigateToReportSearch(): void {
+    let self = this;
+    self._router.navigate([_routes.analytical.reports.searchByQualifiedName(self.workFlowId, self.qualifiedName)]);
+  }   
 }
 
 class ViewModel {

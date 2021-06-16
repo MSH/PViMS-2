@@ -32,6 +32,12 @@ export const AnalyticalRoutes: Routes = [
       runGuardsAndResolvers: 'always'
     },
     {
+      path: 'reportsearch/:wuid/:qualifiedName',
+      component: ReportSearchComponent,
+      data: { title: 'Search For a Report', breadcrumb: 'Reports' },
+      runGuardsAndResolvers: 'always'
+    },
+    {
       path: 'activityhistory/:wuid/:id',
       component: ActivityHistoryComponent,
       data: { title: 'Report Activities', breadcrumb: 'Activity' }
