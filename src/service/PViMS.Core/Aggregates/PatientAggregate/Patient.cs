@@ -836,7 +836,7 @@ namespace PVIMS.Core.Entities
                 return PatientClinicalEvents
                         .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.Id != patientClinicalEventId
-                                && pc.SourceTerminologyMedDra.Id == sourceTerminologyMedDraId
+                                && pc.SourceTerminologyMedDra?.Id == sourceTerminologyMedDraId
                                 && pc.OnsetDate <= onsetDate 
                                 && pc.ResolutionDate == null
                                 && pc.Archived == false)
@@ -846,7 +846,7 @@ namespace PVIMS.Core.Entities
             {
                 return PatientClinicalEvents
                         .OrderBy(pc => pc.OnsetDate)
-                        .Where(pc => pc.SourceTerminologyMedDra.Id == sourceTerminologyMedDraId
+                        .Where(pc => pc.SourceTerminologyMedDra?.Id == sourceTerminologyMedDraId
                                 && pc.OnsetDate <= onsetDate
                                 && pc.ResolutionDate == null
                                 && pc.Archived == false)
@@ -861,7 +861,7 @@ namespace PVIMS.Core.Entities
                 return PatientClinicalEvents
                         .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.Id != patientClinicalEventId
-                                && pc.SourceTerminologyMedDra.Id == sourceTerminologyMedDraId
+                                && pc.SourceTerminologyMedDra?.Id == sourceTerminologyMedDraId
                                 && onsetDate >= pc.OnsetDate 
                                 && onsetDate <= pc.ResolutionDate
                                 && pc.Archived == false)
@@ -871,7 +871,7 @@ namespace PVIMS.Core.Entities
             {
                 return PatientClinicalEvents
                         .OrderBy(pc => pc.OnsetDate)
-                        .Where(pc => pc.SourceTerminologyMedDra.Id == sourceTerminologyMedDraId
+                        .Where(pc => pc.SourceTerminologyMedDra?.Id == sourceTerminologyMedDraId
                                 && onsetDate >= pc.OnsetDate
                                 && onsetDate <= pc.ResolutionDate
                                 && pc.Archived == false)
@@ -886,7 +886,7 @@ namespace PVIMS.Core.Entities
                 return PatientClinicalEvents
                         .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.Id != patientClinicalEventId
-                                && pc.SourceTerminologyMedDra.Id == sourceTerminologyMedDraId
+                                && pc.SourceTerminologyMedDra?.Id == sourceTerminologyMedDraId
                                 && onsetDate < pc.OnsetDate
                                 && pc.Archived == false)
                         .Any();
@@ -895,7 +895,7 @@ namespace PVIMS.Core.Entities
             {
                 return PatientClinicalEvents
                         .OrderBy(pc => pc.OnsetDate)
-                        .Where(pc => pc.SourceTerminologyMedDra.Id == sourceTerminologyMedDraId
+                        .Where(pc => pc.SourceTerminologyMedDra?.Id == sourceTerminologyMedDraId
                                 && onsetDate < pc.OnsetDate
                                 && pc.Archived == false)
                         .Any();
@@ -909,7 +909,7 @@ namespace PVIMS.Core.Entities
                 return PatientClinicalEvents
                         .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.Id != patientClinicalEventId
-                                && pc.SourceTerminologyMedDra.Id == sourceTerminologyMedDraId
+                                && pc.SourceTerminologyMedDra?.Id == sourceTerminologyMedDraId
                                 && pc.OnsetDate <= resolutionDate 
                                 && pc.ResolutionDate == null
                                 && pc.Archived == false)
@@ -919,7 +919,7 @@ namespace PVIMS.Core.Entities
             {
                 return PatientClinicalEvents
                         .OrderBy(pc => pc.OnsetDate)
-                        .Where(pc => pc.SourceTerminologyMedDra.Id == sourceTerminologyMedDraId
+                        .Where(pc => pc.SourceTerminologyMedDra?.Id == sourceTerminologyMedDraId
                                 && pc.OnsetDate <= resolutionDate
                                 && pc.ResolutionDate == null
                                 && pc.Archived == false)
@@ -934,7 +934,7 @@ namespace PVIMS.Core.Entities
                 return PatientClinicalEvents
                         .OrderBy(pc => pc.OnsetDate)
                         .Where(pc => pc.Id != patientClinicalEventId
-                                && pc.SourceTerminologyMedDra.Id == sourceTerminologyMedDraId
+                                && pc.SourceTerminologyMedDra?.Id == sourceTerminologyMedDraId
                                 && resolutionDate >= pc.OnsetDate 
                                 && resolutionDate <= pc.ResolutionDate
                                 && pc.Archived == false)
@@ -944,7 +944,7 @@ namespace PVIMS.Core.Entities
             {
                 return PatientClinicalEvents
                         .OrderBy(pc => pc.OnsetDate)
-                        .Where(pc => pc.SourceTerminologyMedDra.Id == sourceTerminologyMedDraId
+                        .Where(pc => pc.SourceTerminologyMedDra?.Id == sourceTerminologyMedDraId
                                 && resolutionDate >= pc.OnsetDate
                                 && resolutionDate <= pc.ResolutionDate
                                 && pc.Archived == false)
