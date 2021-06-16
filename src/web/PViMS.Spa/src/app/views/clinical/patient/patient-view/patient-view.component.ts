@@ -349,7 +349,7 @@ export class PatientViewComponent extends BaseComponent implements OnInit, After
     let self = this;
     let title = 'Delete ' + type;
     let dialogRef: MatDialogRef<any> = self.dialog.open(GenericDeletePopupComponent, {
-      width: '720px',
+      width: '920px',
       disableClose: true,
       data: { id: id, patientId: self.id, type: type, title: title, name: name }
     })
@@ -367,7 +367,7 @@ export class PatientViewComponent extends BaseComponent implements OnInit, After
     let self = this;
     let title = 'Delete ' + type;
     let dialogRef: MatDialogRef<any> = self.dialog.open(GenericArchivePopupComponent, {
-      width: '720px',
+      width: '920px',
       disableClose: true,
       data: { id: id, parentId: self.id, type: type, title: title, name: name }
     })
@@ -389,7 +389,7 @@ export class PatientViewComponent extends BaseComponent implements OnInit, After
     let title = 'Cohort De-enrolment';
 
     let dialogRef: MatDialogRef<any> = self.dialog.open(DeenrolmentPopupComponent, {
-      width: '720px',
+      width: '920px',
       disableClose: true,
       data: { patientId: self.id, cohortGroupEnrolmentId: cohortGroupEnrolmentId, cohort: `${cohortName} (${cohortCode})`, enroledDate: enroledDate, deenroledDate: Date.now, title: title, payload: data }
     })
