@@ -15,27 +15,27 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Queries.PatientAggregate
 {
-    public class PatientMedicationDetailQueryHandler
-        : IRequestHandler<PatientMedicationDetailQuery, PatientMedicationDetailDto>
+    public class PatientClinicalEventDetailQueryHandler
+        : IRequestHandler<PatientClinicalEventDetailQuery, PatientClinicalEventDetailDto>
     {
-        private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
+        private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly ICustomAttributeService _customAttributeService;
         private readonly IMapper _mapper;
-        private readonly ILogger<PatientMedicationDetailQueryHandler> _logger;
+        private readonly ILogger<PatientClinicalEventDetailQueryHandler> _logger;
 
-        public PatientMedicationDetailQueryHandler(
-            IRepositoryInt<PatientMedication> patientMedicationRepository,
+        public PatientClinicalEventDetailQueryHandler(
+            IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
             ITypeExtensionHandler modelExtensionBuilder,
             ILinkGeneratorService linkGeneratorService,
             ICustomAttributeService customAttributeService,
             IMapper mapper,
-            ILogger<PatientMedicationDetailQueryHandler> logger)
+            ILogger<PatientClinicalEventDetailQueryHandler> logger)
         {
-            _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
+            _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
@@ -44,29 +44,29 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<PatientMedicationDetailDto> Handle(PatientMedicationDetailQuery message, CancellationToken cancellationToken)
+        public async Task<PatientClinicalEventDetailDto> Handle(PatientClinicalEventDetailQuery message, CancellationToken cancellationToken)
         {
-            var patientMedicationFromRepo = await _patientMedicationRepository.GetAsync(pm => pm.Patient.Id == message.PatientId && pm.Id == message.PatientMedicationId, 
-                new string[] { "Concept.MedicationForm", "Product" } );
+            var patientClinicalEventFromRepo = await _patientClinicalEventRepository.GetAsync(pm => pm.Patient.Id == message.PatientId && pm.Id == message.PatientClinicalEventId, 
+                new string[] { "SourceTerminologyMedDra" } );
 
-            if (patientMedicationFromRepo == null)
+            if (patientClinicalEventFromRepo == null)
             {
-                throw new KeyNotFoundException("Unable to locate patient medication");
+                throw new KeyNotFoundException("Unable to locate patient clinical event");
             }
 
-            var mappedPatientMedication = _mapper.Map<PatientMedicationDetailDto>(patientMedicationFromRepo);
+            var mappedPatientClinicalEvent = _mapper.Map<PatientClinicalEventDetailDto>(patientClinicalEventFromRepo);
 
-            await CustomMapAsync(patientMedicationFromRepo, mappedPatientMedication);
+            await CustomMapAsync(patientClinicalEventFromRepo, mappedPatientClinicalEvent);
 
-            return CreateLinks(mappedPatientMedication);
+            return CreateLinks(mappedPatientClinicalEvent);
         }
 
-        private async Task CustomMapAsync(PatientMedication patientMedicationFromRepo, PatientMedicationDetailDto dto)
+        private async Task CustomMapAsync(PatientClinicalEvent patientClinicalEventFromRepo, PatientClinicalEventDetailDto dto)
         {
-            IExtendable patientMedicationExtended = patientMedicationFromRepo;
+            IExtendable patientClinicalEventExtended = patientClinicalEventFromRepo;
 
             // Map all custom attributes
-            dto.MedicationAttributes = _modelExtensionBuilder.BuildModelExtension(patientMedicationExtended)
+            dto.ClinicalEventAttributes = _modelExtensionBuilder.BuildModelExtension(patientClinicalEventExtended)
                 .Select(h => new AttributeValueDto()
                 {
                     Id = h.Id,
@@ -76,7 +76,8 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                     SelectionValue = GetSelectionValue(h.Type, h.AttributeKey, h.Value.ToString())
                 }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
 
-            dto.IndicationType = await _customAttributeService.GetCustomAttributeValueAsync("PatientMedication", "Type of Indication", patientMedicationExtended);
+            dto.ReportDate = await _customAttributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Date of Report", patientClinicalEventExtended);
+            dto.IsSerious = await _customAttributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Is the adverse event serious?", patientClinicalEventExtended);
         }
 
         private string GetSelectionValue(CustomAttributeType attributeType, string attributeKey, string selectionKey)
@@ -91,11 +92,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             return "";
         }
 
-        private PatientMedicationDetailDto CreateLinks(PatientMedicationDetailDto mappedPatientMedication)
+        private PatientClinicalEventDetailDto CreateLinks(PatientClinicalEventDetailDto mappedPatientClinicalEvent)
         {
-            mappedPatientMedication.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("PatientMedication", mappedPatientMedication.Id), "self", "GET"));
+            mappedPatientClinicalEvent.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("PatientClinicalEvent", mappedPatientClinicalEvent.Id), "self", "GET"));
 
-            return mappedPatientMedication;
+            return mappedPatientClinicalEvent;
         }
     }
 }

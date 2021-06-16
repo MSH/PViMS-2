@@ -229,8 +229,8 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
             IExtendable clinicalEventExtended = clinicalEvent;
 
-            dto.ReportDate = _customAttributeService.GetCustomAttributeValue("PatientClinicalEvent", "Date of Report", clinicalEventExtended);
-            dto.IsSerious = _customAttributeService.GetCustomAttributeValue("PatientClinicalEvent", "Is the adverse event serious?", clinicalEventExtended);
+            dto.ReportDate = await _customAttributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Date of Report", clinicalEventExtended);
+            dto.IsSerious = await _customAttributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Is the adverse event serious?", clinicalEventExtended);
         }
 
         private async Task CustomMedicationMapAsync(PatientMedicationDetailDto dto)
@@ -255,7 +255,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                 }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
 
 
-            dto.IndicationType = _customAttributeService.GetCustomAttributeValue("PatientMedication", "Type of Indication", medicationExtended);
+            dto.IndicationType = await _customAttributeService.GetCustomAttributeValueAsync("PatientMedication", "Type of Indication", medicationExtended);
         }
 
         private string GetSelectionValue(CustomAttributeType attributeType, string attributeKey, string selectionKey)
