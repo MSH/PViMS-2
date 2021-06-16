@@ -341,8 +341,11 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         {
             if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "UNCONFIRMED")
             {
-                mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus",
-                    reportInstanceFromRepo.WorkFlow.WorkFlowGuid, mappedReportInstance.Id), "confirm", "PUT"));
+                if(!reportInstanceFromRepo.HasActiveTasks())
+                {
+                    mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus",
+                        reportInstanceFromRepo.WorkFlow.WorkFlowGuid, mappedReportInstance.Id), "confirm", "PUT"));
+                }
                 mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus",
                     reportInstanceFromRepo.WorkFlow.WorkFlowGuid, mappedReportInstance.Id), "delete", "PUT"));
             }
