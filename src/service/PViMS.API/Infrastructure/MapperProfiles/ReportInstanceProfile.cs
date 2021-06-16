@@ -21,13 +21,15 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.UpdatedDetail, opt => opt.MapFrom(src => src.LastUpdated))
                 .ForMember(dest => dest.CurrentStatus, opt => opt.MapFrom(src => src.CurrentActivity.CurrentStatus.Description))
                 .ForMember(dest => dest.QualifiedName, opt => opt.MapFrom(src => src.CurrentActivity.QualifiedName))
-                .ForMember(dest => dest.TaskCount, opt => opt.MapFrom(src => src.Tasks.Count()));
+                .ForMember(dest => dest.TaskCount, opt => opt.MapFrom(src => src.Tasks.Count()))
+                .ForMember(dest => dest.ActiveTaskCount, opt => opt.MapFrom(src => src.Tasks.Where(t => t.TaskStatusId != TaskStatus.Cancelled.Id && t.TaskStatusId != TaskStatus.Completed.Id).Count()));
             CreateMap<ReportInstance, ReportInstanceExpandedDto>()
                 .ForMember(dest => dest.CreatedDetail, opt => opt.MapFrom(src => src.Created))
                 .ForMember(dest => dest.UpdatedDetail, opt => opt.MapFrom(src => src.LastUpdated))
                 .ForMember(dest => dest.CurrentStatus, opt => opt.MapFrom(src => src.CurrentActivity.CurrentStatus.Description))
                 .ForMember(dest => dest.QualifiedName, opt => opt.MapFrom(src => src.CurrentActivity.QualifiedName))
-                .ForMember(dest => dest.TaskCount, opt => opt.MapFrom(src => src.Tasks.Count()));
+                .ForMember(dest => dest.TaskCount, opt => opt.MapFrom(src => src.Tasks.Count()))
+                .ForMember(dest => dest.ActiveTaskCount, opt => opt.MapFrom(src => src.Tasks.Where(t => t.TaskStatusId != TaskStatus.Cancelled.Id && t.TaskStatusId != TaskStatus.Completed.Id).Count()));
 
             CreateMap<TerminologyMedDra, TerminologyMedDraDto>();
 

@@ -155,7 +155,8 @@
               <mat-header-cell *matHeaderCellDef>{{ 'Tasks' | translate }}</mat-header-cell>
               <mat-cell *matCellDef="let record">
                   <div class="text-center pt-12 pb-12 border-right-light">
-                    <mat-icon matBadge="{{record.taskCount}}" matBadgeOverlap="false" matBadgeColor="accent">assignment</mat-icon>
+                    <mat-icon matBadge="{{record.taskCount}}" matBadgeOverlap="false" *ngIf="record.activeTaskCount == 0" matBadgeColor="accent">assignment</mat-icon>
+                    <mat-icon matBadge="{{record.taskCount}}" matBadgeOverlap="false" *ngIf="record.activeTaskCount > 0" matBadgeColor="warn">assignment</mat-icon>
                   </div>                
               </mat-cell>
             </ng-container>

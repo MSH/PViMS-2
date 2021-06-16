@@ -88,6 +88,12 @@ namespace PVIMS.API.Models
         public int TaskCount { get; set; }
 
         /// <summary>
+        /// The number of tasks that have been allocated to this report that have not been completed or cancelled
+        /// </summary>
+        [DataMember]
+        public int ActiveTaskCount { get; set; }
+
+        /// <summary>
         /// The dataset that has been generated for a spontaneous report
         /// </summary>
         [DataMember]
