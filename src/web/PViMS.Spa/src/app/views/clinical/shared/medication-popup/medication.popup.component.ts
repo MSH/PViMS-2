@@ -14,13 +14,13 @@ import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
 import { ConceptSelectPopupComponent } from 'app/shared/components/popup/concept-select-popup/concept-select.popup.component';
 import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
+import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
 
 // Depending on whether rollup is used, moment needs to be imported differently.
 // Since Moment.js doesn't have a default export, we normally need to import using the `* as`
 // syntax. However, rollup creates a synthetic default module and we thus need to import it using
 // the `default as` syntax.
 import * as _moment from 'moment';
-import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
 const moment =  _moment;
 
 @Component({
@@ -204,7 +204,7 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
       productId = +self.viewModelForm.get('productId').value
     }
 
-    const medicationModel: PatientMedicationForUpdateModel = {
+    const medicationForUpdate: PatientMedicationForUpdateModel = {
       id: self.data.medicationId,
       medication: self.viewModelForm.get('medication').value,
       index: 0,
@@ -219,20 +219,20 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
       attributes: this.prepareAttributeForUpdateModel()
     };
 
-    return medicationModel;
+    return medicationForUpdate;
   }
 
   private prepareAttributeForUpdateModel(): AttributeValueForPostModel[] {
-    const attributesForPosts: AttributeValueForPostModel[] = [];
+    const attributesForUpdates: AttributeValueForPostModel[] = [];
     this.customAttributeList.forEach(element => {
       const attributeForUpdateModel: AttributeValueForPostModel = {
         id: element.id,
         value: this.viewModelForm.get('attributes').value[element.id]
       }
-      attributesForPosts.push(attributeForUpdateModel);
+      attributesForUpdates.push(attributeForUpdateModel);
     });
-    return attributesForPosts;
-  }  
+    return attributesForUpdates;
+  }
 }
 
 export interface MedicationPopupData {
