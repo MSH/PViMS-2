@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,8 +21,16 @@ import { _routes } from 'app/config/routes';
 
 @Component({
   templateUrl: './report-task-list.component.html',
-  styleUrls: ['./report-task-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-source { flex: 0 0 15% !important; width: 30% !important; }
+    .mat-column-description { flex: 0 0 25% !important; width: 30% !important; }
+    .mat-column-task-type { flex: 0 0 15% !important; width: 30% !important; }
+    .mat-column-task-status { flex: 0 0 10% !important; width: 15% !important; }
+    .mat-column-created { flex: 0 0 10% !important; width: 15% !important; }
+    .mat-column-updated { flex: 0 0 10% !important; width: 15% !important; }
+    .mat-column-comment-count { flex: 0 0 10% !important; width: 15% !important; }
+    .mat-column-actions { flex: 0 0 5% !important; width: 15% !important; }
+  `],   
   animations: egretAnimations
 })
 export class ReportTaskListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

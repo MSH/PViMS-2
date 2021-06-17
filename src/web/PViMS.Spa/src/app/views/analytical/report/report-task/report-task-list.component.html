@@ -24,19 +24,23 @@
           </mat-form-field>        
         </div>
       </div>
-      <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="end" class="p-8">
+      <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="end" class="p-8" *ngIf="viewModel?.mainGrid?.records?.data?.length > 0">
         <button mat-raised-button class="mr-05" color="accent" (click)="openTaskAddPopUp()">{{'Add Task' | translate}}</button>
       </div>
     </form>
     <div class="ml-05 mr-05 mt-12 pb-1">
-      <mat-card class="flex-item p-12 mat-elevation-z6 rounded" *ngIf="viewModel?.mainGrid?.records?.data?.length == 0" [@animate]="{value:'50'}">
-        <mat-card-content class="text-center">
-          <div class="light-gray p-12">
-            {{'There are currently no tasks associated to this report, please click on the button below to add a new task ...' | translate}}
-          </div>
-          <button mat-raised-button class="mr-05 mt-12" color="accent" (click)="openTaskAddPopUp()">{{'Add Task' | translate}}</button>
-        </mat-card-content>
-      </mat-card>       
+      <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start">
+        <div fxFlex="30">
+          <mat-card class="p-12 mat-elevation-z6 rounded" *ngIf="viewModel?.mainGrid?.records?.data?.length == 0" [@animate]="{value:'50'}">
+            <mat-card-content class="text-center">
+              <div class="light-gray p-12">
+                {{'There are currently no tasks associated to this report, please click on the button below to add a new task ...' | translate}}
+              </div>
+              <button mat-raised-button class="mr-05 mt-12" color="accent" (click)="openTaskAddPopUp()">{{'Add Task' | translate}}</button>
+            </mat-card-content>
+          </mat-card>       
+        </div>
+      </div>
 
       <div class="table-container" *ngIf="viewModel?.mainGrid?.records?.data?.length > 0">
         <mat-table [dataSource]="viewModel?.mainGrid?.records"

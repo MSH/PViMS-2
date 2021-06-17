@@ -31,7 +31,7 @@
             {{'Maximum length exceeded' | translate}}
           </mat-error>            
           <mat-error *ngIf="itemForm.get('description').hasError('pattern')">
-            {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, space)
+            {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, space, parenthesis, question mark, comma, period)
           </mat-error>            
         </mat-form-field>        
       </div>      

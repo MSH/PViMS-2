@@ -34,7 +34,7 @@ export class ChangeTaskDetailsPopupComponent extends BasePopupComponent implemen
   ngOnInit(): void {
     this.itemForm = this._formBuilder.group({
       source: ['', [Validators.required, Validators.maxLength(200), Validators.pattern('[a-zA-Z0-9 ]*')]],
-      description: ['', [Validators.required, Validators.maxLength(500), Validators.pattern('[a-zA-Z0-9 ]*')]]
+      description: ['', [Validators.required, Validators.maxLength(500), Validators.pattern('[-a-zA-Z0-9()?,. ]*')]]
     })
   }
 
