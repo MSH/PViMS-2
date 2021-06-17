@@ -288,9 +288,9 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                 throw new DomainException($"Workflow {workFlow.Description} does not have any activities configured");
             }
 
-            var activity = workFlow.Activities.OrderBy(a => a.Id).First();
-            var activityInstance = new ActivityInstance(activity, currentUser);
-            _activities.Add(activityInstance);
+            var firstActivity = workFlow.Activities.OrderBy(a => a.Id).First();
+            var firstActivityInstance = new ActivityInstance(firstActivity, currentUser);
+            _activities.Add(firstActivityInstance);
         }
 
         private void MoveToNextActivity(WorkFlow workFlow, User currentUser)

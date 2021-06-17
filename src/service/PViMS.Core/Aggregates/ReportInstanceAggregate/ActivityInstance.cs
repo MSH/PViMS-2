@@ -30,11 +30,6 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         public ActivityInstance(Activity activity, User currentUser)
         {
-            if(activity.ExecutionStatuses.Count == 0)
-            {
-                throw new DomainException($"Cannot initialise activity instance as activity is not configure with any execution statuses {activity.QualifiedName}");
-            }
-
             _executionEvents = new List<ActivityExecutionStatusEvent>();
 
             QualifiedName = activity.QualifiedName;
@@ -46,8 +41,10 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         private void InitialiseWithFirstExecutionStatus(Activity activity, User currentUser)
         {
             var executionStatus = activity.ExecutionStatuses.OrderBy(es => es.Id).First();
-            var executionStatusEvent = new ActivityExecutionStatusEvent(executionStatus, currentUser, "", "", null);
-            _executionEvents.Add(executionStatusEvent);
+            var newExecutionStatusEvent = new ActivityExecutionStatusEvent(executionStatus, currentUser, "", "", null);
+
+            CurrentStatus = executionStatus;
+            _executionEvents.Add(newExecutionStatusEvent);
         }
 
         public void SetToOld()
