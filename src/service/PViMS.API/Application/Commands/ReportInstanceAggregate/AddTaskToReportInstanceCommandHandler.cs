@@ -38,7 +38,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
         public async Task<TaskDto> Handle(AddTaskToReportInstanceCommand message, CancellationToken cancellationToken)
         {
             var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.WorkFlow.WorkFlowGuid == message.WorkFlowGuid
-                    && ri.Id == message.ReportInstanceId);
+                    && ri.Id == message.ReportInstanceId, new string[] { "CreatedBy" });
 
             if(reportInstanceFromRepo == null)
             {

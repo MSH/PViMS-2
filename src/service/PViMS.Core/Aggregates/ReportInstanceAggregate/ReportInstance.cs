@@ -1,3 +1,4 @@
+using PViMS.Core.Events;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Exceptions;
@@ -100,6 +101,9 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
             var newTask = new ReportInstanceTask(taskDetail, taskType, taskStatus);
             _tasks.Add(newTask);
+
+            AddTaskAddedDomainEvent(newTask);
+
             return newTask;
         }
 
@@ -321,6 +325,13 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             {
                 throw new DomainException($"Unable to change activity from CONFIRMED as there are active tasks");
             }
+        }
+
+        private void AddTaskAddedDomainEvent(ReportInstanceTask newTask)
+        {
+            var domainEvent = new TaskAddedDomainEvent(newTask);
+
+            this.AddDomainEvent(domainEvent);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -11,14 +12,15 @@ using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.SeedWork;
 using PVIMS.Infrastructure.EntityConfigurations;
 using PVIMS.Infrastructure.EntityConfigurations.KeyLess;
-using PVIMS.Infrastructure.Identity;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
+using PViMS.Infrastructure.Helpers;
 
 namespace PVIMS.Infrastructure
 {
     public class PVIMSDbContext : DbContext
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMediator _mediator;
 
         // Database entities
         public virtual DbSet<Activity> Activities { get; set; }
@@ -130,16 +132,19 @@ namespace PVIMS.Infrastructure
         public DbSet<EncounterList> EncounterLists { get; set; }
         public DbSet<MetaPatientList> MetaPatientLists { get; set; }
         public DbSet<OutstandingVisitList> OutstandingVisitLists { get; set; }
+        public DbSet<PatientIdList> PatientIdLists { get; set; }
         public DbSet<PatientList> PatientLists { get; set; }
         public DbSet<PatientOnStudyList> PatientOnStudyLists { get; set; }
 
         public PVIMSDbContext(DbContextOptions<PVIMSDbContext> options) : base(options) { }
 
         public PVIMSDbContext(DbContextOptions<PVIMSDbContext> options,
-            IHttpContextAccessor httpContextAccessor) 
+            IHttpContextAccessor httpContextAccessor,
+            IMediator mediator) 
             : base(options) 
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -260,6 +265,14 @@ namespace PVIMS.Infrastructure
 
         public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
+            // Dispatch Domain Events collection. 
+            // Choices:
+            // A) Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
+            // side effects from the domain event handlers which are using the same DbContext with "InstancePerLifetimeScope" or "scoped" lifetime
+            // B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
+            // You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
+            await _mediator.DispatchDomainEventsAsync(this);
+
             foreach (var changedEntity in ChangeTracker.Entries()
                 .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified))
             {

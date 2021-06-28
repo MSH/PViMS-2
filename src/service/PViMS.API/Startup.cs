@@ -18,9 +18,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PVIMS.API;
-using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.AutofacModules;
+using PVIMS.API.Infrastructure.Configs.ExceptionHandler;
 using PVIMS.API.Infrastructure.Extensions;
 using PVIMS.API.Infrastructure.OperationFilters;
 using PVIMS.API.Infrastructure.Services;
@@ -41,7 +41,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using PVIMS.API.Infrastructure.Configs.ExceptionHandler;
 
 namespace PViMS.API
 {
@@ -71,40 +70,14 @@ namespace PViMS.API
             // Create the container builder.
             var builder = new ContainerBuilder();
 
-            builder.RegisterType<TypeExtensionHandler>()
-                .AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
-
-            // Register dependencies, populate the services from
-            // the collection, and build the container. If you want
-            // to dispose of the container at the end of the app,
-            // be sure to keep a reference to it as a property or field.
-
-            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-                .Where(t => t.Name.EndsWith("Repository"))
-                .AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
-
-            builder.RegisterType<EntityFrameworkUnitOfWork>()
-                .AsImplementedInterfaces()
-                .As<EntityFrameworkUnitOfWork>() // for internal factories.
-                .InstancePerLifetimeScope()
-                .OnActivating(u => u.Instance.Start());
-
-            builder.RegisterGeneric(typeof(EntityFrameworkRepository<>)).As(typeof(IRepositoryInt<>));
-
-            builder.Register(c => new ReportInstanceQueries(Configuration["ConnectionString"]))
-                .As<IReportInstanceQueries>()
-                .InstancePerLifetimeScope();
-
             builder.Populate(services);
             builder.RegisterModule(new MediatorModule());
+            builder.RegisterModule(new ApplicationModule(Configuration["ConnectionString"]));
 
             this.ApplicationContainer = builder.Build();
 
             // Create the IServiceProvider based on the container.
             return new AutofacServiceProvider(this.ApplicationContainer);
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -486,6 +459,15 @@ namespace PViMS.API
             services.AddTransient<IArtefactService, ArtefactService>();
             services.AddTransient<IWorkFlowService, WorkFlowService>();
             services.AddTransient<IMedDraService, MedDraService>();
+
+            IConfigurationSection smtpSettings = configuration.GetSection(nameof(SMTPSettings));
+            services.AddTransient<ISMTPMailService, SMTPMailService>(s => new SMTPMailService(
+                smtpSettings[nameof(SMTPSettings.SmtpHost)], 
+                Convert.ToInt32(smtpSettings[nameof(SMTPSettings.Port)]), 
+                Convert.ToBoolean(smtpSettings[nameof(SMTPSettings.UseSSL)]), 
+                smtpSettings[nameof(SMTPSettings.MailboxUserName)], 
+                smtpSettings[nameof(SMTPSettings.MailboxPassword)], 
+                smtpSettings[nameof(SMTPSettings.MailboxAddress)]));
 
             return services;
         }

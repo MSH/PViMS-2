@@ -1,5 +1,4 @@
 using PVIMS.Core.Entities;
-using PVIMS.Core.Exceptions;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -74,6 +73,5 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
             _comments.Remove(taskComment);
         }
-
     }
 }
