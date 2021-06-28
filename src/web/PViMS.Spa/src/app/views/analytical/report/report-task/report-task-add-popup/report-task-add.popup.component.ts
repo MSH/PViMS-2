@@ -16,7 +16,7 @@ import { ReportInstanceService } from 'app/shared/services/report-instance.servi
 export class ReportTaskAddPopupComponent extends BasePopupComponent implements OnInit {
   
   public itemForm: FormGroup;
-  protected busy: boolean = false;
+  public displayHelp: boolean = false;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ReportTaskAddPopupData,
