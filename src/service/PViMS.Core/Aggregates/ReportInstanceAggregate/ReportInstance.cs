@@ -200,6 +200,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             }
 
             task.ChangeTaskStatusToCancelled();
+            AddTaskCancelledDomainEvent(task);
         }
 
         public void DeleteTaskComment(int taskId, int taskCommentId)
@@ -330,6 +331,13 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         private void AddTaskAddedDomainEvent(ReportInstanceTask newTask)
         {
             var domainEvent = new TaskAddedDomainEvent(newTask);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddTaskCancelledDomainEvent(ReportInstanceTask cancelledTask)
+        {
+            var domainEvent = new TaskCancelledDomainEvent(cancelledTask);
 
             this.AddDomainEvent(domainEvent);
         }
