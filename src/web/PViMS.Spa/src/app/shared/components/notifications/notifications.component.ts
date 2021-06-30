@@ -50,6 +50,7 @@ export class NotificationsComponent {
     this.eventService.broadcast(_events.check_notification_event);
     this.accountService.getNotifications()
       .subscribe(result => {
+        console.log(result);
         this.notifications = result;
         this.checking = false;
       }, error => {
