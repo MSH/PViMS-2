@@ -119,7 +119,11 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                 throw new KeyNotFoundException(nameof(taskId));
             }
 
-            return task.AddComment(comment);
+            var newComment = task.AddComment(comment);
+
+            AddTaskCommentAddedDomainEvent(newComment);
+
+            return newComment;
         }
 
         public void ChangeTaskDetails(int taskId, string source, string description)
@@ -338,6 +342,13 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         private void AddTaskCancelledDomainEvent(ReportInstanceTask cancelledTask)
         {
             var domainEvent = new TaskCancelledDomainEvent(cancelledTask);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddTaskCommentAddedDomainEvent(ReportInstanceTaskComment newComment)
+        {
+            var domainEvent = new TaskCommentAddedDomainEvent(newComment);
 
             this.AddDomainEvent(domainEvent);
         }

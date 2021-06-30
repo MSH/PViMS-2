@@ -21,8 +21,8 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
 
         public async Task Handle(TaskAddedDomainEvent domainEvent, CancellationToken cancellationToken)
         {
-            var subject = $"New {TaskType.From(domainEvent.Task.TaskTypeId).Name} task has been added for report instance {domainEvent.Task.ReportInstance.Identifier}";
-            
+            var subject = $"Report task: {domainEvent.Task.ReportInstance.Identifier}";
+
             var sb = new StringBuilder();
             sb.Append($"A new task {TaskType.From(domainEvent.Task.TaskTypeId).Name} has been added that requires your attention. Please note the following details pertaining to the task: ");
             sb.Append("<p><b><u>Adverse Event Details</u></b></p>");

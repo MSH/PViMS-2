@@ -20,10 +20,10 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskCancelled
 
         public async Task Handle(TaskCancelledDomainEvent domainEvent, CancellationToken cancellationToken)
         {
-            var subject = $"Task {domainEvent.Task.ReportInstance.Identifier} has been cancelled";
-            
+            var subject = $"Report task: {domainEvent.Task.ReportInstance.Identifier}";
+
             var sb = new StringBuilder();
-            sb.Append($"Please note the following details pertaining to the task that has been cancelled: ");
+            sb.Append($"Please note task {domainEvent.Task.ReportInstance.Identifier} has been cancelled: ");
             sb.Append("<p><b><u>Adverse Event Details</u></b></p>");
             sb.Append("<table>");
             sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Identifier</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.ReportInstance.Identifier}</td></tr>");
