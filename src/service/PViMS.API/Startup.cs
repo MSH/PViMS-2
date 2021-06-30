@@ -30,7 +30,7 @@ using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Infrastructure;
 using PVIMS.Infrastructure.Identity;
-using PViMS.Infrastructure.Identity.Entities;
+using PVIMS.Infrastructure.Identity.Entities;
 using PVIMS.Infrastructure.Repositories;
 using PVIMS.Services;
 using Swashbuckle.AspNetCore.SwaggerUI;

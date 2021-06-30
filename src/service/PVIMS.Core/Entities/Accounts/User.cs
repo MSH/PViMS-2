@@ -1,4 +1,5 @@
-﻿using PVIMS.Core.Aggregates.ReportInstanceAggregate;
+﻿using PVIMS.Core.Aggregates.NotificationAggregate;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +37,9 @@ namespace PVIMS.Core.Entities.Accounts
             EncounterUpdates = new HashSet<Encounter>();
             ExecutionEvents = new HashSet<ActivityExecutionStatusEvent>();
             Facilities = new HashSet<UserFacility>();
+            Notifications = new HashSet<Notification>();
+            NotificationCreations = new HashSet<Notification>();
+            NotificationUpdates = new HashSet<Notification>();
             PatientCreations = new HashSet<Patient>();
             PatientUpdates = new HashSet<Patient>();
             PatientClinicalEvents = new HashSet<PatientClinicalEvent>();
@@ -98,6 +102,9 @@ namespace PVIMS.Core.Entities.Accounts
         public virtual ICollection<Encounter> EncounterUpdates { get; set; }
         public virtual ICollection<ActivityExecutionStatusEvent> ExecutionEvents { get; set; }
         public virtual ICollection<UserFacility> Facilities { get; set; }
+        public virtual ICollection<Notification> Notifications { get; set; }
+        public virtual ICollection<Notification> NotificationCreations { get; set; }
+        public virtual ICollection<Notification> NotificationUpdates { get; set; }
         public virtual ICollection<Patient> PatientCreations { get; set; }
         public virtual ICollection<Patient> PatientUpdates { get; set; }
         public virtual ICollection<PatientClinicalEvent> PatientClinicalEvents { get; set; }

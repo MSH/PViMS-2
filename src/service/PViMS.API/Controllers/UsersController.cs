@@ -17,7 +17,7 @@ using PVIMS.Core.Entities.Accounts;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Paging;
-using PViMS.Infrastructure.Identity.Entities;
+using PVIMS.Infrastructure.Identity.Entities;
 using System;
 using System.Collections;
 using System.Linq;

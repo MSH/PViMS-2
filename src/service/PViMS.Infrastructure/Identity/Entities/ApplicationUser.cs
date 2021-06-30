@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
 
-namespace PViMS.Infrastructure.Identity.Entities
+namespace PVIMS.Infrastructure.Identity.Entities
 {
     public class ApplicationUser : IdentityUser<Guid>
     {
