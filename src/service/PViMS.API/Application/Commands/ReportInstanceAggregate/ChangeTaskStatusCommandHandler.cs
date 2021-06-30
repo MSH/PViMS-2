@@ -30,7 +30,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
         {
             var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.WorkFlow.WorkFlowGuid == message.WorkFlowGuid
                     && ri.Id == message.ReportInstanceId,
-                    new string[] { "Tasks", "CreatedBy" });
+                    new string[] { "Tasks", "CreatedBy", "WorkFlow" });
 
             if(reportInstanceFromRepo == null)
             {

@@ -23,7 +23,6 @@ using SelectionDataItem = PVIMS.Core.Entities.SelectionDataItem;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
@@ -256,7 +255,7 @@ namespace PVIMS.API.Controllers
                 reportInstanceResourceParameters.PageSize);
 
             _logger.LogInformation(
-                "----- Sending query: GetReportInstancesDetailQuery - {workFlowGuid}",
+                "----- Sending query: ReportInstancesDetailQuery - {workFlowGuid}",
                 workFlowGuid.ToString());
 
             var queryResult = await _mediator.Send(query);
