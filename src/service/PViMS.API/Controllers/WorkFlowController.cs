@@ -1,26 +1,21 @@
-﻿using AutoMapper;
-using LinqKit;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
-using PVIMS.API.Infrastructure.Services;
-using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
 using PVIMS.Core.Repositories;
 using System;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using PVIMS.Core.Aggregates.ReportInstanceAggregate;
+using PVIMS.API.Application.Queries.WorkFlowAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -29,35 +24,27 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class WorkFlowsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
-        private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
-        private readonly IRepositoryInt<Config> _configRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IArtefactService _artefactService;
-        private readonly IUnitOfWorkInt _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<WorkFlowsController> _logger;
 
-        public WorkFlowsController(IMapper mapper,
-            ILinkGeneratorService linkGeneratorService,
+        public WorkFlowsController(
+            IMediator mediator, 
             IRepositoryInt<WorkFlow> workFlowRepository,
-            IRepositoryInt<ReportInstance> reportInstanceRepository,
-            IRepositoryInt<Config> configRepository,
             IRepositoryInt<User> userRepository,
-            IUnitOfWorkInt unitOfWork,
             IArtefactService artefactService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<WorkFlowsController> logger)
         {
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
-            _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
-            _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -73,13 +60,20 @@ namespace PVIMS.API.Controllers
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<WorkFlowIdentifierDto>> GetWorkFlowByIdentifier(Guid id)
         {
-            var mappedWorkFlow = await GetWorkFlowAsync<WorkFlowIdentifierDto>(id);
-            if (mappedWorkFlow == null)
+            var query = new WorkFlowIdentifierQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: WorkFlowIdentifierQuery - {workFlowGuid}",
+                id.ToString());
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForWorkFlow<WorkFlowIdentifierDto>(mappedWorkFlow));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -96,13 +90,20 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<WorkFlowDetailDto>> GetWorkFlowByDetail(Guid id)
         {
-            var mappedWorkFlow = await GetWorkFlowAsync<WorkFlowDetailDto>(id);
-            if (mappedWorkFlow == null)
+            var query = new WorkFlowDetailQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: WorkFlowDetailQuery - {workFlowGuid}",
+                id.ToString());
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForWorkFlow<WorkFlowDetailDto>(await CustomWorkFlowMapAsync(mappedWorkFlow)));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -144,154 +145,6 @@ namespace PVIMS.API.Controllers
                 : _artefactService.CreateActiveDatasetForDownload(new long[] { }, analyserDatasetResourceParameters?.CohortGroupId ?? 0);
 
             return PhysicalFile(model.FullPath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        }
-
-        /// <summary>
-        /// Get single workFlow from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private async Task<T> GetWorkFlowAsync<T>(Guid id) where T : class
-        {
-            var workFlowFromRepo = await _workFlowRepository.GetAsync(f => f.WorkFlowGuid == id);
-
-            if (workFlowFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedWorkFlow = _mapper.Map<T>(workFlowFromRepo);
-
-                return mappedWorkFlow;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private async Task<WorkFlowDetailDto> CustomWorkFlowMapAsync(WorkFlowDetailDto dto)
-        {
-            var workFlowFromRepo = await _workFlowRepository.GetAsync(wf => wf.Id == dto.Id, new string[] { "Activities" });
-            if (workFlowFromRepo == null)
-            {
-                return dto;
-            }
-
-            dto.NewReportInstanceCount = GetNewReportInstancesCount(dto.WorkFlowGuid);
-            dto.NewFeedbackInstanceCount = GetNewFeedbackCount(dto.WorkFlowGuid);
-            dto.ActivityItems = workFlowFromRepo.Activities.Select(activity =>
-                new ActivitySummaryDto()
-                {
-                    QualifiedName = activity.QualifiedName,
-                    ReportInstanceCount = GetReportInstancesCount(dto.WorkFlowGuid, activity.QualifiedName)
-                }).ToArray();
-
-            return dto;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private WorkFlowIdentifierDto CreateLinksForWorkFlow<T>(T dto)
-        {
-            WorkFlowIdentifierDto identifier = (WorkFlowIdentifierDto)(object)dto;
-
-            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("WorkFlow", identifier.Id), "self", "GET"));
-
-            return identifier;
-        }
-
-        /// <summary>
-        /// Get a total number of report instances as per the designated activity
-        /// </summary>
-        /// <param name="workFlowGuid">The uniwue identifier of the work flow that report instances are associated to</param>
-        /// <param name="qualifiedName">The activity to get the report instance count for</param>
-        /// <returns></returns>
-        private int GetReportInstancesCount(Guid workFlowGuid, string qualifiedName)
-        {
-            // FIlter list
-            var predicate = PredicateBuilder.New<ReportInstance>(true);
-            predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
-
-            switch (qualifiedName)
-            {
-                case "Confirm Report Data":
-                    predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true && a.CurrentStatus.Description != "DELETED"));
-                    break;
-
-                case "Extract E2B":
-                    predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true && a.CurrentStatus.Description != "E2BSUBMITTED"));
-                    break;
-
-                default:
-                    predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true));
-                    break;
-            }
-
-            return _reportInstanceRepository.List(predicate, null, new string[] { "" }).Count;
-        }
-
-        /// <summary>
-        /// Get a total number of new report instances
-        /// </summary>
-        /// <param name="workFlowGuid">The uniwue identifier of the work flow that report instances are associated to</param>
-        /// <returns></returns>
-        private int GetNewReportInstancesCount(Guid workFlowGuid)
-        {
-            var config = _configRepository.Get(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
-            if (config != null)
-            {
-                if (!String.IsNullOrEmpty(config.ConfigValue))
-                {
-                    var alertCount = Convert.ToInt32(config.ConfigValue);
-
-                    // How many instances within the last alertcount
-                    var compDate = DateTime.Now.AddDays(alertCount * -1);
-
-                    // FIlter list
-                    var predicate = PredicateBuilder.New<ReportInstance>(true);
-                    predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
-                    predicate = predicate.And(f => f.Created >= compDate);
-
-                    return _reportInstanceRepository.List(predicate, null, new string[] { "" }).Count;
-                }
-            }
-
-            return 0;
-        }
-
-        /// <summary>
-        /// Get a total number of new report instances with feedback for clinician
-        /// </summary>
-        /// <param name="workFlowGuid">The uniwue identifier of the work flow that report instances are associated to</param>
-        /// <returns></returns>
-        private int GetNewFeedbackCount(Guid workFlowGuid)
-        {
-            var config = _configRepository.Get(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
-            if (config != null)
-            {
-                if (!String.IsNullOrEmpty(config.ConfigValue))
-                {
-                    var alertCount = Convert.ToInt32(config.ConfigValue);
-
-                    // How many instances within the last alertcount
-                    var compDate = DateTime.Now.AddDays(alertCount * -1);
-
-                    // FIlter list
-                    var predicate = PredicateBuilder.New<ReportInstance>(true);
-                    predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
-                    predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == "Set MedDRA and Causality" && a.CurrentStatus.Description == "CAUSALITYSET" && a.Created >= compDate));
-
-                    return _reportInstanceRepository.List(predicate, null, new string[] { "" }).Count;
-                }
-            }
-
-            return 0;
         }
     }
 }
