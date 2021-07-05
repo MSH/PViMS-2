@@ -36,7 +36,7 @@
                     {{"Actions" | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let record">
-                    <button mat-icon-button color="primary" *ngIf="record.configType == 'E2BVersion' || record.configType == 'WebServiceSubscriberList' || record.configType == 'AssessmentScale' || record.configType == 'ReportInstanceNewAlertCount' || record.configType == 'MedicationOnsetCheckPeriodWeeks' || record.configType == 'PharmadexLink'" 
+                    <button mat-icon-button color="primary" *ngIf="record.configType == 'E2BVersion' || record.configType == 'WebServiceSubscriberList' || record.configType == 'AssessmentScale' || record.configType == 'ReportInstanceNewAlertCount' || record.configType == 'MedicationOnsetCheckPeriodWeeks' || record.configType == 'PharmadexLink' || record.configType == 'ReportInstanceFeedbackAlertCount'" 
                     matTooltip="{{'Update Configuration' | translate }}"
                             (click)="openPopUp(record, false)">
                         <mat-icon>edit</mat-icon>
