@@ -74,7 +74,9 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
             _patientRepository.Update(patientFromRepo);
 
-            _workFlowService.UpdateIdentifiersForWorkFlowInstance(clinicalEventToUpdate.PatientClinicalEventGuid, patientFromRepo.FullName, clinicalEventToUpdate.SourceTerminologyMedDra.DisplayName);
+            _workFlowService.UpdateIdentifiersForWorkFlowInstance(clinicalEventToUpdate.PatientClinicalEventGuid, 
+                patientFromRepo.FullName,
+                clinicalEventToUpdate.SourceTerminologyMedDra?.DisplayName ?? clinicalEventToUpdate.SourceDescription);
 
             _logger.LogInformation($"----- Clinical Event {message.PatientClinicalEventId} details updated");
 
