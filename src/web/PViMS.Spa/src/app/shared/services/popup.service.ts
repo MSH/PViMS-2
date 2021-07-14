@@ -24,13 +24,13 @@ export class PopupService {
         });
     }
 
-    showErrorMessage(errorMessage: any, title: string = "Error") {
+    showErrorMessage(errorMessage: any, errorCode: string = "", title: string = "Error") {
         let dialogRef: MatDialogRef<ErrorPopupComponent>;
         dialogRef = this.dialog.open(ErrorPopupComponent, {
             autoFocus: true,
             width: '500px',
             disableClose: true,
-            data: { title: title, message: errorMessage }
+            data: { title: title, message: errorMessage, code: errorCode }
         });
     }
 
