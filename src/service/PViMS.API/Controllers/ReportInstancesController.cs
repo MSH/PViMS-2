@@ -118,6 +118,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
+        [Authorize(Roles = "Analyst")]
         public async Task<ActionResult<ReportInstanceIdentifierDto>> GetReportInstanceByIdentifier(Guid workFlowGuid, int id)
         {
             var mappedReportInstance = await GetReportInstanceAsync<ReportInstanceIdentifierDto>(workFlowGuid, id);
@@ -142,6 +143,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
+        [Authorize(Roles = "Analyst")]
         public async Task<ActionResult<ReportInstanceDetailDto>> GetReportInstanceByDetail(Guid workFlowGuid, int id)
         {
             var query = new ReportInstanceDetailQuery(workFlowGuid, id);
@@ -174,6 +176,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
+        [Authorize(Roles = "Analyst")]
         public async Task<ActionResult<ReportInstanceExpandedDto>> GetReportInstanceByExpanded(Guid workFlowGuid, int id)
         {
             var query = new ReportInstanceExpandedQuery(workFlowGuid, id);
@@ -206,6 +209,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.patientsummary.v1+json")]
         [ApiExplorerSettings(IgnoreApi = true)]
+        [Authorize(Roles = "Analyst")]
         public async Task<ActionResult> DownloadPatientSummary(Guid workFlowGuid, int id)
         {
             var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id);
@@ -290,12 +294,13 @@ namespace PVIMS.API.Controllers
         /// <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of ReportInstanceDetailDto</returns>
         [HttpGet("workflow/{workFlowGuid}/reportinstances", Name = "GetNewReportInstancesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Produces("application/vnd.pvims.newreports.v1+json", "application/vnd.pvims.newreports.v1+xml")]
+        [Produces("application/vnd.pvims.new.v1+json", "application/vnd.pvims.new.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
-            "application/vnd.pvims.newreports.v1+json", "application/vnd.pvims.newreports.v1+xml")]
+            "application/vnd.pvims.new.v1+json", "application/vnd.pvims.new.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
+        [Authorize(Roles = "Analyst")]
         public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>>> GetNewReportInstancesByDetail(Guid workFlowGuid,
-            [FromQuery] ReportInstanceNewResourceParameters reportInstanceResourceParameters)
+            [FromQuery] IdResourceParameters reportInstanceResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<ReportInstanceDetailDto, ReportInstance>
                (reportInstanceResourceParameters.OrderBy))
@@ -303,10 +308,62 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var query = new ReportInstancesDetailQuery(workFlowGuid, true, false, false, DateTime.MinValue, DateTime.MaxValue, "", "", reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
+            var query = new ReportInstancesAnalysisQuery(workFlowGuid, "", reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
 
             _logger.LogInformation(
-                "----- Sending query: GetReportInstancesDetailQuery - {workFlowGuid}",
+                "----- Sending query: ReportInstancesAnalysisQuery - {workFlowGuid}",
+                workFlowGuid.ToString());
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = reportInstanceResourceParameters.PageSize,
+                currentPage = reportInstanceResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
+        }
+
+        /// <summary>
+        /// Get all report instances for analysis using a valid media type 
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+        /// <param name="reportInstanceResourceParameters">
+        /// Specify paging and filtering information (including requested page number and page size)
+        /// </param>
+        /// <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of ReportInstanceDetailDto</returns>
+        [HttpGet("workflow/{workFlowGuid}/reportinstances", Name = "GetAnalysisReportInstancesByDetail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces("application/vnd.pvims.analysis.v1+json", "application/vnd.pvims.analysis.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.analysis.v1+json", "application/vnd.pvims.analysis.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [Authorize(Roles = "Analyst")]
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>>> GetAnalysisReportInstancesByDetail(Guid workFlowGuid,
+            [FromQuery] ReportInstanceActivityResourceParameters reportInstanceResourceParameters)
+        {
+            if (!_propertyMappingService.ValidMappingExistsFor<ReportInstanceDetailDto, ReportInstance>
+               (reportInstanceResourceParameters.OrderBy))
+            {
+                return BadRequest();
+            }
+
+            var query = new ReportInstancesAnalysisQuery(workFlowGuid, reportInstanceResourceParameters.QualifiedName, reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
+
+            _logger.LogInformation(
+                "----- Sending query: ReportInstancesAnalysisQuery - {workFlowGuid}",
                 workFlowGuid.ToString());
 
             var queryResult = await _mediator.Send(query);
@@ -339,14 +396,16 @@ namespace PVIMS.API.Controllers
         /// Specify paging and filtering information (including requested page number and page size)
         /// </param>
         /// <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of ReportInstanceDetailDto</returns>
-        [HttpGet("workflow/{workFlowGuid}/reportinstances", Name = "GetNewReportInstancesByDetail")]
+        [HttpGet("workflow/{workFlowGuid}/reportinstances", Name = "GetFeedbackReportInstancesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.feedback.v1+json", "application/vnd.pvims.feedback.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.feedback.v1+json", "application/vnd.pvims.feedback.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
+        [Authorize(Roles = "Analyst")]
+        [Authorize(Roles = "Clinician")]
         public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>>> GetFeedbackReportInstancesByDetail(Guid workFlowGuid,
-            [FromQuery] ReportInstanceNewResourceParameters reportInstanceResourceParameters)
+            [FromQuery] ReportInstanceActivityResourceParameters reportInstanceResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<ReportInstanceDetailDto, ReportInstance>
                (reportInstanceResourceParameters.OrderBy))
@@ -354,10 +413,10 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var query = new ReportInstancesDetailQuery(workFlowGuid, false, true, false, DateTime.MinValue, DateTime.MaxValue, "", "", reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
+            var query = new ReportInstancesFeedbackQuery(workFlowGuid, reportInstanceResourceParameters.QualifiedName, reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
 
             _logger.LogInformation(
-                "----- Sending query: GetReportInstancesDetailQuery - {workFlowGuid}",
+                "----- Sending query: ReportInstancesFeedbackQuery - {workFlowGuid}",
                 workFlowGuid.ToString());
 
             var queryResult = await _mediator.Send(query);

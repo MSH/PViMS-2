@@ -2,7 +2,7 @@
 
 namespace PVIMS.API.Models.Parameters
 {
-    public class ReportInstanceNewResourceParameters : BaseResourceParameters
+    public class ReportInstanceActivityResourceParameters : BaseResourceParameters
     {
         /// <summary>
         /// Specify the order you would like report instances returned in  
@@ -12,9 +12,9 @@ namespace PVIMS.API.Models.Parameters
         public string OrderBy { get; set; } = "Id";
 
         /// <summary>
-        /// Filter reports by generic search term
+        /// Filter reports by activity qualified name
         /// </summary>
-        [StringLength(100)]
-        public string SearchTerm { get; set; } = "";
+        [StringLength(50)]
+        public string QualifiedName { get; set; } = "";
     }
 }
