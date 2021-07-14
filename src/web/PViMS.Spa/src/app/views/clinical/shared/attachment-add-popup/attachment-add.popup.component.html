@@ -18,12 +18,16 @@
             </mat-error>            
             <mat-error *ngIf="itemForm.get('description').hasError('pattern')">
               {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, space)
-            </mat-error>            
+            </mat-error>
         </mat-form-field>        
       </div>
 
+      <div fxFlex="100" class="card-title-text mat-bg-warn p-24" *ngIf="fileSizeLarge">
+        {{"File size is greater thank 150KB, please select a new file" | translate }}
+      </div>
+
       <div fxFlex="100" class="mt-1">
-        <button mat-raised-button color="primary" [disabled]="fileToUpload == null || itemForm.invalid">{{"Add" | translate }}</button>
+        <button mat-raised-button color="primary" [disabled]="fileToUpload == null || itemForm.invalid || fileSizeLarge">{{"Add" | translate }}</button>
         <span fxFlex></span>
         <button mat-raised-button color="warn" type="button" (click)="dialogRef.close(false)">{{"Cancel" | translate }}</button>
       </div>

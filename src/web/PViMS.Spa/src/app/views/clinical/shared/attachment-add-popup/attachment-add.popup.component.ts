@@ -20,6 +20,7 @@ export class AttachmentAddPopupComponent extends BasePopupComponent implements O
   public itemForm: FormGroup;
 
   fileToUpload: File = null;
+  fileSizeLarge: boolean = false;
   
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: AttachmentAddPopupData,
@@ -41,6 +42,11 @@ export class AttachmentAddPopupComponent extends BasePopupComponent implements O
 
   handleFileInput(files: FileList) {
     this.fileToUpload = files.item(0);
+    this.fileSizeLarge = false;
+    if(this.fileToUpload.size > 150000) {
+      this.CLog('file too large');
+      this.fileSizeLarge = true;
+    }
   }
 
   addAttachment() {

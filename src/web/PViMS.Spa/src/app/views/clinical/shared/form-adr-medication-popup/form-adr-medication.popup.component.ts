@@ -192,7 +192,6 @@ export class FormADRMedicationPopupComponent extends BasePopupComponent implemen
       attributes: this.prepareAttributeForUpdateModel()
     };
 
-    self.notify(self.data.existingMedication == null ? "Medication successfully added!" : "Medication successfully updated!", "Success");
     self.dialogRef.close(medicationModel);    
   }
 

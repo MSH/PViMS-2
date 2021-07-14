@@ -46,8 +46,10 @@ import { CohortDeletePopupComponent } from './cohort/cohort-search/cohort-delete
 import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/cohort-enrolment-list.component';
 import { FormADRComponent } from './form/form-adr/form-adr.component';
 import { LandingComponent } from './form/landing/landing.component';
-import { AttachmentAddPopupComponent } from './form/attachment-add-popup/attachment-add.popup.component';
-import { FormADRMedicationPopupComponent } from './form/form-adr/form-adr-medication-popup/form-adr-medication.popup.component';
+import { AttachmentAddPopupComponent } from './shared/attachment-add-popup/attachment-add.popup.component';
+import { ClinicalEventTaskPopupComponent } from './feedback/clinical-event-task-popup/clinical-event-task.popup.component';
+import { ChangeTaskStatusPopupComponent } from './feedback/change-task-status-popup/change-task-status.popup.component';
+import { FormADRMedicationPopupComponent } from './shared/form-adr-medication-popup/form-adr-medication.popup.component';
 
 @NgModule({
   imports: [
@@ -68,7 +70,9 @@ import { FormADRMedicationPopupComponent } from './form/form-adr/form-adr-medica
     AttachmentAddPopupComponent,
     AttachmentCapturePopupComponent,
     AttachmentViewPopupComponent,
+    ChangeTaskStatusPopupComponent,
     ClinicalEventPopupComponent,
+    ClinicalEventTaskPopupComponent,
     ClinicalEventViewPopupComponent,
     CohortEnrolmentListComponent,
     CohortSearchComponent,
@@ -106,7 +110,9 @@ import { FormADRMedicationPopupComponent } from './form/form-adr/form-adr-medica
     AttachmentAddPopupComponent,
     AttachmentCapturePopupComponent,
     AttachmentViewPopupComponent,
+    ChangeTaskStatusPopupComponent,
     ClinicalEventPopupComponent,
+    ClinicalEventTaskPopupComponent,
     ClinicalEventViewPopupComponent,
     ConditionPopupComponent,
     ConditionViewPopupComponent,
