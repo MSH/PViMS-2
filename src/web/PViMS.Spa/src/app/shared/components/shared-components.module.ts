@@ -32,8 +32,6 @@ import { AppLoaderComponent } from '../services/app-loader/app-loader.component'
 import { ButtonLoadingComponent } from './button-loading/button-loading.component';
 import { EgretSidebarComponent, EgretSidebarTogglerDirective } from './egret-sidebar/egret-sidebar.component';
 import { BottomSheetShareComponent } from './bottom-sheet-share/bottom-sheet-share.component';
-import { EgretExampleViewerComponent } from './example-viewer/example-viewer.component';
-import { EgretExampleViewerTemplateComponent } from './example-viewer-template/example-viewer-template.component';
 import { ViewErrorPopupComponent } from 'app/views/clinical/form/synchronise/viewerror-popup/viewerror.popup.component';
 import { LabPopupComponent } from 'app/views/administration/reference/lab-test-list/lab-popup/lab.popup.component';
 import { LabDeletePopupComponent } from 'app/views/administration/reference/lab-test-list/lab-delete-popup/lab-delete.popup.component';
@@ -80,6 +78,7 @@ import { AboutPopupComponent } from './about/about.popup.component';
 import { TimeoutComponent } from './timeout/timeout.component';
 import { MeddraSelectPopupComponent } from './popup/meddra-select-popup/meddra-select.popup.component';
 import { DatasetCategoryPopupComponent } from 'app/views/administration/work/dataset-list/dataset-category-list/dataset-category-popup/dataset-category.popup.component';
+import { TaskCommentsPopupComponent } from './popup/task-comments-popup/task-comments.popup.component';
 
 const components = [
   HeaderTopComponent,
@@ -146,6 +145,7 @@ const components = [
 
   ConceptSelectPopupComponent,
   MeddraSelectPopupComponent,
+  TaskCommentsPopupComponent,
 
   ViewErrorPopupComponent,
   AboutPopupComponent,
@@ -156,8 +156,6 @@ const components = [
   FooterComponent,
   EgretSidebarTogglerDirective,
   BottomSheetShareComponent,
-  EgretExampleViewerComponent,
-  EgretExampleViewerTemplateComponent,
   PingComponent,
   TimeoutComponent
 ]
@@ -226,10 +224,10 @@ const components = [
 
     ConceptSelectPopupComponent,
     MeddraSelectPopupComponent,
+    TaskCommentsPopupComponent,
     
     ViewErrorPopupComponent,
     AboutPopupComponent
-    
   ],
   exports: components
 })
