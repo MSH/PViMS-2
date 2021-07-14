@@ -1,12 +1,13 @@
 ﻿using MediatR;
 using PViMS.Core.Events;
 using PVIMS.API.Infrastructure.Services;
+using PVIMS.Core.Entities.Accounts;
 using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
+namespace PVIMS.API.Application.DomainEventHandlers.TaskCommentAdded
 {
     public class SendEmailWhenTaskCommentAddedDomainEventHandler
                             : INotificationHandler<TaskCommentAddedDomainEvent>
@@ -42,7 +43,25 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
             sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Status</b></td><td style='padding: 10px; border: 1px solid black;'>{Core.Aggregates.ReportInstanceAggregate.TaskStatus.From(domainEvent.Comment.ReportInstanceTask.TaskStatusId).Name}</td></tr>");
             sb.Append("</table>");
 
-            await _smtpMailService.SendEmailAsync(subject, sb.ToString(), domainEvent.Comment.ReportInstanceTask.ReportInstance.CreatedBy.FullName, domainEvent.Comment.ReportInstanceTask.ReportInstance.CreatedBy.Email );
+            var destinationUser = GetDestinationUser(domainEvent);
+
+            await _smtpMailService.SendEmailAsync(subject, sb.ToString(), destinationUser.FullName, destinationUser.Email );
+        }
+        private User GetDestinationUser(TaskCommentAddedDomainEvent domainEvent)
+        {
+            User destinationUser;
+            if (domainEvent.Comment.CreatedById == domainEvent.Comment.ReportInstanceTask.ReportInstance.CreatedById)
+            {
+                // comment created by clinician, so send to person who created task
+                destinationUser = domainEvent.Comment.ReportInstanceTask.CreatedBy;
+            }
+            else
+            {
+                // comment created by analyst, so send to person who created report
+                destinationUser = domainEvent.Comment.ReportInstanceTask.ReportInstance.CreatedBy;
+            }
+
+            return destinationUser;
         }
     }
 }
