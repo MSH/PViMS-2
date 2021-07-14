@@ -11,10 +11,9 @@ import { PatientService } from 'app/shared/services/patient.service';
 import { finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { AttachmentAddPopupComponent } from '../attachment-add-popup/attachment-add.popup.component';
+import { AttachmentAddPopupComponent } from '../../shared/attachment-add-popup/attachment-add.popup.component';
 import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
 import { GridModel } from 'app/shared/models/grid.model';
-import { FormADRMedicationPopupComponent } from './form-adr-medication-popup/form-adr-medication.popup.component';
 import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
 import { PatientClinicalEventForUpdateModel } from 'app/shared/models/patient/patient-clinical-event-for-update.model';
 import { forkJoin, Observable, of } from 'rxjs';
@@ -30,6 +29,7 @@ import { _routes } from 'app/config/routes';
 import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
 import { PatientMedicationDetailModel } from 'app/shared/models/patient/patient-medication.detail.model';
 import { PatientCustomAttributesForUpdateModel } from 'app/shared/models/patient/patient-custom-attributes-for-update.model';
+import { FormADRMedicationPopupComponent } from '../../shared/form-adr-medication-popup/form-adr-medication.popup.component';
 const moment =  _moment;
 
 @Component({
@@ -107,6 +107,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       sourceDescription: [null, [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
       isSerious: [null],
       seriousness: [null],
+      classification: [null, Validators.required],
       weight: [null, [Validators.required, Validators.min(0), Validators.max(159)]],
       height: [null, [Validators.required, Validators.min(1), Validators.max(259)]],
       allergy: ['', [Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
@@ -257,7 +258,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     }
     
     let dialogRef: MatDialogRef<any> = self.dialog.open(FormADRMedicationPopupComponent, {
-      width: '720px',
+      width: '920px',
       disableClose: true,
       data: { title: title, medicationId: isNew ? 0: existingMedication.id, index: indexToUse, existingMedication }
     })
@@ -290,7 +291,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     this.notify("Medication removed successfully!", "Medication");
   }
 
-  save(): void {
+  submit(): void {
     let self = this;
     self.setBusy(true);
 
@@ -370,6 +371,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     attributesForUpdate.push(self.prepareAttributeValue('regimen', 'regimen', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('is the adverse event serious?', 'isSerious', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('seriousness', 'seriousness', self.thirdFormGroup));
+    attributesForUpdate.push(self.prepareAttributeValue('classification', 'classification', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('weight (kg)', 'weight', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('height (cm)', 'height', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('any known allergy', 'allergy', self.thirdFormGroup));

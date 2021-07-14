@@ -9,7 +9,6 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatTabGroup } from '@angular/material/tabs';
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { ReportInstanceService } from 'app/shared/services/report-instance.service';
@@ -23,6 +22,7 @@ import { PatientService } from 'app/shared/services/patient.service';
 import { WorkFlowService } from 'app/shared/services/work-flow.service';
 import { ClinicalEventViewPopupComponent } from '../../shared/clinical-event-view-popup/clinical-event-view.popup.component';
 import { WorkFlowDetailModel } from 'app/shared/models/work-flow/work-flow.detail.model';
+import { ClinicalEventTaskPopupComponent } from '../clinical-event-task-popup/clinical-event-task.popup.component';
 
 @Component({
   templateUrl: './feedback-search.component.html',
@@ -64,12 +64,6 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  workflowId = '892F3305-7819-4F18-8A87-11CBA3AEE219';
-  workFlow: WorkFlowDetailModel;
-    
-  searchContext: '' | 'New' | 'Term' = '';
-  selectedTab = 0;
-
   @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
   
   ngOnInit(): void {
@@ -86,9 +80,7 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
     self.viewModel.mainGrid.setupAdvance(
       null, null, self.mainGridPaginator)
       .subscribe(() => { self.loadGrid(); });
-
   
-    self.searchContext = "New";
     self.loadData();
     self.loadGrid();
   }  
@@ -96,11 +88,11 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
   loadData(): void {
     let self = this;
     self.setBusy(true);
-    self.workFlowService.getWorkFlowDetail(self.workflowId)
+    self.workFlowService.getWorkFlowDetail(self.viewModel.workflowId)
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.workFlow = result;
+        self.viewModel.workFlow = result;
       }, error => {
         this.handleError(error, "Error loading work flow");
       });
@@ -110,12 +102,30 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
     this._unsubscribeAll.next();
     this._unsubscribeAll.complete();
     this.eventService.removeAll(FeedbackSearchComponent.name);
-  } 
+  }
+
+  selectActivity(qualifiedName: string): void {
+    let self = this;
+
+    self.updateForm(self.viewModelForm, {qualifiedName: qualifiedName});
+
+    self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'task-count', 'status', 'actions'])
+
+    self.viewModel.searchContext = "Activity";
+    self.loadGrid();
+  }
+
+  hasActivity(): boolean {
+    let self = this;
+
+    let index = self.viewModel?.workFlow?.feedbackActivity.findIndex(fa => fa.reportInstanceCount > 0);
+    return index > -1;
+  }
 
   searchByTerm(): void {
     let self = this;
 
-    self.searchContext = "Term";
+    self.viewModel.searchContext = "Term";
     self.loadGrid();
   }
 
@@ -123,24 +133,26 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
     let self = this;
     self.setBusy(true);
 
-    switch (self.searchContext) {
-      case "New":
-        self.reportInstanceService.getFeedbackReportInstancesByDetail(self.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
+    switch (self.viewModel.searchContext) {
+      case "Activity":
+        self.reportInstanceService.getFeedbackReportInstancesByDetail(self.viewModel.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
+          self.CLog(result, 'feedback results by activity');
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-          this.handleError(error, "Error searching for new feedback");
+          this.handleError(error, "Error getting report instances by activity");
         });
   
         break;
 
       case "Term":
-        self.reportInstanceService.searchFeedbackInstanceByTerm(self.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
+        self.reportInstanceService.searchFeedbackInstanceByTerm(self.viewModel.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
+          self.CLog(result, 'feedback results by term');
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
           this.handleError(error, "Error searching for feedback instances by term");
@@ -150,18 +162,31 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
     }    
   }
 
-  openClinicalEventViewPopUp(data: any = {}) {
+  openClinicalEventTaskPopUp(data: any = {}) {
     let self = this;
     let title = 'View Adverse Event';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(ClinicalEventViewPopupComponent, {
-      width: '920px',
-      disableClose: true,
-      data: { patientId: data.patientId, clinicalEventId: data.patientClinicalEventId, title: title }
-    })
-    dialogRef.afterClosed()
-      .subscribe(res => {
-        return;
+    if(data.qualifiedName == 'Confirm Report Data') {
+      let dialogRef: MatDialogRef<any> = self.dialog.open(ClinicalEventTaskPopupComponent, {
+        width: '920px',
+        disableClose: true,
+        data: { patientId: data.patientId, clinicalEventId: data.patientClinicalEventId, reportInstanceId: data.id, title: title }
       })
+      dialogRef.afterClosed()
+        .subscribe(res => {
+          return;
+        })
+    }
+    else {
+      let dialogRef: MatDialogRef<any> = self.dialog.open(ClinicalEventViewPopupComponent, {
+        width: '920px',
+        disableClose: true,
+        data: { patientId: data.patientId, clinicalEventId: data.patientClinicalEventId, title: title }
+      })
+      dialogRef.afterClosed()
+        .subscribe(res => {
+          return;
+        })
+    }
   }
 }
 
@@ -170,10 +195,17 @@ class ViewModel {
       new GridModel<GridRecordModel>
           (['created', 'identifier', 'patient', 'adverse-event', 'meddra-term', 'actions']);
 
+  workflowId = '892F3305-7819-4F18-8A87-11CBA3AEE219';
+  workFlow: WorkFlowDetailModel;
+
+  selectedTab = 0;
+  searchContext: '' | 'Activity' | 'Term' = '';
+
   qualifiedName: string;
   searchFrom: Moment;
   searchTo: Moment;
   searchTerm: string;
+
 }
 
 class GridRecordModel {
@@ -184,5 +216,8 @@ class GridRecordModel {
   sourceIdentifier: string;
   terminologyMedDra?: TerminologyMedDraModel;
   patientId: number;
-  patientClinicalEventId: number;
+  attachmentId: number;
+  taskCount: number;
+  qualifiedName: string;
+  currentStatus: string;
 }

@@ -16,21 +16,21 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ReportTaskAddPopupComponent } from './report-task-add-popup/report-task-add.popup.component';
 import { ChangeTaskDetailsPopupComponent } from './change-task-details-popup/change-task-details.popup.component';
 import { ChangeTaskStatusPopupComponent } from './change-task-status-popup/change-task-status.popup.component';
-import { TaskCommentsPopupComponent } from './task-comments-popup/task-comments.popup.component';
 import { _routes } from 'app/config/routes';
+import { TaskCommentsPopupComponent } from 'app/shared/components/popup/task-comments-popup/task-comments.popup.component';
 
 @Component({
   templateUrl: './report-task-list.component.html',
   styles: [`
-    .mat-column-source { flex: 0 0 15% !important; width: 30% !important; }
-    .mat-column-description { flex: 0 0 25% !important; width: 30% !important; }
-    .mat-column-task-type { flex: 0 0 15% !important; width: 30% !important; }
-    .mat-column-task-status { flex: 0 0 10% !important; width: 15% !important; }
-    .mat-column-created { flex: 0 0 10% !important; width: 15% !important; }
-    .mat-column-updated { flex: 0 0 10% !important; width: 15% !important; }
-    .mat-column-comment-count { flex: 0 0 10% !important; width: 15% !important; }
-    .mat-column-actions { flex: 0 0 5% !important; width: 15% !important; }
-  `],   
+    .mat-column-source { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-description { flex: 0 0 25% !important; width: 25% !important; }
+    .mat-column-task-type { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-task-status { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-created { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-updated { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-comment-count { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-actions { flex: 0 0 5% !important; width: 5% !important; }
+  `],
   animations: egretAnimations
 })
 export class ReportTaskListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

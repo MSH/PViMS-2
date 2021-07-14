@@ -27,7 +27,7 @@
                       </mat-chip>
                       <span class="mr-24" matBadge="{{workFlow?.newReportInstanceCount}}" matBadgePosition="above after" matBadgeColor="warn" matBadgeOverlap="true" *ngIf="workFlow?.newReportInstanceCount > 0"></span>
                     </div>
-                    <div *ngFor="let activity of workFlow?.activityItems">
+                    <div *ngFor="let activity of workFlow?.analysisActivity">
                       <mat-chip color="primary" [selected]="activity.qualifiedName == viewModelForm.get('qualifiedName').value" (click)="selectActivity(activity.qualifiedName)"> 
                         {{activity.qualifiedName | translate}}
                       </mat-chip>

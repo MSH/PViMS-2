@@ -94,8 +94,6 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  searchContext: '' | 'New' | 'Active' | 'Date' | 'Term' = '';
-
   criteriaList: CriteriaListModel[] = [];
   workFlow: WorkFlowDetailModel;
 
@@ -124,8 +122,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
       qualifiedName: [self.viewModel.qualifiedName || ''],
       searchFrom: [self.viewModel.searchFrom || moment().subtract(3, 'months'), Validators.required],
       searchTo: [self.viewModel.searchTo || moment(), Validators.required],
-      searchTerm: [self.viewModel.searchTerm || ''],
-      activeReportsOnly: ['Yes']
+      searchTerm: [self.viewModel.searchTerm || '']
     });
 
     self.viewModel.mainGrid.clearDataSource();
@@ -244,7 +241,6 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     let self = this;
 
     self.updateForm(self.viewModelForm, {qualifiedName: qualifiedName});
-    self.updateForm(self.viewModelForm, {activeReportsOnly: 'Yes'});
 
     if(qualifiedName == "Confirm Report Data") {
       self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'task-count', 'status', 'actions'])
@@ -253,7 +249,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
       self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'status', 'actions'])
     }
 
-    self.searchContext = qualifiedName == "New reports" ? "New" : "Active";
+    self.viewModel.searchContext = qualifiedName == "New reports" ? "New" : "Active";
 
     self.loadGrid();
   }
@@ -261,16 +257,14 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
   searchByDate(): void {
     let self = this;
 
-    self.searchContext = "Date";
-    self.updateForm(self.viewModelForm, {activeReportsOnly: 'No'});
+    self.viewModel.searchContext = "Date";
     self.loadGrid();
   }
 
   searchByTerm(): void {
     let self = this;
 
-    self.searchContext = "Term";
-    self.updateForm(self.viewModelForm, {activeReportsOnly: 'No'});
+    self.viewModel.searchContext = "Term";
     self.loadGrid();
   }
 
@@ -278,28 +272,29 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     let self = this;
     self.setBusy(true);
 
-    switch (self.searchContext) {
+    switch (self.viewModel.searchContext) {
       case "New":
         self.reportInstanceService.getNewReportInstancesByDetail(self.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
-        .pipe(takeUntil(self._unsubscribeAll))
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-          self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-          this.handleError(error, "Error searching for new report instances");
-        });
-  
-        break;
-
-      case "Active":
-        self.reportInstanceService.searchReportInstanceByActivity(self.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
           self.CLog(result);
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-          this.handleError(error, "Error searching for report instances by activity");
+          this.handleError(error, "Error getting new report instances");
+        });
+  
+        break;
+
+      case "Active":
+        self.reportInstanceService.getAnalysisReportInstancesByDetail(self.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
+        .pipe(takeUntil(self._unsubscribeAll))
+        .pipe(finalize(() => self.setBusy(false)))
+        .subscribe(result => {
+          self.CLog(result);
+          self.viewModel.mainGrid.updateAdvance(result);
+        }, error => {
+          this.handleError(error, "Error getting report instances by activity");
         });
   
         break;
@@ -497,6 +492,8 @@ class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
           (['identifier', 'created', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'task-count', 'status', 'actions']);
+
+  searchContext: '' | 'New' | 'Active' | 'Date' | 'Term' = '';
 
   qualifiedName: string;
   searchFrom: Moment;

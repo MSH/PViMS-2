@@ -52,9 +52,29 @@ export class ReportInstanceService extends BaseService {
       return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.detail.v1+json', parameters);
     }
 
+    getNewReportInstancesByDetail(workFlowGuid: string, filterModel: any): any {
+      let parameters: ParameterKeyValueModel[] = [];
+
+      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
+      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
+
+      return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.new.v1+json', parameters);
+    }
+
+    getAnalysisReportInstancesByDetail(workFlowGuid: string, filterModel: any): any {
+      let parameters: ParameterKeyValueModel[] = [];
+
+      parameters.push(<ParameterKeyValueModel> { key: 'qualifiedName', value: filterModel.qualifiedName });
+      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
+      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
+
+      return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.analysis.v1+json', parameters);
+    }
+
     getFeedbackReportInstancesByDetail(workFlowGuid: string, filterModel: any): any {
       let parameters: ParameterKeyValueModel[] = [];
 
+      parameters.push(<ParameterKeyValueModel> { key: 'qualifiedName', value: filterModel.qualifiedName });
       parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
       parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
 
@@ -69,15 +89,6 @@ export class ReportInstanceService extends BaseService {
       parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
 
       return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.feedback.v1+json', parameters);
-    }
-
-    getNewReportInstancesByDetail(workFlowGuid: string, filterModel: any): any {
-      let parameters: ParameterKeyValueModel[] = [];
-
-      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
-      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
-
-      return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.newreports.v1+json', parameters);
     }
 
     getReportInstanceDetail(workFlowGuid: string, id: number): any {

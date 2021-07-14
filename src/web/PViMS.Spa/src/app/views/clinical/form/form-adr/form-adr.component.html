@@ -66,7 +66,7 @@
           <div fxLayout="row" fxLayoutGap="1.0%" fxLayoutAlign="center" class="p-2">
             <button mat-flat-button color="" class="mr-12" (click)="previousStep()" [disabled]="viewModel.currentStep == 1">Previous</button>
             <button mat-flat-button color="accent" (click)="nextStep()" [disabled]="viewModel.currentStep > 6 || !viewModel.patientFound">Next</button>
-            <button mat-flat-button color="primary" (click)="save()" *ngIf="viewModel.currentStep > 6" [disabled]="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid">Save</button>
+            <button mat-flat-button color="primary" (click)="submit()" *ngIf="viewModel.currentStep > 6" [disabled]="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid">Save</button>
           </div>
         </div>
       </div>
@@ -276,6 +276,22 @@
                     </mat-form-field>
                   </div>
                 </div>
+
+                <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+                  <div fxFlex="50">
+                    <mat-form-field class="full-width" appearance="outline">
+                      <mat-label>Event classification</mat-label>
+                      <mat-select formControlName="classification" required>
+                        <mat-option value="1">AESI</mat-option>
+                        <mat-option value="2">SAE</mat-option>
+                        <mat-option value="3">Clinically Significant</mat-option>
+                      </mat-select>
+                      <mat-error *ngIf="thirdFormGroup.get('classification').hasError('required')">
+                        Field is required
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>                
               </div>
             </mat-tab>
             <mat-tab label="{{'Other clinical details' | translate}}">
