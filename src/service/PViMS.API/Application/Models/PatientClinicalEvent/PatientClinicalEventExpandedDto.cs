@@ -27,5 +27,11 @@ namespace PVIMS.API.Models
         /// </summary>
         [DataMember]
         public ICollection<ReportInstanceEventDto> Activity { get; set; } = new List<ReportInstanceEventDto>();
+
+        /// <summary>
+        /// All tasks that have been allocated to this clinical event
+        /// </summary>
+        [DataMember]
+        public ICollection<TaskDto> Tasks { get; set; } = new List<TaskDto>();
     }
 }

@@ -90,17 +90,15 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             var activity = await _reportInstanceQueries.GetExecutionStatusEventsForEventViewAsync(patientClinicalEventFromRepo.Id);
             dto.Activity = activity.ToList();
 
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == patientClinicalEventFromRepo.PatientClinicalEventGuid, new string[] { "TerminologyMedDra", "Medications" });
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == patientClinicalEventFromRepo.PatientClinicalEventGuid, new string[] { "TerminologyMedDra", "Medications", "Tasks.Comments" });
             if (reportInstanceFromRepo == null)
             {
                 return;
             }
 
-            // Meddra term
             dto.SetMedDraTerm = reportInstanceFromRepo.TerminologyMedDra?.DisplayName;
-
-            // Meddra medications
             dto.Medications = _mapper.Map<ICollection<ReportInstanceMedicationDetailDto>>(reportInstanceFromRepo.Medications.Where(m => !String.IsNullOrWhiteSpace(m.WhoCausality) || (!String.IsNullOrWhiteSpace(m.NaranjoCausality))));
+            dto.Tasks = _mapper.Map<ICollection<TaskDto>>(reportInstanceFromRepo.Tasks.Where(t => t.TaskStatusId != Core.Aggregates.ReportInstanceAggregate.TaskStatus.Cancelled.Id));
         }
 
         private string GetSelectionValue(CustomAttributeType attributeType, string attributeKey, string selectionKey)
