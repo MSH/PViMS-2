@@ -30,7 +30,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
         {
             var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.WorkFlow.WorkFlowGuid == message.WorkFlowGuid
                     && ri.Id == message.ReportInstanceId,
-                    new string[] { "Tasks", "CreatedBy", "WorkFlow" });
+                    new string[] { "Tasks.CreatedBy", "CreatedBy", "WorkFlow" });
 
             if(reportInstanceFromRepo == null)
             {
@@ -40,22 +40,22 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             if(message.TaskStatus.Id == Core.Aggregates.ReportInstanceAggregate.TaskStatus.Cancelled.Id)
             {
                 reportInstanceFromRepo.ChangeTaskStatusToCancelled(message.ReportInstanceTaskId);
-
             }
             if (message.TaskStatus.Id == Core.Aggregates.ReportInstanceAggregate.TaskStatus.Completed.Id)
             {
                 reportInstanceFromRepo.ChangeTaskStatusToCompleted(message.ReportInstanceTaskId);
-
             }
             if (message.TaskStatus.Id == Core.Aggregates.ReportInstanceAggregate.TaskStatus.OnHold.Id)
             {
                 reportInstanceFromRepo.ChangeTaskStatusToOnHold(message.ReportInstanceTaskId);
-
             }
             if (message.TaskStatus.Id == Core.Aggregates.ReportInstanceAggregate.TaskStatus.UnderInvestigation.Id)
             {
                 reportInstanceFromRepo.ChangeTaskStatusToUnderInvestigation(message.ReportInstanceTaskId);
-
+            }
+            if (message.TaskStatus.Id == Core.Aggregates.ReportInstanceAggregate.TaskStatus.AttendedTo.Id)
+            {
+                reportInstanceFromRepo.ChangeTaskStatusToAttendedTo(message.ReportInstanceTaskId);
             }
 
             _reportInstanceRepository.Update(reportInstanceFromRepo);
