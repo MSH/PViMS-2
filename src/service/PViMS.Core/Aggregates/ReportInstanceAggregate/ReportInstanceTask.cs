@@ -53,6 +53,10 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             TaskStatusId = TaskStatus.OnHold.Id;
         }
 
+        public void ChangeTaskStatusToAttendedTo()
+        {
+            TaskStatusId = TaskStatus.AttendedTo.Id;
+        }
         public void ChangeTaskStatusToCompleted()
         {
             TaskStatusId = TaskStatus.Completed.Id;

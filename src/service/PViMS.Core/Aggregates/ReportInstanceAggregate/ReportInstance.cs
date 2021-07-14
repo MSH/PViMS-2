@@ -172,6 +172,24 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             task.ChangeTaskStatusToOnHold();
         }
 
+        public void ChangeTaskStatusToAttendedTo(int taskId)
+        {
+            var task = _tasks.SingleOrDefault(t => t.Id == taskId);
+            if (task == null)
+            {
+                throw new KeyNotFoundException(nameof(taskId));
+            }
+
+            if (task.TaskStatusId == TaskStatus.Cancelled.Id ||
+                task.TaskStatusId == TaskStatus.Completed.Id)
+            {
+                throw new DomainException("Cannot change status of task that is cancelled or completed");
+            }
+
+            task.ChangeTaskStatusToAttendedTo();
+            AddTaskAttendedToDomainEvent(task);
+        }
+
         public void ChangeTaskStatusToCompleted(int taskId)
         {
             var task = _tasks.SingleOrDefault(t => t.Id == taskId);
@@ -292,7 +310,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         private void InitialiseWithFirstActivity(WorkFlow workFlow, User currentUser)
         {
-            if(workFlow.Activities.Count == 0)
+            if(workFlow.Activities.Count() == 0)
             {
                 throw new DomainException($"Workflow {workFlow.Description} does not have any activities configured");
             }
@@ -304,7 +322,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         private void MoveToNextActivity(WorkFlow workFlow, User currentUser)
         {
-            if (workFlow.Activities.Count == 0)
+            if (workFlow.Activities.Count() == 0)
             {
                 throw new DomainException($"Workflow {workFlow.Description} does not have any activities configured");
             }
@@ -349,6 +367,13 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         private void AddTaskCommentAddedDomainEvent(ReportInstanceTaskComment newComment)
         {
             var domainEvent = new TaskCommentAddedDomainEvent(newComment);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddTaskAttendedToDomainEvent(ReportInstanceTask cancelledTask)
+        {
+            var domainEvent = new TaskAttendedToDomainEvent(cancelledTask);
 
             this.AddDomainEvent(domainEvent);
         }

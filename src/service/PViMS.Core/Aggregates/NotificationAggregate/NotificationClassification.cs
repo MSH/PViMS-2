@@ -15,6 +15,7 @@ namespace PVIMS.Core.Aggregates.NotificationAggregate
         public static NotificationClassification NewActiveReport = new NotificationClassification(4, "NewActiveReport");
         public static NotificationClassification NewSpontaneousReport = new NotificationClassification(5, "NewSpontaneousReport");
         public static NotificationClassification CausalityAndTerminologySet = new NotificationClassification(6, "CausalityAndTerminologySet");
+        public static NotificationClassification AttendedToTask = new NotificationClassification(7, "AttendedToTask");
 
         public NotificationClassification(int id, string name)
             : base(id, name)
@@ -22,7 +23,7 @@ namespace PVIMS.Core.Aggregates.NotificationAggregate
         }
 
         public static IEnumerable<NotificationClassification> List() =>
-            new[] { NewTask, CancelledTask, NewTaskComment, NewActiveReport, NewSpontaneousReport, CausalityAndTerminologySet };
+            new[] { NewTask, CancelledTask, NewTaskComment, NewActiveReport, NewSpontaneousReport, CausalityAndTerminologySet, AttendedToTask };
 
         public static NotificationClassification FromName(string name)
         {

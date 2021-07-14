@@ -14,14 +14,14 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         public static TaskStatus OnHold = new TaskStatus(3, "On Hold");
         public static TaskStatus Completed = new TaskStatus(4, "Completed");
         public static TaskStatus Cancelled = new TaskStatus(5, "Cancelled");
-
+        public static TaskStatus AttendedTo = new TaskStatus(6, "Attended To");
         public TaskStatus(int id, string name)
             : base(id, name)
         {
         }
 
         public static IEnumerable<TaskStatus> List() =>
-            new[] { New, UnderInvestigation, OnHold, Completed, Cancelled };
+            new[] { New, UnderInvestigation, OnHold, Completed, Cancelled, AttendedTo };
 
         public static TaskStatus FromName(string name)
         {
