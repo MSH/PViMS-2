@@ -2,13 +2,14 @@
 using PViMS.Core.Events;
 using PVIMS.Core.Aggregates.NotificationAggregate;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
+namespace PVIMS.API.Application.DomainEventHandlers.TaskCommentAdded
 {
     public class AddNotificationWhenTaskCommentAddedDomainEventHandler
                             : INotificationHandler<TaskCommentAddedDomainEvent>
@@ -41,11 +42,41 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
 
             var notificationType = NotificationType.FromName("Informational");
             var notificationClassification = NotificationClassification.FromName("NewTaskComment");
-            var contextRoute = $"{domainEvent.Comment.ReportInstanceTask.ReportInstance.WorkFlow.WorkFlowGuid}/{domainEvent.Comment.ReportInstanceTask.ReportInstance.Id}";
-            var newNotification = new Notification(domainEvent.Comment.ReportInstanceTask.ReportInstance.CreatedBy, DateTime.Now.AddDays(alertCount), summary, detail, notificationType, notificationClassification, contextRoute);
+            
+            var newNotification = new Notification(GetDestinationUser(domainEvent), DateTime.Now.AddDays(alertCount), summary, detail, notificationType, notificationClassification, GetDestinationRoute(domainEvent));
 
             await _notificationRepository.SaveAsync(newNotification);
             await _unitOfWork.CompleteAsync();
+        }
+        private User GetDestinationUser(TaskCommentAddedDomainEvent domainEvent)
+        {
+            User destinationUser;
+            if (domainEvent.Comment.CreatedById == domainEvent.Comment.ReportInstanceTask.ReportInstance.CreatedById)
+            {
+                // comment created by clinician, so send to person who created task
+                destinationUser = domainEvent.Comment.ReportInstanceTask.CreatedBy;
+            }
+            else
+            {
+                // comment created by analyst, so send to person who created report
+                destinationUser = domainEvent.Comment.ReportInstanceTask.ReportInstance.CreatedBy;
+            }
+
+            return destinationUser;
+        }
+
+        private string GetDestinationRoute(TaskCommentAddedDomainEvent domainEvent)
+        {
+            if (domainEvent.Comment.CreatedById == domainEvent.Comment.ReportInstanceTask.ReportInstance.CreatedById)
+            {
+                // comment created by clinician, so route user to analytical report search
+                return $"/analytical/reporttask/{domainEvent.Comment.ReportInstanceTask.ReportInstance.WorkFlow.WorkFlowGuid}/{domainEvent.Comment.ReportInstanceTask.ReportInstance.Id}";
+            }
+            else
+            {
+                // comment created by analyst, so route to clinical feedback
+                return $"/clinical/feedbacksearch";
+            }
         }
     }
 }

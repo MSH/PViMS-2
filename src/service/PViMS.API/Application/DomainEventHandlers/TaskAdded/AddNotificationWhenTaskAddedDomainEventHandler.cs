@@ -39,7 +39,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
             var summary = $"A new task has been added for report {domainEvent.Task.ReportInstance.Identifier}";
             var notificationType = NotificationType.FromName("Warning");
             var notificationClassification = NotificationClassification.FromName("NewTask");
-            var contextRoute = $"{domainEvent.Task.ReportInstance.WorkFlow.WorkFlowGuid}/{domainEvent.Task.ReportInstance.Id}";
+            var contextRoute = "/clinical/feedbacksearch";
             var newNotification = new Notification(domainEvent.Task.ReportInstance.CreatedBy, DateTime.Now.AddDays(alertCount), summary, "", notificationType, notificationClassification, contextRoute);
 
             await _notificationRepository.SaveAsync(newNotification);

@@ -40,7 +40,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskCancelled
 
             var notificationType = NotificationType.FromName("Informational");
             var notificationClassification = NotificationClassification.FromName("CancelledTask");
-            var contextRoute = $"{domainEvent.Task.ReportInstance.WorkFlow.WorkFlowGuid}/{domainEvent.Task.ReportInstance.Id}";
+            var contextRoute = "/clinical/feedbacksearch";
             var newNotification = new Notification(domainEvent.Task.ReportInstance.CreatedBy, DateTime.Now.AddDays(alertCount), summary, "", notificationType, notificationClassification, contextRoute);
 
             await _notificationRepository.SaveAsync(newNotification);
