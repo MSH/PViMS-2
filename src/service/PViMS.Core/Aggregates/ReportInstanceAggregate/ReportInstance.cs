@@ -74,13 +74,15 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             {
                 case "CONFIRMED":
                     CheckIfAbleToChangeFromConfirmationActivity();
-                    CurrentActivity.SetToOld();
                     MoveToNextActivity(WorkFlow, currentUser);
                     break;
 
                 case "CAUSALITYSET":
-                    CurrentActivity.SetToOld();
                     MoveToNextActivity(WorkFlow, currentUser);
+                    break;
+
+                case "E2BGENERATED":
+                    AddE2BGeneratedDomainEvent(activityExecutionStatusEvent);
                     break;
 
                 default:
@@ -339,18 +341,24 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                 throw new DomainException($"Workflow {workFlow.Description} does not have any activities configured");
             }
 
-            if (CurrentActivity.QualifiedName == "Confirm Report Data")
+            switch (CurrentActivity.QualifiedName)
             {
-                var activity = workFlow.Activities.Single(a => a.QualifiedName == "Set MedDRA and Causality");
-                var activityInstance = new ActivityInstance(activity, currentUser);
-                _activities.Add(activityInstance);
-            }
+                case "Confirm Report Data":
+                    CurrentActivity.SetToOld();
+                    var meddraActivity = workFlow.Activities.Single(a => a.QualifiedName == "Set MedDRA and Causality");
+                    var meddraActivityInstance = new ActivityInstance(meddraActivity, currentUser);
+                    _activities.Add(meddraActivityInstance);
+                    break;
 
-            if (CurrentActivity.QualifiedName == "Set MedDRA and Causality")
-            {
-                var activity = workFlow.Activities.Single(a => a.QualifiedName == "Extract E2B");
-                var activityInstance = new ActivityInstance(activity, currentUser);
-                _activities.Add(activityInstance);
+                case "Set MedDRA and Causality":
+                    CurrentActivity.SetToOld();
+                    var e2bActivity = workFlow.Activities.Single(a => a.QualifiedName == "Extract E2B");
+                    var e2bActivityInstance = new ActivityInstance(e2bActivity, currentUser);
+                    _activities.Add(e2bActivityInstance);
+                    break;
+
+                default:
+                    break;
             }
         }
 
@@ -386,6 +394,13 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         private void AddTaskAttendedToDomainEvent(ReportInstanceTask cancelledTask)
         {
             var domainEvent = new TaskAttendedToDomainEvent(cancelledTask);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddE2BGeneratedDomainEvent(ActivityExecutionStatusEvent activityExecutionStatusEvent)
+        {
+            var domainEvent = new E2BGeneratedDomainEvent(this, activityExecutionStatusEvent);
 
             this.AddDomainEvent(domainEvent);
         }

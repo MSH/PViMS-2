@@ -7,7 +7,6 @@ using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -19,9 +18,6 @@ namespace PVIMS.Services
         private readonly IUnitOfWorkInt _unitOfWork;
 
         private readonly IRepositoryInt<Activity> _activityRepository;
-        private readonly IRepositoryInt<ActivityExecutionStatusEvent> _activityExecutionStatusEventRepository;
-        private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
-        private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
@@ -36,9 +32,6 @@ namespace PVIMS.Services
             IPatientService patientService, 
             IArtefactService artefactService, 
             IRepositoryInt<Activity> activityRepository,
-            IRepositoryInt<DatasetInstance> datasetInstanceRepository,
-            IRepositoryInt<ActivityExecutionStatusEvent> activityExecutionStatusEventRepository,
-            IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<WorkFlow> workFlowRepository,
             IRepositoryInt<User> userRepository,
@@ -49,9 +42,6 @@ namespace PVIMS.Services
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
             _activityRepository = activityRepository ?? throw new ArgumentNullException(nameof(activityRepository));
-            _activityExecutionStatusEventRepository = activityExecutionStatusEventRepository ?? throw new ArgumentNullException(nameof(activityExecutionStatusEventRepository));
-            _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
-            _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
@@ -123,7 +113,7 @@ namespace PVIMS.Services
 
         public async Task<ActivityExecutionStatusEvent> ExecuteActivityAsync(Guid contextGuid, string newExecutionStatus, string comments, DateTime? contextDate, string contextCode)
         {
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid, new string[] { "Activities.CurrentStatus", "WorkFlow" });
+            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid, new string[] { "Activities.CurrentStatus", "WorkFlow.Activities.ExecutionStatuses" });
             if (reportInstanceFromRepo == null)
             {
                 throw new KeyNotFoundException($"Unable to locate report instance using contextGuid {contextGuid}");
@@ -135,11 +125,6 @@ namespace PVIMS.Services
 
             var activityExecutionStatusEvent = reportInstanceFromRepo.ExecuteNewEventForActivity(newActivityExecutionStatus, currentUser, comments, contextDate, contextCode);
             _reportInstanceRepository.Update(reportInstanceFromRepo);
-
-            if (newActivityExecutionStatus.Description == "E2BGENERATED")
-            {
-                await ProcessE2BGenerationActivityAsync(reportInstanceFromRepo, activityExecutionStatusEvent);
-            }
 
             await _unitOfWork.CompleteAsync();
 
@@ -209,134 +194,6 @@ namespace PVIMS.Services
             reportInstance.SetEventIdentifiers(patientIdentifier, sourceIdentifier);
 
             _reportInstanceRepository.Update(reportInstance);
-        }
-
-        private async Task ProcessE2BGenerationActivityAsync(ReportInstance reportInstanceFromRepo, ActivityExecutionStatusEvent activityExecutionStatusEvent)
-        {
-            await CreatePatientSummaryAndLinkToExecutionEventAsync(reportInstanceFromRepo, activityExecutionStatusEvent);
-            await CreatePatientExtractAndLinkToExecutionEventAsync(reportInstanceFromRepo, activityExecutionStatusEvent);
-            await CreateE2BExtractAndLinkToExecutionEventAsync(reportInstanceFromRepo, activityExecutionStatusEvent);
-        }
-
-        private async Task CreatePatientSummaryAndLinkToExecutionEventAsync(ReportInstance reportInstance, ActivityExecutionStatusEvent executionEvent)
-        {
-            if (reportInstance == null)
-            {
-                throw new ArgumentNullException(nameof(reportInstance));
-            }
-
-            if (executionEvent == null)
-            {
-                throw new ArgumentNullException(nameof(executionEvent));
-            }
-
-            var artefactModel = reportInstance.WorkFlow.Description == "New Active Surveilliance Report" ? 
-                await _artefactService.CreatePatientSummaryForActiveReportAsync(reportInstance.ContextGuid) : 
-                await _artefactService.CreatePatientSummaryForSpontaneousReportAsync(reportInstance.ContextGuid);
-
-            using (var tempFile = File.OpenRead(artefactModel.FullPath))
-            {
-                if (tempFile.Length > 0)
-                {
-                    BinaryReader rdr = new BinaryReader(tempFile);
-                    executionEvent.AddAttachment(Path.GetFileName(artefactModel.FileName),
-                        _unitOfWork.Repository<AttachmentType>().Queryable().Single(at => at.Key == "docx"),
-                        tempFile.Length,
-                        rdr.ReadBytes((int)tempFile.Length), 
-                        "PatientSummary");
-
-                    _activityExecutionStatusEventRepository.Update(executionEvent);
-                    await _unitOfWork.CompleteAsync();
-                }
-            }
-        }
-
-        private async Task CreatePatientExtractAndLinkToExecutionEventAsync(ReportInstance reportInstance, ActivityExecutionStatusEvent executionEvent)
-        {
-            if (reportInstance == null)
-            {
-                throw new ArgumentNullException(nameof(reportInstance));
-            }
-
-            if (executionEvent == null)
-            {
-                throw new ArgumentNullException(nameof(executionEvent));
-            }
-
-            ArtefactInfoModel artefactModel = null;
-            if (reportInstance.WorkFlow.Description == "New Active Surveilliance Report")
-            {
-                var clinicalEvent = await _patientClinicalEventRepository.GetAsync(pce => pce.PatientClinicalEventGuid == reportInstance.ContextGuid);
-                if(clinicalEvent == null)
-                {
-                    throw new KeyNotFoundException(nameof(clinicalEvent));
-                }
-
-                artefactModel = _artefactService.CreateActiveDatasetForDownload(new long[] { clinicalEvent.Patient.Id }, 0);
-            }
-            else
-            {
-                var sourceInstance = await _datasetInstanceRepository.GetAsync(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
-                if (sourceInstance == null)
-                {
-                    throw new KeyNotFoundException(nameof(sourceInstance));
-                }
-
-                artefactModel = await _artefactService.CreateDatasetInstanceForDownloadAsync(sourceInstance.Id);
-            }
-
-            using (var tempFile = File.OpenRead(artefactModel.FullPath))
-            {
-                if (tempFile.Length > 0)
-                {
-                    BinaryReader rdr = new BinaryReader(tempFile);
-                    executionEvent.AddAttachment(Path.GetFileName(artefactModel.FileName),
-                        _unitOfWork.Repository<AttachmentType>().Queryable().Single(at => at.Key == "xlsx"),
-                        tempFile.Length,
-                        rdr.ReadBytes((int)tempFile.Length),
-                        "PatientExtract");
-
-                    _activityExecutionStatusEventRepository.Update(executionEvent);
-                    await _unitOfWork.CompleteAsync();
-                }
-            }
-        }
-
-        private async Task CreateE2BExtractAndLinkToExecutionEventAsync(ReportInstance reportInstance, ActivityExecutionStatusEvent executionEvent)
-        {
-            if (reportInstance == null)
-            {
-                throw new ArgumentNullException(nameof(reportInstance));
-            }
-
-            if (executionEvent == null)
-            {
-                throw new ArgumentNullException(nameof(executionEvent));
-            }
-
-            var activityInstance = reportInstance.CurrentActivity;
-
-            var evt = activityInstance.ExecutionEvents.OrderByDescending(ee => ee.EventDateTime).First(ee => ee.ExecutionStatus.Description == "E2BINITIATED");
-            var tag = (reportInstance.WorkFlow.Description == "New Active Surveilliance Report") ? "Active" : "Spontaneous";
-
-            var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.Tag == tag && di.ContextId == evt.Id);
-            var artefactModel = await _artefactService.CreateE2BAsync(datasetInstance.Id);
-
-            using (var tempFile = File.OpenRead(artefactModel.FullPath))
-            {
-                if (tempFile.Length > 0)
-                {
-                    BinaryReader rdr = new BinaryReader(tempFile);
-                    executionEvent.AddAttachment(Path.GetFileName(artefactModel.FileName),
-                        _unitOfWork.Repository<AttachmentType>().Queryable().Single(at => at.Key == "xml"),
-                        tempFile.Length,
-                        rdr.ReadBytes((int)tempFile.Length),
-                        "E2b");
-
-                    _activityExecutionStatusEventRepository.Update(executionEvent);
-                    await _unitOfWork.CompleteAsync();
-                }
-            }
         }
 
         private async Task<ActivityExecutionStatus> GetExecutionStatusForActivityAsync(string qualifiedName, int workFlowId, string newExecutionStatus)

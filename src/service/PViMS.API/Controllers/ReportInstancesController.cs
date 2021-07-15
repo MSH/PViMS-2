@@ -574,7 +574,7 @@ namespace PVIMS.API.Controllers
         /// <param name="id">The unique identifier of the reporting instance</param>
         /// <param name="activityChange">The payload for setting the new status</param>
         /// <returns></returns>
-        [HttpPut("workflow/{workFlowGuid}/reportinstances/{id}/activity", Name = "UpdateReportInstanceStage")]
+        [HttpPut("workflow/{workFlowGuid}/reportinstances/{id}/activity", Name = "UpdateReportInstanceActivity")]
         [Consumes("application/json")]
         public async Task<IActionResult> UpdateReportInstanceActivity(Guid workFlowGuid, int id,
             [FromBody] ActivityChangeDto activityChange)
