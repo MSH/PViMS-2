@@ -601,6 +601,41 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Change report classification
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that the report instance is associated to</param>
+        /// <param name="id">The unique identifier of the reporting instance</param>
+        /// <param name="reportInstanceClassificationForUpdate">The payload for setting the new classification</param>
+        /// <returns></returns>
+        [HttpPut("workflow/{workFlowGuid}/reportinstances/{id}/classification", Name = "UpdateReportInstanceClassification")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdateReportInstanceClassification(Guid workFlowGuid, int id,
+            [FromBody] ReportInstanceClassificationForUpdateDto reportInstanceClassificationForUpdate)
+        {
+            if (reportInstanceClassificationForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+            }
+
+            var reportClassification = ReportClassification.FromName(reportInstanceClassificationForUpdate.ReportClassification);
+            var command = new ChangeReportClassificationCommand(workFlowGuid, id, reportClassification);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeReportClassificationCommand - {workFlowGuid}: {reportInstanceId}: {id}",
+                command.WorkFlowGuid.ToString(),
+                command.ReportInstanceId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
         /// Set report instance terminology
         /// </summary>
         /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>

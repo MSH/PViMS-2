@@ -128,6 +128,16 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             return newComment;
         }
 
+        public void ChangeClassification(ReportClassification reportClassification)
+        {
+            if (ReportClassificationId == reportClassification.Id)
+            {
+                throw new DomainException("Report classification not changed");
+            }
+
+            ReportClassificationId = reportClassification.Id;
+        }
+
         public void ChangeTaskDetails(int taskId, string source, string description)
         {
             var task = _tasks.SingleOrDefault(t => t.Id == taskId);
