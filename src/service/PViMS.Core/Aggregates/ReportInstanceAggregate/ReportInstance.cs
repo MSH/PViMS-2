@@ -26,6 +26,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         public virtual TerminologyMedDra TerminologyMedDra { get; set; }
 
         public string SourceIdentifier { get; private set; }
+        public int ReportClassificationId { get; private set; }
 
         private List<ActivityInstance> _activities;
         public IEnumerable<ActivityInstance> Activities => _activities.AsReadOnly();
@@ -51,6 +52,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
             ReportInstanceGuid = Guid.NewGuid();
             Identifier = "TBD";
+            ReportClassificationId = ReportClassification.Unclassified.Id;
 
             ContextGuid = contextGuid;
             PatientIdentifier = patientIdentifier;
