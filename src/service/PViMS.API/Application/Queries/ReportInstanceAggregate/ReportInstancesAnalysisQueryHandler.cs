@@ -126,7 +126,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 
         private async Task<(DateTime searchFrom, DateTime searchTo)> PrepareComparisonDateRangeAsync()
         {
-            var config = await _configRepository.GetAsync(c => c.ConfigType == ConfigType.ReportInstanceFeedbackAlertCount);
+            var config = await _configRepository.GetAsync(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
             if (config == null)
             {
                 return (DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
