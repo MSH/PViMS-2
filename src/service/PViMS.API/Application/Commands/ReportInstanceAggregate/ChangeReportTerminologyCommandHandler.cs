@@ -64,7 +64,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
 
             _logger.LogInformation($"----- Report {reportInstanceFromRepo.Id} terminology updated");
 
-            await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "MEDDRASET", "AUTOMATION: MedDRA Term set", null, "");
+            await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "MEDDRASET", $"AUTOMATION: MedDRA Term set to {terminologyFromRepo.DisplayName}", null, "");
 
             return true;
         }

@@ -23,7 +23,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         public string PatientIdentifier { get; private set; }
 
         public int? TerminologyMedDraId { get; private set; }
-        public virtual TerminologyMedDra TerminologyMedDra { get; set; }
+        public virtual TerminologyMedDra TerminologyMedDra { get; private set; }
 
         public string SourceIdentifier { get; private set; }
         public int ReportClassificationId { get; private set; }
@@ -132,11 +132,6 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         public void ChangeClassification(ReportClassification reportClassification)
         {
-            if (ReportClassificationId == reportClassification.Id)
-            {
-                throw new DomainException("Report classification not changed");
-            }
-
             ReportClassificationId = reportClassification.Id;
         }
 
@@ -237,6 +232,17 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
             task.ChangeTaskStatusToCancelled();
             AddTaskCancelledDomainEvent(task);
+        }
+
+        public void ChangeTerminology(TerminologyMedDra terminologyMedDra)
+        {
+            if (TerminologyMedDraId == terminologyMedDra.Id)
+            {
+                throw new DomainException("Report terminology not changed as it is the same");
+            }
+
+            TerminologyMedDra = terminologyMedDra;
+            TerminologyMedDraId = terminologyMedDra.Id;
         }
 
         public void DeleteTaskComment(int taskId, int taskCommentId)
