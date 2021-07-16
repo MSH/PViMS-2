@@ -337,13 +337,16 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceTerminology",
                 reportInstanceFromRepo.WorkFlow.WorkFlowGuid, mappedReportInstance.Id), "setmeddra", "PUT"));
 
-            if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "MEDDRASET" || reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CLASSIFICATIONSET")
+            if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "MEDDRASET" 
+                || reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CLASSIFICATIONSET"
+                || reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CAUSALITYSET")
             {
                 mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceTerminology",
                     reportInstanceFromRepo.WorkFlow.WorkFlowGuid, mappedReportInstance.Id), "setclassification", "PUT"));
             }
 
-            if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CLASSIFICATIONSET")
+            if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CLASSIFICATIONSET"
+                || reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CAUSALITYSET")
             {
                 if (config.ConfigValue == "Both Scales" || config.ConfigValue == "WHO Scale")
                 {
