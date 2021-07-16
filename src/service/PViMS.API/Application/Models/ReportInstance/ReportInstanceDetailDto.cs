@@ -22,6 +22,12 @@ namespace PVIMS.API.Models
         public string PatientIdentifier { get; set; }
 
         /// <summary>
+        /// The classification of the report
+        /// </summary>
+        [DataMember]
+        public string ReportClassification { get; set; }
+
+        /// <summary>
         /// Patient unique identifier (for active reports)
         /// </summary>
         [DataMember]

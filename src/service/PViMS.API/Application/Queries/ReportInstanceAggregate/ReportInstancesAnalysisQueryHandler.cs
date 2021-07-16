@@ -337,10 +337,14 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceTerminology",
                 reportInstanceFromRepo.WorkFlow.WorkFlowGuid, mappedReportInstance.Id), "setmeddra", "PUT"));
 
-            if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description != "NOTSET")
+            if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "MEDDRASET" || reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CLASSIFICATIONSET")
             {
-                // ConfigType.AssessmentScale
+                mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceTerminology",
+                    reportInstanceFromRepo.WorkFlow.WorkFlowGuid, mappedReportInstance.Id), "setclassification", "PUT"));
+            }
 
+            if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CLASSIFICATIONSET")
+            {
                 if (config.ConfigValue == "Both Scales" || config.ConfigValue == "WHO Scale")
                 {
                     mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus",
@@ -352,7 +356,10 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
                     mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus",
                         reportInstanceFromRepo.WorkFlow.WorkFlowGuid, reportInstanceFromRepo.Id), "naranjocausalityset", "PUT"));
                 }
+            }
 
+            if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CAUSALITYSET")
+            {
                 mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus",
                     reportInstanceFromRepo.WorkFlow.WorkFlowGuid, reportInstanceFromRepo.Id), "causalityset", "PUT"));
             }

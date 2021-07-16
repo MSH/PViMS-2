@@ -213,6 +213,12 @@
                         {{ 'Set terminology' | translate }}
                       </span>
                     </button>
+                    <button mat-menu-item *ngIf="hasLink(record, 'setclassification')" (click)="openSetClassificationPopUp(record)">
+                      <mat-icon>send</mat-icon>
+                      <span style="vertical-align: middle;">
+                        {{ 'Set classification' | translate }}
+                      </span>
+                    </button>
                     <button mat-menu-item *ngIf="hasLink(record, 'whocausalityset')" (click)="openWhoPopUp(record)">
                       <mat-icon>layers</mat-icon>
                       <span style="vertical-align: middle;">

@@ -29,15 +29,16 @@ import { ActivityStatusChangePopupComponent } from '../activity-status-change-po
 import { ProgressStatusEnum, ProgressStatus } from 'app/shared/models/program-status.model';
 import { HttpEventType } from '@angular/common/http';
 import { PatientService } from 'app/shared/services/patient.service';
-import { NaranjoPopupComponent } from '../naranjo-popup/naranjo.popup.component';
+import { NaranjoPopupComponent } from './naranjo-popup/naranjo.popup.component';
 import { ReportInstanceMedicationDetailModel } from 'app/shared/models/report-instance/report-instance-medication.detail.model';
-import { SetMeddraPopupComponent } from '../set-meddra-popup/set-meddra.popup.component';
+import { SetMeddraPopupComponent } from './set-meddra-popup/set-meddra.popup.component';
 import { DatasetInstancePopupComponent } from '../dataset-instance-popup/dataset-instance.popup.component';
 import { WorkFlowService } from 'app/shared/services/work-flow.service';
 import { WorkFlowDetailModel } from 'app/shared/models/work-flow/work-flow.detail.model';
 import { LinkModel } from 'app/shared/models/link.model';
 import { DatasetInstanceModel } from 'app/shared/models/dataset/dataset-instance-model';
-import { WhoPopupComponent } from '../who-popup/who.popup.component';
+import { WhoPopupComponent } from './who-popup/who.popup.component';
+import { SetClassificationPopupComponent } from './set-classification/set-classification.popup.component';
 
 const moment =  _moment;
 
@@ -394,6 +395,25 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         self.loadData();
       })
   }  
+
+  openSetClassificationPopUp(data: any = {}) {
+    let self = this;
+    let title = 'Set Classification';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(SetClassificationPopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { workFlowId: this.workflowId, title: title, reportInstanceId: data.id }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+        self.loadData();
+      })
+  }
 
   openNaranjoPopUp(data: any = {}) {
     let self = this;
