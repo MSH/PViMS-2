@@ -6,7 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedMaterialModule } from 'app/shared/shared-material.module';
 import { SharedModule } from 'app/shared/shared.module';
-import { TranslateModule } from '@ngx-translate/core';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { RouterModule } from '@angular/router';
 import { ConfigListComponent } from './system/config-list/config-list.component';
@@ -93,7 +92,6 @@ import { GenericDeletePopupComponent } from './shared/generic-delete-popup/gener
     SharedComponentsModule,
     SharedMaterialModule,
     SharedModule,    
-    TranslateModule,
     PerfectScrollbarModule,
     RouterModule.forChild(ReportRoutes)
   ],

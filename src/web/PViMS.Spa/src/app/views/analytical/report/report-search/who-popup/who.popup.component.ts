@@ -19,7 +19,15 @@ import { ReportInstanceMedicationDetailModel } from 'app/shared/models/report-in
 
 @Component({
   templateUrl: './who.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-legend-term { flex: 0 0 30% !important; width: 30% !important; }
+    .mat-column-legend-description { flex: 0 0 60% !important; width: 60% !important; }
+    .mat-column-medication { flex: 0 0 35% !important; width: 35% !important; }
+    .mat-column-start-date { flex: 0 0 12% !important; width: 12% !important; }
+    .mat-column-end-date { flex: 0 0 12% !important; width: 12% !important; }
+    .mat-column-causality { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }
+  `],  
   animations: egretAnimations
 })
 export class WhoPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
@@ -257,7 +265,7 @@ export class WhoPopupComponent extends BasePopupComponent implements OnInit, Aft
 
     self.updateForm(self.viewModelForm, {causality: self.calculation});
 
-    self.reportInstanceService.updateCausality(self.data.workFlowId, self.data.reportInstanceId, self.selectedMedication.id, self.viewModelForm.value)
+    self.reportInstanceService.updateReportInstanceMedicationCausality(self.data.workFlowId, self.data.reportInstanceId, self.selectedMedication.id, self.viewModelForm.value)
     .pipe(finalize(() => self.setBusy(false)))
     .subscribe(result => {
       self.notify("Causality set successfully", "Activity");
@@ -274,7 +282,7 @@ export class WhoPopupComponent extends BasePopupComponent implements OnInit, Aft
 
     self.updateForm(self.viewModelForm, {causality: 'IGNORED'});
 
-    self.reportInstanceService.updateCausality(self.data.workFlowId, self.data.reportInstanceId, data.id, self.viewModelForm.value)
+    self.reportInstanceService.updateReportInstanceMedicationCausality(self.data.workFlowId, self.data.reportInstanceId, data.id, self.viewModelForm.value)
     .pipe(finalize(() => self.setBusy(false)))
     .subscribe(result => {
       self.notify("Causality set successfully", "Activity");

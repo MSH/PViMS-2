@@ -18,8 +18,16 @@ import { _routes } from 'app/config/routes';
 
 @Component({
   templateUrl: './activity-history.component.html',
-  styleUrls: ['./activity-history.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-activity { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-execution-event { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-executed-by { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-executed-date { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-comments { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-receipt-date { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-receipt-code { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-actions { flex: 0 0 5% !important; width: 5% !important; }
+  `],  
   animations: egretAnimations
 })
 export class ActivityHistoryComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

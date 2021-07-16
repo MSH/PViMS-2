@@ -16,7 +16,7 @@ import { ReportInstanceService } from 'app/shared/services/report-instance.servi
 import { takeUntil, finalize } from 'rxjs/operators';
 import { Moment } from 'moment';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
-import { MedicationListPopupComponent } from './medications-popup/medicationlist.popup.component';
+import { MedicationListPopupComponent } from './medications-popup/medication-list.popup.component';
 import { TerminologyMedDraModel } from 'app/shared/models/terminologymeddra.model';
 import { _routes } from 'app/config/routes';
 

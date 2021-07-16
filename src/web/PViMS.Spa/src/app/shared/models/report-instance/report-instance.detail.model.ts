@@ -17,6 +17,7 @@ export interface ReportInstanceDetailModel {
     sourceIdentifier: string;
     terminologyMedDra?: TerminologyMedDraModel;
     patientIdentifier: string;
+    reportClassification: string;
     patientId: number;
     patientClinicalEventId: number;
     activityExecutionStatusEventId: number;

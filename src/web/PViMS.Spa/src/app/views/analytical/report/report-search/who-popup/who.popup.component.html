@@ -109,372 +109,373 @@
           </mat-tab>
           <mat-tab label="{{'WHO Scale' | translate}}" *ngIf="viewModel?.medicationGrid?.records.data.length > 0 && selectedMedication != null">
             <mat-card-content class="m-1 p-5" style="height: 500px;">
-              <div class="card-title-text p-12">
-                <div fxFlex="70" class="p-4 font-weight-bold">
+              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="center center">
+                <div fxFlex="100" class="p-8 font-weight-bold light-gray">
                   {{"Setting causality for " | translate }} : {{ selectedMedication.medicationIdentifier }}
                 </div>
-                <div fxFlex="20" class="p-4" *ngIf="calculation != ''">
+              </div>
+              <div style="height:390px; overflow-y: auto" class="mt-12">
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Certain'">
+                  <div fxFlex="100" class="p-8 default-light-bg">
+                    <mat-label class="font-weight-bold">{{'Certain' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q1' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question1" placeholder="" (selectionChange)="handleProbable($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q2' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question2" placeholder="" (selectionChange)="handleProbable($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+  
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q3' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question3" placeholder="" (selectionChange)="handleProbable($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q4' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question4" placeholder="" (selectionChange)="handleProbable($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+  
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q5' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question5" placeholder="" (selectionChange)="handleProbable($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Unnecessary">
+                          {{'Unnecessary' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+  
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Probable/Likely'">
+                  <div fxFlex="100" class="p-8 default-light-bg">
+                    <button mat-icon-button (click)="resetSelection('Certain')" class="mr-05">
+                      <mat-icon>arrow_back</mat-icon>
+                    </button>
+                    <mat-label class="font-weight-bold">{{'Probable/Likely' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q6' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question6" placeholder="" (selectionChange)="handlePossible($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q7' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question7" placeholder="" (selectionChange)="handlePossible($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+  
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q8' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question8" placeholder="" (selectionChange)="handlePossible($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q9' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question9" placeholder="" (selectionChange)="handlePossible($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+  
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Possible'">
+                  <div fxFlex="100" class="p-8 default-light-bg">
+                    <button mat-icon-button (click)="resetSelection('Probable/Likely')" class="mr-05">
+                      <mat-icon>arrow_back</mat-icon>
+                    </button>
+                    <mat-label class="font-weight-bold">{{'Possible' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q10' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question10" placeholder="" (selectionChange)="handleUnlikely($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q11' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question11" placeholder="" (selectionChange)="handleUnlikely($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+  
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q12' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question12" placeholder="" (selectionChange)="handleUnlikely($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+  
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Unlikely'">
+                  <div fxFlex="100" class="p-8 default-light-bg">
+                    <button mat-icon-button (click)="resetSelection('Possible')" class="mr-05">
+                      <mat-icon>arrow_back</mat-icon>
+                    </button>
+                    <mat-label class="font-weight-bold">{{'Unlikely' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q13' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question13" placeholder="" (selectionChange)="handleConditional($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q14' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question14" placeholder="" (selectionChange)="handleConditional($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+  
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Conditional/Unclassified'">
+                  <div fxFlex="100" class="p-8 default-light-bg">
+                    <button mat-icon-button (click)="resetSelection('Unlikely')" class="mr-05">
+                      <mat-icon>arrow_back</mat-icon>
+                    </button>
+                    <mat-label class="font-weight-bold">{{'Conditional/Unclassified' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q15' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question15" placeholder="" (selectionChange)="handleUnassessable($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q16' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question16" placeholder="" (selectionChange)="handleUnassessable($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+  
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Unassessable/Unclassified'">
+                  <div fxFlex="100" class="p-8 default-light-bg">
+                    <button mat-icon-button (click)="resetSelection('Conditional/Unclassified')" class="mr-05">
+                      <mat-icon>arrow_back</mat-icon>
+                    </button>
+                    <mat-label class="font-weight-bold">{{'Unassessable/Unclassified' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q17' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question17" placeholder="" (selectionChange)="handleFinal($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="80" class="p-2">
+                    <mat-label>{{'WHO_Q18' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="19" class="p-2">
+                    <mat-form-field class="p-2 full-width">
+                      <mat-select formControlName="question18" placeholder="" (selectionChange)="handleFinal($event)">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div fxFlex="100" class="card-title-text mat-bg-accent p-24" *ngIf="viewModelForm.get('question17').value == 'No' || viewModelForm.get('question18').value == 'No'">
+                    {{'L_TEXT_17' | translate }}
+                  </div>
+                </div>
+              </div>
+              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="end" class="mt-12">
+                <div fxFlex="20" class="p-12" *ngIf="calculation != ''">
                   <mat-chip class="icon-chip" color="primary" selected="true">{{calculation}}</mat-chip>
                 </div>
-                <div fxFlex="8" class="p-4" *ngIf="!viewModelForm.invalid && calculation != ''">
-                  <button mat-icon-button color="primary" mattooltip="Save causality" (click)="setCausality()" ><mat-icon>send</mat-icon></button>
-                </div>
-              </div>
-  
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Certain'">
-                <div fxFlex="100" class="p-8 default-light-bg">
-                  <mat-label class="font-weight-bold">{{'Certain' | translate }}</mat-label>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q1' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question1" placeholder="" (selectionChange)="handleProbable($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q2' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question2" placeholder="" (selectionChange)="handleProbable($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q3' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question3" placeholder="" (selectionChange)="handleProbable($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q4' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question4" placeholder="" (selectionChange)="handleProbable($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q5' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question5" placeholder="" (selectionChange)="handleProbable($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Unnecessary">
-                        {{'Unnecessary' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Probable/Likely'">
-                <div fxFlex="100" class="p-8 default-light-bg">
-                  <button mat-icon-button (click)="resetSelection('Certain')" class="mr-05">
-                    <mat-icon>arrow_back</mat-icon>
-                  </button>
-                  <mat-label class="font-weight-bold">{{'Probable/Likely' | translate }}</mat-label>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q6' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question6" placeholder="" (selectionChange)="handlePossible($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q7' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question7" placeholder="" (selectionChange)="handlePossible($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q8' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question8" placeholder="" (selectionChange)="handlePossible($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q9' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question9" placeholder="" (selectionChange)="handlePossible($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Possible'">
-                <div fxFlex="100" class="p-8 default-light-bg">
-                  <button mat-icon-button (click)="resetSelection('Probable/Likely')" class="mr-05">
-                    <mat-icon>arrow_back</mat-icon>
-                  </button>
-                  <mat-label class="font-weight-bold">{{'Possible' | translate }}</mat-label>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q10' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question10" placeholder="" (selectionChange)="handleUnlikely($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q11' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question11" placeholder="" (selectionChange)="handleUnlikely($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q12' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question12" placeholder="" (selectionChange)="handleUnlikely($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Unlikely'">
-                <div fxFlex="100" class="p-8 default-light-bg">
-                  <button mat-icon-button (click)="resetSelection('Possible')" class="mr-05">
-                    <mat-icon>arrow_back</mat-icon>
-                  </button>
-                  <mat-label class="font-weight-bold">{{'Unlikely' | translate }}</mat-label>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q13' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question13" placeholder="" (selectionChange)="handleConditional($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q14' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question14" placeholder="" (selectionChange)="handleConditional($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Conditional/Unclassified'">
-                <div fxFlex="100" class="p-8 default-light-bg">
-                  <button mat-icon-button (click)="resetSelection('Unlikely')" class="mr-05">
-                    <mat-icon>arrow_back</mat-icon>
-                  </button>
-                  <mat-label class="font-weight-bold">{{'Conditional/Unclassified' | translate }}</mat-label>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q15' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question15" placeholder="" (selectionChange)="handleUnassessable($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q16' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question16" placeholder="" (selectionChange)="handleUnassessable($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" *ngIf="selectedStatus == 'Unassessable/Unclassified'">
-                <div fxFlex="100" class="p-8 default-light-bg">
-                  <button mat-icon-button (click)="resetSelection('Conditional/Unclassified')" class="mr-05">
-                    <mat-icon>arrow_back</mat-icon>
-                  </button>
-                  <mat-label class="font-weight-bold">{{'Unassessable/Unclassified' | translate }}</mat-label>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q17' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question17" placeholder="" (selectionChange)="handleFinal($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="80" class="p-2">
-                  <mat-label>{{'WHO_Q18' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-2">
-                  <mat-form-field class="p-2 full-width">
-                    <mat-select formControlName="question18" placeholder="" (selectionChange)="handleFinal($event)">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="100" class="card-title-text mat-bg-accent p-24" *ngIf="viewModelForm.get('question17').value == 'No' || viewModelForm.get('question18').value == 'No'">
-                  {{'L_TEXT_17' | translate }}
-                </div>
-              </div>
+              </div>              
             </mat-card-content>
           </mat-tab>
         </mat-tab-group>
       </div>
       <div fxFlex="100" class="mt-1">
         <span fxFlex></span>
+        <button mat-raised-button color="accent" mattooltip="Save causality" class="mr-05" (click)="setCausality()" *ngIf="!viewModelForm.invalid && calculation != '' && selectedMedication != null">{{"Save" | translate }}</button>
         <button mat-raised-button color="primary" type="button" (click)="dialogRef.close(false)">{{"Close" | translate }}</button>
       </div>
     </div>
