@@ -77,7 +77,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                     MoveToNextActivity(WorkFlow, currentUser);
                     break;
 
-                case "CAUSALITYSET":
+                case "CAUSALITYCONFIRMED":
                     MoveToNextActivity(WorkFlow, currentUser);
                     break;
 
@@ -133,6 +133,28 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         public void ChangeClassification(ReportClassification reportClassification)
         {
             ReportClassificationId = reportClassification.Id;
+        }
+
+        public void ChangeMedicationNaranjoCausality(int medicationId, string causality)
+        {
+            var medication = _medications.SingleOrDefault(m => m.Id == medicationId);
+            if (medication == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate medication {medicationId}");
+            }
+
+            medication.ChangeNaranjoCausality(causality);
+        }
+
+        public void ChangeMedicationWhoCausality(int medicationId, string causality)
+        {
+            var medication = _medications.SingleOrDefault(m => m.Id == medicationId);
+            if (medication == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate medication {medicationId}");
+            }
+
+            medication.ChangeWhoCausality(causality);
         }
 
         public void ChangeTaskDetails(int taskId, string source, string description)
@@ -282,34 +304,12 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             medication.ChangeMedicationIdentifier(medicationIdentifier);
         }
 
-        public void SetNaranjoCausality(Guid reportInstanceMedicationGuid, string naranjoCausality)
-        {
-            var medication = _medications.SingleOrDefault(m => m.ReportInstanceMedicationGuid == reportInstanceMedicationGuid);
-            if (medication == null)
-            {
-                throw new KeyNotFoundException(nameof(reportInstanceMedicationGuid));
-            }
-
-            medication.SetNaranjoCausality(naranjoCausality);
-        }
-
         public void SetSystemIdentifier()
         {
             if (!string.IsNullOrWhiteSpace(Identifier))
             {
                 Identifier = $"{WorkFlowId}/{Created.Year.ToString("D4")}/{Id.ToString("D5")}";
             }
-        }
-
-        public void SetWhoCausality(Guid reportInstanceMedicationGuid, string whoCausality)
-        {
-            var medication = _medications.SingleOrDefault(m => m.ReportInstanceMedicationGuid == reportInstanceMedicationGuid);
-            if (medication == null)
-            {
-                throw new KeyNotFoundException(nameof(reportInstanceMedicationGuid));
-            }
-
-            medication.SetWhoCausality(whoCausality);
         }
 
         public ActivityInstance CurrentActivity

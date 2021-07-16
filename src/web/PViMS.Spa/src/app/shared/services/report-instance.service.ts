@@ -176,7 +176,7 @@ export class ReportInstanceService extends BaseService {
       return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/terminology`, model);
     }
 
-    updateCausality(workFlowGuid: string, reportInstanceId: number, medicationId: number, model: any): any {
+    updateReportInstanceMedicationCausality(workFlowGuid: string, reportInstanceId: number, medicationId: number, model: any): any {
       return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/medications/${medicationId}/causality`, model);
     }
 

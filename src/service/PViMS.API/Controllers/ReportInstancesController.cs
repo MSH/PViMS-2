@@ -46,7 +46,6 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
-        private readonly IRepositoryInt<ReportInstanceMedication> _reportInstanceMedicationRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
         private readonly IMapper _mapper;
@@ -70,7 +69,6 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
-            IRepositoryInt<ReportInstanceMedication> reportInstanceMedicationRepository,
             IRepositoryInt<User> userRepository,
             IRepositoryInt<WorkFlow> workFlowRepository,
             IReportService reportService,
@@ -87,8 +85,7 @@ namespace PVIMS.API.Controllers
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
-            _reportInstanceMedicationRepository = reportInstanceMedicationRepository ?? throw new ArgumentNullException(nameof(reportInstanceMedicationRepository));
-            _activityExecutionStatusEventRepository = activityExecutionStatusEventRepository ?? throw new ArgumentNullException(nameof(activityExecutionStatusEventRepository));
+                _activityExecutionStatusEventRepository = activityExecutionStatusEventRepository ?? throw new ArgumentNullException(nameof(activityExecutionStatusEventRepository));
             _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
@@ -667,6 +664,37 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Set naranjo or who causality for a report instance medication
+        /// </summary>
+        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+        /// <param name="reportInstanceId">The unique identifier of the reporting instance</param>
+        /// <param name="id">The unique identifier of the reporting instance medication</param>
+        /// <param name="causalityForUpdate">The payload for setting the new causality</param>
+        /// <returns></returns>
+        [HttpPut("workflow/{workFlowGuid}/reportinstances/{reportInstanceId}/medications/{id}/causality", Name = "UpdateReportInstanceMedicationCausality")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdateReportInstanceMedicationCausality(Guid workFlowGuid, int reportInstanceId, int id,
+            [FromBody] ReportInstanceMedicationCausalityForUpdateDto causalityForUpdate)
+        {
+            var command = new ChangeReportMedicationCausalityCommand(workFlowGuid, reportInstanceId, id, causalityForUpdate.CausalityConfigType, causalityForUpdate.Causality);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeReportMedicationCausalityCommand - {workFlowGuid}: {reportInstanceId}: {reportInstanceMedicationId}",
+                command.WorkFlowGuid.ToString(),
+                command.ReportInstanceId,
+                command.ReportInstanceMedicationId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
         /// Create an E2B instance for the report
         /// </summary>
         /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
@@ -697,61 +725,6 @@ namespace PVIMS.API.Controllers
                 {
                     await CreateE2BForActiveAsync(reportInstanceFromRepo);
                 }    
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
-        }
-
-        /// <summary>
-        /// Set naranjo or who causality for a report instance medication
-        /// </summary>
-        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-        /// <param name="reportInstanceId">The unique identifier of the reporting instance</param>
-        /// <param name="id">The unique identifier of the reporting instance medication</param>
-        /// <param name="causalityForUpdate">The payload for setting the new causality</param>
-        /// <returns></returns>
-        [HttpPut("workflow/{workFlowGuid}/reportinstances/{reportInstanceId}/medications/{id}/causality", Name = "UpdateReportInstanceMedicationCausality")]
-        [Consumes("application/json")]
-        public async Task<IActionResult> UpdateReportInstanceMedicationCausality(Guid workFlowGuid, int reportInstanceId, int id,
-            [FromBody] ReportInstanceMedicationCausalityForUpdateDto causalityForUpdate)
-        {
-            if (causalityForUpdate == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate payload for new request");
-            }
-
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == reportInstanceId);
-            if (reportInstanceFromRepo == null)
-            {
-                return NotFound();
-            }
-
-            var reportInstanceMedicationFromRepo = reportInstanceFromRepo.Medications.SingleOrDefault(m => m.Id == id);
-            if (reportInstanceMedicationFromRepo == null)
-            {
-                return NotFound();
-            }
-
-            if (await _workFlowService.ValidateExecutionStatusForCurrentActivityAsync(reportInstanceFromRepo.ContextGuid, "CAUSALITYSET") == false)
-            {
-                ModelState.AddModelError("Message", "Invalid status for activity");
-            }
-
-            if (ModelState.IsValid)
-            {
-                if(causalityForUpdate.CausalityConfigType == CausalityConfigType.NaranjoScale)
-                {
-                    reportInstanceMedicationFromRepo.SetNaranjoCausality(causalityForUpdate.Causality);
-                }
-                if (causalityForUpdate.CausalityConfigType == CausalityConfigType.WHOScale)
-                {
-                    reportInstanceMedicationFromRepo.SetWhoCausality(causalityForUpdate.Causality);
-                }
-
-                _reportInstanceMedicationRepository.Update(reportInstanceMedicationFromRepo);
-                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }

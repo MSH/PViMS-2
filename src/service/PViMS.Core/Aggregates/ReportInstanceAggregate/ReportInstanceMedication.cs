@@ -31,12 +31,12 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             MedicationIdentifier = medicationIdentifier;
         }
 
-        public void SetWhoCausality(string whoCausality)
+        public void ChangeWhoCausality(string whoCausality)
         {
             WhoCausality = whoCausality;
         }
 
-        public void SetNaranjoCausality(string naranjoCausality)
+        public void ChangeNaranjoCausality(string naranjoCausality)
         {
             NaranjoCausality = naranjoCausality;
         }
