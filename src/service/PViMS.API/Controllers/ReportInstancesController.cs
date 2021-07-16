@@ -47,7 +47,6 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly IRepositoryInt<ReportInstanceMedication> _reportInstanceMedicationRepository;
-        private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
         private readonly IMapper _mapper;
@@ -72,7 +71,6 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<ReportInstanceMedication> reportInstanceMedicationRepository,
-            IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
             IRepositoryInt<User> userRepository,
             IRepositoryInt<WorkFlow> workFlowRepository,
             IReportService reportService,
@@ -92,7 +90,6 @@ namespace PVIMS.API.Controllers
             _reportInstanceMedicationRepository = reportInstanceMedicationRepository ?? throw new ArgumentNullException(nameof(reportInstanceMedicationRepository));
             _activityExecutionStatusEventRepository = activityExecutionStatusEventRepository ?? throw new ArgumentNullException(nameof(activityExecutionStatusEventRepository));
             _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
-            _terminologyMeddraRepository = terminologyMeddraRepository ?? throw new ArgumentNullException(nameof(terminologyMeddraRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
@@ -621,7 +618,7 @@ namespace PVIMS.API.Controllers
             var command = new ChangeReportClassificationCommand(workFlowGuid, id, reportClassification);
 
             _logger.LogInformation(
-                "----- Sending command: ChangeReportClassificationCommand - {workFlowGuid}: {reportInstanceId}: {id}",
+                "----- Sending command: ChangeReportClassificationCommand - {workFlowGuid}: {reportInstanceId}",
                 command.WorkFlowGuid.ToString(),
                 command.ReportInstanceId);
 
@@ -652,36 +649,21 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(f => f.WorkFlow.WorkFlowGuid == workFlowGuid && f.Id == id);
-            if (reportInstanceFromRepo == null)
+            var command = new ChangeReportTerminologyCommand(workFlowGuid, id, terminologyForUpdate.TerminologyMedDraId);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeReportTerminologyCommand - {workFlowGuid}: {reportInstanceId}",
+                command.WorkFlowGuid.ToString(),
+                command.ReportInstanceId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            if (await _workFlowService.ValidateExecutionStatusForCurrentActivityAsync(reportInstanceFromRepo.ContextGuid, "MEDDRASET") == false)
-            {
-                ModelState.AddModelError("Message", "Invalid status for activity");
-            }
-
-            var termFromRepo = _terminologyMeddraRepository.Get(terminologyForUpdate.TerminologyMedDraId);
-            if (termFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate terminology");
-            }
-
-            if (ModelState.IsValid)
-            {
-                reportInstanceFromRepo.TerminologyMedDra = termFromRepo;
-
-                _reportInstanceRepository.Update(reportInstanceFromRepo);
-                await _unitOfWork.CompleteAsync();
-
-                await _workFlowService.ExecuteActivityAsync(reportInstanceFromRepo.ContextGuid, "MEDDRASET", "AUTOMATION: MedDRA Term set", null, "");
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
