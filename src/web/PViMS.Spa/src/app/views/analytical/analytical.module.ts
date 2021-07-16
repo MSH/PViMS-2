@@ -14,16 +14,17 @@ import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { ActivityHistoryComponent } from './report/activity-history/activity-history.component';
 import { ActivityStatusChangePopupComponent } from './report/activity-status-change-popup/activity-status-change.popup.component';
 import { ReportSearchComponent } from './report/report-search/report-search.component';
-import { NaranjoPopupComponent } from './report/naranjo-popup/naranjo.popup.component';
-import { SetMeddraPopupComponent } from './report/set-meddra-popup/set-meddra.popup.component';
+import { NaranjoPopupComponent } from './report/report-search/naranjo-popup/naranjo.popup.component';
+import { SetMeddraPopupComponent } from './report/report-search/set-meddra-popup/set-meddra.popup.component';
 import { DatasetInstancePopupComponent } from './report/dataset-instance-popup/dataset-instance.popup.component';
 import { LandingComponent } from './landing/landing.component';
-import { WhoPopupComponent } from './report/who-popup/who.popup.component';
+import { WhoPopupComponent } from './report/report-search/who-popup/who.popup.component';
 import { ActiveAnalyserComponent } from './analyser/active-analyser/active-analyser.component';
 import { ReportTaskListComponent } from './report/report-task/report-task-list.component';
 import { ReportTaskAddPopupComponent } from './report/report-task/report-task-add-popup/report-task-add.popup.component';
 import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-task-details-popup/change-task-details.popup.component';
 import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task-status-popup/change-task-status.popup.component';
+import { SetClassificationPopupComponent } from './report/report-search/set-classification/set-classification.popup.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task
     ReportSearchComponent, 
     ReportTaskAddPopupComponent,
     ReportTaskListComponent,
+    SetClassificationPopupComponent,
     SetMeddraPopupComponent, 
     SpontaneousAnalyserComponent,
     WhoPopupComponent
@@ -61,6 +63,7 @@ import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task
     DatasetInstancePopupComponent,
     NaranjoPopupComponent,
     ReportTaskAddPopupComponent,    
+    SetClassificationPopupComponent,
     SetMeddraPopupComponent, 
     WhoPopupComponent
   ]  
