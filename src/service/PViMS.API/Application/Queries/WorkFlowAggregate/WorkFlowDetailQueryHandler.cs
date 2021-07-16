@@ -168,7 +168,7 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
                     break;
 
                 case "Set MedDRA and Causality":
-                    predicate = predicate.And(ri => ri.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == false && a.CurrentStatus.Description == "CAUSALITYSET" && a.LastUpdated >= compareDate));
+                    predicate = predicate.And(ri => ri.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == false && a.CurrentStatus.Description == "CAUSALITYCONFIRMED" && a.LastUpdated >= compareDate));
                     break;
 
                 case "Extract E2B":
