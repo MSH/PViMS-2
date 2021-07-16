@@ -109,224 +109,235 @@
           </mat-tab>
           <mat-tab label="{{'Naranjo Scale' | translate}}" *ngIf="viewModel?.medicationGrid?.records.data.length > 0 && selectedMedication != null">
             <mat-card-content class="m-1 p-5" style="height: 500px;">
-              <div class="card-title-text p-12">
-                <div fxFlex="70" class="p-4 font-weight-bold">
+              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="center center">
+                <div fxFlex="100" class="p-8 font-weight-bold light-gray">
                   {{"Setting causality for " | translate }} : {{ selectedMedication.medicationIdentifier }}
                 </div>
-                <div fxFlex="20" class="p-4" *ngIf="calculation != ''">
+              </div>
+              <div style="height:390px; overflow-y: auto" class="mt-12">
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
+                  <div fxFlex="70">
+                    <mat-label>{{'NARANJO_Q1' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="25">
+                    <mat-form-field class="full-width">
+                      <mat-select formControlName="question1" placeholder="" (selectionChange)="calculate()">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Do not know">
+                          {{'Do not know' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
+                  <div fxFlex="70">
+                    <mat-label>{{'NARANJO_Q2' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="25">
+                    <mat-form-field class="full-width">
+                      <mat-select formControlName="question2" placeholder="" (selectionChange)="calculate()">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Do not know">
+                          {{'Do not know' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
+                  <div fxFlex="70">
+                    <mat-label>{{'NARANJO_Q3' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="25">
+                    <mat-form-field class="full-width">
+                      <mat-select formControlName="question3" placeholder="" (selectionChange)="calculate()">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Do not know">
+                          {{'Do not know' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
+                  <div fxFlex="70">
+                    <mat-label>{{'NARANJO_Q4' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="25">
+                    <mat-form-field class="full-width">
+                      <mat-select formControlName="question4" placeholder="" (selectionChange)="calculate()">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Do not know">
+                          {{'Do not know' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
+                  <div fxFlex="70">
+                    <mat-label>{{'NARANJO_Q5' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="25">
+                    <mat-form-field class="full-width">
+                      <mat-select formControlName="question5" placeholder="" (selectionChange)="calculate()">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Do not know">
+                          {{'Do not know' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
+                  <div fxFlex="70">
+                    <mat-label>{{'NARANJO_Q6' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="25">
+                    <mat-form-field class="full-width">
+                      <mat-select formControlName="question6" placeholder="" (selectionChange)="calculate()">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Do not know">
+                          {{'Do not know' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
+                  <div fxFlex="70">
+                    <mat-label>{{'NARANJO_Q7' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="25">
+                    <mat-form-field class="full-width">
+                      <mat-select formControlName="question7" placeholder="" (selectionChange)="calculate()">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Do not know">
+                          {{'Do not know' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
+                  <div fxFlex="70">
+                    <mat-label>{{'NARANJO_Q8' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="25">
+                    <mat-form-field class="full-width">
+                      <mat-select formControlName="question8" placeholder="" (selectionChange)="calculate()">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Do not know">
+                          {{'Do not know' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
+                  <div fxFlex="70">
+                    <mat-label>{{'NARANJO_Q9' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="25">
+                    <mat-form-field class="full-width">
+                      <mat-select formControlName="question9" placeholder="" (selectionChange)="calculate()">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Do not know">
+                          {{'Do not know' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
+                  <div fxFlex="70">
+                    <mat-label>{{'NARANJO_Q10' | translate }}</mat-label>
+                  </div>
+                  <div fxFlex="25">
+                    <mat-form-field class="full-width">
+                      <mat-select formControlName="question10" placeholder="" (selectionChange)="calculate()">
+                        <mat-option value=""></mat-option>
+                        <mat-option value="Yes">  
+                          {{'Yes' | translate}}
+                        </mat-option>
+                        <mat-option value="No">
+                          {{'No' | translate}}
+                        </mat-option>
+                        <mat-option value="Do not know">
+                          {{'Do not know' | translate}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="end" class="mt-12">
+                <div fxFlex="20" class="p-12" *ngIf="calculation != ''">
                   <mat-chip class="icon-chip" color="primary" selected="true">{{calculation}}</mat-chip>
-                </div>
-                <div fxFlex="8" class="p-4" *ngIf="!viewModelForm.invalid && calculation != ''">
-                  <button mat-icon-button color="primary" mattooltip="Save causality" (click)="setCausality()" ><mat-icon>send</mat-icon></button>
-                </div>
-              </div>
-
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" class="mb-05">
-                <div fxFlex="30" class="p-6">
-                  <mat-label>{{'NARANJO_Q1' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-6 mr-05">
-                  <mat-form-field class="p-6 full-width">
-                    <mat-select formControlName="question1" placeholder="" (selectionChange)="calculate()">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Do not know">
-                        {{'Do not know' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="30" class="p-6">
-                  <mat-label>{{'NARANJO_Q2' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-6">
-                  <mat-form-field class="p-6 full-width">
-                    <mat-select formControlName="question2" placeholder="" (selectionChange)="calculate()">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Do not know">
-                        {{'Do not know' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" class="mb-05">
-                <div fxFlex="30" class="p-6">
-                  <mat-label>{{'NARANJO_Q3' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-6 mr-05">
-                  <mat-form-field class="p-6 full-width">
-                    <mat-select formControlName="question3" placeholder="" (selectionChange)="calculate()">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Do not know">
-                        {{'Do not know' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="30" class="p-6">
-                  <mat-label>{{'NARANJO_Q4' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-6">
-                  <mat-form-field class="p-6 full-width">
-                    <mat-select formControlName="question4" placeholder="" (selectionChange)="calculate()">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Do not know">
-                        {{'Do not know' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" class="mb-05">
-                <div fxFlex="30" class="p-6">
-                  <mat-label>{{'NARANJO_Q5' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-6 mr-05">
-                  <mat-form-field class="p-6 full-width">
-                    <mat-select formControlName="question5" placeholder="" (selectionChange)="calculate()">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Do not know">
-                        {{'Do not know' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="30" class="p-6">
-                  <mat-label>{{'NARANJO_Q6' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-6">
-                  <mat-form-field class="p-6 full-width">
-                    <mat-select formControlName="question6" placeholder="" (selectionChange)="calculate()">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Do not know">
-                        {{'Do not know' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" class="mb-05">              
-                <div fxFlex="30" class="p-6">
-                  <mat-label>{{'NARANJO_Q7' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-6 mr-05">
-                  <mat-form-field class="p-6 full-width">
-                    <mat-select formControlName="question7" placeholder="" (selectionChange)="calculate()">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Do not know">
-                        {{'Do not know' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="30" class="p-6">
-                  <mat-label>{{'NARANJO_Q8' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-6">
-                  <mat-form-field class="p-6 full-width">
-                    <mat-select formControlName="question8" placeholder="" (selectionChange)="calculate()">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Do not know">
-                        {{'Do not know' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" class="mb-05">
-                <div fxFlex="30" class="p-6">
-                  <mat-label>{{'NARANJO_Q9' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-6 mr-05">
-                  <mat-form-field class="p-6 full-width">
-                    <mat-select formControlName="question9" placeholder="" (selectionChange)="calculate()">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Do not know">
-                        {{'Do not know' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="30" class="p-6">
-                  <mat-label>{{'NARANJO_Q10' | translate }}</mat-label>
-                </div>
-                <div fxFlex="19" class="p-6">
-                  <mat-form-field class="p-6 full-width">
-                    <mat-select formControlName="question10" placeholder="" (selectionChange)="calculate()">
-                      <mat-option value=""></mat-option>
-                      <mat-option value="Yes">  
-                        {{'Yes' | translate}}
-                      </mat-option>
-                      <mat-option value="No">
-                        {{'No' | translate}}
-                      </mat-option>
-                      <mat-option value="Do not know">
-                        {{'Do not know' | translate}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
                 </div>
               </div>
             </mat-card-content>
@@ -335,6 +346,7 @@
       </div>
       <div fxFlex="100" class="mt-1">
         <span fxFlex></span>
+        <button mat-raised-button color="accent" mattooltip="Save causality" class="mr-05" (click)="setCausality()" *ngIf="!viewModelForm.invalid && calculation != '' && selectedMedication != null">{{"Save" | translate }}</button>
         <button mat-raised-button color="primary" type="button" (click)="dialogRef.close(false)">{{"Close" | translate }}</button>
       </div>
     </div>
