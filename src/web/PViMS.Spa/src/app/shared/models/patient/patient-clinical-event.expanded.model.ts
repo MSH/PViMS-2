@@ -14,6 +14,7 @@ export interface PatientClinicalEventExpandedModel {
     clinicalEventAttributes: AttributeValueModel[];
     reportInstanceId: number;
     setMedDraTerm: string;
+    setClassification: string;
     medications: ReportInstanceMedicationDetailModel[];
     activity: ActivityExecutionStatusEventModel[];
     tasks: TaskModel[];

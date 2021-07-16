@@ -97,6 +97,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             }
 
             dto.SetMedDraTerm = reportInstanceFromRepo.TerminologyMedDra?.DisplayName;
+            dto.SetClassification = ReportClassification.From(reportInstanceFromRepo.ReportClassificationId).Name;
             dto.Medications = _mapper.Map<ICollection<ReportInstanceMedicationDetailDto>>(reportInstanceFromRepo.Medications.Where(m => !String.IsNullOrWhiteSpace(m.WhoCausality) || (!String.IsNullOrWhiteSpace(m.NaranjoCausality))));
             dto.Tasks = _mapper.Map<ICollection<TaskDto>>(reportInstanceFromRepo.Tasks.Where(t => t.TaskStatusId != Core.Aggregates.ReportInstanceAggregate.TaskStatus.Cancelled.Id));
         }

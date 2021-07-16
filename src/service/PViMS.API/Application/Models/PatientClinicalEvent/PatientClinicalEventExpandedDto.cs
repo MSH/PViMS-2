@@ -17,6 +17,12 @@ namespace PVIMS.API.Models
         public string SetMedDraTerm { get; set; }
 
         /// <summary>
+        /// The classification as set by the PV specialist
+        /// </summary>
+        [DataMember]
+        public string SetClassification { get; set; }
+
+        /// <summary>
         /// Medications which have causality set
         /// </summary>
         [DataMember]
