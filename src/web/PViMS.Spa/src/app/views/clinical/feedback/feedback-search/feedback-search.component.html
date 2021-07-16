@@ -17,7 +17,7 @@
                 <div fxFlex="100" class="pr-1">
                   <mat-chip-list #chipList>
                     <div *ngFor="let activity of viewModel?.workFlow?.feedbackActivity">
-                      <mat-chip color="primary" [selected]="activity.qualifiedName == viewModelForm.get('qualifiedName').value" (click)="selectActivity(activity.qualifiedName)" *ngIf="activity.reportInstanceCount > 0"> 
+                      <mat-chip color="primary" [selected]="activity.qualifiedName == viewModelForm.get('qualifiedName').value" (click)="selectActivity(activity.qualifiedName)" *ngIf="activity.reportInstanceCount > 0" style="cursor: pointer;"> 
                         {{activity.qualifiedName | translate}}
                       </mat-chip>
                       <span class="mr-24" matBadge="{{activity.reportInstanceCount}}" matBadgePosition="above after" matBadgeColor="warn" matBadgeOverlap="true" *ngIf="activity.reportInstanceCount > 0"></span>
@@ -100,17 +100,6 @@
               <mat-cell *matCellDef="let record">
                   <p>{{record.patientIdentifier}}</p>
               </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="medication-summary">
-                <mat-header-cell *matHeaderCellDef>{{ 'Medications' | translate }}</mat-header-cell>
-                <mat-cell *matCellDef="let record">
-                    <button mat-raised-button 
-                            *ngIf="record.medications?.length > 0"
-                            (click)="openMedicationPopUp(record.medications, {})">
-                            {{"View" | translate }}
-                    </button>
-                </mat-cell>
             </ng-container>
 
             <ng-container matColumnDef="adverse-event">

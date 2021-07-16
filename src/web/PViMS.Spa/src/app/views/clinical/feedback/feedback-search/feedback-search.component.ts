@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
 import { Subscription } from 'rxjs';
@@ -26,8 +26,16 @@ import { ClinicalEventTaskPopupComponent } from '../clinical-event-task-popup/cl
 
 @Component({
   templateUrl: './feedback-search.component.html',
-  styleUrls: ['./feedback-search.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-identifier { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-created { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-patient { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-adverse-event { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-meddra-term { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-task-count { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-status { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }
+  `],   
   animations: egretAnimations
 })
 export class FeedbackSearchComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -109,7 +117,21 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
 
     self.updateForm(self.viewModelForm, {qualifiedName: qualifiedName});
 
-    self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'task-count', 'status', 'actions'])
+    switch(qualifiedName) { 
+      case 'Confirm Report Data': { 
+        self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'task-count', 'status', 'actions'])
+        break; 
+      } 
+      case 'Set MedDRA and Causality': { 
+        self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'meddra-term', 'status', 'actions'])
+         break; 
+      } 
+      default: { 
+         //statements; 
+         break; 
+      } 
+    } 
+
 
     self.viewModel.searchContext = "Activity";
     self.loadGrid();
