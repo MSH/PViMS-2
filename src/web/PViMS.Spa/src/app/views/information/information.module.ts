@@ -9,7 +9,6 @@ import { FormsModule } from '@angular/forms';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedMaterialModule } from 'app/shared/shared-material.module';
 import { SharedModule } from 'app/shared/shared.module';
-import { TranslateModule } from '@ngx-translate/core';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { PageViewerPopupComponent } from './page-viewer/page-viewer-popup/page-viewer.popup.component';
 import { PageConfigurePopupComponent } from './shared/page-configure-popup/page-configure.popup.component';
@@ -40,7 +39,6 @@ import { ItemListWidgetComponent } from './page-viewer/item-list-widget/item-lis
     SharedComponentsModule,
     SharedMaterialModule,
     SharedModule,
-    TranslateModule,
     PerfectScrollbarModule,
     QuillModule,
     RouterModule.forChild(InformationRoutes)

@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { Error401Component } from './401/error.401.component';
 import { Error403Component } from './403/error.403.component';
 import { Error404Component } from './404/error.404.component';
@@ -30,7 +29,6 @@ const routes = [
         ErrorGeneralComponent
     ],
     imports: [
-        TranslateModule,
         MatIconModule,
         SharedModule,
         RouterModule.forChild(routes),

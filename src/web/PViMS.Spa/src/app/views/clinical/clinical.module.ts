@@ -7,7 +7,6 @@ import { SharedMaterialModule } from 'app/shared/shared-material.module';
 import { FormsModule } from '@angular/forms';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedModule } from 'app/shared/shared.module';
-import { TranslateModule } from '@ngx-translate/core';
 import { QuillModule } from 'ngx-quill';
 
 import { EncounterSearchComponent } from './encounter/encounter-search/encounter-search.component';
@@ -58,7 +57,6 @@ import { FormADRMedicationPopupComponent } from './shared/form-adr-medication-po
     SharedComponentsModule,
     SharedMaterialModule,
     SharedModule,
-    TranslateModule,
     PerfectScrollbarModule,
     QuillModule,
     WebcamModule,
