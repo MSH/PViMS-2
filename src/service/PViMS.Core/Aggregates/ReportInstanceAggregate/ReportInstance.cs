@@ -79,6 +79,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
                 case "CAUSALITYCONFIRMED":
                     MoveToNextActivity(WorkFlow, currentUser);
+                    AddCausalityConfirmedDomainEvent();
                     break;
 
                 case "E2BGENERATED":
@@ -407,6 +408,13 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         private void AddE2BGeneratedDomainEvent(ActivityExecutionStatusEvent activityExecutionStatusEvent)
         {
             var domainEvent = new E2BGeneratedDomainEvent(this, activityExecutionStatusEvent);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddCausalityConfirmedDomainEvent()
+        {
+            var domainEvent = new CausalityConfirmedDomainEvent(this);
 
             this.AddDomainEvent(domainEvent);
         }

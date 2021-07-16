@@ -303,35 +303,5 @@ namespace PVIMS.API.Controllers
             //}
             return null;
         }
-
-        /// <summary>
-        ///  Prepare notification for active causality reports
-        /// </summary>
-        /// <param name="compDate">The paramterised date to check against</param>
-        /// <returns></returns>
-        private NotificationDto CreateNotificationForActiveCausality(DateTime compDate)
-        {
-            //var activeWorkFlowGuid = new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219");
-
-            //var predicate = PredicateBuilder.New<ReportInstance>(true);
-
-            //predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == activeWorkFlowGuid);
-            //predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == "Set MedDRA and Causality" && a.CurrentStatus.Description == "CAUSALITYSET" && a.Created >= compDate));
-
-            //var newAnalyserNotificationCount = _reportInstanceRepository.List(predicate, null, new string[] { "" }).Count;
-            //if (newAnalyserNotificationCount > 0)
-            //{
-            //    return new NotificationDto()
-            //    {
-            //        Identifier = "ActiveCausality",
-            //        Color = "primary",
-            //        Icon = "timer",
-            //        Message = $"New ACTIVE reports with causality and terminology set ({newAnalyserNotificationCount})",
-            //        Route = "/clinical/feedbacksearch",
-            //        Time = DateTime.Now.ToString()
-            //    };
-            //}
-            return null;
-        }
     }
 }
