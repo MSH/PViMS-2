@@ -66,10 +66,13 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             await CustomMapAsync(reportInstanceFromRepo, mappedReport);
             await CreateLinksAsync(reportInstanceFromRepo, mappedReport);
 
-            foreach (var executionEvent in reportInstanceFromRepo.CurrentActivity.ExecutionEvents)
+            foreach (var activity in reportInstanceFromRepo.Activities.OrderBy(a => a.Created))
             {
-                var mappedExecutionEvent = _mapper.Map<ActivityExecutionStatusEventDto>(executionEvent);
-                mappedReport.Events.Add(await CustomActivityExecutionStatusEventMap(mappedExecutionEvent));
+                foreach (var executionEvent in activity.ExecutionEvents)
+                {
+                    var mappedExecutionEvent = _mapper.Map<ActivityExecutionStatusEventDto>(executionEvent);
+                    mappedReport.Events.Add(await CustomActivityExecutionStatusEventMap(mappedExecutionEvent));
+                }
             }
 
             return mappedReport;
