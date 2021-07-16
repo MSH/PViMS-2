@@ -66,7 +66,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         public ActivityExecutionStatusEvent ExecuteNewEventForActivity(ActivityExecutionStatus newExecutionStatus, User currentUser, string comments, DateTime? contextDate, string contextCode)
         {
-            if (CurrentActivity.CurrentStatus.Description == newExecutionStatus.Description) { return null; };
+            //if (CurrentActivity.CurrentStatus.Description == newExecutionStatus.Description) { return null; };
 
             var activityExecutionStatusEvent = CurrentActivity.ExecuteEvent(newExecutionStatus, currentUser, comments, contextDate, contextCode);
 
