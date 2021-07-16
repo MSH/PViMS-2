@@ -168,8 +168,8 @@ export class ReportInstanceService extends BaseService {
       return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks/${reportInstanceTaskId}/status`, model);
     }
 
-    updateStatus(workFlowGuid: string, reportInstanceId: number, model: any): any {
-      return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/status`, model);
+    updateReportInstanceActivity(workFlowGuid: string, reportInstanceId: number, model: any): any {
+      return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/activity`, model);
     }
 
     updateTerminology(workFlowGuid: string, reportInstanceId: number, model: any): any {
@@ -184,4 +184,7 @@ export class ReportInstanceService extends BaseService {
       return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/createe2b`, null);
     }
 
+    updateReportInstanceClassification(workFlowGuid: string, reportInstanceId: number, model: any): any {
+      return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/classification`, model);
+    }
 }
