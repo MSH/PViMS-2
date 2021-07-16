@@ -7,8 +7,6 @@ import { SharedMaterialModule } from 'app/shared/shared-material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedModule } from 'app/shared/shared.module';
-import { TranslateModule } from '@ngx-translate/core';
-
 import { SpontaneousAnalyserComponent } from './analyser/spontaneous-analyser/spontaneous-analyser.component';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { ActivityHistoryComponent } from './report/activity-history/activity-history.component';
@@ -25,6 +23,7 @@ import { ReportTaskAddPopupComponent } from './report/report-task/report-task-ad
 import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-task-details-popup/change-task-details.popup.component';
 import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task-status-popup/change-task-status.popup.component';
 import { SetClassificationPopupComponent } from './report/report-search/set-classification/set-classification.popup.component';
+import { MedicationListPopupComponent } from './report/report-search/medications-popup/medication-list.popup.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +34,7 @@ import { SetClassificationPopupComponent } from './report/report-search/set-clas
     ChangeTaskStatusPopupComponent,
     DatasetInstancePopupComponent,
     LandingComponent,
+    MedicationListPopupComponent,
     NaranjoPopupComponent,
     ReportSearchComponent, 
     ReportTaskAddPopupComponent,
@@ -51,7 +51,6 @@ import { SetClassificationPopupComponent } from './report/report-search/set-clas
     SharedComponentsModule,
     SharedMaterialModule,
     SharedModule,
-    TranslateModule,
     PerfectScrollbarModule,
     RouterModule.forChild(AnalyticalRoutes)
   ],
@@ -61,6 +60,7 @@ import { SetClassificationPopupComponent } from './report/report-search/set-clas
     ChangeTaskDetailsPopupComponent,
     ChangeTaskStatusPopupComponent,
     DatasetInstancePopupComponent,
+    MedicationListPopupComponent,
     NaranjoPopupComponent,
     ReportTaskAddPopupComponent,    
     SetClassificationPopupComponent,

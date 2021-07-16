@@ -68,7 +68,6 @@ import { UserProfilePopupComponent } from 'app/views/security/user-profile/user-
 import { AppointmentPopupComponent } from 'app/views/clinical/patient/patient-view/appointment-popup/appointment.popup.component';
 import { EnrolmentPopupComponent } from 'app/views/clinical/patient/patient-view/enrolment-popup/enrolment.popup.component';
 import { DeenrolmentPopupComponent } from 'app/views/clinical/patient/patient-view/deenrolment-popup/deenrolment.popup.component';
-import { MedicationListPopupComponent } from 'app/views/analytical/report/report-search/medications-popup/medicationlist.popup.component';
 import { AttachmentPopupComponent } from 'app/views/clinical/patient/patient-view/attachment-popup/attachment.popup.component';
 import { ConfirmPopupComponent } from './popup/confirm.popup.component';
 import { ErrorPopupComponent } from './popup/error.popup.component';
@@ -116,7 +115,6 @@ const components = [
   AttachmentPopupComponent,
   EnrolmentPopupComponent,
   DeenrolmentPopupComponent,
-  MedicationListPopupComponent,
 
   // Admin popups
   CareEventPopupComponent,
@@ -165,13 +163,13 @@ const components = [
     CommonModule,
     FormsModule,
     RouterModule,
-    TranslateModule,
     FlexLayoutModule,
     ReactiveFormsModule,
     PerfectScrollbarModule,
     SharedPipesModule,
     SharedDirectivesModule,
-    SharedMaterialModule
+    SharedMaterialModule,
+    TranslateModule
   ],
   declarations: components,
   entryComponents: [
@@ -196,7 +194,6 @@ const components = [
     AttachmentPopupComponent,
     EnrolmentPopupComponent,
     DeenrolmentPopupComponent,
-    MedicationListPopupComponent,
     
     CareEventPopupComponent,
     CareEventDeletePopupComponent,   
