@@ -40,10 +40,7 @@ import { LabResultDeletePopupComponent } from 'app/views/administration/referenc
 import { ConfigPopupComponent } from 'app/views/administration/system/config-list/config-popup/config.popup.component';
 import { FacilityPopupComponent } from 'app/views/administration/system/facility-list/facility-popup/facility.popup.component';
 import { ContactDetailPopupComponent } from 'app/views/administration/system/contact-detail-list/contact-detail-popup/contact-detail.popup.component';
-import { HolidayPopupComponent } from 'app/views/administration/system/holiday-list/holiday-popup/holiday.popup.component';
-import { HolidayDeletePopupComponent } from 'app/views/administration/system/holiday-list/holiday-delete-popup/holiday-delete.popup.component';
 import { FacilityDeletePopupComponent } from 'app/views/administration/system/facility-list/facility-delete-popup/facility-delete.popup.component';
-import { CareEventPopupComponent } from 'app/views/administration/work/care-event-list/care-event-popup/care-event.popup.component';
 import { CareEventDeletePopupComponent } from 'app/views/administration/work/care-event-list/care-event-delete-popup/care-event-delete.popup.component';
 import { DatasetElementPopupComponent } from 'app/views/administration/work/dataset-element-list/dataset-element-popup/dataset-element.popup.component';
 import { DatasetElementDeletePopupComponent } from 'app/views/administration/work/dataset-element-list/dataset-element-delete-popup/dataset-element-delete.popup.component';
@@ -78,6 +75,7 @@ import { TimeoutComponent } from './timeout/timeout.component';
 import { MeddraSelectPopupComponent } from './popup/meddra-select-popup/meddra-select.popup.component';
 import { DatasetCategoryPopupComponent } from 'app/views/administration/work/dataset-list/dataset-category-list/dataset-category-popup/dataset-category.popup.component';
 import { TaskCommentsPopupComponent } from './popup/task-comments-popup/task-comments.popup.component';
+import { OnlineStatusPopupComponent } from './popup/online-status-popup/online-status.popup.component';
 
 const components = [
   HeaderTopComponent,
@@ -116,8 +114,6 @@ const components = [
   EnrolmentPopupComponent,
   DeenrolmentPopupComponent,
 
-  // Admin popups
-  CareEventPopupComponent,
   CareEventDeletePopupComponent,   
   ConfigPopupComponent,
   ContactDetailPopupComponent,
@@ -130,8 +126,6 @@ const components = [
   EncounterTypeDeletePopupComponent,
   FacilityPopupComponent,
   FacilityDeletePopupComponent,
-  HolidayPopupComponent,
-  HolidayDeletePopupComponent,
   LabPopupComponent,
   LabDeletePopupComponent,
   LabResultPopupComponent,
@@ -141,12 +135,12 @@ const components = [
   UserDeletePopupComponent,
   UserUpdatePopupComponent,
 
+  AboutPopupComponent,
   ConceptSelectPopupComponent,
   MeddraSelectPopupComponent,
+  OnlineStatusPopupComponent,
   TaskCommentsPopupComponent,
-
   ViewErrorPopupComponent,
-  AboutPopupComponent,
 
   CustomizerComponent,
   ButtonLoadingComponent,
@@ -195,7 +189,6 @@ const components = [
     EnrolmentPopupComponent,
     DeenrolmentPopupComponent,
     
-    CareEventPopupComponent,
     CareEventDeletePopupComponent,   
     ContactDetailPopupComponent,
     ConfigPopupComponent,
@@ -208,8 +201,6 @@ const components = [
     EncounterTypeDeletePopupComponent,
     FacilityPopupComponent,
     FacilityDeletePopupComponent,
-    HolidayPopupComponent,
-    HolidayDeletePopupComponent,
     LabPopupComponent,
     LabDeletePopupComponent,
     LabResultPopupComponent,
@@ -219,12 +210,12 @@ const components = [
     UserDeletePopupComponent,
     UserUpdatePopupComponent,
 
+    AboutPopupComponent,
     ConceptSelectPopupComponent,
     MeddraSelectPopupComponent,
+    OnlineStatusPopupComponent,
     TaskCommentsPopupComponent,
-    
-    ViewErrorPopupComponent,
-    AboutPopupComponent
+    ViewErrorPopupComponent
   ],
   exports: components
 })

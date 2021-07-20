@@ -2,6 +2,16 @@
   <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isBusy()"></mat-progress-bar>
 </div>
 
+<div fxLayout="row wrap">
+  <div fxFlex="100" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }" *ngIf="!viewModel?.connected">
+    <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
+      <div fxFlex="100" class="text-center m-12 p-12 mat-red rounded">
+        <span class="m-0">{{'CURRENTLY OFFLINE' | translate}}</span>
+      </div>        
+    </div>
+  </div>
+</div>
+
 <mat-card class="p-8">
   
   <mat-card-title class="">

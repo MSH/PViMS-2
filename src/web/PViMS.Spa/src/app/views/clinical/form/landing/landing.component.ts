@@ -12,13 +12,11 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { _routes } from 'app/config/routes';
 
 @Component({
-  selector: 'app-landing',
-  templateUrl: './landing.component.html',
-  styleUrls: ['./landing.component.scss']
+  templateUrl: './landing.component.html'
 })
 export class LandingComponent extends BaseComponent implements OnInit {
 
-  formList: MetaFormDetailModel[] = [];
+  viewModel: ViewModel = new ViewModel();
 
   constructor(
     protected _activatedRoute: ActivatedRoute,
@@ -37,6 +35,9 @@ export class LandingComponent extends BaseComponent implements OnInit {
   ngOnInit(): void {
     const self = this;
     self.getMetaFormList();
+    self.accountService.connected$.subscribe(val => {
+      self.viewModel.connected = val;
+    });
   }
 
   getMetaFormList(): void {
@@ -44,7 +45,7 @@ export class LandingComponent extends BaseComponent implements OnInit {
     self.metaFormService.getAllMetaForms()
         .pipe(takeUntil(self._unsubscribeAll))
         .subscribe(result => {
-            self.formList = result;
+            self.viewModel.formList = result;
         }, error => {
             self.throwError(error, error.statusText);
         });
@@ -71,4 +72,9 @@ export class LandingComponent extends BaseComponent implements OnInit {
           
     }    
   }  
+}
+
+class ViewModel {
+  formList: MetaFormDetailModel[] = [];
+  connected: boolean = true;
 }

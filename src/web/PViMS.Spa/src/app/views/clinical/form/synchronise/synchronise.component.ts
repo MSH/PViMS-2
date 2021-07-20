@@ -32,7 +32,7 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
     protected _location: Location,
     protected _formBuilder: FormBuilder,
     protected popupService: PopupService,
-    public accountService: AccountService,
+    protected accountService: AccountService,
     protected eventService: EventService,
     protected metaFormService: MetaFormService,
     protected mediaObserver: MediaObserver,
@@ -69,6 +69,12 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
     self.viewModel.mainGrid.setupAdvance(
        null, null, self.mainGridPaginator)
        .subscribe(() => { self.loadGrid(); });
+
+    self.accountService.connected$.subscribe(val => {
+        console.log(`Marked ${val}`);
+        self.viewModel.connected = val;
+      });
+
     self.loadGrid();
   }
 
@@ -126,7 +132,7 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
         form.selected = false;
         this.metaFormService.markFormAsSynched(form.id);
       }, error => {
-        console.log(error);
+        self.CLog(error, 'error saving form to API');
         form.synchStatus = "Error";
         let messages = [];
         if(error.message) {
@@ -178,6 +184,8 @@ class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
           (['selected', 'identifier', 'patient identifier', 'synch status', 'actions']);
+
+  connected: boolean = true;
 }
 
 class GridRecordModel {

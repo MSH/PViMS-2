@@ -8,14 +8,14 @@
 
   <mat-card-content>      
 
-    <div class="card-title-text mat-bg-accent p-24" *ngIf="viewModel?.mainGrid?.records.data.length == 0 && this.accountService.isConnected()">
+    <div class="card-title-text mat-bg-accent p-24" *ngIf="viewModel?.mainGrid?.records.data.length == 0 && viewModel?.connected">
       {{'No records' | translate}}
     </div>
-    <div class="card-title-text mat-bg-warn p-24" *ngIf="!this.accountService.isConnected()">
+    <div class="card-title-text mat-bg-warn p-24" *ngIf="!viewModel?.connected">
       {{'Unable to synchronise when offline. Please check your connection' | translate}}
     </div>
 
-    <mat-toolbar *ngIf="viewModel?.mainGrid?.records.data.length > 0 && this.accountService.isConnected()">
+    <mat-toolbar *ngIf="viewModel?.mainGrid?.records.data.length > 0 && viewModel?.connected">
       <mat-checkbox (change)="selectToggleAll()" class="inbox-toggle-all mr-1"><small>All</small></mat-checkbox>
       <button mat-mini-fab matTooltip="{{'Synchronise' | translate}}" (click)="synchForms()">
         <mat-icon>cloud_upload</mat-icon>

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, OnDestroy, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormGroup, FormBuilder } from '@angular/forms';
@@ -22,10 +22,7 @@ import { AttachmentViewPopupComponent } from '../attachment-view-popup/attachmen
 import { FormDeletePopupComponent } from '../form-delete-popup/form-delete.popup.component';
 
 @Component({
-  selector: 'app-formslist',
-  templateUrl: './formlist.component.html',
-  styleUrls: ['./formlist.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  templateUrl: './form-list.component.html',
   animations: egretAnimations
 })
 export class FormListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

@@ -5,12 +5,15 @@ import { EventService } from './event.service';
 import { UserRoleModel } from '../models/user/user.role.model';
 import { ParameterKeyValueModel } from '../models/parameter.keyvalue.model';
 import { NotificationModel } from '../models/user/notification.model';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService extends BaseService {
 
-    connected = true;
-    userRoles: UserRoleModel[] = [];
+    connected$ = new BehaviorSubject<boolean>(true);
+    forcedOffline$ = new BehaviorSubject<boolean>(false);
+
+    private userRoles: UserRoleModel[] = [];
 
     constructor(
         protected httpClient: HttpClient, protected eventService: EventService) {
@@ -54,10 +57,13 @@ export class AccountService extends BaseService {
     }
 
     setConnectionStatus(connected: boolean): void {
-      this.connected = connected;
+      this.connected$.next(connected);
     }
 
-    isConnected(): boolean {
-      return this.connected;
+    setForcedOffline(forced: boolean): void {
+      this.forcedOffline$.next(forced);
+      if(forced) {
+        this.connected$.next(false);
+      }
     }
 }

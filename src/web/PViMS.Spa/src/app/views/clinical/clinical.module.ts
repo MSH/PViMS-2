@@ -13,7 +13,6 @@ import { EncounterSearchComponent } from './encounter/encounter-search/encounter
 import { AppointmentSearchComponent } from './appointment/appointment-search/appointment-search.component';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { EncounterViewComponent } from './encounter/encounter-view/encounter-view.component';
-import { FormListComponent } from './form/formlist/formlist.component';
 import { FormAComponent } from './form/form-a/form-a.component';
 import { FormBComponent } from './form/form-b/form-b.component';
 import { FormCComponent } from './form/form-c/form-c.component';
@@ -49,6 +48,7 @@ import { AttachmentAddPopupComponent } from './shared/attachment-add-popup/attac
 import { ClinicalEventTaskPopupComponent } from './feedback/clinical-event-task-popup/clinical-event-task.popup.component';
 import { ChangeTaskStatusPopupComponent } from './feedback/change-task-status-popup/change-task-status.popup.component';
 import { FormADRMedicationPopupComponent } from './shared/form-adr-medication-popup/form-adr-medication.popup.component';
+import { FormListComponent } from './form/form-list/form-list.component';
 
 @NgModule({
   imports: [

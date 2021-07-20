@@ -3,7 +3,6 @@ import { Routes } from '@angular/router';
 import { EncounterSearchComponent } from './encounter/encounter-search/encounter-search.component';
 import { AppointmentSearchComponent } from './appointment/appointment-search/appointment-search.component';
 import { EncounterViewComponent } from './encounter/encounter-view/encounter-view.component';
-import { FormListComponent } from './form/formlist/formlist.component';
 import { FormAComponent } from './form/form-a/form-a.component';
 import { FormBComponent } from './form/form-b/form-b.component';
 import { FormCComponent } from './form/form-c/form-c.component';
@@ -16,6 +15,7 @@ import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/coh
 import { FormADRComponent } from './form/form-adr/form-adr.component';
 import { LandingComponent } from './form/landing/landing.component';
 import { PendingChangesGuard } from 'app/shared/guards/component-can-deactive';
+import { FormListComponent } from './form/form-list/form-list.component';
 
 export const ClinicalRoutes: Routes = [
   {

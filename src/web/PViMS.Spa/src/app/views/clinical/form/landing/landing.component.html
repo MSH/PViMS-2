@@ -1,6 +1,15 @@
-<div class="flex-container">
-  <div class="m-333">
-    <mat-card class="flex-item p-12 mat-elevation-z6 rounded" *ngFor="let action of formList">
+<div fxLayout="row wrap">
+  <div fxFlex="25" fxFlex.md="50" fxFlex.sm="75" fxFlex.sm="100" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }" *ngIf="!viewModel?.connected">
+    <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
+      <div fxFlex="100" class="text-center p-12 m-12 mat-red rounded">
+        <span class="m-0">{{'CURRENTLY OFFLINE' | translate}}</span>
+      </div>        
+    </div>
+  </div>
+</div>
+<div fxLayout="row wrap">
+  <div fxFlex="25" fxFlex.md="50" fxFlex.sm="75" fxFlex.sm="100" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+    <mat-card class="p-12 mat-elevation-z6 rounded" *ngFor="let action of viewModel?.formList">
       <mat-card-title class="text-center">
         <div class="card-title-text light-gray p-12">
           {{action.formName | translate}}
@@ -26,5 +35,5 @@
         </div>
       </mat-card-content>
     </mat-card>  
-  </div>  
+  </div>
 </div>

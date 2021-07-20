@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { EventService } from 'app/shared/services/event.service';
 import { PatientService } from 'app/shared/services/patient.service';
-import { finalize, map, switchMap, takeUntil } from 'rxjs/operators';
+import { finalize, switchMap, takeUntil } from 'rxjs/operators';
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AttachmentAddPopupComponent } from '../../shared/attachment-add-popup/attachment-add.popup.component';
@@ -34,8 +34,7 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './form-adr.component.html',
-  animations: egretAnimations,
-  styleUrls: ['./form-adr.component.scss'],  
+  animations: egretAnimations
 })
 export class FormADRComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
   // @HostListener allows us to also guard against browser refresh, close, etc.
@@ -133,6 +132,9 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     });
 
     self.getCustomAttributeList();
+    self.accountService.connected$.subscribe(val => {
+      self.viewModel.connected = val;
+    });    
   }
 
   ngAfterViewInit(): void {
@@ -455,6 +457,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
 class ViewModel {
   patientId: number;
+  connected: boolean = true;
   patientFound = false;
   errorFindingPatient = false;
 
