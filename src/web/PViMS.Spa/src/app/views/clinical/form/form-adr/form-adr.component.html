@@ -3,15 +3,13 @@
 </div>
 
 <div fxLayout="row wrap">
-  <div fxFlex="100" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }" *ngIf="!viewModel?.connected">
-    <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
-      <div fxFlex="100" class="text-center m-12 p-12 mat-red rounded">
-        <span class="m-0">{{'CURRENTLY OFFLINE' | translate}}</span>
-      </div>        
-    </div>
+  <div fxFlex="20" class="text-center m-12 p-12 mat-red rounded" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }" *ngIf="!viewModel?.connected">
+    <span class="m-0">{{'CURRENTLY OFFLINE' | translate}}</span>
+  </div>
+  <div fxFlex="20" class="text-center m-12 p-12 mat-green rounded" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }" *ngIf="viewModel?.isComplete">
+    <span class="m-0">{{'THIS FORM IS MARKED AS COMPLETE' | translate}}</span>
   </div>
 </div>
-
 <mat-card class="p-8">
   
   <mat-card-title class="">
@@ -74,9 +72,13 @@
             <span [class.font-weight-bold]="viewModel.currentStep == 7">Finish</span>
           </div>
           <div fxLayout="row" fxLayoutGap="1.0%" fxLayoutAlign="center" class="p-2">
-            <button mat-flat-button color="" class="mr-12" (click)="previousStep()" [disabled]="viewModel.currentStep == 1">Previous</button>
-            <button mat-flat-button color="accent" (click)="nextStep()" [disabled]="viewModel.currentStep > 6 || !viewModel.patientFound">Next</button>
-            <button mat-flat-button color="primary" (click)="submit()" *ngIf="viewModel.currentStep > 6" [disabled]="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid">Save</button>
+            <button mat-raised-button color="" class="mr-12" (click)="previousStep()" [disabled]="viewModel.currentStep == 1" style="width: 120px;">Previous</button>
+            <button mat-raised-button color="accent" (click)="nextStep()" [disabled]="viewModel.currentStep > 6 || !viewModel.patientFound" style="width: 120px;">Next</button>
+          </div>
+          <div fxLayout="row" fxLayoutGap="1.0%" fxLayoutAlign="center" class="p-2 mt-12">
+            <button mat-raised-button color="primary" class="mr-12" (click)="saveFormOnline()" *ngIf="viewModel.currentStep > 6 && viewModel.formId == 0 && viewModel.connected" [disabled]="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || viewModel.isSynched" style="width: 120px;">{{'Save' | translate}}</button>
+            <button mat-raised-button color="accent" class="mr-12" (click)="saveFormOffline()" *ngIf="(viewModel.formId == 0 && !viewModel.connected) || viewModel.formId > 0" [disabled]="viewModel.isSynched" style="width: 120px;">{{'Save' | translate}}</button>
+            <button mat-raised-button color="primary" (click)="completeFormOffline()" *ngIf="(viewModel.formId == 0 && !viewModel.connected) || (viewModel.formId > 0 && !viewModel?.isComplete)" [disabled]="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || viewModel.isSynched" style="width: 120px;">{{'Complete' | translate}}</button>
           </div>
         </div>
       </div>
@@ -84,39 +86,41 @@
       <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 1">
         <form [formGroup]="firstFormGroup" [@fadeInOut2]="">
           <div class="p-24">
-            <span class="mat-title">Patient selection</span>
+            <div *ngIf="viewModel?.formId == 0">
+              <span class="mat-title">Patient selection</span>
   
-            <div class="p-24 light-gray rounded">
-              Please enter the TB case identifier of the patient you would like to add the adverse event for ...
+              <div class="p-24 light-gray rounded">
+                Please enter the TB case identifier of the patient you would like to add the adverse event for ...
+              </div>
+    
+              <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
+                <mat-form-field class="p-8 full-width">
+                  <input matInput formControlName="customAttributeValue" placeholder="{{'TB Case Identifier' | translate}}" required>
+                  <mat-error *ngIf="firstFormGroup.get('customAttributeValue').hasError('required')">
+                    {{'This is a required field' | translate}}
+                  </mat-error>
+                </mat-form-field>              
+              </div>
+              <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="end" class="p-2">
+                <button mat-raised-button color="accent" class="mr-12" (click)="getPatient()" [disabled]="firstFormGroup.invalid">Search for Patient</button>
+              </div>
+              <div class="p-24 mat-bg-warn rounded mt-12" *ngIf="viewModel.errorFindingPatient">
+                Unable to locate the patient using the case identifier specified ...
+              </div>
             </div>
-  
-            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
-              <mat-form-field class="p-8 full-width">
-                <input matInput formControlName="customAttributeValue" placeholder="{{'TB Case Identifier' | translate}}" required>
-                <mat-error *ngIf="firstFormGroup.get('customAttributeValue').hasError('required')">
-                  {{'This is a required field' | translate}}
-                </mat-error>
-              </mat-form-field>              
-            </div>
-            <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="end" class="p-2">
-              <button mat-raised-button color="accent" class="mr-12" (click)="loadData()" [disabled]="firstFormGroup.invalid">Search for Patient</button>
-            </div>
-            <div class="p-24 mat-bg-warn rounded mt-12" *ngIf="viewModel.errorFindingPatient">
-              Unable to locate the patient using the case identifier specified ...
-            </div>
-            <div class="mt-12" *ngIf="viewModel.patientFound">
+            <div class="mt-12" *ngIf="viewModel?.patientFound">
               <span class="mat-title">Patient details</span>
               <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start start">
                 <div fxFlex="45" class="mr-05">
                   <mat-form-field class="p-8 full-width" appearance="fill">
                     <mat-label>{{'First name' | translate}}</mat-label>
-                    <input matInput formControlName="firstName" readonly>
+                    <input matInput formControlName="patientFirstName" readonly>
                   </mat-form-field>
                 </div>
                 <div fxFlex="45">
                   <mat-form-field class="p-8 full-width" appearance="fill">
                     <mat-label>{{'Last name' | translate}}</mat-label>
-                    <input matInput formControlName="lastName" readonly>
+                    <input matInput formControlName="patientLastName" readonly>
                   </mat-form-field>
                 </div>
               </div>
@@ -403,7 +407,7 @@
                 <div class="p-24 light-gray rounded">
                   Please add lab result documentation pertinent to the adverse event <span class="font-weight-bold text-red">(maximum of 5 attachments)</span>
                 </div>
-                <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="end" class="p-2 mt-12">
+                <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="end" class="p-2 mt-12" *ngIf="!viewModel.isComplete && !viewModel.isSynched">
                   <button mat-raised-button color="accent" class="mr-12" (click)="openAttachmentPopUp()" [disabled]="viewModel.attachments.length >= 5">Add Attachment</button>
                 </div>
                 <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-2 mt-12">
@@ -421,7 +425,7 @@
                           </div>        
                         </div>
                         <div class="m-8 text-center">
-                          <button mat-mini-fab color="warn" (click)="removeAttachment(i)">
+                          <button mat-mini-fab color="warn" (click)="removeAttachment(i)" *ngIf="!viewModel.isComplete && !viewModel.isSynched">
                             <mat-icon>clear</mat-icon>
                           </button>
                         </div>
@@ -560,7 +564,7 @@
  
             <div class="ml-05 mr-05 mt-05 pb-1">
               <div class="p-12 table-container">
-                  <div class="p-12" fxLayoutAlign="end">
+                  <div class="p-12" fxLayoutAlign="end" *ngIf="!viewModel.isComplete && !viewModel.isSynched">
                     <button mat-mini-fab (click)="openMedicationPopup({}, true)"><mat-icon>add</mat-icon></button>
                   </div>
                   <mat-table [dataSource]="viewModel?.medicationGrid?.records"
@@ -598,11 +602,13 @@
                     <mat-header-cell *matHeaderCellDef>{{'Actions' | translate}}</mat-header-cell>
                     <mat-cell *matCellDef="let record">
                       <button mat-icon-button color="primary" matTooltip="{{'Update Medication' | translate }}"
-                              (click)="openMedicationPopup(record, false)">
+                              (click)="openMedicationPopup(record, false)"
+                              *ngIf="!viewModel.isComplete && !viewModel.isSynched">
                           <mat-icon>edit</mat-icon>
                       </button>
                       <button mat-icon-button color="warn" matTooltip="{{'Delete Medication' | translate}}"
-                          (click)="removeMedication(record.index)" *ngIf="record.id == 0">
+                          (click)="removeMedication(record.index)" 
+                          *ngIf="record.id == 0 && !viewModel.isComplete && !viewModel.isSynched">
                           <mat-icon>delete</mat-icon>
                       </button>
                   </mat-cell>                    

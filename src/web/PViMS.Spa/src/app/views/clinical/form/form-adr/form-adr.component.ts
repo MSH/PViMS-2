@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { AccountService } from 'app/shared/services/account.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { EventService } from 'app/shared/services/event.service';
 import { PatientService } from 'app/shared/services/patient.service';
@@ -30,6 +30,10 @@ import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/a
 import { PatientMedicationDetailModel } from 'app/shared/models/patient/patient-medication.detail.model';
 import { PatientCustomAttributesForUpdateModel } from 'app/shared/models/patient/patient-custom-attributes-for-update.model';
 import { FormADRMedicationPopupComponent } from '../../shared/form-adr-medication-popup/form-adr-medication.popup.component';
+import { MetaFormService } from 'app/shared/services/meta-form.service';
+import { Form } from 'app/shared/indexed-db/appdb';
+import { FormCompletePopupComponent } from '../form-complete-popup/form-complete.popup.component';
+
 const moment =  _moment;
 
 @Component({
@@ -43,6 +47,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
   public scrollConfig = {}
 
   viewModel: ViewModel = new ViewModel();
+
   public viewModelForm: FormGroup;
   public firstFormGroup: FormGroup;
   public secondFormGroup: FormGroup;
@@ -52,6 +57,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
   public sixthFormGroup: FormGroup;
 
   constructor(
+    protected _activatedRoute: ActivatedRoute,
     protected _router: Router,
     protected _location: Location,
     protected _formBuilder: FormBuilder,
@@ -60,6 +66,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     protected eventService: EventService,
     protected patientService: PatientService,
     protected customAttributeService: CustomAttributeService,
+    protected metaFormService: MetaFormService,
     protected dialog: MatDialog) 
   { 
     super(_router, _location, popupService, accountService, eventService);
@@ -81,6 +88,8 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
   ngOnInit(): void {
     const self = this;
+
+    self.viewModel.formId = +self._activatedRoute.snapshot.paramMap.get('id');
     
     self.viewModelForm = self._formBuilder.group({
       formCompleted: ['']
@@ -88,8 +97,9 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     self.firstFormGroup = this._formBuilder.group({
       customAttributeKey: [this.viewModel.customAttributeKey],
       customAttributeValue: ['', Validators.required],
-      firstName: [''],
-      lastName: [''],
+      patientIdentifier: [''],
+      patientFirstName: [''],
+      patientLastName: [''],
       gender: [''],
       address: [''],
       contactNumber: [''],
@@ -139,9 +149,9 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
   ngAfterViewInit(): void {
     let self = this;
-    // if (self.id > 0) {
-    //   self.loadData();
-    // }
+    if (self.viewModel.formId > 0) {
+       self.loadFormData();
+    }
   }
 
   ngOnDestroy(): void {
@@ -158,14 +168,54 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     this.viewModel.currentStep --;
   }
 
-  loadData(): void {
+  loadFormData(): void {
     let self = this;
     self.setBusy(true);
-    self.patientService.searchPatientByCondition(self.firstFormGroup.value)
+
+    self.metaFormService.getForm(self.viewModel.formId).then(result => {
+        let form = result as Form;
+        self.CLog(form, 'form');
+        
+        self.viewModel.formIdentifier = form.formIdentifier;
+
+        self.updateForm(self.viewModelForm, JSON.parse(form.formValues[0].formControlValue));
+        self.updateForm(self.firstFormGroup, JSON.parse(form.formValues[1].formControlValue));
+        self.updateForm(self.secondFormGroup, JSON.parse(form.formValues[2].formControlValue));
+        self.updateForm(self.thirdFormGroup, JSON.parse(form.formValues[3].formControlValue));
+        self.updateForm(self.fourthFormGroup, JSON.parse(form.formValues[4].formControlValue));
+
+        self.viewModel.medications = JSON.parse(form.formValues[5].formControlValue);
+        self.viewModel.attachments = JSON.parse(form.formValues[6].formControlValue);
+
+        self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
+
+        self.updateForm(self.sixthFormGroup, JSON.parse(form.formValues[7].formControlValue));
+
+        self.viewModel.patientFound = true;
+        self.viewModel.isComplete = form.completeStatus == 'Complete';
+        self.viewModel.isSynched = form.synchStatus == 'Synched';
+
+        if(self.viewModel.isSynched) {
+          self.firstFormGroup.disable();
+          self.secondFormGroup.disable();
+          self.thirdFormGroup.disable();
+          self.fourthFormGroup.disable();
+          self.sixthFormGroup.disable();
+        }
+        self.setBusy(false);
+    }, error => {
+          self.throwError(error, error.statusText);
+    });
+  }  
+
+  getPatient(): void {
+    let self = this;
+    self.setBusy(true);
+    self.patientService.getPatientByCondition(self.firstFormGroup.value)
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        this.CLog(result);
+        this.CLog(result, 'patient by condition');
         if(result == null) {
           self.viewModel.errorFindingPatient = true;
           self.viewModel.patientFound = false;
@@ -176,6 +226,9 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.viewModel.patientFound = true;
 
           self.updateForm(self.firstFormGroup, result);
+          self.updateForm(self.firstFormGroup, {patientFirstName: result.firstName});
+          self.updateForm(self.firstFormGroup, {patientLastName: result.lastName});
+          self.updateForm(self.firstFormGroup, {patientIdentifier: self.firstFormGroup.get('customAttributeValue').value});
           self.updateForm(self.firstFormGroup, {gender: self.getValueFromAttribute(result.patientAttributes, "Gender")});
           self.updateForm(self.firstFormGroup, {contactNumber: self.getValueFromAttribute(result.patientAttributes, "Contact Number")});
           self.updateForm(self.firstFormGroup, {address: self.getValueFromAttribute(result.patientAttributes, "Address")});
@@ -293,9 +346,8 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     this.notify("Medication removed successfully!", "Medication");
   }
 
-  submit(): void {
-    let self = this;
-    self.setBusy(true);
+  saveFormOnline(): void {
+    const self = this;
 
     const requestArray = [];
 
@@ -331,7 +383,123 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       error => {
         this.handleError(error, "Error adding form");
       });
+
   }
+
+  saveFormOffline(): void {
+    const self = this;
+    let otherModels:any[]; 
+    otherModels = [self.secondFormGroup.value, self.thirdFormGroup.value, self.fourthFormGroup.value, self.viewModel.medications, self.viewModel.attachments, self.sixthFormGroup.value];
+
+    if (self.viewModel.formId == 0) {
+      self.metaFormService.saveFormToDatabase('FormADR', self.viewModelForm.value, self.firstFormGroup.value, otherModels).then(response =>
+        {
+          if (response) {
+            self.setBusy(false);              
+            self.notify('Form saved successfully!', 'Form Saved');
+
+            self.firstFormGroup.markAsPristine();
+            self.secondFormGroup.markAsPristine();
+            self.thirdFormGroup.markAsPristine();
+            self.fourthFormGroup.markAsPristine();
+            self.fifthFormGroup.markAsPristine();
+            self.sixthFormGroup.markAsPristine();
+    
+            self._router.navigate([_routes.clinical.forms.landing]);
+          }
+          else {
+            self.showError('There was an error saving the form locally, please try again !', 'Form Error');
+          }
+        });
+      }
+      else {
+        self.metaFormService.updateForm(self.viewModel.formId, this.viewModelForm.value, this.firstFormGroup.value, otherModels).then(response =>
+          {
+              if (response) {
+                  self.notify('Form updated successfully!', 'Form Saved');
+
+                  self.firstFormGroup.markAsPristine();
+                  self.secondFormGroup.markAsPristine();
+                  self.thirdFormGroup.markAsPristine();
+                  self.fourthFormGroup.markAsPristine();
+                  self.fifthFormGroup.markAsPristine();
+                  self.sixthFormGroup.markAsPristine();
+      
+                  self._router.navigate([_routes.clinical.forms.landing]);
+              }
+              else {
+                  self.showError('There was an error saving the form locally, please try again !', 'Form Error');
+              }
+          });
+      }
+  }
+
+  completeFormOffline(): void {
+    let self = this;
+    let otherModels:any[]; 
+
+    otherModels = [self.secondFormGroup.value, self.thirdFormGroup.value, self.fourthFormGroup.value, self.viewModel.medications, self.viewModel.attachments, self.sixthFormGroup.value];
+
+    if (self.viewModel.formId == 0) {
+      self.metaFormService.saveFormToDatabase('FormADR', self.viewModelForm.value, self.firstFormGroup.value, otherModels).then(response =>
+        {
+            if (response) {
+              self.setBusy(false);              
+              self.notify('Form saved successfully!', 'Form Saved');
+  
+              self.firstFormGroup.markAsPristine();
+              self.secondFormGroup.markAsPristine();
+              self.thirdFormGroup.markAsPristine();
+              self.fourthFormGroup.markAsPristine();
+              self.fifthFormGroup.markAsPristine();
+              self.sixthFormGroup.markAsPristine();
+      
+              self.openCompletePopup(+response);
+            }
+            else {
+                self.showError('There was an error saving the form locally, please try again !', 'Form Error');
+            }
+        });
+      }
+      else {
+        self.metaFormService.updateForm(self.viewModel.formId, this.viewModelForm.value, this.firstFormGroup.value, otherModels).then(response =>
+          {
+              if (response) {
+                  self.notify('Form updated successfully!', 'Form Saved');
+
+                  self.firstFormGroup.markAsPristine();
+                  self.secondFormGroup.markAsPristine();
+                  self.thirdFormGroup.markAsPristine();
+                  self.fourthFormGroup.markAsPristine();
+                  self.fifthFormGroup.markAsPristine();
+                  self.sixthFormGroup.markAsPristine();
+    
+                  this.openCompletePopup(self.viewModel.formId);
+                }
+              else {
+                  self.showError('There was an error updating the form locally, please try again !', 'Form Error');
+              }
+          });
+      }
+  } 
+  
+  private openCompletePopup(formId: number) {
+    let self = this;
+    let title = "Form Completed";
+    let dialogRef: MatDialogRef<any> = self.dialog.open(FormCompletePopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { formId, title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }        
+        self._router.navigate([_routes.clinical.forms.landing]);        
+      })
+  }    
 
   private getValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
     let attribute = attributes.find(a => a.key == key);
@@ -456,14 +624,17 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 }
 
 class ViewModel {
+  formId: number;
+  formIdentifier: string;
+  
   patientId: number;
-  connected: boolean = true;
   patientFound = false;
   errorFindingPatient = false;
 
   currentStep = 1;
   isComplete = false;
   isSynched = false;
+  connected: boolean = true;
 
   customAttributeKey = 'Case Number';
   customAttributeList: CustomAttributeDetailModel[] = [];
