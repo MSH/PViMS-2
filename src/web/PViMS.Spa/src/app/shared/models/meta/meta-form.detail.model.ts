@@ -12,5 +12,7 @@ export interface MetaFormDetailModel {
     version: string;
     formName: string;
     actionName: string;
+    synchedCount: number;
+    unsynchedCount: number;
     metaFormGuid: string;
 }

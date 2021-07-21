@@ -279,7 +279,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-          self.CLog(result);
+          self.CLog(result, 'new reports');
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
           this.handleError(error, "Error getting new report instances");
@@ -292,7 +292,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-          self.CLog(result);
+          self.CLog(result, 'analysis reports');
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
           this.handleError(error, "Error getting report instances by activity");

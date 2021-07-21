@@ -13,12 +13,10 @@ import { GridModel } from 'app/shared/models/grid.model';
 import { _routes } from 'app/config/routes';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { ViewErrorPopupComponent } from './viewerror-popup/viewerror.popup.component';
 
 @Component({
-  selector: 'app-synchronise',
   templateUrl: './synchronise.component.html',
   styleUrls: ['./synchronise.component.scss'],
   encapsulation: ViewEncapsulation.None,
@@ -93,12 +91,12 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
     let self = this;
     self.setBusy(true);
 
-    self.metaFormService.searchUnsynchedForms().then(result => {
-        self.viewModel.mainGrid.updateAdvance(result);
-        self.setBusy(false);
-    }, error => {
-        self.throwError(error, error.statusText);
-    });
+    // self.metaFormService.searchUnsynchedForms().then(result => {
+    //     self.viewModel.mainGrid.updateAdvance(result);
+    //     self.setBusy(false);
+    // }, error => {
+    //     self.throwError(error, error.statusText);
+    // });
   }  
 
   synchForms(): void {

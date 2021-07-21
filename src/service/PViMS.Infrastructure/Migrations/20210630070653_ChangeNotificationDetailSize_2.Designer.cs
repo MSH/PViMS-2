@@ -10,8 +10,8 @@ using PVIMS.Infrastructure;
 namespace PViMS.Infrastructure.Migrations
 {
     [DbContext(typeof(PVIMSDbContext))]
-    [Migration("20210505080131_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20210630070653_ChangeNotificationDetailSize_2")]
+    partial class ChangeNotificationDetailSize_2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,6 +20,54 @@ namespace PViMS.Infrastructure.Migrations
                 .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.5");
+
+            modelBuilder.Entity("PVIMS.Core.Aggregates.NotificationAggregate.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("CreatedBy_Id");
+
+                    b.Property<int?>("DestinationUserId")
+                        .IsRequired()
+                        .HasColumnType("int")
+                        .HasColumnName("DestinationUser_Id");
+
+                    b.Property<string>("Detail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(75)
+                        .HasColumnType("nvarchar(75)");
+
+                    b.Property<int?>("UpdatedById")
+                        .HasColumnType("int")
+                        .HasColumnName("UpdatedBy_Id");
+
+                    b.Property<DateTime?>("ValidUntilDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("DestinationUserId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.ToTable("Notification");
+                });
 
             modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityExecutionStatusEvent", b =>
                 {
@@ -716,12 +764,12 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int?>("ConditionId")
+                        .IsRequired()
                         .HasColumnType("int")
                         .HasColumnName("Condition_Id");
 
                     b.Property<DateTime?>("FinishDate")
-                        .IsRequired()
-                        .HasColumnType("datetime2");
+                        .HasColumnType("date");
 
                     b.Property<int>("LastPatientNo")
                         .ValueGeneratedOnAdd()
@@ -739,7 +787,7 @@ namespace PViMS.Infrastructure.Migrations
                         .HasDefaultValue(0);
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("date");
 
                     b.HasKey("Id");
 
@@ -1206,10 +1254,6 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasColumnName("Dataset_Id");
 
-                    b.Property<int>("Dataset_Id")
-                        .HasColumnType("int")
-                        .HasColumnName("Dataset_Id1");
-
                     b.Property<string>("FriendlyName")
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
@@ -1233,7 +1277,7 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasIndex("DatasetId");
 
-                    b.HasIndex("Dataset_Id", "DatasetCategoryName")
+                    b.HasIndex("DatasetId", "DatasetCategoryName")
                         .IsUnique();
 
                     b.ToTable("DatasetCategory");
@@ -2567,6 +2611,14 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.ToView("vwOutstandingVisitList");
+                });
+
+            modelBuilder.Entity("PVIMS.Core.Entities.Keyless.PatientIdList", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.ToView("vwPatientIdList");
                 });
 
             modelBuilder.Entity("PVIMS.Core.Entities.Keyless.PatientList", b =>
@@ -4293,6 +4345,31 @@ namespace PViMS.Infrastructure.Migrations
                     b.ToTable("WorkPlanCareEventDatasetCategory");
                 });
 
+            modelBuilder.Entity("PVIMS.Core.Aggregates.NotificationAggregate.Notification", b =>
+                {
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
+                        .WithMany("NotificationCreations")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "DestinationUser")
+                        .WithMany("Notifications")
+                        .HasForeignKey("DestinationUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
+                        .WithMany("NotificationUpdates")
+                        .HasForeignKey("UpdatedById");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("DestinationUser");
+
+                    b.Navigation("UpdatedBy");
+                });
+
             modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityExecutionStatusEvent", b =>
                 {
                     b.HasOne("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityInstance", "ActivityInstance")
@@ -4622,7 +4699,8 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasOne("PVIMS.Core.Entities.Condition", "Condition")
                         .WithMany("CohortGroups")
                         .HasForeignKey("ConditionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Condition");
                 });
@@ -5803,6 +5881,12 @@ namespace PViMS.Infrastructure.Migrations
                     b.Navigation("ExecutionEvents");
 
                     b.Navigation("Facilities");
+
+                    b.Navigation("NotificationCreations");
+
+                    b.Navigation("Notifications");
+
+                    b.Navigation("NotificationUpdates");
 
                     b.Navigation("PatientClinicalEvents");
 

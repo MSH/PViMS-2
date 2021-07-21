@@ -165,13 +165,17 @@ namespace PVIMS.API.Infrastructure
             {
                 activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "MEDDRASET", Activity = meddraActivity, FriendlyDescription = "MedDRA term set by technician" });
             }
-            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CLASSIFIED"))
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CLASSIFICATIONSET"))
             {
-                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CLASSIFIED", Activity = meddraActivity, FriendlyDescription = "Report classified by technician" });
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CLASSIFICATIONSET", Activity = meddraActivity, FriendlyDescription = "Report classified by technician" });
             }
             if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CAUSALITYSET"))
             {
                 activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CAUSALITYSET", Activity = meddraActivity, FriendlyDescription = "Causality set by technician" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CAUSALITYCONFIRMED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CAUSALITYCONFIRMED", Activity = meddraActivity, FriendlyDescription = "Causality confirmed by technician" });
             }
 
             var e2bActivity = context.Activities.Single(a => a.WorkFlow.Description == "New Active Surveilliance Report" && a.QualifiedName == "Extract E2B");
@@ -222,13 +226,17 @@ namespace PVIMS.API.Infrastructure
             {
                 activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "MEDDRASET", Activity = meddraActivity, FriendlyDescription = "MedDRA term set by technician" });
             }
-            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CLASSIFIED"))
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CLASSIFICATIONSET"))
             {
-                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CLASSIFIED", Activity = meddraActivity, FriendlyDescription = "Report classified by technician" });
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CLASSIFICATIONSET", Activity = meddraActivity, FriendlyDescription = "Report classified by technician" });
             }
             if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CAUSALITYSET"))
             {
                 activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CAUSALITYSET", Activity = meddraActivity, FriendlyDescription = "Causality set by technician" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CAUSALITYCONFIRMED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CAUSALITYCONFIRMED", Activity = meddraActivity, FriendlyDescription = "Causality confirmed by technician" });
             }
 
             var e2bActivity = context.Activities.Single(a => a.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.QualifiedName == "Extract E2B");

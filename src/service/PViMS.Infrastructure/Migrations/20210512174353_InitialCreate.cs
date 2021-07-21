@@ -523,11 +523,11 @@ namespace PViMS.Infrastructure.Migrations
                     CohortName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CohortCode = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
                     LastPatientNo = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FinishDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "date", nullable: false),
+                    FinishDate = table.Column<DateTime>(type: "date", nullable: true),
                     MinEnrolment = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     MaxEnrolment = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    Condition_Id = table.Column<int>(type: "int", nullable: true)
+                    Condition_Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -2323,8 +2323,7 @@ namespace PViMS.Infrastructure.Migrations
                     Chronic = table.Column<bool>(type: "bit", nullable: false),
                     Public = table.Column<bool>(type: "bit", nullable: false),
                     FriendlyName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
-                    Help = table.Column<string>(type: "nvarchar(350)", maxLength: 350, nullable: true),
-                    Dataset_Id1 = table.Column<int>(type: "int", nullable: false)
+                    Help = table.Column<string>(type: "nvarchar(350)", maxLength: 350, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -3018,9 +3017,9 @@ namespace PViMS.Infrastructure.Migrations
                 column: "Dataset_Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DatasetCategory_Dataset_Id1_DatasetCategoryName",
+                name: "IX_DatasetCategory_Dataset_Id_DatasetCategoryName",
                 table: "DatasetCategory",
-                columns: new[] { "Dataset_Id1", "DatasetCategoryName" },
+                columns: new[] { "Dataset_Id", "DatasetCategoryName" },
                 unique: true);
 
             migrationBuilder.CreateIndex(

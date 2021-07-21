@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PVIMS.Infrastructure;
 
 namespace PViMS.Infrastructure.Migrations
 {
     [DbContext(typeof(PVIMSDbContext))]
-    partial class PVIMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210630070546_ChangeNotificationDetailSize")]
+    partial class ChangeNotificationDetailSize
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,11 +28,6 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("int")
                         .UseIdentityColumn();
 
-                    b.Property<string>("ContextRoute")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
@@ -44,16 +41,11 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnName("DestinationUser_Id");
 
                     b.Property<string>("Detail")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<DateTime?>("LastUpdated")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("NotificationClassificationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("NotificationTypeId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Summary")
                         .IsRequired()
@@ -207,9 +199,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.Property<string>("PatientIdentifier")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ReportClassificationId")
-                        .HasColumnType("int");
 
                     b.Property<Guid>("ReportInstanceGuid")
                         .HasColumnType("uniqueidentifier");

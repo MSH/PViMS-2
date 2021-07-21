@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PVIMS.Infrastructure;
 
 namespace PViMS.Infrastructure.Migrations
 {
     [DbContext(typeof(PVIMSDbContext))]
-    partial class PVIMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210630165638_AddContextRouteToNotification")]
+    partial class AddContextRouteToNotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,9 +209,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.Property<string>("PatientIdentifier")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ReportClassificationId")
-                        .HasColumnType("int");
 
                     b.Property<Guid>("ReportInstanceGuid")
                         .HasColumnType("uniqueidentifier");

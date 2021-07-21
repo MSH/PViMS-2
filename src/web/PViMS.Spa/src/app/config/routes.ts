@@ -38,8 +38,10 @@ export const _routes = {
         }
       },      
       forms: {
-          list: `${_paths.clinical}/${_paths.clinicalPath.forms.list}`,
           landing: `${_paths.clinical}/${_paths.clinicalPath.forms.landing}`,
+          listForm(type: string): string {
+            return `${_paths.clinical}/${_paths.clinicalPath.forms.list.replace(':type', type)}`;
+          },
           viewFormA(formId: number): string {
               return `${_paths.clinical}/${_paths.clinicalPath.forms.forma.replace(':formId', formId.toString())}`;
           },
@@ -59,6 +61,9 @@ export const _routes = {
       reports: {
         search(workFlowId: string): string {
           return `${_paths.analytical}/${_paths.analyticalPath.reports.search.replace(':wuid', workFlowId)}`;
+        },
+        searchByQualifiedName(workFlowId: string, qualifiedName: string): string {
+          return `${_paths.analytical}/${_paths.analyticalPath.reports.searchqualified.replace(':wuid', workFlowId).replace(':qualifiedName', qualifiedName)}`;
         },
         activity(workFlowId: string, reportInstanceId: number): string {
           return `${_paths.analytical}/${_paths.analyticalPath.reports.activity.replace(':wuid', workFlowId).replace(':reportinstanceid', reportInstanceId.toString())}`;

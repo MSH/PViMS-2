@@ -38,7 +38,6 @@ export class PingComponent implements OnInit {
   ngOnInit() {
     const self = this;
     self.accountService.connected$.subscribe(val => {
-      console.log(`Marked connected in ping as ${val}`);
       self.viewModel.connected = val;
     });
   }

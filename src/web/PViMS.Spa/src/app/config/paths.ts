@@ -34,8 +34,8 @@ export const _paths = {
           view: `cohortenrolment/:cohortGroupId`
       },
       forms: {
-          list: `formlist`,
-          landing: `formlanding`,
+          list: `form-list/:type`,
+          landing: `form-landing`,
           forma: `forma/:formId`,
           formb: `formb/:formId`,
           formc: `formc/:formId`,
@@ -47,6 +47,7 @@ export const _paths = {
     landing: `landing`,
     reports: {
       search: `reportsearch/:wuid`,
+      searchqualified: `reportsearch/:wuid/:qualifiedName`,
       activity: `activityhistory/:wuid/:reportinstanceid`,
       task: `reporttask/:wuid/:reportinstanceid`
     }

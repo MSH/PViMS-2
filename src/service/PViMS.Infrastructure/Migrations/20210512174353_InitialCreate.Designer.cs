@@ -3,80 +3,23 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PVIMS.Infrastructure;
 
 namespace PViMS.Infrastructure.Migrations
 {
     [DbContext(typeof(PVIMSDbContext))]
-    partial class PVIMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210512174353_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.5");
-
-            modelBuilder.Entity("PVIMS.Core.Aggregates.NotificationAggregate.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<string>("ContextRoute")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CreatedById")
-                        .HasColumnType("int")
-                        .HasColumnName("CreatedBy_Id");
-
-                    b.Property<int?>("DestinationUserId")
-                        .IsRequired()
-                        .HasColumnType("int")
-                        .HasColumnName("DestinationUser_Id");
-
-                    b.Property<string>("Detail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("NotificationClassificationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("NotificationTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Summary")
-                        .IsRequired()
-                        .HasMaxLength(75)
-                        .HasColumnType("nvarchar(75)");
-
-                    b.Property<int?>("UpdatedById")
-                        .HasColumnType("int")
-                        .HasColumnName("UpdatedBy_Id");
-
-                    b.Property<DateTime?>("ValidUntilDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("DestinationUserId");
-
-                    b.HasIndex("UpdatedById");
-
-                    b.ToTable("Notification");
-                });
 
             modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityExecutionStatusEvent", b =>
                 {
@@ -207,9 +150,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.Property<string>("PatientIdentifier")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ReportClassificationId")
-                        .HasColumnType("int");
 
                     b.Property<Guid>("ReportInstanceGuid")
                         .HasColumnType("uniqueidentifier");
@@ -2625,14 +2565,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.ToView("vwOutstandingVisitList");
                 });
 
-            modelBuilder.Entity("PVIMS.Core.Entities.Keyless.PatientIdList", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.ToView("vwPatientIdList");
-                });
-
             modelBuilder.Entity("PVIMS.Core.Entities.Keyless.PatientList", b =>
                 {
                     b.Property<string>("Age")
@@ -4357,31 +4289,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.ToTable("WorkPlanCareEventDatasetCategory");
                 });
 
-            modelBuilder.Entity("PVIMS.Core.Aggregates.NotificationAggregate.Notification", b =>
-                {
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "CreatedBy")
-                        .WithMany("NotificationCreations")
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "DestinationUser")
-                        .WithMany("Notifications")
-                        .HasForeignKey("DestinationUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("PVIMS.Core.Entities.Accounts.User", "UpdatedBy")
-                        .WithMany("NotificationUpdates")
-                        .HasForeignKey("UpdatedById");
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("DestinationUser");
-
-                    b.Navigation("UpdatedBy");
-                });
-
             modelBuilder.Entity("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityExecutionStatusEvent", b =>
                 {
                     b.HasOne("PVIMS.Core.Aggregates.ReportInstanceAggregate.ActivityInstance", "ActivityInstance")
@@ -5893,12 +5800,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.Navigation("ExecutionEvents");
 
                     b.Navigation("Facilities");
-
-                    b.Navigation("NotificationCreations");
-
-                    b.Navigation("Notifications");
-
-                    b.Navigation("NotificationUpdates");
 
                     b.Navigation("PatientClinicalEvents");
 

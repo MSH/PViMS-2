@@ -12,9 +12,9 @@ namespace PVIMS.Core.Entities
 			_reportInstances = new List<ReportInstance>();
 		}
 
-		public WorkFlow(string description)
+		public WorkFlow(string description, Guid workFlowGuid)
 		{
-			WorkFlowGuid = Guid.NewGuid();
+			WorkFlowGuid = workFlowGuid;
 			Description = description;
 
 			_activities = new List<Activity>();

@@ -53,7 +53,7 @@ export class PatientService extends BaseService {
       return this.Get<PatientDetailWrapperModel>('', 'application/vnd.pvims.detail.v1+json', parameters);
     }
 
-    searchPatientByCondition(filterModel: any): any {
+    getPatientByCondition(filterModel: any): any {
       let parameters: ParameterKeyValueModel[] = [];
 
       parameters.push(<ParameterKeyValueModel> { key: 'customAttributeKey', value: filterModel.customAttributeKey });

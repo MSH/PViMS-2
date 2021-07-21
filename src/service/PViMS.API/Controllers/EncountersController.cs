@@ -439,10 +439,7 @@ namespace PVIMS.API.Controllers
             {
                 foreach (var attachment in encounterFromRepo.Attachments.Where(x => !x.Archived))
                 {
-                    attachment.Archived = true;
-                    attachment.ArchivedDate = DateTime.Now;
-                    attachment.ArchivedReason = encounterForDelete.Reason;
-                    attachment.AuditUser = user;
+                    attachment.ArchiveAttachment(user, encounterForDelete.Reason);
                     _attachmentRepository.Update(attachment);
                 }
 
