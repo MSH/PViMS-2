@@ -234,7 +234,7 @@ export class NavigationService {
               }
               else {
                 // route to formns list
-                this.routeToFormsList();
+                this.routeToFormsLanding();
               }
             }
             else {
@@ -267,8 +267,8 @@ export class NavigationService {
     this._router.navigate([_routes.clinical.patients.search]);
   }
 
-  routeToFormsList() : void {
-    this._router.navigate([_routes.clinical.forms.list]);
+  routeToFormsLanding() : void {
+    this._router.navigate([_routes.clinical.forms.landing]);
   }
 
   routeToAnalyticalLanding() : void {
@@ -358,7 +358,7 @@ export class NavigationService {
         type: "link",
         tooltip: "View Forms for Capture",
         icon: "content_copy",
-        state: "clinical/formlanding"
+        state: "clinical/form-landing"
       };      
       this.clinicalMenu.push(newMenu);
 

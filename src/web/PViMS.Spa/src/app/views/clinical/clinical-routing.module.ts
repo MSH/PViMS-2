@@ -61,12 +61,12 @@ export const ClinicalRoutes: Routes = [
       data: { title: 'Encounter View', breadcrumb: 'Encounter View' }
     },
     {
-      path: 'formlanding',
+      path: 'form-landing',
       component: LandingComponent,
       data: { title: 'List All Forms for Capture', breadcrumb: 'Forms' }
     },
     {
-      path: 'formlist',
+      path: 'form-list/:type',
       component: FormListComponent,
       data: { title: 'List All Forms for Capture', breadcrumb: 'Forms' }
     },

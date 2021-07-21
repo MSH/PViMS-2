@@ -3,7 +3,7 @@ import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { MetaFormDetailModel } from 'app/shared/models/meta/meta-form.detail.model';
 import { MetaFormService } from 'app/shared/services/meta-form.service';
-import { takeUntil } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AccountService } from 'app/shared/services/account.service';
@@ -43,8 +43,23 @@ export class LandingComponent extends BaseComponent implements OnInit {
   getMetaFormList(): void {
     let self = this;
     self.metaFormService.getAllMetaForms()
+        .pipe(
+          map((result: MetaFormDetailModel[]) => {
+            result.forEach(function (value) {
+              self.metaFormService.getAllFormsForType('FormADR').then(result => {
+                value.unsynchedCount = result.value.filter(v => v.synchStatus == 'Not Synched').length;
+                value.synchedCount = result.value.filter(v => v.synchStatus == 'Synched').length;
+              }, error => {
+                self.throwError(error, error.statusText);
+              });              
+            })
+
+            return result;
+          })
+        )    
         .pipe(takeUntil(self._unsubscribeAll))
         .subscribe(result => {
+            self.CLog(result, 'meta forms')
             self.viewModel.formList = result;
         }, error => {
             self.throwError(error, error.statusText);
@@ -69,9 +84,31 @@ export class LandingComponent extends BaseComponent implements OnInit {
       case 'ADR Form':
         self._router.navigate([_routes.clinical.forms.viewFormADR(0)]);
         break;
-          
-    }    
-  }  
+    }
+
+  }
+  
+  listForm(selectedOption: string): void {
+    let self = this;
+    switch (selectedOption) {
+      case 'Form A':
+        self._router.navigate([_routes.clinical.forms.listForm('FormA')]);
+        break;
+
+      case 'Form B':
+        self._router.navigate([_routes.clinical.forms.listForm('FormB')]);
+        break;
+
+      case 'Form C':
+        self._router.navigate([_routes.clinical.forms.listForm('FormC')]);
+        break;
+
+      case 'ADR Form':
+        self._router.navigate([_routes.clinical.forms.listForm('FormADR')]);
+        break;
+    }
+
+  }
 }
 
 class ViewModel {

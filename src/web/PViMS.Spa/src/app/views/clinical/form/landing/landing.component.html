@@ -19,7 +19,7 @@
         <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
           <div fxFlex="50" class="text-center pt-16 pb-16 border-right-light">
             <mat-icon class="text-red">cloud_download</mat-icon>
-            <h4 class="m-0">0</h4>
+            <h4 class="m-0">{{action.unsynchedCount}}</h4>
             <small class="m-0 text-muted">Forms unsynched</small>
           </div>        
           <div fxFlex="50" class="text-center pt-16 pb-16 border-right-light">
@@ -29,7 +29,10 @@
           </div>        
         </div>
         <div class="m-8 text-center">
-          <button mat-raised-button color="accent"  (click)="addForm(action.actionName)" >
+          <button mat-raised-button color="primary" class="mr-16" (click)="listForm(action.actionName)" *ngIf="action.unsynchedCount > 0 || action.synchedCount > 0">
+            {{'List Forms' | translate }}
+          </button>
+          <button mat-raised-button color="accent" (click)="addForm(action.actionName)" >
             {{'Add Form' | translate }}
           </button>
         </div>

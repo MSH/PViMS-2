@@ -294,23 +294,21 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
       })
   }
 
-  openCompletePopup(identifier: string) {
+  openCompletePopup(formId: number) {
     let self = this;
     let title = "Form Completed";
     let dialogRef: MatDialogRef<any> = self.dialog.open(FormCompletePopupComponent, {
       width: '720px',
       disableClose: true,
-      data: { identifier: identifier, title: title }
+      data: { formId, title: title }
     })
     dialogRef.afterClosed()
       .subscribe(res => {
-        self._router.navigate([_routes.clinical.forms.list]);        
+        self._router.navigate([_routes.clinical.forms.landing]);        
       })
   }  
 
   completeForm(): void {
-    this.viewModelForm.patchValue({formCompleted: true} );
-
     let self = this;
     let otherModels:any[]; 
 
@@ -333,7 +331,7 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
           {
               if (response) {
                   self.notify('Form A updated successfully!', 'Form Saved');
-                  this.openCompletePopup(self.identifier);
+                  this.openCompletePopup(self.id);
                 }
               else {
                   self.showError('There was an error updating form C, please try again !', 'Download');
@@ -353,7 +351,7 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
         {
             if (response) {
                 self.notify('Form A saved successfully!', 'Form Saved');
-                self._router.navigate([_routes.clinical.forms.list]);
+                self._router.navigate([_routes.clinical.forms.landing]);
             }
             else {
                 self.showError('There was an error saving form A, please try again !', 'Download');
@@ -365,7 +363,7 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
           {
               if (response) {
                   self.notify('Form A updated successfully!', 'Form Saved');
-                  self._router.navigate([_routes.clinical.forms.list]);
+                  self._router.navigate([_routes.clinical.forms.landing]);
               }
               else {
                   self.showError('There was an error updating form C, please try again !', 'Download');

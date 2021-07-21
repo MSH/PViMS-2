@@ -1,10 +1,8 @@
-import { Component, OnInit, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventService } from 'app/shared/services/event.service';
 import { AccountService } from 'app/shared/services/account.service';
@@ -15,8 +13,6 @@ import { Subscription } from 'rxjs';
 import { _routes } from 'app/config/routes';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { MetaFormService } from 'app/shared/services/meta-form.service';
-import { takeUntil } from 'rxjs/operators';
-import { MetaFormDetailModel } from 'app/shared/models/meta/meta-form.detail.model';
 import { AttachmentCapturePopupComponent } from '../attachment-capture-popup/attachment-capture.popup.component';
 import { AttachmentViewPopupComponent } from '../attachment-view-popup/attachment-view.popup.component';
 import { FormDeletePopupComponent } from '../form-delete-popup/form-delete.popup.component';
@@ -44,7 +40,7 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
     this.flexMediaWatcher = mediaObserver.media$.subscribe((change: MediaChange) => {
       if (change.mqAlias !== this.currentScreenWidth) {
           this.currentScreenWidth = change.mqAlias;
-          this.setupTable();
+          // this.setupTable();
       }
     });    
   }
@@ -57,15 +53,10 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
 
   synchRequired = false;
 
-  formList: MetaFormDetailModel[] = [];
-
-  @ViewChild('mainGridSort') mainGridSort: MatSort;
-  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
-
   ngOnInit(): void {
     const self = this;
-    self.getMetaFormList();
-    self.checkSynchRequired();
+
+    self.viewModel.formType = self._activatedRoute.snapshot.paramMap.get('type');
 
     self.viewModelForm = self._formBuilder.group({
       searchTerm: [this.viewModel.searchTerm],
@@ -76,10 +67,11 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
 
   ngAfterViewInit(): void {
     let self = this;
-    self.viewModel.mainGrid.setupAdvance(
-       null, self.mainGridSort, self.mainGridPaginator)
-       .subscribe(() => { self.loadGrid(); });
-    self.loadGrid();
+    self.viewModel.incompleteGrid.setupBasic(null, null, null);
+    self.viewModel.completeGrid.setupBasic(null, null, null);
+    self.viewModel.synchronisedGrid.setupBasic(null, null, null);
+    self.viewModel.searchGrid.setupBasic(null, null, null);
+    self.loadGrids();
   }
 
   ngOnDestroy(): void {
@@ -88,61 +80,82 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
     this.eventService.removeAll(FormListComponent.name);
   } 
 
-  checkSynchRequired(): void{
-    const self = this;
-    self.metaFormService.checkSynchRequired().then(response =>
-      {
-        self.synchRequired = response;          
-      });
-  }
-  
-  setupTable() {
-    if (this.currentScreenWidth === 'xs') 
-    { 
-      this.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'actions']);
-    }
-    if (this.currentScreenWidth === 'sm') 
-    { 
-      this.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'patient identifier', 'synch status', 'actions']);
-    }
-
-  }; 
-
-  getMetaFormList(): void {
+  loadGrids(): void {
     let self = this;
-    self.metaFormService.getAllMetaForms()
-        .pipe(takeUntil(self._unsubscribeAll))
-        .subscribe(result => {
-            self.formList = result;
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
+    self.loadIncompleteGrid();
+    self.loadCompleteGrid();
+    self.loadSynchronisedGrid();
   }
 
-  loadGrid(): void {
+  loadIncompleteGrid(): void {
     let self = this;
     self.setBusy(true);
 
-    self.metaFormService.searchForms(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value)).then(result => {
-      self.viewModel.mainGrid.updateAdvance(result);
+    self.metaFormService.getFilteredFormsByType(self.viewModel.formType, false, false).then(result => {
+      self.viewModel.incompleteGrid.updateBasic(result.value);
       self.setBusy(false);
     }, error => {
       self.throwError(error, error.statusText);
     });
   }
 
-  detail(model: GridRecordModel = null): void {
+  loadCompleteGrid(): void {
     let self = this;
-    if (model.formType == 'FormA') {
-      self._router.navigate([_routes.clinical.forms.viewFormA(model.id)]);
-    } else {
-      if (model.formType == 'FormB') {
+    self.setBusy(true);
+
+    self.metaFormService.getFilteredFormsByType(self.viewModel.formType, false, true).then(result => {
+      self.viewModel.completeGrid.updateBasic(result.value);
+      self.setBusy(false);
+    }, error => {
+      self.throwError(error, error.statusText);
+    });
+  }  
+
+  loadSynchronisedGrid(): void {
+    let self = this;
+    self.setBusy(true);
+
+    self.metaFormService.getFilteredFormsByType(self.viewModel.formType, true, true).then(result => {
+      self.viewModel.synchronisedGrid.updateBasic(result.value);
+      self.setBusy(false);
+    }, error => {
+      self.throwError(error, error.statusText);
+    });
+  }  
+
+  loadSearchGrid(): void {
+    let self = this;
+    self.setBusy(true);
+
+    self.metaFormService.searchFormsByType(self.viewModel.formType, self.viewModelForm.get('searchTerm').value).then(result => {
+      self.viewModel.searchGrid.updateBasic(result.value);
+      self.setBusy(false);
+    }, error => {
+      self.throwError(error, error.statusText);
+    });
+  }    
+
+  viewForm(model: GridRecordModel = null): void {
+    const self = this;
+    console.log(model);
+    switch(model.formType) { 
+      case 'FormA': { 
+        self._router.navigate([_routes.clinical.forms.viewFormA(model.id)]);
+         break; 
+      } 
+      case 'FormB': { 
         self._router.navigate([_routes.clinical.forms.viewFormB(model.id)]);
-      }
-      else {
+         break; 
+      } 
+      case 'FormC': { 
         self._router.navigate([_routes.clinical.forms.viewFormC(model.id)]);
-      }
-    }
+         break; 
+      } 
+      case 'FormADR': { 
+        self._router.navigate([_routes.clinical.forms.viewFormADR(model.id)]);
+         break; 
+      } 
+   }     
   }
 
   openCameraPopup(id: number, index: number) {
@@ -159,7 +172,7 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
           // If user press cancel
           return;
         }
-        self.loadGrid();
+        self.loadGrids();
       })
   }   
 
@@ -177,7 +190,7 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
           // If user press cancel
           return;
         }
-        self.loadGrid();
+        self.loadGrids();
       })
   }
 
@@ -195,16 +208,29 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
           // If user press cancel
           return;
         }
-        self.loadGrid();
+        self.loadGrids();
       })
   }   
 }
 
 class ViewModel {
-  mainGrid: GridModel<GridRecordModel> =
+  incompleteGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['created', 'form-type', 'identifier', 'patient identifier', 'patient name', 'complete status', 'synch status' , 'actions']);
+          (['created', 'form-type', 'patient identifier', 'patient name', 'complete status', 'synch status' , 'actions']);
 
+  completeGrid: GridModel<GridRecordModel> =
+  new GridModel<GridRecordModel>
+      (['created', 'form-type', 'identifier', 'patient identifier', 'patient name', 'complete status', 'synch status' , 'actions']);
+
+  synchronisedGrid: GridModel<GridRecordModel> =
+  new GridModel<GridRecordModel>
+      (['created', 'form-type', 'identifier', 'patient identifier', 'patient name', 'complete status', 'synch status' , 'actions']);
+
+  searchGrid: GridModel<GridRecordModel> =
+  new GridModel<GridRecordModel>
+      (['created', 'form-type', 'identifier', 'patient identifier', 'patient name', 'complete status', 'synch status' , 'actions']);
+          
+  formType: string;
   searchTerm: string;
   synchForms: any;
   compForms: any;
