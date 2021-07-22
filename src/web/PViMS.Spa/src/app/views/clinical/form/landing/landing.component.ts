@@ -48,6 +48,7 @@ export class LandingComponent extends BaseComponent implements OnInit {
             result.forEach(function (value) {
               self.metaFormService.getAllFormsForType('FormADR').then(result => {
                 value.unsynchedCount = result.value.filter(v => v.synchStatus == 'Not Synched').length;
+                value.completedCount = result.value.filter(v => v.synchStatus == 'Not Synched' && v.completeStatus == 'Complete').length;
                 value.synchedCount = result.value.filter(v => v.synchStatus == 'Synched').length;
               }, error => {
                 self.throwError(error, error.statusText);
@@ -109,6 +110,27 @@ export class LandingComponent extends BaseComponent implements OnInit {
     }
 
   }
+
+  synchroniseForm(selectedOption: string): void {
+    let self = this;
+    switch (selectedOption) {
+      case 'Form A':
+        self._router.navigate([_routes.clinical.forms.synchroniseForm('FormA')]);
+        break;
+
+      case 'Form B':
+        self._router.navigate([_routes.clinical.forms.synchroniseForm('FormB')]);
+        break;
+
+      case 'Form C':
+        self._router.navigate([_routes.clinical.forms.synchroniseForm('FormC')]);
+        break;
+
+      case 'ADR Form':
+        self._router.navigate([_routes.clinical.forms.synchroniseForm('FormADR')]);
+        break;
+    }
+  }  
 }
 
 class ViewModel {

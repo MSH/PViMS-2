@@ -29,11 +29,14 @@
           </div>        
         </div>
         <div class="m-8 text-center">
-          <button mat-raised-button color="primary" class="mr-16" (click)="listForm(action.actionName)" *ngIf="action.unsynchedCount > 0 || action.synchedCount > 0">
+          <button mat-raised-button color="accent" class="mr-16" (click)="addForm(action.actionName)" >
+            {{'Add Form' | translate }}
+          </button>
+          <button mat-raised-button color="accent" class="mr-16" (click)="listForm(action.actionName)" *ngIf="action.unsynchedCount > 0 || action.synchedCount > 0">
             {{'List Forms' | translate }}
           </button>
-          <button mat-raised-button color="accent" (click)="addForm(action.actionName)" >
-            {{'Add Form' | translate }}
+          <button mat-raised-button color="primary" (click)="synchroniseForm(action.actionName)" *ngIf="action.completedCount > 0">
+            {{'Submit Forms' | translate }}
           </button>
         </div>
       </mat-card-content>

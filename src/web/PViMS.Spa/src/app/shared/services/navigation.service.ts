@@ -167,14 +167,6 @@ export class NavigationService {
     }
   ];
 
-  // {
-  //   name: "INFORMATION",
-  //   type: "icon",
-  //   tooltip: "Information Portal",
-  //   icon: "content_copy",
-  //   state: "information"
-  // },
-
   // Icon menu TITLE at the very top of navigation.
   // This title will appear if any icon type item is present in menu.
   iconTypeMenuTitle: string = "Portals";
@@ -359,15 +351,6 @@ export class NavigationService {
         tooltip: "View Forms for Capture",
         icon: "content_copy",
         state: "clinical/form-landing"
-      };      
-      this.clinicalMenu.push(newMenu);
-
-      newMenu = {
-        name: "Synchronise",
-        type: "link",
-        tooltip: "Synchronise",
-        icon: "sync",
-        state: "clinical/synchronise"
       };      
       this.clinicalMenu.push(newMenu);
 

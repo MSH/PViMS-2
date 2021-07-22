@@ -246,7 +246,6 @@ export class PatientService extends BaseService {
 
     savePatientMedication(patientId: number, id: number, model: any): any {
       let shallowModel = this.transformModelForDate(model);
-      console.log(shallowModel);
       if(id == 0) {
         return this.Post(`${patientId}/medications`, shallowModel);
       }

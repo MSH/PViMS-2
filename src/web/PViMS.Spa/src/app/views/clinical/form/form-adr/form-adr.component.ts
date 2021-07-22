@@ -17,12 +17,6 @@ import { GridModel } from 'app/shared/models/grid.model';
 import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
 import { PatientClinicalEventForUpdateModel } from 'app/shared/models/patient/patient-clinical-event-for-update.model';
 import { forkJoin, Observable, of } from 'rxjs';
-
-// Depending on whether rollup is used, moment needs to be imported differently.
-// Since Moment.js doesn't have a default export, we normally need to import using the `* as`
-// syntax. However, rollup creates a synthetic default module and we thus need to import it using
-// the `default as` syntax.
-import * as _moment from 'moment';
 import { CustomAttributeDetailModel } from 'app/shared/models/custom-attribute/custom-attribute.detail.model';
 import { CustomAttributeService } from 'app/shared/services/custom-attribute.service';
 import { _routes } from 'app/config/routes';
@@ -33,6 +27,12 @@ import { FormADRMedicationPopupComponent } from '../../shared/form-adr-medicatio
 import { MetaFormService } from 'app/shared/services/meta-form.service';
 import { Form } from 'app/shared/indexed-db/appdb';
 import { FormCompletePopupComponent } from '../form-complete-popup/form-complete.popup.component';
+
+// Depending on whether rollup is used, moment needs to be imported differently.
+// Since Moment.js doesn't have a default export, we normally need to import using the `* as`
+// syntax. However, rollup creates a synthetic default module and we thus need to import it using
+// the `default as` syntax.
+import * as _moment from 'moment';
 
 const moment =  _moment;
 
@@ -97,6 +97,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     self.firstFormGroup = this._formBuilder.group({
       customAttributeKey: [this.viewModel.customAttributeKey],
       customAttributeValue: ['', Validators.required],
+      patientId: [''],
       patientIdentifier: [''],
       patientFirstName: [''],
       patientLastName: [''],
@@ -226,6 +227,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.viewModel.patientFound = true;
 
           self.updateForm(self.firstFormGroup, result);
+          self.updateForm(self.firstFormGroup, {patientId: result.id});
           self.updateForm(self.firstFormGroup, {patientFirstName: result.firstName});
           self.updateForm(self.firstFormGroup, {patientLastName: result.lastName});
           self.updateForm(self.firstFormGroup, {patientIdentifier: self.firstFormGroup.get('customAttributeValue').value});

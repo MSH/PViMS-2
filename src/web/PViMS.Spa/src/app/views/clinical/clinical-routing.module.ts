@@ -71,7 +71,7 @@ export const ClinicalRoutes: Routes = [
       data: { title: 'List All Forms for Capture', breadcrumb: 'Forms' }
     },
     {
-      path: 'synchronise',
+      path: 'synchronise/:type',
       component: SynchroniseComponent,
       data: { title: 'Synchronise', breadcrumb: 'Synchronise' }
     },

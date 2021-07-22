@@ -42,6 +42,9 @@ export const _routes = {
           listForm(type: string): string {
             return `${_paths.clinical}/${_paths.clinicalPath.forms.list.replace(':type', type)}`;
           },
+          synchroniseForm(type: string): string {
+            return `${_paths.clinical}/${_paths.clinicalPath.forms.synchronise.replace(':type', type)}`;
+          },
           viewFormA(formId: number): string {
               return `${_paths.clinical}/${_paths.clinicalPath.forms.forma.replace(':formId', formId.toString())}`;
           },
