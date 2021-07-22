@@ -23,15 +23,18 @@ export class PingComponent implements OnInit {
     protected eventService: EventService,
     protected dialog: MatDialog
   ) {
-    this.pingAPI();
+    const self = this;
 
-    // set up interval for pinging API
-    this.pingInterval = 600;
-    const source = interval(this.pingInterval*1000);
+    self.pingAPI();
+
+    self.pingInterval = 600;
+    const source = interval(self.pingInterval*1000);
     
     this.subscription = source.subscribe(val => 
       {
-        this.pingAPI();
+        if (!self.viewModel.forcedOffline) {
+          this.pingAPI();
+        }
       });
   }
 
@@ -40,6 +43,9 @@ export class PingComponent implements OnInit {
     self.accountService.connected$.subscribe(val => {
       self.viewModel.connected = val;
     });
+    self.accountService.forcedOffline$.subscribe(val => {
+      self.viewModel.forcedOffline = val;
+    });    
   }
 
   pingAPI(): void {
@@ -77,4 +83,5 @@ export class PingComponent implements OnInit {
 class ViewModel {
   checking: boolean = false;
   connected: boolean = true;
+  forcedOffline: boolean = true;
 }
