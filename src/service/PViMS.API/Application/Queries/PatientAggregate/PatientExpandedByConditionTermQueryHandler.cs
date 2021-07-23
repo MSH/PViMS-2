@@ -181,29 +181,12 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                     Key = h.AttributeKey,
                     Value = h.Value.ToString(),
                     Category = h.Category,
-                    SelectionValue = GetSelectionValue(h.Type, h.Value.ToString())
+                    SelectionValue = GetSelectionValue(h.Type, h.AttributeKey, h.Value.ToString())
                 }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
 
             // Map additional attributes to main dto
             var attribute = patientExtended.GetAttributeValue("Medical Record Number");
             mappedPatient.MedicalRecordNumber = attribute != null ? attribute.ToString() : "";
-        }
-
-        private string GetSelectionValue(CustomAttributeType attributeType, string id)
-        {
-            if (attributeType == CustomAttributeType.Selection)
-            {
-                int tempId = 0;
-                if(int.TryParse(id, out tempId))
-                {
-                    var selectionitem = _selectionDataItemRepository.Get(s => s.Id == tempId);
-
-                    return selectionitem == null ? string.Empty : selectionitem.Value;
-                }
-                return string.Empty;
-            }
-
-            return string.Empty;
         }
 
         private async Task CustomClinicalMapAsync(PatientExpandedDto mappedPatient)
