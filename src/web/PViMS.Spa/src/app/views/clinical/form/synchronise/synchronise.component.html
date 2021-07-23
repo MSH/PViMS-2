@@ -71,7 +71,7 @@
                 <div *ngIf="record.submissionStatus === 'Successful'">
                   {{'Completed successfully' | translate}}
                 </div>
-                <span *ngIf="record.submissionStatus === 'InProgress'" class="mat-green">{{record.synchStatus}}</span>
+                <div *ngIf="record.submissionStatus === 'InProgress'" class="p-12">{{record.synchStatus}}</div>
                 <mat-progress-bar mode="indeterminate" color="accent" *ngIf="record.submissionStatus == 'InProgress'"></mat-progress-bar>
               </span>
             </mat-cell>

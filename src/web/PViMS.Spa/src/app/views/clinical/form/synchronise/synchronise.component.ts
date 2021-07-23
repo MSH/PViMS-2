@@ -210,6 +210,8 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
     self.metaFormService.getForm(record.id).then(result => {
         let form = result as Form;
         self.CLog(form, 'form for submission');
+
+        record.submissionStatus = "InProgress";
         
         var firstForm = JSON.parse(form.formValues[1].formControlValue);
         var secondForm = JSON.parse(form.formValues[2].formControlValue);
