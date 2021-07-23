@@ -213,27 +213,26 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
         
         var firstForm = JSON.parse(form.formValues[1].formControlValue);
         var secondForm = JSON.parse(form.formValues[2].formControlValue);
-        self.CLog(firstForm.patientId, 'patient id for submission');        
 
         var patientCustomAttributesForUpdate = self.preparePatientCustomAttributesForUpdateModel(secondForm);
         requestArray.push(this.patientService.updatePatientCustomAttributes(firstForm.patientId, patientCustomAttributesForUpdate));
 
         var thirdForm = JSON.parse(form.formValues[3].formControlValue);
         var fourthForm = JSON.parse(form.formValues[4].formControlValue);
-        var sixthForm = JSON.parse(form.formValues[7].formControlValue);
+        var sixthForm = JSON.parse(form.formValues[6].formControlValue);
 
-        self.CLog(thirdForm, 'third form for submission');
         var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel(thirdForm, fourthForm, sixthForm);
         requestArray.push(this.patientService.savePatientClinicalEvent(firstForm.patientId, 0, clinicalEventForUpdate));
     
         var medications: PatientMedicationForUpdateModel[] = JSON.parse(form.formValues[5].formControlValue);
-        var attachments: FormAttachmentModel[] = JSON.parse(form.formValues[6].formControlValue);
-        self.CLog('about to submit', '');
-
         medications.forEach(medicationForUpdate => {
           requestArray.push(this.patientService.savePatientMedication(firstForm.patientId, medicationForUpdate.id, medicationForUpdate));
         });
 
+        var attachments: FormAttachmentModel[] = [];
+        form.formAttachments.forEach(attachment => {
+          attachments.push({ description: attachment.description, file: attachment.file })  
+        });
         attachments.forEach(attachmentForUpdate => {
           requestArray.push(this.patientService.saveAttachment(firstForm.patientId, attachmentForUpdate.file, attachmentForUpdate.description));
         });

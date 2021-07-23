@@ -11,6 +11,7 @@ import { Form } from '../indexed-db/appdb';
 import { FilterModel } from '../models/grid.model';
 import { expand, map, reduce } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
+import { FormAttachmentModel } from '../models/form/form-attachment.model';
 
 @Injectable({ providedIn: 'root' })
 export class MetaFormService extends BaseService {
@@ -114,9 +115,9 @@ export class MetaFormService extends BaseService {
         });
     }    
     
-    saveFormToDatabase(type: string, modelForm: any, patientForm: any, otherModels: any[]): Promise<number> {
+    saveFormToDatabase(type: string, modelForm: any, patientForm: any, attachments: FormAttachmentModel[], otherModels: any[]): Promise<number> {
         return new Promise((resolve, reject) => {
-            this.indexdbService.addNewForm(type, modelForm, patientForm, otherModels).then(result => {
+            this.indexdbService.addNewForm(type, modelForm, patientForm, attachments, otherModels).then(result => {
                 resolve(result);
             });
         });
@@ -126,9 +127,9 @@ export class MetaFormService extends BaseService {
         return this.Put(`metaforms`, model);
     }
 
-    updateForm(id: number, modelForm: any, patientForm: any, otherModels: any[]): Promise<boolean> {
+    updateForm(id: number, modelForm: any, patientForm: any, attachments: FormAttachmentModel[], otherModels: any[]): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            this.indexdbService.updateForm(id, modelForm, patientForm, otherModels).then(result => {
+            this.indexdbService.updateForm(id, modelForm, patientForm, attachments, otherModels).then(result => {
                 resolve(true);
             });
         });        

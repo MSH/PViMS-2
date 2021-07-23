@@ -13,9 +13,9 @@ import { Subscription } from 'rxjs';
 import { _routes } from 'app/config/routes';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { MetaFormService } from 'app/shared/services/meta-form.service';
-import { AttachmentCapturePopupComponent } from '../attachment-capture-popup/attachment-capture.popup.component';
-import { AttachmentViewPopupComponent } from '../attachment-view-popup/attachment-view.popup.component';
-import { FormDeletePopupComponent } from '../form-delete-popup/form-delete.popup.component';
+import { AttachmentCapturePopupComponent } from './attachment-capture-popup/attachment-capture.popup.component';
+import { AttachmentViewPopupComponent } from './attachment-view-popup/attachment-view.popup.component';
+import { FormDeletePopupComponent } from './form-delete-popup/form-delete.popup.component';
 
 @Component({
   templateUrl: './form-list.component.html',

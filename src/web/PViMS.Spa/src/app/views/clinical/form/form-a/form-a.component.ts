@@ -27,6 +27,7 @@ import { FormAConditionsPopupComponent } from './form-a-conditions-popup/form-a-
 import { FormALabsPopupComponent } from './form-a-labs-popup/form-a-labs.popup.component';
 import { FormAMedicationsPopupComponent } from './form-a-medications-popup/form-a-medications.popup.component';
 import { FormCompletePopupComponent } from '../form-complete-popup/form-complete.popup.component';
+import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
 
 const moment =  _moment;
 
@@ -311,11 +312,12 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
   completeForm(): void {
     let self = this;
     let otherModels:any[]; 
+    let attachments:FormAttachmentModel[] = []; 
 
     otherModels = [this.conditions, this.labTests, this.medications, this.viewOtherModelForm.value];
 
     if (self.id == 0) {
-      self.metaFormService.saveFormToDatabase('FormA', this.viewModelForm.value, this.viewPatientModelForm.value, otherModels).then(response =>
+      self.metaFormService.saveFormToDatabase('FormA', this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
         {
             if (response) {
                 self.notify('Form A saved successfully!', 'Form Saved');
@@ -327,7 +329,7 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
         });
       }
       else {
-        self.metaFormService.updateForm(self.id, this.viewModelForm.value, this.viewPatientModelForm.value, otherModels).then(response =>
+        self.metaFormService.updateForm(self.id, this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
           {
               if (response) {
                   self.notify('Form A updated successfully!', 'Form Saved');
@@ -342,12 +344,13 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
 
   saveForm(): void {
     let self = this;
-    let otherModels:any[]; 
+    let otherModels:any[];
+    let attachments:FormAttachmentModel[] = []; 
 
     otherModels = [this.conditions, this.labTests, this.medications, this.viewOtherModelForm.value];
 
     if (self.id == 0) {
-      self.metaFormService.saveFormToDatabase('FormA', this.viewModelForm.value, this.viewPatientModelForm.value, otherModels).then(response =>
+      self.metaFormService.saveFormToDatabase('FormA', this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
         {
             if (response) {
                 self.notify('Form A saved successfully!', 'Form Saved');
@@ -359,7 +362,7 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
         });
       }
       else {
-        self.metaFormService.updateForm(self.id, this.viewModelForm.value, this.viewPatientModelForm.value, otherModels).then(response =>
+        self.metaFormService.updateForm(self.id, this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
           {
               if (response) {
                   self.notify('Form A updated successfully!', 'Form Saved');

@@ -45,13 +45,13 @@ export class FormDeletePopupComponent extends BasePopupComponent implements OnIn
 
     self.metaFormService.deleteForm(self.data.id).then(response =>
       {
-          if (response) {
-              self.notify('Form deleted successfully!', 'Form Deleted');
-              self.dialogRef.close(true)
-          }
-          else {
-              self.showError('There was an error deleting form, please try again !', 'Delete');
-          }
+        if (response) {
+            self.notify('Form deleted successfully!', 'Form Deleted');
+            self.dialogRef.close(true)
+        }
+        else {
+            self.showError('There was an error deleting form, please try again !', 'Delete');
+        }
       });   
   }  
 

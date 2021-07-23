@@ -184,13 +184,14 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
         self.updateForm(self.secondFormGroup, JSON.parse(form.formValues[2].formControlValue));
         self.updateForm(self.thirdFormGroup, JSON.parse(form.formValues[3].formControlValue));
         self.updateForm(self.fourthFormGroup, JSON.parse(form.formValues[4].formControlValue));
+        self.updateForm(self.sixthFormGroup, JSON.parse(form.formValues[6].formControlValue));
 
         self.viewModel.medications = JSON.parse(form.formValues[5].formControlValue);
-        self.viewModel.attachments = JSON.parse(form.formValues[6].formControlValue);
-
         self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
 
-        self.updateForm(self.sixthFormGroup, JSON.parse(form.formValues[7].formControlValue));
+        form.formAttachments.forEach(attachment => {
+          self.viewModel.attachments.push({ description: attachment.description, file: attachment.file })  
+        });
 
         self.viewModel.patientFound = true;
         self.viewModel.isComplete = form.completeStatus == 'Complete';
@@ -231,9 +232,11 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.updateForm(self.firstFormGroup, {patientFirstName: result.firstName});
           self.updateForm(self.firstFormGroup, {patientLastName: result.lastName});
           self.updateForm(self.firstFormGroup, {patientIdentifier: self.firstFormGroup.get('customAttributeValue').value});
-          self.updateForm(self.firstFormGroup, {gender: self.getValueFromAttribute(result.patientAttributes, "Gender")});
-          self.updateForm(self.firstFormGroup, {contactNumber: self.getValueFromAttribute(result.patientAttributes, "Contact Number")});
-          self.updateForm(self.firstFormGroup, {address: self.getValueFromAttribute(result.patientAttributes, "Address")});
+          self.updateForm(self.firstFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Gender")});
+          self.updateForm(self.firstFormGroup, {contactNumber: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Contact Number")});
+          self.updateForm(self.firstFormGroup, {address: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Address")});
+
+          self.updateForm(self.secondFormGroup, {ethnicGroup: self.getValueFromAttribute(result.patientAttributes, "Ethnic Group")});
           
           self.viewModel.medications = self.mapMedicationForUpdateModels(result.patientMedications);
           self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
@@ -391,10 +394,10 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
   saveFormOffline(): void {
     const self = this;
     let otherModels:any[]; 
-    otherModels = [self.secondFormGroup.value, self.thirdFormGroup.value, self.fourthFormGroup.value, self.viewModel.medications, self.viewModel.attachments, self.sixthFormGroup.value];
+    otherModels = [self.secondFormGroup.value, self.thirdFormGroup.value, self.fourthFormGroup.value, self.viewModel.medications, self.sixthFormGroup.value];
 
     if (self.viewModel.formId == 0) {
-      self.metaFormService.saveFormToDatabase('FormADR', self.viewModelForm.value, self.firstFormGroup.value, otherModels).then(response =>
+      self.metaFormService.saveFormToDatabase('FormADR', self.viewModelForm.value, self.firstFormGroup.value, self.viewModel.attachments, otherModels).then(response =>
         {
           if (response) {
             self.setBusy(false);              
@@ -415,7 +418,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
         });
       }
       else {
-        self.metaFormService.updateForm(self.viewModel.formId, this.viewModelForm.value, this.firstFormGroup.value, otherModels).then(response =>
+        self.metaFormService.updateForm(self.viewModel.formId, this.viewModelForm.value, this.firstFormGroup.value, self.viewModel.attachments, otherModels).then(response =>
           {
               if (response) {
                   self.notify('Form updated successfully!', 'Form Saved');
@@ -438,12 +441,12 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
   completeFormOffline(): void {
     let self = this;
-    let otherModels:any[]; 
+    let otherModels:any[];
 
-    otherModels = [self.secondFormGroup.value, self.thirdFormGroup.value, self.fourthFormGroup.value, self.viewModel.medications, self.viewModel.attachments, self.sixthFormGroup.value];
+    otherModels = [self.secondFormGroup.value, self.thirdFormGroup.value, self.fourthFormGroup.value, self.viewModel.medications, self.sixthFormGroup.value];
 
     if (self.viewModel.formId == 0) {
-      self.metaFormService.saveFormToDatabase('FormADR', self.viewModelForm.value, self.firstFormGroup.value, otherModels).then(response =>
+      self.metaFormService.saveFormToDatabase('FormADR', self.viewModelForm.value, self.firstFormGroup.value, self.viewModel.attachments, otherModels).then(response =>
         {
             if (response) {
               self.setBusy(false);              
@@ -464,7 +467,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
         });
       }
       else {
-        self.metaFormService.updateForm(self.viewModel.formId, this.viewModelForm.value, this.firstFormGroup.value, otherModels).then(response =>
+        self.metaFormService.updateForm(self.viewModel.formId, this.viewModelForm.value, this.firstFormGroup.value, self.viewModel.attachments, otherModels).then(response =>
           {
               if (response) {
                   self.notify('Form updated successfully!', 'Form Saved');
@@ -503,13 +506,18 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       })
   }    
 
-  private getValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
+  private getValueOrSelectedValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
     let attribute = attributes.find(a => a.key == key);
     if(attribute?.selectionValue != '') {
       return attribute?.selectionValue;
     }
      return attribute?.value;
   }
+
+  private getValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
+    let attribute = attributes.find(a => a.key == key);
+     return attribute?.value;
+  }  
 
   private preparePatientCustomAttributesForUpdateModel(): PatientCustomAttributesForUpdateModel {
     let self = this;

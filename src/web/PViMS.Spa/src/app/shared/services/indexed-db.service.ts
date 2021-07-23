@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { DatePipe } from "@angular/common";
 import { db, Form } from "../indexed-db/appdb";
 import { FormModel } from "../models/form/form.model";
+import { FormAttachmentModel } from "../models/form/form-attachment.model";
 
 @Injectable( { providedIn: 'root' } )
 export class IndexedDBService {
@@ -70,7 +71,14 @@ export class IndexedDBService {
       });      
     }      
 
-    async addNewForm(type: string, modelForm: any, patientForm: any, models: any[]) : Promise<number>
+    async getForm(id: number): Promise<Form>
+    {
+        let form = await db.forms.get(id);
+        await form.loadNavigationProperties();
+        return form;
+    }
+
+    async addNewForm(type: string, modelForm: any, patientForm: any, attachments: FormAttachmentModel[], models: any[]) : Promise<number>
     {
       let created = new Date();
       let createdDisplay = this.datePipe.transform(created, 'yyyy-MM-dd');
@@ -80,7 +88,7 @@ export class IndexedDBService {
       let formIdentifier = type.substring(4) + `-${this.datePipe.transform(created, 'MMdd')}-${this.datePipe.transform(created, 'HHmmss')}`;
       let formid = 0;
 
-      await db.transaction('rw', db.forms, db.formValues, async function () {
+      await db.transaction('rw', db.forms, db.formValues, db.formAttachments, async function () {
           // Populate a new form
           formid = await db.forms.add(new Form(
               createdDisplay, 
@@ -101,6 +109,11 @@ export class IndexedDBService {
           models.forEach(model => {
             db.formValues.add({ formid: formid, formUniqueIdentifier: formIdentifier, formControlKey: model.constructor.name, formControlValue: JSON.stringify(model) });
           });
+
+          // Populate attachments for this form
+          attachments.forEach(model => {
+            db.formAttachments.add({ formid: formid, formUniqueIdentifier: formIdentifier, description: model.description, name: model.file.name, file: model.file });
+          });
       });
     
       return new Promise<number>((resolve) => {
@@ -108,14 +121,7 @@ export class IndexedDBService {
       });       
     }
 
-    async getForm(id: number): Promise<Form>
-    {
-        let form = await db.forms.get(id);
-        await form.loadNavigationProperties();
-        return form;
-    }
-
-    async updateForm(id: number, modelForm: any, patientForm: any, models: any[])
+    async updateForm(id: number, modelForm: any, patientForm: any, attachments: FormAttachmentModel[], models: any[])
     {
         let form = await db.forms.get(id);
         await form.loadNavigationProperties();
@@ -133,12 +139,28 @@ export class IndexedDBService {
             form.formValues[index].formControlValue = JSON.stringify(model);
         });
 
+        form.formAttachments = [];
+        attachments.forEach(model => {
+          form.formAttachments.push({ formid: id, formUniqueIdentifier: form.formIdentifier, description: model.description, name: model.file.name, file: model.file });
+        });
+
         await form.save();
     }
 
     async deleteForm(id: number)
     {
-        await db.forms.delete(id);
+      let form = await db.forms.get(id);
+      await form.loadNavigationProperties();
+
+      form.formAttachments.forEach(async attachment => {
+        await db.formAttachments.delete(attachment.id);  
+      });
+
+      form.formValues.forEach(async value => {
+        await db.formValues.delete(value.id);  
+      });
+
+      await db.forms.delete(id);
     }
 
     async updateAttachment(id: number, imagebin: any, index: number)
