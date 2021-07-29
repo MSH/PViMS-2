@@ -94,6 +94,7 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
         self.medicationAttributes = result.medicationAttributes;
 
         self.getCustomAttributeList();
+        self.markFormGroupTouched(self.viewModelForm);
       }, error => {
         self.throwError(error, error.statusText);
       });

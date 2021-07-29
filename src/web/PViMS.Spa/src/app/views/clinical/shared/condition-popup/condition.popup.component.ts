@@ -119,6 +119,7 @@ export class ConditionPopupComponent extends BasePopupComponent implements OnIni
         self.conditionAttributes = result.conditionAttributes;
 
         self.getCustomAttributeList();
+        self.markFormGroupTouched(self.viewModelForm);
       }, error => {
         self.throwError(error, error.statusText);
       });

@@ -92,6 +92,7 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
 
         self.CLogFormErrors(self.viewModelForm);
         self.getCustomAttributeList();
+        self.markFormGroupTouched(self.viewModelForm);        
       }, error => {
         self.throwError(error, error.statusText);
       });

@@ -134,6 +134,7 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
         self.labTestAttributes = result.labTestAttributes;
 
         self.getCustomAttributeList();
+        self.markFormGroupTouched(self.viewModelForm);        
       }, error => {
         this.handleError(error, "Error fetching patient lab test");
       });
