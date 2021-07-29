@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { BaseComponent } from 'app/shared/base/base.component';
@@ -35,8 +35,30 @@ import { EnrolmentIdentifierModel } from 'app/shared/models/cohort/enrolment.ide
 
 @Component({
   templateUrl: './patient-view.component.html',
-  styleUrls: ['./patient-view.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-encounter-date { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-effective-date { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-start-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-end-date { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-onset-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-test-date { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-outcome-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-outcome { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-reported-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-resolution-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-is-serious { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-enroled-date { flex: 0 0 15% !important; width: 20% !important; }
+    .mat-column-de-enroled-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-dose { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-dose-unit { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-dose-frequency { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-test-result-coded { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-test-result-value { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-test-unit { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-clinical-event { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }  
+  `],  
   animations: egretAnimations
 })
 export class PatientViewComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
