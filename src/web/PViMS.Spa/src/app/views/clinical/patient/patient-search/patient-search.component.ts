@@ -30,9 +30,10 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './patient-search.component.html',
-  styleUrls: ['./patient-search.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  animations: egretAnimations
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }  
+  `],   
 })
 export class PatientSearchComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
 
@@ -81,7 +82,7 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
       lastName: [this.viewModel.lastName, [Validators.maxLength(30), Validators.pattern("[-a-zA-Z ']*")]], 
       dateOfBirth: [this.viewModel.dateOfBirth],
       customAttributeId: [this.viewModel.customAttributeId],
-      customAttributeValue: [this.viewModel.customAttributeValue, [Validators.maxLength(150), Validators.pattern("[-a-zA-Z0-9 ']*")]]
+      customAttributeValue: [this.viewModel.customAttributeValue, [Validators.maxLength(150), Validators.pattern("[-a-zA-Z0-9/ ']*")]]
     });
   }
 
