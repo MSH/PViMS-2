@@ -133,7 +133,7 @@
                         </ng-container>
             
                         <mat-header-row *matHeaderRowDef="viewGridModel?.customGrid?.displayedColumns; sticky:true"></mat-header-row>
-                        <mat-row *matRowDef="let record; columns: viewGridModel?.customGrid?.displayedColumns;" matRipple></mat-row>
+                        <mat-row *matRowDef="let record; columns: viewGridModel?.customGrid?.displayedColumns;"></mat-row>
                       </mat-table>
                     </div>
                   </div>                  
@@ -361,7 +361,7 @@
                         </ng-container>
                       
                         <mat-header-row *matHeaderRowDef="viewGridModel?.statusGrid?.displayedColumns; sticky:true"></mat-header-row>
-                        <mat-row *matRowDef="let record; columns: viewGridModel?.statusGrid?.displayedColumns;" matRipple></mat-row>
+                        <mat-row *matRowDef="let record; columns: viewGridModel?.statusGrid?.displayedColumns;"></mat-row>
                       </mat-table>
                     </div>
                   </div>                  
