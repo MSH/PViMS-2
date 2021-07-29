@@ -24,7 +24,7 @@ export class AuthLayoutComponent implements OnInit {
   ) 
   { 
     // Translator init
-    translate.setDefaultLang('en');
+    translate.setDefaultLang('mz');
   }
 
   ngOnInit() {

@@ -43,7 +43,7 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     });
     
     // Translator init
-    translate.setDefaultLang('en');
+    translate.setDefaultLang('mz');
   }
   ngOnInit() {
     // this.layoutConf = this.layout.layoutConf;

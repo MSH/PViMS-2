@@ -5,9 +5,9 @@
 
 export const environment = {
   production: false,
-  apiURL: 'http://localhost:5000/api',
-  //apiURL: 'https://pvims-api.pharmadexmz.org/api',
+  //apiURL: 'http://localhost:5000/api',
+  apiURL: 'https://pvims-api.pharmadexmz.org/api',
   appVersion: '2.0.0',
   appName: 'PViMS Training',
-  installationDate: '2020-06-24'
+  installationDate: '2021-07-29'
 };
