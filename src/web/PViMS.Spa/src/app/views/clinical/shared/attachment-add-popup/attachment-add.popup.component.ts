@@ -43,7 +43,7 @@ export class AttachmentAddPopupComponent extends BasePopupComponent implements O
   handleFileInput(files: FileList) {
     this.fileToUpload = files.item(0);
     this.fileSizeLarge = false;
-    if(this.fileToUpload.size > 150000) {
+    if(this.fileToUpload.size > 256000) {
       this.CLog('file too large');
       this.fileSizeLarge = true;
     }
