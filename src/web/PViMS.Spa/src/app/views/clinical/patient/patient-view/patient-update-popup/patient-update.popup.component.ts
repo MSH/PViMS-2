@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
@@ -28,7 +28,6 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './patient-update.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class PatientUpdatePopupComponent extends BasePopupComponent  implements OnInit, AfterViewInit {
@@ -92,6 +91,7 @@ export class PatientUpdatePopupComponent extends BasePopupComponent  implements 
         self.patientAttributes = result.patientAttributes;
 
         self.getCustomAttributeList();
+        self.markFormGroupTouched(self.viewModelForm);
       }, error => {
         self.throwError(error, error.statusText);
       });
