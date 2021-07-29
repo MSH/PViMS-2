@@ -29,25 +29,16 @@
                   </mat-form-field>
                   <mat-datepicker #testDateDatepicker></mat-datepicker>
                 </div>
+              </div>
+              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
                 <div fxFlex="50" class="pr-1">
                   <mat-form-field class="p-8 full-width">
-                    <mat-select formControlName="testResultCoded" placeholder="{{'Test result (coded)' | translate}}">
-                      <mat-option value=""></mat-option>
-                      <mat-option *ngFor="let labResult of labResultList" [value]="labResult.labResultName">
-                          {{labResult.labResultName}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
-                      <input matInput formControlName="testResultValue" placeholder="{{'Test result (value)' | translate }}">
-                      <mat-hint>{{'Maximum length' | translate}} 20</mat-hint> 
-                      <mat-error *ngIf="viewModelForm.get('testResultValue').hasError('maxlength')">
+                      <input matInput formControlName="testResultCoded" placeholder="{{'Test result (value)' | translate }}">
+                      <mat-hint>{{'Maximum length' | translate}} 50</mat-hint> 
+                      <mat-error *ngIf="viewModelForm.get('testResultCoded').hasError('maxlength')">
                         {{'Maximum length exceeded' | translate}}
                       </mat-error>            
-                      <mat-error *ngIf="viewModelForm.get('testResultValue').hasError('pattern')">
+                      <mat-error *ngIf="viewModelForm.get('testResultCoded').hasError('pattern')">
                         {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, hyphen, space, period)
                       </mat-error>            
                   </mat-form-field>

@@ -61,8 +61,8 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
     self.viewModelForm = this._formBuilder.group({
       labTest: ['', Validators.required],
       testDate: ['', Validators.required],
-      testResultCoded: [''],
-      testResultValue: ['', [Validators.maxLength(20), Validators.pattern("[-a-zA-Z0-9 .]*")]],
+      testResultValue: [''],
+      testResultCoded: ['', [Validators.maxLength(50), Validators.pattern("[-a-zA-Z0-9 .]*")]],
       testUnit: [''],
       referenceLower: ['', [Validators.maxLength(20), Validators.pattern("[-a-zA-Z0-9 .]*")]],
       referenceUpper: ['', [Validators.maxLength(20), Validators.pattern("[-a-zA-Z0-9 .]*")]],
@@ -86,7 +86,6 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
 
     self.labTestService.getAllLabTests()
         .subscribe(result => {
-          console.log(result);
           self.labTestList = result;
         }, error => {
           this.handleError(error, "Error fetching lab tests");
@@ -98,7 +97,6 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
 
     self.labTestService.getAllLabResults()
         .subscribe(result => {
-          console.log(result);
           self.labResultList = result;
         }, error => {
           this.handleError(error, "Error fetching lab results");
@@ -110,7 +108,6 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
 
     self.labTestService.getAllLabTestUnits()
         .subscribe(result => {
-          console.log(result);
           self.labTestUnitList = result;
         }, error => {
           this.handleError(error, "Error fetching lab test units");
@@ -130,6 +127,7 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
     self.patientService.getPatientLabTestDetail(self.data.patientId, self.data.labTestId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
+        self.CLog(result, 'lab');
         self.updateForm(self.viewModelForm, result);
         self.labTestAttributes = result.labTestAttributes;
 
@@ -183,6 +181,17 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
   submit() {
     let self = this;
     self.setBusy(true);
+
+    if(self.viewModelForm.get('testResultValue').value == '' || self.viewModelForm.get('testResultValue').value == null) {
+      self.updateForm(self.viewModelForm, { testResultValue : ' ' })
+    }
+    if(self.viewModelForm.get('referenceLower').value == '' || self.viewModelForm.get('referenceLower').value == null) {
+      self.updateForm(self.viewModelForm, { referenceLower : ' ' })
+    }
+    if(self.viewModelForm.get('referenceUpper').value == '' || self.viewModelForm.get('referenceUpper').value == null) {
+      self.updateForm(self.viewModelForm, { referenceUpper : ' ' })
+    }
+
     self.patientService.savePatientLabTest(self.data.patientId, self.data.labTestId, self.viewModelForm.value)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
