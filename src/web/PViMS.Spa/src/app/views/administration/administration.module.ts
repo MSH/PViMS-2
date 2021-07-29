@@ -6,7 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedMaterialModule } from 'app/shared/shared-material.module';
 import { SharedModule } from 'app/shared/shared.module';
-import { TranslateModule } from '@ngx-translate/core';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { RouterModule } from '@angular/router';
 import { ConfigListComponent } from './system/config-list/config-list.component';
@@ -46,11 +45,15 @@ import { MedicationPopupComponent } from './reference/medicine-list/medication-p
 import { MedicationDeletePopupComponent } from './reference/medicine-list/medication-delete-popup/medication-delete.popup.component';
 import { ConceptPopupComponent } from './reference/concept-list/concept-popup/concept.popup.component';
 import { GenericDeletePopupComponent } from './shared/generic-delete-popup/generic-delete.popup.component';
+import { CareEventPopupComponent } from './work/care-event-list/care-event-popup/care-event.popup.component';
+import { HolidayDeletePopupComponent } from './system/holiday-list/holiday-delete-popup/holiday-delete.popup.component';
+import { HolidayPopupComponent } from './system/holiday-list/holiday-popup/holiday.popup.component';
 
 @NgModule({
   declarations: [
     AuditLogListComponent,
     CareEventListComponent,
+    CareEventPopupComponent,
     ConceptListComponent,
     ConceptPopupComponent,
     ConfigListComponent,
@@ -71,6 +74,8 @@ import { GenericDeletePopupComponent } from './shared/generic-delete-popup/gener
     FormDeletePopupComponent,
     FormPopupComponent,
     HolidayListComponent,
+    HolidayDeletePopupComponent,
+    HolidayPopupComponent,
     LabResultListComponent,
     LabTestListComponent,
     LabTestSelectPopupComponent,
@@ -93,12 +98,12 @@ import { GenericDeletePopupComponent } from './shared/generic-delete-popup/gener
     SharedComponentsModule,
     SharedMaterialModule,
     SharedModule,    
-    TranslateModule,
     PerfectScrollbarModule,
     RouterModule.forChild(ReportRoutes)
   ],
   entryComponents:
   [
+    CareEventPopupComponent,
     ConceptPopupComponent,
     ConditionPopupComponent,
     ConditionDeletePopupComponent,
@@ -107,6 +112,8 @@ import { GenericDeletePopupComponent } from './shared/generic-delete-popup/gener
     DatasetCategoryElementDeletePopupComponent,
     DatasetElementSelectPopupComponent,
     GenericDeletePopupComponent,
+    HolidayDeletePopupComponent,
+    HolidayPopupComponent,
     ImportMeddraPopupComponent,
     LabTestSelectPopupComponent,
     MedicationPopupComponent,

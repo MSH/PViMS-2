@@ -9,6 +9,7 @@
         ReportInstanceNewAlertCount = 5,
         MedicationOnsetCheckPeriodWeeks = 6,
         MetaDataLastUpdated = 7,
-        PharmadexLink = 8
+        PharmadexLink = 8,
+        ReportInstanceFeedbackAlertCount = 9
     }
 }

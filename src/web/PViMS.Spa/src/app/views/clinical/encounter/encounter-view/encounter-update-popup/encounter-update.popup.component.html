@@ -34,7 +34,7 @@
                     <mat-hint *ngIf="element.numericMinValue != null && element.numericMaxValue != null">
                       {{'Valid between ' | translate}} {{element.numericMinValue}} {{'and ' | translate}} {{element.numericMaxValue}}
                     </mat-hint>
-                  </mat-form-field>        
+                  </mat-form-field>
                   <span *ngIf="element.datasetElementType == 'Date' && !element.datasetElementSystem">
                     <mat-form-field class="p-8 full-width">
                       <input matInput formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" [matDatepicker]="datepicker" [required]="element.required">

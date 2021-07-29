@@ -1,4 +1,4 @@
-﻿using PVIMS.API.Application.Queries.ReportInstance;
+﻿using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -17,6 +17,12 @@ namespace PVIMS.API.Models
         public string SetMedDraTerm { get; set; }
 
         /// <summary>
+        /// The classification as set by the PV specialist
+        /// </summary>
+        [DataMember]
+        public string SetClassification { get; set; }
+
+        /// <summary>
         /// Medications which have causality set
         /// </summary>
         [DataMember]
@@ -27,5 +33,11 @@ namespace PVIMS.API.Models
         /// </summary>
         [DataMember]
         public ICollection<ReportInstanceEventDto> Activity { get; set; } = new List<ReportInstanceEventDto>();
+
+        /// <summary>
+        /// All tasks that have been allocated to this clinical event
+        /// </summary>
+        [DataMember]
+        public ICollection<TaskDto> Tasks { get; set; } = new List<TaskDto>();
     }
 }

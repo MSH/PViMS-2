@@ -16,7 +16,7 @@ import { ReportInstanceService } from 'app/shared/services/report-instance.servi
 import { takeUntil, finalize } from 'rxjs/operators';
 import { Moment } from 'moment';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
-import { MedicationListPopupComponent } from './medications-popup/medicationlist.popup.component';
+import { MedicationListPopupComponent } from './medications-popup/medication-list.popup.component';
 import { TerminologyMedDraModel } from 'app/shared/models/terminologymeddra.model';
 import { _routes } from 'app/config/routes';
 
@@ -29,15 +29,16 @@ import { ActivityStatusChangePopupComponent } from '../activity-status-change-po
 import { ProgressStatusEnum, ProgressStatus } from 'app/shared/models/program-status.model';
 import { HttpEventType } from '@angular/common/http';
 import { PatientService } from 'app/shared/services/patient.service';
-import { NaranjoPopupComponent } from '../naranjo-popup/naranjo.popup.component';
+import { NaranjoPopupComponent } from './naranjo-popup/naranjo.popup.component';
 import { ReportInstanceMedicationDetailModel } from 'app/shared/models/report-instance/report-instance-medication.detail.model';
-import { SetMeddraPopupComponent } from '../set-meddra-popup/set-meddra.popup.component';
+import { SetMeddraPopupComponent } from './set-meddra-popup/set-meddra.popup.component';
 import { DatasetInstancePopupComponent } from '../dataset-instance-popup/dataset-instance.popup.component';
 import { WorkFlowService } from 'app/shared/services/work-flow.service';
 import { WorkFlowDetailModel } from 'app/shared/models/work-flow/work-flow.detail.model';
 import { LinkModel } from 'app/shared/models/link.model';
 import { DatasetInstanceModel } from 'app/shared/models/dataset/dataset-instance-model';
-import { WhoPopupComponent } from '../who-popup/who.popup.component';
+import { WhoPopupComponent } from './who-popup/who.popup.component';
+import { SetClassificationPopupComponent } from './set-classification/set-classification.popup.component';
 
 const moment =  _moment;
 
@@ -86,14 +87,13 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
 
   navigationSubscription;
   workflowId: string = null;
+  qualifiedName: string = null;
 
   currentScreenWidth: string = '';
   flexMediaWatcher: Subscription;
 
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
-
-  searchContext: '' | 'New' | 'Active' | 'Date' | 'Term' = '';
 
   criteriaList: CriteriaListModel[] = [];
   workFlow: WorkFlowDetailModel;
@@ -117,13 +117,13 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     }
 
     self.workflowId = self._activatedRoute.snapshot.paramMap.get('wuid');
+    self.qualifiedName = self._activatedRoute.snapshot.paramMap.get('qualifiedName');
 
     self.viewModelForm = self._formBuilder.group({
       qualifiedName: [self.viewModel.qualifiedName || ''],
       searchFrom: [self.viewModel.searchFrom || moment().subtract(3, 'months'), Validators.required],
       searchTo: [self.viewModel.searchTo || moment(), Validators.required],
-      searchTerm: [self.viewModel.searchTerm || ''],
-      activeReportsOnly: ['Yes']
+      searchTerm: [self.viewModel.searchTerm || '']
     });
 
     self.viewModel.mainGrid.clearDataSource();
@@ -230,6 +230,9 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.workFlow = result;
+        if(self.qualifiedName != null) {
+          self.selectActivity(self.qualifiedName);
+        }
       }, error => {
         this.handleError(error, "Error fetching work flow");
       });
@@ -239,8 +242,15 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     let self = this;
 
     self.updateForm(self.viewModelForm, {qualifiedName: qualifiedName});
-    self.updateForm(self.viewModelForm, {activeReportsOnly: 'Yes'});    
-    self.searchContext = qualifiedName == "New reports" ? "New" : "Active";
+
+    if(qualifiedName == "Confirm Report Data") {
+      self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'task-count', 'status', 'actions'])
+    }
+    else {
+      self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'status', 'actions'])
+    }
+
+    self.viewModel.searchContext = qualifiedName == "New reports" ? "New" : "Active";
 
     self.loadGrid();
   }
@@ -248,16 +258,14 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
   searchByDate(): void {
     let self = this;
 
-    self.searchContext = "Date";
-    self.updateForm(self.viewModelForm, {activeReportsOnly: 'No'});
+    self.viewModel.searchContext = "Date";
     self.loadGrid();
   }
 
   searchByTerm(): void {
     let self = this;
 
-    self.searchContext = "Term";
-    self.updateForm(self.viewModelForm, {activeReportsOnly: 'No'});
+    self.viewModel.searchContext = "Term";
     self.loadGrid();
   }
 
@@ -265,28 +273,29 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     let self = this;
     self.setBusy(true);
 
-    switch (self.searchContext) {
+    switch (self.viewModel.searchContext) {
       case "New":
         self.reportInstanceService.getNewReportInstancesByDetail(self.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
+          self.CLog(result, 'new reports');
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-          this.handleError(error, "Error searching for new report instances");
+          this.handleError(error, "Error getting new report instances");
         });
   
         break;
 
       case "Active":
-        self.reportInstanceService.searchReportInstanceByActivity(self.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
+        self.reportInstanceService.getAnalysisReportInstancesByDetail(self.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-          console.log(result);
+          self.CLog(result, 'analysis reports');
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-          this.handleError(error, "Error searching for report instances by activity");
+          this.handleError(error, "Error getting report instances by activity");
         });
   
         break;
@@ -340,6 +349,11 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     self._router.navigate([_routes.analytical.reports.activity(self.workflowId, model ? model.id : 0)]);
   }
 
+  detailTask(model: GridRecordModel = null): void {
+    let self = this;
+    self._router.navigate([_routes.analytical.reports.task(self.workflowId, model ? model.id : 0)]);
+  }
+
   detailPatient(model: GridRecordModel = null): void {
     let self = this;
     self._router.navigate([_routes.clinical.patients.view(model ? model.patientId : 0)]);
@@ -381,6 +395,25 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         self.loadData();
       })
   }  
+
+  openSetClassificationPopUp(data: any = {}) {
+    let self = this;
+    let title = 'Set Classification';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(SetClassificationPopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { workFlowId: this.workflowId, title: title, reportInstanceId: data.id }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+        self.loadData();
+      })
+  }
 
   openNaranjoPopUp(data: any = {}) {
     let self = this;
@@ -478,7 +511,9 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['created', 'identifier', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'status', 'actions']);
+          (['identifier', 'created', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'task-count', 'status', 'actions']);
+
+  searchContext: '' | 'New' | 'Active' | 'Date' | 'Term' = '';
 
   qualifiedName: string;
   searchFrom: Moment;
@@ -499,6 +534,7 @@ class GridRecordModel {
   patientId: number;
   activityExecutionStatusEventId: number;
   attachmentId: number;
+  taskCount: number;
   qualifiedName: string;
   currentStatus: string;
   links: LinkModel[];

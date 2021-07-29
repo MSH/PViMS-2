@@ -32,8 +32,6 @@ import { AppLoaderComponent } from '../services/app-loader/app-loader.component'
 import { ButtonLoadingComponent } from './button-loading/button-loading.component';
 import { EgretSidebarComponent, EgretSidebarTogglerDirective } from './egret-sidebar/egret-sidebar.component';
 import { BottomSheetShareComponent } from './bottom-sheet-share/bottom-sheet-share.component';
-import { EgretExampleViewerComponent } from './example-viewer/example-viewer.component';
-import { EgretExampleViewerTemplateComponent } from './example-viewer-template/example-viewer-template.component';
 import { ViewErrorPopupComponent } from 'app/views/clinical/form/synchronise/viewerror-popup/viewerror.popup.component';
 import { LabPopupComponent } from 'app/views/administration/reference/lab-test-list/lab-popup/lab.popup.component';
 import { LabDeletePopupComponent } from 'app/views/administration/reference/lab-test-list/lab-delete-popup/lab-delete.popup.component';
@@ -42,10 +40,7 @@ import { LabResultDeletePopupComponent } from 'app/views/administration/referenc
 import { ConfigPopupComponent } from 'app/views/administration/system/config-list/config-popup/config.popup.component';
 import { FacilityPopupComponent } from 'app/views/administration/system/facility-list/facility-popup/facility.popup.component';
 import { ContactDetailPopupComponent } from 'app/views/administration/system/contact-detail-list/contact-detail-popup/contact-detail.popup.component';
-import { HolidayPopupComponent } from 'app/views/administration/system/holiday-list/holiday-popup/holiday.popup.component';
-import { HolidayDeletePopupComponent } from 'app/views/administration/system/holiday-list/holiday-delete-popup/holiday-delete.popup.component';
 import { FacilityDeletePopupComponent } from 'app/views/administration/system/facility-list/facility-delete-popup/facility-delete.popup.component';
-import { CareEventPopupComponent } from 'app/views/administration/work/care-event-list/care-event-popup/care-event.popup.component';
 import { CareEventDeletePopupComponent } from 'app/views/administration/work/care-event-list/care-event-delete-popup/care-event-delete.popup.component';
 import { DatasetElementPopupComponent } from 'app/views/administration/work/dataset-element-list/dataset-element-popup/dataset-element.popup.component';
 import { DatasetElementDeletePopupComponent } from 'app/views/administration/work/dataset-element-list/dataset-element-delete-popup/dataset-element-delete.popup.component';
@@ -70,7 +65,6 @@ import { UserProfilePopupComponent } from 'app/views/security/user-profile/user-
 import { AppointmentPopupComponent } from 'app/views/clinical/patient/patient-view/appointment-popup/appointment.popup.component';
 import { EnrolmentPopupComponent } from 'app/views/clinical/patient/patient-view/enrolment-popup/enrolment.popup.component';
 import { DeenrolmentPopupComponent } from 'app/views/clinical/patient/patient-view/deenrolment-popup/deenrolment.popup.component';
-import { MedicationListPopupComponent } from 'app/views/analytical/report/report-search/medications-popup/medicationlist.popup.component';
 import { AttachmentPopupComponent } from 'app/views/clinical/patient/patient-view/attachment-popup/attachment.popup.component';
 import { ConfirmPopupComponent } from './popup/confirm.popup.component';
 import { ErrorPopupComponent } from './popup/error.popup.component';
@@ -80,6 +74,8 @@ import { AboutPopupComponent } from './about/about.popup.component';
 import { TimeoutComponent } from './timeout/timeout.component';
 import { MeddraSelectPopupComponent } from './popup/meddra-select-popup/meddra-select.popup.component';
 import { DatasetCategoryPopupComponent } from 'app/views/administration/work/dataset-list/dataset-category-list/dataset-category-popup/dataset-category.popup.component';
+import { TaskCommentsPopupComponent } from './popup/task-comments-popup/task-comments.popup.component';
+import { OnlineStatusPopupComponent } from './popup/online-status-popup/online-status.popup.component';
 
 const components = [
   HeaderTopComponent,
@@ -117,10 +113,7 @@ const components = [
   AttachmentPopupComponent,
   EnrolmentPopupComponent,
   DeenrolmentPopupComponent,
-  MedicationListPopupComponent,
 
-  // Admin popups
-  CareEventPopupComponent,
   CareEventDeletePopupComponent,   
   ConfigPopupComponent,
   ContactDetailPopupComponent,
@@ -133,8 +126,6 @@ const components = [
   EncounterTypeDeletePopupComponent,
   FacilityPopupComponent,
   FacilityDeletePopupComponent,
-  HolidayPopupComponent,
-  HolidayDeletePopupComponent,
   LabPopupComponent,
   LabDeletePopupComponent,
   LabResultPopupComponent,
@@ -144,11 +135,12 @@ const components = [
   UserDeletePopupComponent,
   UserUpdatePopupComponent,
 
+  AboutPopupComponent,
   ConceptSelectPopupComponent,
   MeddraSelectPopupComponent,
-
+  OnlineStatusPopupComponent,
+  TaskCommentsPopupComponent,
   ViewErrorPopupComponent,
-  AboutPopupComponent,
 
   CustomizerComponent,
   ButtonLoadingComponent,
@@ -156,8 +148,6 @@ const components = [
   FooterComponent,
   EgretSidebarTogglerDirective,
   BottomSheetShareComponent,
-  EgretExampleViewerComponent,
-  EgretExampleViewerTemplateComponent,
   PingComponent,
   TimeoutComponent
 ]
@@ -167,13 +157,13 @@ const components = [
     CommonModule,
     FormsModule,
     RouterModule,
-    TranslateModule,
     FlexLayoutModule,
     ReactiveFormsModule,
     PerfectScrollbarModule,
     SharedPipesModule,
     SharedDirectivesModule,
-    SharedMaterialModule
+    SharedMaterialModule,
+    TranslateModule
   ],
   declarations: components,
   entryComponents: [
@@ -198,9 +188,7 @@ const components = [
     AttachmentPopupComponent,
     EnrolmentPopupComponent,
     DeenrolmentPopupComponent,
-    MedicationListPopupComponent,
     
-    CareEventPopupComponent,
     CareEventDeletePopupComponent,   
     ContactDetailPopupComponent,
     ConfigPopupComponent,
@@ -213,8 +201,6 @@ const components = [
     EncounterTypeDeletePopupComponent,
     FacilityPopupComponent,
     FacilityDeletePopupComponent,
-    HolidayPopupComponent,
-    HolidayDeletePopupComponent,
     LabPopupComponent,
     LabDeletePopupComponent,
     LabResultPopupComponent,
@@ -224,12 +210,12 @@ const components = [
     UserDeletePopupComponent,
     UserUpdatePopupComponent,
 
+    AboutPopupComponent,
     ConceptSelectPopupComponent,
     MeddraSelectPopupComponent,
-    
-    ViewErrorPopupComponent,
-    AboutPopupComponent
-    
+    OnlineStatusPopupComponent,
+    TaskCommentsPopupComponent,
+    ViewErrorPopupComponent
   ],
   exports: components
 })

@@ -246,7 +246,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetMetaReportByIdentifier",
+                return CreatedAtAction("GetMetaReportByIdentifier",
                     new
                     {
                         id = mappedMetaReport.Id
@@ -322,7 +322,7 @@ namespace PVIMS.API.Controllers
                 metaReportFromRepo.MetaDefinition = PrepareMetaDefinition(metaReportForUpdate);
 
                 _metaReportRepository.Update(metaReportFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -353,7 +353,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _metaReportRepository.Delete(metaReportFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }
@@ -370,7 +370,7 @@ namespace PVIMS.API.Controllers
         [HttpPut("{id}/attributes", Name = "UpdateMetaReportAttributes")]
         [Consumes("application/json")]
         [Authorize(Roles = "ReporterAdmin")]
-        public async Task<IActionResult> UpdateMetaReportAttributes(long metaPageId, long id,
+        public async Task<IActionResult> UpdateMetaReportAttributes(long id,
             [FromBody] MetaReportForAttributeUpdateDto metaReportForAttributeUpdate)
         {
             if (metaReportForAttributeUpdate == null)
@@ -389,7 +389,7 @@ namespace PVIMS.API.Controllers
                 PrepareMetaDefinitionForAttribute(metaReportForAttributeUpdate, metaReportFromRepo);
 
                 _metaReportRepository.Update(metaReportFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -1009,14 +1009,14 @@ namespace PVIMS.API.Controllers
         {
             wrapper.Links.Add(
                new LinkDto(
-                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaReportsByIdentifier", metaResourceParameters),
+                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaReportsByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                    "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaReportsByIdentifier", metaResourceParameters),
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaReportsByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                        "nextPage", "GET"));
             }
 
@@ -1024,7 +1024,7 @@ namespace PVIMS.API.Controllers
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaReportsByIdentifier", metaResourceParameters),
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaReportsByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                        "previousPage", "GET"));
             }
 

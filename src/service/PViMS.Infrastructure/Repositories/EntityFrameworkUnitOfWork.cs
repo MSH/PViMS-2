@@ -2,6 +2,7 @@
 using PVIMS.Core.SeedWork;
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 
 namespace PVIMS.Infrastructure.Repositories
 {
@@ -66,9 +67,9 @@ namespace PVIMS.Infrastructure.Repositories
         /// <summary>
         /// Flushes all changes to the data store.
         /// </summary>
-        public void Complete()
+        public async Task<bool> CompleteAsync()
         {
-            _dbContext.SaveChanges();
+            return await _dbContext.SaveEntitiesAsync();
         }
 
         /// <summary>

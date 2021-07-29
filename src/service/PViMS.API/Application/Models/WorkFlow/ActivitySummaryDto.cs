@@ -19,5 +19,11 @@ namespace PVIMS.API.Models
         /// </summary>
         [DataMember]
         public int ReportInstanceCount { get; set; }
+
+        /// <summary>
+        /// The number of new feedback items in this state
+        /// </summary>
+        [DataMember]
+        public int NewFeedbackInstanceCount { get; set; }
     }
 }

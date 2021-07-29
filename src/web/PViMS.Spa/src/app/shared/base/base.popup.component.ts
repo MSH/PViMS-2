@@ -42,8 +42,8 @@ export class BasePopupComponent {
         setTimeout(() => { this.busy = value; });
     }
 
-    protected showError(errorMessage: any, title: string = "Error") {
-        this.popupService.showErrorMessage(errorMessage, title);
+    protected showError(errorMessage: any, errorCode: string, title: string = "Error") {
+        this.popupService.showErrorMessage(errorMessage, errorCode, title);
     }
 
     protected showInfo(message: string, title: string = "Info") {
@@ -68,9 +68,7 @@ export class BasePopupComponent {
 
     protected handleError(errorObject: any, title: string = "Exception")
     {
-      console.log(errorObject);
-
-      let message = '';
+      let message = 'Unknown error experienced. Please contact your system administrator. ';
       if(errorObject.message) {
         if(Array.isArray(errorObject.message)) {
           message = errorObject.message[0];
@@ -79,16 +77,22 @@ export class BasePopupComponent {
           message = errorObject.message;
         }
       }
-      else {
-        message = "Unknown error experienced. Please contact your system administrator. ";
+      if(errorObject.Message) {
+        if(Array.isArray(errorObject.Message)) {
+          message = errorObject.Message[0];
+        }
+        else {
+          message = errorObject.Message;
+        }
       }
 
+      let errorCode = '';
       if(errorObject.ReferenceCode) {
-        message += `Reference Code: ${errorObject.ReferenceCode}`;
+        errorCode += `Reference Code: ${errorObject.ReferenceCode}`;
       }
 
       this.CLog(errorObject, title);
-      this.showError(message, title);
+      this.showError(message, errorCode, title);
     }
 
     public setForm(form: FormGroup, value: any): void {

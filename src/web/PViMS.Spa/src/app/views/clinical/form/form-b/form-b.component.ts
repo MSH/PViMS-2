@@ -29,6 +29,7 @@ import { FormBMedicationsPopupComponent } from './form-b-medications-popup/form-
 import { FormBAdversePopupComponent } from './form-b-adverse-popup/form-b-adverse.popup.component';
 import { FormCompletePopupComponent } from '../form-complete-popup/form-complete.popup.component';
 import { MeddraTermIdentifierModel } from 'app/shared/models/terminology/meddra-term.identifier.model';
+import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
 
 const moment =  _moment;
 
@@ -377,30 +378,29 @@ export class FormBComponent extends BaseComponent implements OnInit, AfterViewIn
       })
   }
 
-  openCompletePopup(identifier: string) {
+  openCompletePopup(formId: number) {
     let self = this;
     let title = "Form Completed";
     let dialogRef: MatDialogRef<any> = self.dialog.open(FormCompletePopupComponent, {
       width: '720px',
       disableClose: true,
-      data: { identifier: identifier, title: title }
+      data: { formId, title: title }
     })
     dialogRef.afterClosed()
       .subscribe(res => {
-        self._router.navigate([_routes.clinical.forms.list]);        
+        self._router.navigate([_routes.clinical.forms.landing]);        
       })
   }  
 
   completeForm(): void {
-    this.viewModelForm.patchValue({formCompleted: true} );
-
     let self = this;
-    let otherModels:any[]; 
+    let otherModels:any[];
+    let attachments:FormAttachmentModel[] = [];
 
     otherModels = [this.viewPregnancyModelForm.value, this.medications, this.viewAdverseEventModelForm.value, this.adverseEvents, this.viewConditionModelForm.value, this.conditions, this.viewAdverseEventManagementModelForm.value, this.labTests, this.viewOutcomeModelForm.value];
 
     if (self.id == 0) {
-      self.metaFormService.saveFormToDatabase('FormB', this.viewModelForm.value, this.viewPatientModelForm.value, otherModels).then(response =>
+      self.metaFormService.saveFormToDatabase('FormB', this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
         {
             if (response) {
                 self.notify('Form B saved successfully!', 'Form Saved');
@@ -412,11 +412,11 @@ export class FormBComponent extends BaseComponent implements OnInit, AfterViewIn
         });
     }
     else {
-      self.metaFormService.updateForm(self.id, this.viewModelForm.value, this.viewPatientModelForm.value, otherModels).then(response =>
+      self.metaFormService.updateForm(self.id, this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
         {
             if (response) {
                 self.notify('Form B updated successfully!', 'Form Saved');
-                this.openCompletePopup(self.identifier);
+                this.openCompletePopup(self.id);
             }
             else {
                 self.showError('There was an error updating form C, please try again !', 'Download');
@@ -427,16 +427,17 @@ export class FormBComponent extends BaseComponent implements OnInit, AfterViewIn
     
   saveForm(): void {
     let self = this;
-    let otherModels:any[]; 
+    let otherModels:any[];
+    let attachments:FormAttachmentModel[] = [];
 
     otherModels = [this.viewPregnancyModelForm.value, this.medications, this.viewAdverseEventModelForm.value, this.adverseEvents, this.viewConditionModelForm.value, this.conditions, this.viewAdverseEventManagementModelForm.value, this.labTests, this.viewOutcomeModelForm.value];
 
     if (self.id == 0) {
-      self.metaFormService.saveFormToDatabase('FormB', this.viewModelForm.value, this.viewPatientModelForm.value, otherModels).then(response =>
+      self.metaFormService.saveFormToDatabase('FormB', this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
         {
             if (response) {
                 self.notify('Form B saved successfully!', 'Form Saved');
-                self._router.navigate([_routes.clinical.forms.list]);
+                self._router.navigate([_routes.clinical.forms.landing]);
             }
             else {
                 self.showError('There was an error saving form B, please try again !', 'Download');
@@ -444,11 +445,11 @@ export class FormBComponent extends BaseComponent implements OnInit, AfterViewIn
         });
     }
     else {
-      self.metaFormService.updateForm(self.id, this.viewModelForm.value, this.viewPatientModelForm.value, otherModels).then(response =>
+      self.metaFormService.updateForm(self.id, this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
         {
             if (response) {
                 self.notify('Form B updated successfully!', 'Form Saved');
-                self._router.navigate([_routes.clinical.forms.list]);
+                self._router.navigate([_routes.clinical.forms.landing]);
             }
             else {
                 self.showError('There was an error updating form C, please try again !', 'Download');

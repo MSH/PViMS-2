@@ -1,11 +1,3 @@
-import { LinkModel } from "../link.model";
-
-export interface ActivityExecutionStatusEventWrapperModel {
-  value:  ActivityExecutionStatusEventModel[];
-  recordCount: number;
-  links: LinkModel[];
-}
-
 export interface ActivityExecutionStatusEventModel {
   id: number;
   patientClinicalEventId: number;

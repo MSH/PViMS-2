@@ -1,5 +1,4 @@
 using PVIMS.Core.Entities;
-using PVIMS.Core.Exceptions;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,9 +31,11 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             TaskStatusId = taskStatus.Id;
         }
 
-        public void AddComment(string comment)
+        public ReportInstanceTaskComment AddComment(string comment)
         {
-            _comments.Add(new ReportInstanceTaskComment(comment));
+            var newTaskComment = new ReportInstanceTaskComment(comment);
+            _comments.Add(newTaskComment);
+            return newTaskComment;
         }
 
         public void ChangeDetails(TaskDetail taskDetail)
@@ -52,6 +53,10 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             TaskStatusId = TaskStatus.OnHold.Id;
         }
 
+        public void ChangeTaskStatusToAttendedTo()
+        {
+            TaskStatusId = TaskStatus.AttendedTo.Id;
+        }
         public void ChangeTaskStatusToCompleted()
         {
             TaskStatusId = TaskStatus.Completed.Id;
@@ -72,6 +77,5 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
             _comments.Remove(taskComment);
         }
-
     }
 }

@@ -24,13 +24,27 @@
         <li><a mat-button routerLink="/administration/auditlog">{{'Scale Gradings' | translate}}</a></li>
         <li><a mat-button routerLink="/administration/reference/labresult">{{'Test Results' | translate}}</a></li>
         <li><a mat-button routerLink="/administration/reference/labtest">{{'Tests and Procedures' | translate}}</a></li>
-        <li><a mat-button routerLink="/administration/reference/concept">{{'Active Ingredients' | translate}}</a></li>
-        <li><a mat-button routerLink="/administration/reference/medicine">{{'Medications' | translate}}</a></li>
         <li><a mat-button routerLink="/administration/reference/meddra">{{'MedDRA Terms' | translate}}</a></li>
       </ul>
     </mat-card-content>
   </mat-card>  
 
+  <mat-card class="flex-item p-12 mat-elevation-z6 rounded">
+    <mat-card-title class="text-center">
+      <div class="card-title-text light-gray p-12">
+        {{'Medicines' | translate}}
+      </div>
+    </mat-card-title>              
+    <mat-card-content>
+      <ul>
+        <li><a mat-button routerLink="/administration/reference/concept">{{'Active Ingredients' | translate}}</a></li>
+        <li><a mat-button routerLink="/administration/reference/medicine">{{'Products' | translate}}</a></li>
+      </ul>
+    </mat-card-content>
+  </mat-card>  
+</div>
+
+<div class="flex-container">
   <mat-card class="flex-item p-12 mat-elevation-z6 rounded">
     <mat-card-title class="text-center">
       <div class="card-title-text light-gray p-12">
@@ -47,9 +61,6 @@
       </ul>
     </mat-card-content>
   </mat-card>
-</div>
-
-<div class="flex-container">
   <mat-card class="flex-item p-12 mat-elevation-z6 rounded">
     <mat-card-title class="text-center">
       <div class="card-title-text light-gray p-12">

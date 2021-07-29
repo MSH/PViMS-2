@@ -6,7 +6,6 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { SharedModule } from '../../shared/shared.module';
 import { PublicRoutes } from './public.routing';
 import { SpontaneousComponent } from './spontaneous/spontaneous.component';
-import { TranslateModule } from '@ngx-translate/core';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedMaterialModule } from 'app/shared/shared-material.module';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
@@ -20,7 +19,6 @@ import { SpontaneousTablePopupComponent } from './spontaneous/spontaneous-table/
     SharedMaterialModule,
     SharedComponentsModule,
     SharedModule,
-    TranslateModule,
     FlexLayoutModule,
     PerfectScrollbarModule,
     RouterModule.forChild(PublicRoutes)

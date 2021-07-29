@@ -10,18 +10,27 @@ import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { Subscription } from 'rxjs';
 import { GridModel } from 'app/shared/models/grid.model';
-import { takeUntil, finalize } from 'rxjs/operators';
+import { finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { ProgressStatusEnum, ProgressStatus } from 'app/shared/models/program-status.model';
 import { HttpEventType } from '@angular/common/http';
+import { _routes } from 'app/config/routes';
 
 @Component({
   templateUrl: './activity-history.component.html',
-  styleUrls: ['./activity-history.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-activity { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-execution-event { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-executed-by { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-executed-date { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-comments { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-receipt-date { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-receipt-code { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-actions { flex: 0 0 5% !important; width: 5% !important; }
+  `],  
   animations: egretAnimations
 })
-export class ActivityhistoryComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ActivityHistoryComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     protected _activatedRoute: ActivatedRoute,
@@ -53,6 +62,7 @@ export class ActivityhistoryComponent extends BaseComponent implements OnInit, A
   showProgress: boolean;
 
   workFlowId: string;
+  qualifiedName: string;
   reportInstanceId: number;
   viewModel: ViewModel = new ViewModel();
 
@@ -69,20 +79,20 @@ export class ActivityhistoryComponent extends BaseComponent implements OnInit, A
 
   ngAfterViewInit(): void {
     let self = this;
-    self.viewModel.mainGrid.setupAdvance(
-       null, null, null)
-       .subscribe(() => { self.loadGrid(); });
-    self.loadGrid();
+    self.viewModel.mainGrid.setupBasic(null, null, null);
     self.loadData();
   }
 
   loadData(): void {
     let self = this;
     self.setBusy(true);
-    self.reportInstanceService.getReportInstanceDetail(self.workFlowId, self.reportInstanceId)
+    self.reportInstanceService.getReportInstanceExpanded(self.workFlowId, self.reportInstanceId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
+        self.CLog(result, 'result');
+        self.qualifiedName = result.qualifiedName;
         self.updateForm(self.itemForm, result);
+        self.viewModel.mainGrid.updateBasic(result.events);
       }, error => {
         this.handleError(error, "Error fetching report instance");
       });
@@ -91,7 +101,7 @@ export class ActivityhistoryComponent extends BaseComponent implements OnInit, A
   ngOnDestroy(): void {
     this._unsubscribeAll.next();
     this._unsubscribeAll.complete();
-    this.eventService.removeAll(ActivityhistoryComponent.name);
+    this.eventService.removeAll(ActivityHistoryComponent.name);
   }   
 
   setupTable() {
@@ -103,20 +113,6 @@ export class ActivityhistoryComponent extends BaseComponent implements OnInit, A
     { 
       this.viewModel.mainGrid.updateDisplayedColumns(['activity', 'execution-event', 'executed-date']);
     }
-  }
-
-  loadGrid(): void {
-    let self = this;
-    self.setBusy(true);
-
-    self.reportInstanceService.getReportInstanceActivity(self.workFlowId, self.reportInstanceId)
-      .pipe(takeUntil(self._unsubscribeAll))
-      .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-          self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-          self.handleError(error, "Error fetching report instance activity");
-        });
   }
 
   downloadAttachment(activityExecutionStatusEventId: number, attachmentId: number): void {
@@ -177,6 +173,11 @@ export class ActivityhistoryComponent extends BaseComponent implements OnInit, A
         break;
     }
   } 
+
+  navigateToReportSearch(): void {
+    let self = this;
+    self._router.navigate([_routes.analytical.reports.searchByQualifiedName(self.workFlowId, self.qualifiedName)]);
+  }   
 }
 
 class ViewModel {

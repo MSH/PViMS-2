@@ -13,6 +13,15 @@ import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
 import { MeddraSelectPopupComponent } from 'app/shared/components/popup/meddra-select-popup/meddra-select.popup.component';
+import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
+import { PatientClinicalEventForUpdateModel } from 'app/shared/models/patient/patient-clinical-event-for-update.model';
+
+// Depending on whether rollup is used, moment needs to be imported differently.
+// Since Moment.js doesn't have a default export, we normally need to import using the `* as`
+// syntax. However, rollup creates a synthetic default module and we thus need to import it using
+// the `default as` syntax.
+import * as _moment from 'moment';
+const moment =  _moment;
 
 @Component({
   templateUrl: './clinical-event.popup.component.html',
@@ -78,6 +87,7 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.updateForm(self.viewModelForm, result);
+        self.CLog(result, 'result');
         self.clinicalEventAttributes = result.clinicalEventAttributes;
 
         self.CLogFormErrors(self.viewModelForm);
@@ -87,7 +97,42 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
       });
   }   
 
-  getCustomAttributeList(): void {
+  openMeddraPopup() {
+    let self = this;
+    let title = 'Select Meddra Term';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(MeddraSelectPopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(result => {
+        if(!result) {
+          // If user press cancel
+          return;
+        }
+        self.updateForm(self.viewModelForm, {sourceTerminologyMedDraId: result.id});
+        self.updateForm(self.viewModelForm, {medDraTerm: result.medDraTerm});
+      })
+  }  
+
+  submit() {
+    let self = this;
+    self.setBusy(true);
+
+    let clinicalEventForUpdate = this.prepareClinicalEventForUpdateModel();
+    self.CLog(clinicalEventForUpdate, 'clinicalEventForUpdate');
+    self.patientService.savePatientClinicalEvent(self.data.patientId, self.data.clinicalEventId, clinicalEventForUpdate)
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.notify("Clinical event successfully updated!", "Success");
+        this.dialogRef.close(this.viewModelForm.value);
+    }, error => {
+      this.handleError(error, "Error saving clinical event");
+    });      
+  }
+
+  private getCustomAttributeList(): void {
     let self = this;
 
     let attributes = self.viewModelForm.get('attributes') as FormGroup;
@@ -99,7 +144,7 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
             self.customAttributeList.forEach(attribute => {
               var defaultValue = '';
               if(attribute.customAttributeType == 'Selection') {
-                defaultValue = '0';
+                defaultValue = null;
               }
   
               let validators = [ ];
@@ -127,38 +172,49 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
         });
   }
 
-  openMeddraPopup() {
-    let self = this;
-    let title = 'Select Meddra Term';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(MeddraSelectPopupComponent, {
-      width: '720px',
-      disableClose: true,
-      data: { title: title }
-    })
-    dialogRef.afterClosed()
-      .subscribe(result => {
-        if(!result) {
-          // If user press cancel
-          return;
-        }
-        self.updateForm(self.viewModelForm, {sourceTerminologyMedDraId: result.id});
-        self.updateForm(self.viewModelForm, {medDraTerm: result.medDraTerm});
-      })
-  }  
-
-  submit() {
+  private prepareClinicalEventForUpdateModel(): PatientClinicalEventForUpdateModel {
     let self = this;
     self.setBusy(true);
 
-    self.patientService.savePatientClinicalEvent(self.data.patientId, self.data.clinicalEventId, self.viewModelForm.value)
-      .pipe(finalize(() => self.setBusy(false)))
-      .subscribe(result => {
-        self.notify("Clinical event successfully updated!", "Success");
-        this.dialogRef.close(this.viewModelForm.value);
-    }, error => {
-      this.handleError(error, "Error saving clinical event");
-    });      
+    let onsetDate = self.viewModelForm.get('onsetDate').value;
+    if(moment.isMoment(self.viewModelForm.get('onsetDate').value)) {
+      onsetDate = self.viewModelForm.get('onsetDate').value.format('YYYY-MM-DD');
+    }
+    let resolutionDate = '';
+    if(moment.isMoment(self.viewModelForm.get('resolutionDate').value)) {
+      resolutionDate = self.viewModelForm.get('resolutionDate').value.format('YYYY-MM-DD');
+    }
+    else {
+      if (self.viewModelForm.get('resolutionDate').value != '') {
+        resolutionDate = self.viewModelForm.get('resolutionDate').value;
+      }
+    }
+
+    const clinicalEventForUpdate: PatientClinicalEventForUpdateModel = 
+    {
+      id: self.data.clinicalEventId,
+      index: 0,
+      onsetDate,
+      resolutionDate,
+      sourceDescription: self.viewModelForm.get('sourceDescription').value,
+      sourceTerminologyMedDraId: +self.viewModelForm.get('sourceTerminologyMedDraId').value,
+      attributes: this.prepareAttributeForUpdateModel()
+    };
+
+    return clinicalEventForUpdate;
   }
+
+  private prepareAttributeForUpdateModel(): AttributeValueForPostModel[] {
+    const attributesForUpdates: AttributeValueForPostModel[] = [];
+    this.customAttributeList.forEach(element => {
+      const attributeForUpdateModel: AttributeValueForPostModel = {
+        id: element.id,
+        value: this.viewModelForm.get('attributes').value[element.id]
+      }
+      attributesForUpdates.push(attributeForUpdateModel);
+    });
+    return attributesForUpdates;
+  }  
 }
 
 export interface ClinicalEventPopupData {

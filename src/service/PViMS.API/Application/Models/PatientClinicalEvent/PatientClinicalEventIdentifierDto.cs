@@ -10,7 +10,7 @@ namespace PVIMS.API.Models
     public class PatientClinicalEventIdentifierDto : LinkedResourceBaseDto
     {
         /// <summary>
-        /// The unique Id of the patient ondition
+        /// The unique Id of the patient clinical event
         /// </summary>
         [DataMember]
         public int Id { get; set; }

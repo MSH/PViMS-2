@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.DependencyInjection;
-using PViMS.Infrastructure.Identity.Entities;
+using PVIMS.Infrastructure.Identity.Entities;
 using System;
 using System.Linq;
 

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
-using PViMS.Infrastructure.Identity.Entities;
+using PVIMS.Infrastructure.Identity.Entities;
 using PVIMS.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
@@ -143,6 +143,35 @@ namespace PVIMS.API.Infrastructure
 
                 await context.SaveChangesAsync();
             }
+
+            if (!context.Users.Any(ce => ce.UserName == "rhear"))
+            {
+                var mshUser = new ApplicationUser
+                {
+                    Email = "rromero@mtapsprogram.org",
+                    Id = Guid.NewGuid(),
+                    LastName = "Romero",
+                    FirstName = "Rhea",
+                    PhoneNumber = "",
+                    UserName = "rhear",
+                    NormalizedEmail = "RROMERO@MTAPSPROGRAM.ORG",
+                    NormalizedUserName = "RHEAR",
+                    SecurityStamp = Guid.NewGuid().ToString("D"),
+                    Active = true
+                };
+
+                mshUser.PasswordHash = _passwordHasher.HashPassword(mshUser, "P@55w0rd99");
+
+                context.Users.Add(mshUser);
+                await context.SaveChangesAsync();
+
+                List<IdentityUserRole<Guid>> userRoles = new List<IdentityUserRole<Guid>>();
+                userRoles.Add(new IdentityUserRole<Guid> { RoleId = context.Roles.SingleOrDefault(r => r.Name == "Admin").Id, UserId = mshUser.Id });
+                context.UserRoles.AddRange(userRoles);
+
+                await context.SaveChangesAsync();
+            }
+
         }
 
         private AsyncRetryPolicy CreatePolicy(ILogger<IdentityContextSeed> logger, string prefix, int retries = 3)

@@ -48,9 +48,7 @@ export class GridModel<T> {
     setupAdvance(filter: ElementRef, matSort: MatSort, matPaginator: MatPaginator): EventEmitter<void> {
         let self = this;
         self.isBasic = false;
-        console.log('paginator was ' + matPaginator);
         self.setupBasic(filter, matSort, matPaginator);
-        console.log('paginator set ' + self.paginator);
 
         if (self.sort) {
             self.sort.sortChange
@@ -111,9 +109,7 @@ export class GridModel<T> {
     filterModel(): FilterModel {
         let self = this;
         let filterModel = new FilterModel();
-        console.log('in filter');
         if (self.paginator) {
-            console.log('in pag');
             filterModel.currentPage = self.paginator.pageIndex + 1;
             filterModel.recordsPerPage = self.paginator.pageSize;
         }

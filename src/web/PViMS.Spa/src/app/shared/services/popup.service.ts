@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { InfoPopupComponent } from '../components/popup/info.popup.component';
 import { ErrorPopupComponent } from '../components/popup/error.popup.component';
 import { ConfirmPopupComponent } from '../components/popup/confirm.popup.component';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class PopupService {
@@ -23,17 +24,17 @@ export class PopupService {
         });
     }
 
-    showErrorMessage(errorMessage: any, title: string = "Error") {
+    showErrorMessage(errorMessage: any, errorCode: string = "", title: string = "Error") {
         let dialogRef: MatDialogRef<ErrorPopupComponent>;
         dialogRef = this.dialog.open(ErrorPopupComponent, {
             autoFocus: true,
             width: '500px',
             disableClose: true,
-            data: { title: title, message: errorMessage }
+            data: { title: title, message: errorMessage, code: errorCode }
         });
     }
 
-    showConfirmMessage(message: any, title: string = "Confirm") {
+    showConfirmMessage(message: any, title: string = "Confirm"): Observable<boolean> {
         let dialogRef: MatDialogRef<ConfirmPopupComponent>;
         dialogRef = this.dialog.open(ConfirmPopupComponent, {
             autoFocus: true,
@@ -41,6 +42,7 @@ export class PopupService {
             disableClose: true,
             data: { title: title, message: message }
         });
+        return dialogRef.afterClosed();
     }
 
     notify(message: string, action: string) {

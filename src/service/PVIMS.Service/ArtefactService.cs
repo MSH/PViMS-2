@@ -796,7 +796,7 @@ namespace PVIMS.Services
             }
 
             var extendable = (IExtendable)patientClinicalEvent;
-            var extendableValue = _attributeService.GetCustomAttributeValue("PatientClinicalEvent", "Is the adverse event serious?", extendable);
+            var extendableValue = await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Is the adverse event serious?", extendable);
             var isSerious = extendableValue == "Yes";
 
             model.Path = Path.GetTempPath();
@@ -830,7 +830,7 @@ namespace PVIMS.Services
 
                 var tableHeader = AddTableHeader("A. BASIC PATIENT INFORMATION");
                 body.Append(tableHeader);
-                var basicInformationtable = AddBasicInformationTable(patientClinicalEvent);
+                var basicInformationtable = await AddBasicInformationTableAsync(patientClinicalEvent);
                 body.Append(basicInformationtable);
                 var notesTable = AddNotesTable();
                 body.Append(notesTable);
@@ -842,14 +842,14 @@ namespace PVIMS.Services
 
                 tableHeader = AddTableHeader("C. ADVERSE EVENT INFORMATION");
                 body.Append(tableHeader);
-                var adverseEventtable = AddAdverseEventTable(patientClinicalEvent, isSerious);
+                var adverseEventtable = await AddAdverseEventTableAsync(patientClinicalEvent, isSerious);
                 body.Append(adverseEventtable);
                 notesTable = AddNotesTable();
                 body.Append(notesTable);
 
                 tableHeader = AddTableHeader("D. MEDICATIONS");
                 body.Append(tableHeader);
-                var medicationtable = AddMedicationTable(patientClinicalEvent);
+                var medicationtable = await AddMedicationTableAsync(patientClinicalEvent);
                 body.Append(medicationtable);
                 notesTable = AddNotesForMedicationTable();
                 body.Append(notesTable);
@@ -1162,7 +1162,7 @@ namespace PVIMS.Services
             return mainTable;
         }
 
-        private Table AddBasicInformationTable(PatientClinicalEvent patientEvent)
+        private async Task<Table> AddBasicInformationTableAsync(PatientClinicalEvent patientEvent)
         {
             IExtendable patientEventExtended = patientEvent;
             IExtendable patientExtended = patientEvent.Patient;
@@ -1233,7 +1233,7 @@ namespace PVIMS.Services
             tr.AppendChild<TableRowProperties>(rprops);
 
             tr.Append(PrepareHeaderCell("Gender", headerWidth));
-            tr.Append(PrepareCell(_attributeService.GetCustomAttributeValue("Patient", "Gender", patientExtended), cellWidth));
+            tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("Patient", "Gender", patientExtended), cellWidth));
             tr.Append(PrepareHeaderCell("Facility", headerWidth));
             tr.Append(PrepareCell(patientEvent.Patient.GetCurrentFacility().Facility.FacilityName, cellWidth));
 
@@ -1343,7 +1343,7 @@ namespace PVIMS.Services
             return table;
         }
 
-        private Table AddAdverseEventTable(PatientClinicalEvent patientEvent, bool isSerious)
+        private async Task<Table> AddAdverseEventTableAsync(PatientClinicalEvent patientEvent, bool isSerious)
         {
             IExtendable patientEventExtended = patientEvent;
             IExtendable patientExtended = patientEvent.Patient;
@@ -1420,7 +1420,7 @@ namespace PVIMS.Services
                 tr.Append(PrepareCell(string.Empty, cellWidth));
             }
             tr.Append(PrepareHeaderCell("Outcome", headerWidth));
-            tr.Append(PrepareCell(_attributeService.GetCustomAttributeValue("PatientClinicalEvent", "Outcome", patientEventExtended), cellWidth));
+            tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Outcome", patientEventExtended), cellWidth));
 
             table.AppendChild<TableRow>(tr);
 
@@ -1435,9 +1435,9 @@ namespace PVIMS.Services
                 tr.AppendChild<TableRowProperties>(rprops);
 
                 tr.Append(PrepareHeaderCell("Seriousness", headerWidth));
-                tr.Append(PrepareCell(_attributeService.GetCustomAttributeValue("PatientClinicalEvent", "Seriousness", patientEventExtended), cellWidth));
+                tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Seriousness", patientEventExtended), cellWidth));
                 tr.Append(PrepareHeaderCell("Grading Scale", headerWidth));
-                tr.Append(PrepareCell(_attributeService.GetCustomAttributeValue("PatientClinicalEvent", "Severity Grading Scale", patientEventExtended), cellWidth));
+                tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Severity Grading Scale", patientEventExtended), cellWidth));
 
                 table.AppendChild<TableRow>(tr);
 
@@ -1449,9 +1449,9 @@ namespace PVIMS.Services
                 tr.AppendChild<TableRowProperties>(rprops);
 
                 tr.Append(PrepareHeaderCell("Severity Grade", headerWidth));
-                tr.Append(PrepareCell(_attributeService.GetCustomAttributeValue("PatientClinicalEvent", "Severity Grade", patientEventExtended), cellWidth));
+                tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Severity Grade", patientEventExtended), cellWidth));
                 tr.Append(PrepareHeaderCell("SAE Number", headerWidth));
-                tr.Append(PrepareCell(_attributeService.GetCustomAttributeValue("PatientClinicalEvent", "FDA SAE Number", patientEventExtended), cellWidth));
+                tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "FDA SAE Number", patientEventExtended), cellWidth));
 
                 table.AppendChild<TableRow>(tr);
             }
@@ -1459,7 +1459,7 @@ namespace PVIMS.Services
             return table;
         }
 
-        private Table AddMedicationTable(PatientClinicalEvent patientEvent)
+        private async Task<Table> AddMedicationTableAsync(PatientClinicalEvent patientEvent)
         {
             IExtendable patientEventExtended = patientEvent;
             IExtendable patientExtended = patientEvent.Patient;
@@ -1488,7 +1488,7 @@ namespace PVIMS.Services
 
             table.AppendChild<TableProperties>(tprops);
 
-            var reportInstance = _reportInstanceRepository.Get(ri => ri.ContextGuid == patientEvent.PatientClinicalEventGuid);
+            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == patientEvent.PatientClinicalEventGuid);
             if (reportInstance == null) { return table; };
 
             var i = 0;
@@ -1496,7 +1496,7 @@ namespace PVIMS.Services
             {
                 i += 1;
 
-                var patientMedication = _patientMedicationRepository.Get(pm => pm.PatientMedicationGuid == med.ReportInstanceMedicationGuid);
+                var patientMedication = await _patientMedicationRepository.GetAsync(pm => pm.PatientMedicationGuid == med.ReportInstanceMedicationGuid);
                 if (patientMedication != null)
                 {
                     IExtendable mcExtended = patientMedication;
@@ -1529,8 +1529,8 @@ namespace PVIMS.Services
                     tr.Append(PrepareCell(patientMedication.StartDate.ToString("yyyy-MM-dd"), 1250));
                     tr.Append(PrepareCell(endDate, 1250));
                     tr.Append(PrepareCell(patientMedication.Dose, 1250));
-                    tr.Append(PrepareCell(_attributeService.GetCustomAttributeValue("PatientMedication", "Route", mcExtended), 1250));
-                    tr.Append(PrepareCell(_attributeService.GetCustomAttributeValue("PatientMedication", "Indication", mcExtended), 3852, false));
+                    tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientMedication", "Route", mcExtended), 1250));
+                    tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientMedication", "Indication", mcExtended), 3852, false));
 
                     table.AppendChild<TableRow>(tr);
 

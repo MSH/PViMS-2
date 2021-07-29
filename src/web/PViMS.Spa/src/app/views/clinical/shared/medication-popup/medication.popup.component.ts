@@ -13,6 +13,15 @@ import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
 import { ConceptSelectPopupComponent } from 'app/shared/components/popup/concept-select-popup/concept-select.popup.component';
+import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
+import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
+
+// Depending on whether rollup is used, moment needs to be imported differently.
+// Since Moment.js doesn't have a default export, we normally need to import using the `* as`
+// syntax. However, rollup creates a synthetic default module and we thus need to import it using
+// the `default as` syntax.
+import * as _moment from 'moment';
+const moment =  _moment;
 
 @Component({
   templateUrl: './medication.popup.component.html',
@@ -51,15 +60,15 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
 
     self.arrayAttributes = [];
     self.viewModelForm = this._formBuilder.group({
-      sourceDescription: ['', [Validators.required, Validators.maxLength(200), Validators.pattern("[-a-zA-Z0-9 .,()']*")]],
+      sourceDescription: [''],
       conceptId: ['', Validators.required],
       productId: [''],
       medication: [''],
       startDate: ['', Validators.required],
       endDate: [''],
       dose: ['', [Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9.]*")]],
-      doseUnit: [''],
-      doseFrequency: ['', [Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9.]*")]],
+      doseUnit: [null],
+      doseFrequency: ['', [Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9. ]*")]],
       attributes: this._formBuilder.group([])
     })
 
@@ -89,46 +98,6 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
         self.throwError(error, error.statusText);
       });
   }   
-
-  getCustomAttributeList(): void {
-    let self = this;
-
-    let attributes = self.viewModelForm.get('attributes') as FormGroup;
-    self.customAttributeService.getAllCustomAttributes('PatientMedication')
-        .subscribe(result => {
-            self.customAttributeList = result;
-
-            // Add custom attributes to form group
-            self.customAttributeList.forEach(attribute => {
-              var defaultValue = '';
-              if(attribute.customAttributeType == 'Selection') {
-                defaultValue = '0';
-              }
-
-              let validators = [ ];
-              if(attribute.required) {
-                validators.push(Validators.required);
-              }
-              if(attribute.stringMaxLength != null) {
-                validators.push(Validators.maxLength(attribute.stringMaxLength));
-              }
-              if(attribute.numericMinValue != null && attribute.numericMaxValue != null) {
-                validators.push(Validators.max(attribute.numericMaxValue));
-                validators.push(Validators.min(attribute.numericMinValue));
-              }
-              if(self.data.medicationId > 0) {
-                let medicationAttribute = self.medicationAttributes.find(pa => pa.key == attribute.attributeKey);
-                attributes.addControl(attribute.id.toString(), new FormControl(medicationAttribute != null ? medicationAttribute.value : defaultValue, validators));
-              }
-              else {
-                attributes.addControl(attribute.id.toString(), new FormControl(defaultValue, validators));                
-              }
-            })
-
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
-  }
 
   openConceptPopup() {
     let self = this;
@@ -160,14 +129,109 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
   submit() {
     let self = this;
     self.setBusy(true);
-    self.patientService.savePatientMedication(self.data.patientId, self.data.medicationId, self.viewModelForm.value)
+
+    let medicationForUpdate = this.prepareMedicationForUpdate();
+
+    self.patientService.savePatientMedication(self.data.patientId, medicationForUpdate.id, medicationForUpdate)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.notify("Medication successfully updated!", "Success");
+        self.notify("Medication successfully updated", "Success");
         this.dialogRef.close(this.viewModelForm.value);
     }, error => {
       this.handleError(error, "Error saving medication");
     });      
+  }
+
+  private getCustomAttributeList(): void {
+    let self = this;
+
+    let attributes = self.viewModelForm.get('attributes') as FormGroup;
+    self.customAttributeService.getAllCustomAttributes('PatientMedication')
+        .subscribe(result => {
+            self.customAttributeList = result;
+
+            // Add custom attributes to form group
+            self.customAttributeList.forEach(attribute => {
+              var defaultValue = '';
+              if(attribute.customAttributeType == 'Selection') {
+                defaultValue = null;
+              }
+
+              let validators = [ ];
+              if(attribute.required) {
+                validators.push(Validators.required);
+              }
+              if(attribute.stringMaxLength != null) {
+                validators.push(Validators.maxLength(attribute.stringMaxLength));
+              }
+              if(attribute.numericMinValue != null && attribute.numericMaxValue != null) {
+                validators.push(Validators.max(attribute.numericMaxValue));
+                validators.push(Validators.min(attribute.numericMinValue));
+              }
+              if(self.data.medicationId > 0) {
+                let medicationAttribute = self.medicationAttributes.find(pa => pa.key == attribute.attributeKey);
+                attributes.addControl(attribute.id.toString(), new FormControl(medicationAttribute != null ? medicationAttribute.value : defaultValue, validators));
+              }
+              else {
+                attributes.addControl(attribute.id.toString(), new FormControl(defaultValue, validators));                
+              }
+            })
+
+        }, error => {
+            self.throwError(error, error.statusText);
+        });
+  }
+
+  private prepareMedicationForUpdate(): PatientMedicationForUpdateModel {
+    let self = this;
+    self.setBusy(true);
+
+    let startDate = self.viewModelForm.get('startDate').value;
+    if(moment.isMoment(self.viewModelForm.get('startDate').value)) {
+      startDate = self.viewModelForm.get('startDate').value.format('YYYY-MM-DD');
+    }
+    let endDate = '';
+    if(moment.isMoment(self.viewModelForm.get('endDate').value)) {
+      endDate = self.viewModelForm.get('endDate').value.format('YYYY-MM-DD');
+    }
+    else {
+      if (self.viewModelForm.get('endDate').value != '') {
+        endDate = self.viewModelForm.get('endDate').value;
+      }
+    }
+    let productId = 0;
+    if(self.viewModelForm.get('productId').value) {
+      productId = +self.viewModelForm.get('productId').value
+    }
+
+    const medicationForUpdate: PatientMedicationForUpdateModel = {
+      id: self.data.medicationId,
+      medication: self.viewModelForm.get('medication').value,
+      index: 0,
+      sourceDescription: '',
+      conceptId: +self.viewModelForm.get('conceptId').value,
+      productId: productId,
+      startDate: startDate,
+      endDate: endDate,
+      dose: self.viewModelForm.get('dose').value,
+      doseFrequency: self.viewModelForm.get('doseFrequency').value,
+      doseUnit: self.viewModelForm.get('doseUnit').value,
+      attributes: this.prepareAttributeForUpdateModel()
+    };
+
+    return medicationForUpdate;
+  }
+
+  private prepareAttributeForUpdateModel(): AttributeValueForPostModel[] {
+    const attributesForUpdates: AttributeValueForPostModel[] = [];
+    this.customAttributeList.forEach(element => {
+      const attributeForUpdateModel: AttributeValueForPostModel = {
+        id: element.id,
+        value: this.viewModelForm.get('attributes').value[element.id]
+      }
+      attributesForUpdates.push(attributeForUpdateModel);
+    });
+    return attributesForUpdates;
   }
 }
 

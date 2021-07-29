@@ -16,7 +16,6 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The unique identifier of the meddra term
         /// </summary>
-        [Required]
         public int SourceTerminologyMedDraId { get; set; }
 
         /// <summary>

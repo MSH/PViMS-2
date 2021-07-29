@@ -176,7 +176,7 @@ export class PatientAddPopupComponent extends BasePopupComponent implements OnIn
     self.setBusy(true);
 
     if(self.data.patientId == 0) {
-      self.patientService.savePatient(0, self.viewModelForm.value)
+      self.patientService.savePatient(self.viewModelForm.value)
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
           self.notify("Patient successfully saved!", "Success");

@@ -109,12 +109,21 @@ export class NavigationService {
       icon: "extension",
       state: "administration/reference",
       sub: [
-        { name: "Active Ingredients", state: "concept" },
         { name: "Condition Groups", state: "condition" },
         { name: "MedDRA Terms", state: "meddra" },
-        { name: "Medications", state: "medicine" },
         { name: "Tests and Procedures", state: "labtest" },
         { name: "Test Results", state: "labresult" }
+      ]
+    },
+    {
+      name: "Medicines",
+      type: "dropDown",
+      tooltip: "",
+      icon: "local_hospital",
+      state: "administration/reference",
+      sub: [
+        { name: "Active Ingredients", state: "concept" },
+        { name: "Products", state: "medicine" },
       ]
     },
     {
@@ -158,14 +167,6 @@ export class NavigationService {
     }
   ];
 
-  // {
-  //   name: "INFORMATION",
-  //   type: "icon",
-  //   tooltip: "Information Portal",
-  //   icon: "content_copy",
-  //   state: "information"
-  // },
-
   // Icon menu TITLE at the very top of navigation.
   // This title will appear if any icon type item is present in menu.
   iconTypeMenuTitle: string = "Portals";
@@ -177,7 +178,6 @@ export class NavigationService {
   // Supply different menu for different user type.
   publishNavigationChange(menuType: string) 
   {
-    console.log('publish');
     switch (menuType) {
       case "clinical-menu":
         this.prepareClinicalMenus();
@@ -226,7 +226,7 @@ export class NavigationService {
               }
               else {
                 // route to formns list
-                this.routeToFormsList();
+                this.routeToFormsLanding();
               }
             }
             else {
@@ -259,8 +259,8 @@ export class NavigationService {
     this._router.navigate([_routes.clinical.patients.search]);
   }
 
-  routeToFormsList() : void {
-    this._router.navigate([_routes.clinical.forms.list]);
+  routeToFormsLanding() : void {
+    this._router.navigate([_routes.clinical.forms.landing]);
   }
 
   routeToAnalyticalLanding() : void {
@@ -350,16 +350,7 @@ export class NavigationService {
         type: "link",
         tooltip: "View Forms for Capture",
         icon: "content_copy",
-        state: "clinical/formlist"
-      };      
-      this.clinicalMenu.push(newMenu);
-
-      newMenu = {
-        name: "Synchronise",
-        type: "link",
-        tooltip: "Synchronise",
-        icon: "sync",
-        state: "clinical/synchronise"
+        state: "clinical/form-landing"
       };      
       this.clinicalMenu.push(newMenu);
 

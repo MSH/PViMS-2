@@ -223,7 +223,7 @@ namespace PVIMS.API.Controllers
                 contactDetailFromRepo.ContactEmail = contactForUpdateDto.ContactEmail;
 
                 _contactRepository.Update(contactDetailFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
@@ -25,6 +26,7 @@ namespace PVIMS.Services
         private readonly IRepositoryInt<Encounter> _encounterRepository;
         private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
+        private readonly IRepositoryInt<Concept> _conceptRepository;
         private readonly IRepositoryInt<EncounterType> _encounterTypeRepository;
         private readonly IRepositoryInt<EncounterTypeWorkPlan> _encounterTypeWorkPlanRepository;
         private readonly IRepositoryInt<Dataset> _datasetRepository;
@@ -42,6 +44,7 @@ namespace PVIMS.Services
             IRepositoryInt<Encounter> encounterRepository,
             IRepositoryInt<Facility> facilityRepository,
             IRepositoryInt<CohortGroup> cohortGroupRepository,
+            IRepositoryInt<Concept> conceptRepository,
             IRepositoryInt<EncounterType> encounterTypeRepository,
             IRepositoryInt<EncounterTypeWorkPlan> encounterTypeWorkPlanRepository,
             IRepositoryInt<Dataset> datasetRepository,
@@ -58,6 +61,7 @@ namespace PVIMS.Services
             _encounterRepository = encounterRepository ?? throw new ArgumentNullException(nameof(encounterRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
             _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
+            _conceptRepository = conceptRepository ?? throw new ArgumentNullException(nameof(conceptRepository));
             _encounterTypeRepository = encounterTypeRepository ?? throw new ArgumentNullException(nameof(encounterTypeRepository));
             _encounterTypeWorkPlanRepository = encounterTypeWorkPlanRepository ?? throw new ArgumentNullException(nameof(encounterTypeWorkPlanRepository));
             _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
@@ -156,7 +160,7 @@ namespace PVIMS.Services
         /// Add a new patient to the repository
         /// </summary>
         /// <param name="patientDetail">The details of the patient to add</param>
-        public int AddPatient(PatientDetailForCreation patientDetail)
+        public async Task<int> AddPatientAsync(PatientDetailForCreation patientDetail)
         {
             var facility = _facilityRepository.Get(f => f.FacilityName == patientDetail.CurrentFacilityName);
             if(facility == null)
@@ -172,7 +176,7 @@ namespace PVIMS.Services
                 Surname = patientDetail.Surname,
                 DateOfBirth = patientDetail.DateOfBirth,
             };
-            newPatient.SetPatientFacility(facility);
+            newPatient.ChangePatientFacility(facility);
             newPatient.SetPatientStatus(patientStatus);
 
             // Custom Property handling
@@ -181,7 +185,7 @@ namespace PVIMS.Services
             // Clinical data
             AddConditions(newPatient, patientDetail.Conditions);
             AddLabTests(newPatient, patientDetail.LabTests);
-            AddMedications(newPatient, patientDetail.Medications);
+            await AddMedicationsAsync(newPatient, patientDetail.Medications);
             AddClinicalEvents(newPatient, patientDetail.ClinicalEvents);
 
             // Other data
@@ -192,12 +196,12 @@ namespace PVIMS.Services
                 AddCohortEnrollment(newPatient, patientDetail);
             }
 
-            _patientRepository.Save(newPatient);
+            await _patientRepository.SaveAsync(newPatient);
 
             // Register encounter
             if(patientDetail.EncounterTypeId > 0)
             {
-                AddEncounter(newPatient, new EncounterDetail() { 
+                await AddEncounterAsync(newPatient, new EncounterDetail() { 
                     EncounterDate = patientDetail.EncounterDate, 
                     EncounterTypeId = patientDetail.EncounterTypeId, 
                     PatientId = newPatient.Id, 
@@ -268,7 +272,7 @@ namespace PVIMS.Services
             // Clinical data
             AddConditions(patientFromRepo, patientDetail.Conditions);
             AddLabTests(patientFromRepo, patientDetail.LabTests);
-            AddMedications(patientFromRepo, patientDetail.Medications);
+            await AddMedicationsAsync(patientFromRepo, patientDetail.Medications);
             AddClinicalEvents(patientFromRepo, patientDetail.ClinicalEvents);
 
             // Other data
@@ -279,7 +283,7 @@ namespace PVIMS.Services
             // Register encounter
             if (patientDetail.EncounterTypeId > 0)
             {
-                AddEncounter(patientFromRepo, new EncounterDetail() { 
+                await AddEncounterAsync(patientFromRepo, new EncounterDetail() { 
                     EncounterDate = patientDetail.EncounterDate, 
                     EncounterTypeId = patientDetail.EncounterTypeId, 
                     PatientId = patientFromRepo.Id, 
@@ -306,7 +310,7 @@ namespace PVIMS.Services
         /// <summary>
         /// Register patient encounter
         /// </summary>
-        public int AddEncounter(Patient patient, EncounterDetail encounterDetail)
+        public async Task<int> AddEncounterAsync(Patient patient, EncounterDetail encounterDetail)
         {
             var encounterType = _encounterTypeRepository.Get(et => et.Id == encounterDetail.EncounterTypeId);
             if (encounterType == null)
@@ -329,7 +333,7 @@ namespace PVIMS.Services
             };
 
             //newEncounter.AuditStamp(user);
-            _encounterRepository.Save(newEncounter);
+            await _encounterRepository.SaveAsync(newEncounter);
 
             var encounterTypeWorkPlan = _encounterTypeWorkPlanRepository.Get(et => et.EncounterType.Id == encounterType.Id);
             if (encounterTypeWorkPlan != null)
@@ -372,8 +376,8 @@ namespace PVIMS.Services
             sql = sql.Substring(0, sql.Length - 3);
             sql += ")";
 
-            var result = _context.PatientLists
-                .FromSqlInterpolated($"Exec spPatientIsUnique {parameters}").ToList();
+            var result = _context.PatientIdLists
+                .FromSqlRaw<PatientIdList>(sql).ToList();
             return result.Count == 0;
         }
 
@@ -520,7 +524,7 @@ namespace PVIMS.Services
         /// <summary>
         /// Prepare patient record with associated medications
         /// </summary>
-        private void AddMedications(Patient patient, List<MedicationDetail> medications)
+        private async Task AddMedicationsAsync(Patient patient, List<MedicationDetail> medications)
         {
             if (patient == null)
             {
@@ -535,22 +539,11 @@ namespace PVIMS.Services
                 return;
             }
 
+            var concept = await _conceptRepository.GetAsync(c => c.ConceptName == "NOT ASSIGNED");
             foreach (var medication in medications)
             {
-                var patientMedication = new PatientMedication
-                {
-                    Patient = patient,
-                    MedicationSource = medication.MedicationSource,
-                    StartDate = medication.DateStart,
-                    EndDate = medication.DateEnd,
-                    Dose = medication.Dose,
-                    DoseFrequency = medication.DoseFrequency,
-                };
-
-                // Custom Property handling
+                var patientMedication = patient.AddMedication(concept, medication.DateStart, medication.DateEnd, medication.Dose, medication.DoseFrequency, "", null, medication.MedicationSource);
                 _typeExtensionHandler.UpdateExtendable(patientMedication, medication.CustomAttributes, "Admin");
-
-                patient.PatientMedications.Add(patientMedication);
             }
         }
 
@@ -574,18 +567,10 @@ namespace PVIMS.Services
 
             foreach (var clinicalEvent in clinicalEvents)
             {
-                var patientClinicalEvent = new PatientClinicalEvent
-                {
-                    Patient = patient,
-                    SourceDescription = clinicalEvent.SourceDescription,
-                    OnsetDate = clinicalEvent.OnsetDate,
-                    ResolutionDate = clinicalEvent.ResolutionDate
-                };
+                var newClinicalEvent = patient.AddClinicalEvent(clinicalEvent.OnsetDate, clinicalEvent.ResolutionDate, null, clinicalEvent.SourceDescription);
 
                 // Custom Property handling
-                _typeExtensionHandler.UpdateExtendable(patientClinicalEvent, clinicalEvent.CustomAttributes, "Admin");
-
-                patient.PatientClinicalEvents.Add(patientClinicalEvent);
+                _typeExtensionHandler.UpdateExtendable(newClinicalEvent, clinicalEvent.CustomAttributes, "Admin");
             }
         }
 
@@ -622,16 +607,7 @@ namespace PVIMS.Services
                 //}
 
                 // Create the attachment
-                var attachment = new Attachment
-                {
-                    Patient = patient,
-                    Description = sourceAttachment.Description,
-                    FileName = $"{Guid.NewGuid()}.jpg",
-                    AttachmentType = attachmentType,
-                    Size = 0,
-                    Content = Convert.FromBase64String(sourceAttachment.ImageSource.Replace("data:image/jpeg;base64,", ""))
-                };
-
+                var attachment = new Attachment(Convert.FromBase64String(sourceAttachment.ImageSource.Replace("data:image/jpeg;base64,", "")), sourceAttachment.Description, $"{Guid.NewGuid()}.jpg", 0, attachmentType, null, patient, null);
                 patient.Attachments.Add(attachment);
             }
         }

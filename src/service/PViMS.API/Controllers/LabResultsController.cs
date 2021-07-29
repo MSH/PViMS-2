@@ -139,7 +139,7 @@ namespace PVIMS.API.Controllers
                 return StatusCode(500, "Unable to locate newly added item");
             }
 
-            return CreatedAtRoute("GetLabResultByIdentifier",
+            return CreatedAtAction("GetLabResultByIdentifier",
                 new
                 {
                     id = mappedLabResult.Id
@@ -183,7 +183,7 @@ namespace PVIMS.API.Controllers
                 labResultFromRepo.Active = (labResultForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
 
                 _labResultRepository.Update(labResultFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -206,7 +206,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _labResultRepository.Delete(labResultFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

@@ -1,3 +1,4 @@
+using PViMS.Core.Events;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Exceptions;
@@ -22,9 +23,10 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         public string PatientIdentifier { get; private set; }
 
         public int? TerminologyMedDraId { get; private set; }
-        public virtual TerminologyMedDra TerminologyMedDra { get; set; }
+        public virtual TerminologyMedDra TerminologyMedDra { get; private set; }
 
         public string SourceIdentifier { get; private set; }
+        public int ReportClassificationId { get; private set; }
 
         private List<ActivityInstance> _activities;
         public IEnumerable<ActivityInstance> Activities => _activities.AsReadOnly();
@@ -44,8 +46,13 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         public ReportInstance(WorkFlow workFlow, User currentUser, Guid contextGuid, string patientIdentifier, string sourceIdentifier)
 		{
+            _activities = new List<ActivityInstance>();
+            _medications = new List<ReportInstanceMedication>();
+            _tasks = new List<ReportInstanceTask>();
+
             ReportInstanceGuid = Guid.NewGuid();
             Identifier = "TBD";
+            ReportClassificationId = ReportClassification.Unclassified.Id;
 
             ContextGuid = contextGuid;
             PatientIdentifier = patientIdentifier;
@@ -57,12 +64,33 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             InitialiseWithFirstActivity(workFlow, currentUser);
         }
 
-        public void AddActivity(Activity activity, User currentUser)
+        public ActivityExecutionStatusEvent ExecuteNewEventForActivity(ActivityExecutionStatus newExecutionStatus, User currentUser, string comments, DateTime? contextDate, string contextCode)
         {
-            var status = activity.ExecutionStatuses.OrderBy(es => es.Id).First();
-            var activityInstance = new ActivityInstance(activity.QualifiedName, status, activity, currentUser);
+            //if (CurrentActivity.CurrentStatus.Description == newExecutionStatus.Description) { return null; };
 
-            _activities.Add(activityInstance);
+            var activityExecutionStatusEvent = CurrentActivity.ExecuteEvent(newExecutionStatus, currentUser, comments, contextDate, contextCode);
+
+            switch (newExecutionStatus.Description)
+            {
+                case "CONFIRMED":
+                    CheckIfAbleToChangeFromConfirmationActivity();
+                    MoveToNextActivity(WorkFlow, currentUser);
+                    break;
+
+                case "CAUSALITYCONFIRMED":
+                    MoveToNextActivity(WorkFlow, currentUser);
+                    AddCausalityConfirmedDomainEvent();
+                    break;
+
+                case "E2BGENERATED":
+                    AddE2BGeneratedDomainEvent(activityExecutionStatusEvent);
+                    break;
+
+                default:
+                    break;
+            }
+
+            return activityExecutionStatusEvent;
         }
 
         public void AddMedication(string medicationIdentifier, Guid reportInstanceMedicationGuid)
@@ -71,16 +99,20 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             _medications.Add(medication);
         }
 
-        public void AddTask(string source, string description, TaskType taskType)
+        public ReportInstanceTask AddTask(string source, string description, TaskType taskType)
         {
             var taskDetail = new TaskDetail(source, description);
             var taskStatus = TaskStatus.New;
 
             var newTask = new ReportInstanceTask(taskDetail, taskType, taskStatus);
             _tasks.Add(newTask);
+
+            AddTaskAddedDomainEvent(newTask);
+
+            return newTask;
         }
 
-        public void AddTaskComment(int taskId, string comment)
+        public ReportInstanceTaskComment AddTaskComment(int taskId, string comment)
         {
             if (string.IsNullOrWhiteSpace(comment))
             {
@@ -92,7 +124,38 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                 throw new KeyNotFoundException(nameof(taskId));
             }
 
-            task.AddComment(comment);
+            var newComment = task.AddComment(comment);
+
+            AddTaskCommentAddedDomainEvent(newComment);
+
+            return newComment;
+        }
+
+        public void ChangeClassification(ReportClassification reportClassification)
+        {
+            ReportClassificationId = reportClassification.Id;
+        }
+
+        public void ChangeMedicationNaranjoCausality(int medicationId, string causality)
+        {
+            var medication = _medications.SingleOrDefault(m => m.Id == medicationId);
+            if (medication == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate medication {medicationId}");
+            }
+
+            medication.ChangeNaranjoCausality(causality);
+        }
+
+        public void ChangeMedicationWhoCausality(int medicationId, string causality)
+        {
+            var medication = _medications.SingleOrDefault(m => m.Id == medicationId);
+            if (medication == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate medication {medicationId}");
+            }
+
+            medication.ChangeWhoCausality(causality);
         }
 
         public void ChangeTaskDetails(int taskId, string source, string description)
@@ -141,6 +204,24 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             task.ChangeTaskStatusToOnHold();
         }
 
+        public void ChangeTaskStatusToAttendedTo(int taskId)
+        {
+            var task = _tasks.SingleOrDefault(t => t.Id == taskId);
+            if (task == null)
+            {
+                throw new KeyNotFoundException(nameof(taskId));
+            }
+
+            if (task.TaskStatusId == TaskStatus.Cancelled.Id ||
+                task.TaskStatusId == TaskStatus.Completed.Id)
+            {
+                throw new DomainException("Cannot change status of task that is cancelled or completed");
+            }
+
+            task.ChangeTaskStatusToAttendedTo();
+            AddTaskAttendedToDomainEvent(task);
+        }
+
         public void ChangeTaskStatusToCompleted(int taskId)
         {
             var task = _tasks.SingleOrDefault(t => t.Id == taskId);
@@ -173,6 +254,18 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             }
 
             task.ChangeTaskStatusToCancelled();
+            AddTaskCancelledDomainEvent(task);
+        }
+
+        public void ChangeTerminology(TerminologyMedDra terminologyMedDra)
+        {
+            if (TerminologyMedDraId == terminologyMedDra.Id)
+            {
+                throw new DomainException("Report terminology not changed as it is the same");
+            }
+
+            TerminologyMedDra = terminologyMedDra;
+            TerminologyMedDraId = terminologyMedDra.Id;
         }
 
         public void DeleteTaskComment(int taskId, int taskCommentId)
@@ -185,15 +278,14 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             task.DeleteComment(taskCommentId);
         }
 
+        public bool HasActiveTasks()
+        {
+            return _tasks.Any(t => t.TaskStatusId != TaskStatus.Completed.Id && t.TaskStatusId != TaskStatus.Cancelled.Id);
+        }
+
         public bool HasMedication(Guid reportInstanceMedicationGuid)
         {
             return _medications.Any(m => m.ReportInstanceMedicationGuid == reportInstanceMedicationGuid);
-        }
-
-        public void SetCurrentActivityToOld()
-        {
-            var activityInstance = _activities.Single(a => a.Current);
-            activityInstance.SetToOld();
         }
 
         public void SetEventIdentifiers(string patientIdentifier, string sourceIdentifier)
@@ -213,34 +305,12 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             medication.ChangeMedicationIdentifier(medicationIdentifier);
         }
 
-        public void SetNaranjoCausality(Guid reportInstanceMedicationGuid, string naranjoCausality)
-        {
-            var medication = _medications.SingleOrDefault(m => m.ReportInstanceMedicationGuid == reportInstanceMedicationGuid);
-            if (medication == null)
-            {
-                throw new KeyNotFoundException(nameof(reportInstanceMedicationGuid));
-            }
-
-            medication.SetNaranjoCausality(naranjoCausality);
-        }
-
         public void SetSystemIdentifier()
         {
             if (!string.IsNullOrWhiteSpace(Identifier))
             {
                 Identifier = $"{WorkFlowId}/{Created.Year.ToString("D4")}/{Id.ToString("D5")}";
             }
-        }
-
-        public void SetWhoCausality(Guid reportInstanceMedicationGuid, string whoCausality)
-        {
-            var medication = _medications.SingleOrDefault(m => m.ReportInstanceMedicationGuid == reportInstanceMedicationGuid);
-            if (medication == null)
-            {
-                throw new KeyNotFoundException(nameof(reportInstanceMedicationGuid));
-            }
-
-            medication.SetWhoCausality(whoCausality);
         }
 
         public ActivityInstance CurrentActivity
@@ -261,10 +331,92 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         private void InitialiseWithFirstActivity(WorkFlow workFlow, User currentUser)
         {
-            var activity = workFlow.Activities.OrderBy(a => a.Id).First();
-            var status = activity.ExecutionStatuses.Single(es => es.Description == "UNCONFIRMED");
-            var activityInstance = new ActivityInstance(activity.QualifiedName, status, activity, currentUser);
-            _activities.Add(activityInstance);
+            if(workFlow.Activities.Count() == 0)
+            {
+                throw new DomainException($"Workflow {workFlow.Description} does not have any activities configured");
+            }
+
+            var firstActivity = workFlow.Activities.OrderBy(a => a.Id).First();
+            var firstActivityInstance = new ActivityInstance(firstActivity, currentUser);
+            _activities.Add(firstActivityInstance);
+        }
+
+        private void MoveToNextActivity(WorkFlow workFlow, User currentUser)
+        {
+            if (workFlow.Activities.Count() == 0)
+            {
+                throw new DomainException($"Workflow {workFlow.Description} does not have any activities configured");
+            }
+
+            switch (CurrentActivity.QualifiedName)
+            {
+                case "Confirm Report Data":
+                    CurrentActivity.SetToOld();
+                    var meddraActivity = workFlow.Activities.Single(a => a.QualifiedName == "Set MedDRA and Causality");
+                    var meddraActivityInstance = new ActivityInstance(meddraActivity, currentUser);
+                    _activities.Add(meddraActivityInstance);
+                    break;
+
+                case "Set MedDRA and Causality":
+                    CurrentActivity.SetToOld();
+                    var e2bActivity = workFlow.Activities.Single(a => a.QualifiedName == "Extract E2B");
+                    var e2bActivityInstance = new ActivityInstance(e2bActivity, currentUser);
+                    _activities.Add(e2bActivityInstance);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        private void CheckIfAbleToChangeFromConfirmationActivity()
+        {
+            if (HasActiveTasks())
+            {
+                throw new DomainException($"Unable to change activity from CONFIRMED as there are active tasks");
+            }
+        }
+
+        private void AddTaskAddedDomainEvent(ReportInstanceTask newTask)
+        {
+            var domainEvent = new TaskAddedDomainEvent(newTask);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddTaskCancelledDomainEvent(ReportInstanceTask cancelledTask)
+        {
+            var domainEvent = new TaskCancelledDomainEvent(cancelledTask);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddTaskCommentAddedDomainEvent(ReportInstanceTaskComment newComment)
+        {
+            var domainEvent = new TaskCommentAddedDomainEvent(newComment);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddTaskAttendedToDomainEvent(ReportInstanceTask cancelledTask)
+        {
+            var domainEvent = new TaskAttendedToDomainEvent(cancelledTask);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddE2BGeneratedDomainEvent(ActivityExecutionStatusEvent activityExecutionStatusEvent)
+        {
+            var domainEvent = new E2BGeneratedDomainEvent(this, activityExecutionStatusEvent);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddCausalityConfirmedDomainEvent()
+        {
+            var domainEvent = new CausalityConfirmedDomainEvent(this);
+
+            this.AddDomainEvent(domainEvent);
         }
     }
 }

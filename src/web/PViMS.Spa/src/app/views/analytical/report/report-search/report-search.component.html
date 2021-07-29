@@ -27,7 +27,7 @@
                       </mat-chip>
                       <span class="mr-24" matBadge="{{workFlow?.newReportInstanceCount}}" matBadgePosition="above after" matBadgeColor="warn" matBadgeOverlap="true" *ngIf="workFlow?.newReportInstanceCount > 0"></span>
                     </div>
-                    <div *ngFor="let activity of workFlow?.activityItems">
+                    <div *ngFor="let activity of workFlow?.analysisActivity">
                       <mat-chip color="primary" [selected]="activity.qualifiedName == viewModelForm.get('qualifiedName').value" (click)="selectActivity(activity.qualifiedName)"> 
                         {{activity.qualifiedName | translate}}
                       </mat-chip>
@@ -105,17 +105,17 @@
                 </mat-cell>
             </ng-container>
 
+            <ng-container matColumnDef="identifier">
+              <mat-header-cell *matHeaderCellDef>{{ 'Identifier' | translate }}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <p>{{record.identifier}}</p>
+              </mat-cell>
+            </ng-container>
+
             <ng-container matColumnDef="created">
                 <mat-header-cell *matHeaderCellDef>{{ 'Created' | translate }}</mat-header-cell>
                 <mat-cell *matCellDef="let record">
-                    <p>{{record.createdDetail}}</p>
-                </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="identifier">
-                <mat-header-cell *matHeaderCellDef>{{ 'Identifier' | translate }}</mat-header-cell>
-                <mat-cell *matCellDef="let record">
-                    <p>{{record.identifier}}</p>
+                    <p>{{record.createdDetail}}</p><br/>
                 </mat-cell>
             </ng-container>
 
@@ -151,6 +151,16 @@
               </mat-cell>
             </ng-container>
 
+            <ng-container matColumnDef="task-count">
+              <mat-header-cell *matHeaderCellDef>{{ 'Tasks' | translate }}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <div class="text-center pt-12 pb-12 border-right-light">
+                    <mat-icon matBadge="{{record.taskCount}}" matBadgeOverlap="false" *ngIf="record.activeTaskCount == 0" matBadgeColor="accent">assignment</mat-icon>
+                    <mat-icon matBadge="{{record.taskCount}}" matBadgeOverlap="false" *ngIf="record.activeTaskCount > 0" matBadgeColor="warn">assignment</mat-icon>
+                  </div>                
+              </mat-cell>
+            </ng-container>
+
             <ng-container matColumnDef="status">
               <mat-header-cell *matHeaderCellDef>{{ 'Status' | translate }}</mat-header-cell>
               <mat-cell *matCellDef="let record">
@@ -176,6 +186,15 @@
                     
                     <mat-divider></mat-divider>
 
+                    <button mat-menu-item *ngIf="hasLink(record, 'delete')" (click)="detailTask(record)">
+                      <mat-icon>assignment</mat-icon>
+                      <span style="vertical-align: middle;">
+                        {{ 'Tasks' | translate }}
+                      </span>
+                    </button>
+
+                    <mat-divider *ngIf="hasLink(record, 'confirm')"></mat-divider>
+
                     <button mat-menu-item *ngIf="hasLink(record, 'confirm')" (click)="openActivityChangePopUp('Confirm Report', record, 'CONFIRMED')">
                       <mat-icon>check</mat-icon>
                       <span style="vertical-align: middle;">
@@ -194,6 +213,12 @@
                         {{ 'Set terminology' | translate }}
                       </span>
                     </button>
+                    <button mat-menu-item *ngIf="hasLink(record, 'setclassification')" (click)="openSetClassificationPopUp(record)">
+                      <mat-icon>send</mat-icon>
+                      <span style="vertical-align: middle;">
+                        {{ 'Set classification' | translate }}
+                      </span>
+                    </button>
                     <button mat-menu-item *ngIf="hasLink(record, 'whocausalityset')" (click)="openWhoPopUp(record)">
                       <mat-icon>layers</mat-icon>
                       <span style="vertical-align: middle;">
@@ -206,7 +231,7 @@
                         {{ 'Naranjo causality' | translate }}
                       </span>
                     </button>
-                    <button mat-menu-item *ngIf="hasLink(record, 'causalityset')" (click)="openActivityChangePopUp('Confirm Causality Set', record, 'CAUSALITYSET')">
+                    <button mat-menu-item *ngIf="hasLink(record, 'causalityset')" (click)="openActivityChangePopUp('Confirm Causality Set', record, 'CAUSALITYCONFIRMED')">
                       <mat-icon>check</mat-icon>
                       <span style="vertical-align: middle;">
                         {{ 'Confirm causality set' | translate }}

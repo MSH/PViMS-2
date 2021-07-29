@@ -23,6 +23,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
 {
@@ -227,7 +228,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPost("meta", Name = "RefreshMeta")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult RefreshMeta()
+        public async Task<IActionResult> RefreshMetaAsync()
         {
             // Ensure all meta definitions exist
             CheckEntitiesExist();
@@ -243,7 +244,7 @@ namespace PVIMS.API.Controllers
             UpdateCustomAttributes();
             CreateMetaDependencies();
 
-            _infrastructureService.SetConfigValue(ConfigType.MetaDataLastUpdated, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+            await _infrastructureService.SetConfigValueAsync(ConfigType.MetaDataLastUpdated, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
 
             return NoContent();
         }
@@ -401,14 +402,14 @@ namespace PVIMS.API.Controllers
         {
             wrapper.Links.Add(
                new LinkDto(
-                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaTablesByIdentifier", metaResourceParameters),
+                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaTablesByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                    "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaTablesByIdentifier", metaResourceParameters),
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaTablesByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                        "nextPage", "GET"));
             }
 
@@ -416,7 +417,7 @@ namespace PVIMS.API.Controllers
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaTablesByIdentifier", metaResourceParameters),
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaTablesByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
                        "previousPage", "GET"));
             }
 
@@ -649,19 +650,18 @@ namespace PVIMS.API.Controllers
 
         private void CheckColumnsExist()
         {
-            ProcessEntity(new Patient(), "Patient");
-            ProcessEntity(new PatientMedication(), "PatientMedication");
-            ProcessEntity(new PatientClinicalEvent(), "PatientClinicalEvent");
-            ProcessEntity(new PatientCondition(), "PatientCondition");
-            ProcessEntity(new PatientLabTest(), "PatientLabTest");
-            ProcessEntity(new Encounter(new Patient()), "Encounter");
-            ProcessEntity(new CohortGroupEnrolment(), "CohortGroupEnrolment");
-            ProcessEntity(new PatientFacility(), "PatientFacility");
+            ProcessEntity(typeof(Patient), "Patient");
+            ProcessEntity(typeof(PatientMedication), "PatientMedication");
+            ProcessEntity(typeof(PatientClinicalEvent), "PatientClinicalEvent");
+            ProcessEntity(typeof(PatientCondition), "PatientCondition");
+            ProcessEntity(typeof(PatientLabTest), "PatientLabTest");
+            ProcessEntity(typeof(Encounter), "Encounter");
+            ProcessEntity(typeof(CohortGroupEnrolment), "CohortGroupEnrolment");
+            ProcessEntity(typeof(PatientFacility), "PatientFacility");
         }
 
-        private void ProcessEntity(Object obj, string entityName)
+        private void ProcessEntity(Type type, string entityName)
         {
-            Type type = obj.GetType();
             PropertyInfo[] properties = type.GetProperties();
             var invalidProperties = new[] { "CustomAttributesXmlSerialised", "Archived", "ArchivedReason", "ArchivedDate", "AuditUser", "Age", "FullName", "DisplayName", "CurrentFacilityName", "LatestEncounterDate" };
 
@@ -910,14 +910,14 @@ namespace PVIMS.API.Controllers
 
         private void PopulateMetaTables()
         {
-            ProcessInsertEntity(new Patient(), "Patient");
-            ProcessInsertEntity(new PatientMedication(), "PatientMedication");
-            ProcessInsertEntity(new PatientClinicalEvent(), "PatientClinicalEvent");
-            ProcessInsertEntity(new PatientCondition(), "PatientCondition");
-            ProcessInsertEntity(new PatientLabTest(), "PatientLabTest");
-            ProcessInsertEntity(new Encounter(new Patient()), "Encounter");
-            ProcessInsertEntity(new CohortGroupEnrolment(), "CohortGroupEnrolment");
-            ProcessInsertEntity(new PatientFacility(), "PatientFacility");
+            ProcessInsertEntity(typeof(Patient), "Patient");
+            ProcessInsertEntity(typeof(PatientMedication), "PatientMedication");
+            ProcessInsertEntity(typeof(PatientClinicalEvent), "PatientClinicalEvent");
+            ProcessInsertEntity(typeof(PatientCondition), "PatientCondition");
+            ProcessInsertEntity(typeof(PatientLabTest), "PatientLabTest");
+            ProcessInsertEntity(typeof(Encounter), "Encounter");
+            ProcessInsertEntity(typeof(CohortGroupEnrolment), "CohortGroupEnrolment");
+            ProcessInsertEntity(typeof(PatientFacility), "PatientFacility");
         }
 
         private void UpdateCustomAttributes()
@@ -935,9 +935,8 @@ namespace PVIMS.API.Controllers
             ProcessUpdateSelection("PatientLabTest", "mplt");
         }
 
-        private void ProcessInsertEntity(Object obj, string entityName)
+        private void ProcessInsertEntity(Type type, string entityName)
         {
-            Type type = obj.GetType();
             PropertyInfo[] properties = type.GetProperties();
             var invalidProperties = new[] { "CustomAttributesXmlSerialised", "Archived", "ArchivedReason", "ArchivedDate", "AuditUser", "Age", "FullName", "AgeGroup", "DisplayName", "CurrentFacilityName", "LatestEncounterDate" };
 

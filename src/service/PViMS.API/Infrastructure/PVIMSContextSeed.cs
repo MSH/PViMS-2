@@ -37,6 +37,12 @@ namespace PVIMS.API.Infrastructure
                         context.Users.AddRange(PrepareUsers(context));
                         await context.SaveEntitiesAsync();
 
+                        context.WorkFlows.AddRange(PrepareWorkFlows(context));
+                        context.Activities.AddRange(PrepareActivities(context));
+                        context.ActivityExecutionStatuses.AddRange(PrepareActivityExecutionStatusesForActiveSurveillance(context));
+                        context.ActivityExecutionStatuses.AddRange(PrepareActivityExecutionStatusesForSpontaneousSurveilliance(context));
+                        await context.SaveEntitiesAsync();
+
                         context.AttachmentTypes.AddRange(PrepareAttachmentTypes(context));
                         context.CareEvents.AddRange(PrepareCareEvents(context));
                         context.Configs.AddRange(PrepareConfigs(context));
@@ -60,7 +66,7 @@ namespace PVIMS.API.Infrastructure
             });
         }
 
-        private IEnumerable<User> PrepareUsers(PVIMSDbContext context)
+        private static IEnumerable<User> PrepareUsers(PVIMSDbContext context)
         {
             List<User> users = new List<User>();
 
@@ -83,147 +89,336 @@ namespace PVIMS.API.Infrastructure
                     UserName = "chesad",
                 });
             }
+            if (!context.Users.Any(ce => ce.UserName == "rhear"))
+            {
+                users.Add(new User
+                {
+                    Email = "rromero@mtapsprogram.org",
+                    LastName = "Romero",
+                    FirstName = "Rhea",
+                    UserName = "rhear",
+                });
+            }
 
             return users;
         }
 
-        private IEnumerable<PatientStatus> PreparePatientStatus(PVIMSDbContext context)
+        private static IEnumerable<Activity> PrepareActivities(PVIMSDbContext context)
         {
-            List<PatientStatus> patientStatuses = new List<PatientStatus>();
+            List<Activity> activities = new List<Activity>();
 
-            if (!context.PatientStatuses.Any(ce => ce.Description == "Active"))
+            var workFlow = context.WorkFlows.Single(wf => wf.Description == "New Active Surveilliance Report");
+            if (!context.Activities.Any(a => a.WorkFlow.Id == workFlow.Id && a.QualifiedName == "Confirm Report Data"))
             {
-                patientStatuses.Add(new PatientStatus { Description = "Active" });
+                activities.Add(new Activity { QualifiedName = "Confirm Report Data", WorkFlow = workFlow, ActivityType = ActivityTypes.UserDrivenActivity });
+            }
+            if (!context.Activities.Any(a => a.WorkFlow.Id == workFlow.Id && a.QualifiedName == "Set MedDRA and Causality"))
+            {
+                activities.Add(new Activity { QualifiedName = "Set MedDRA and Causality", WorkFlow = workFlow, ActivityType = ActivityTypes.UserDrivenActivity });
+            }
+            if (!context.Activities.Any(a => a.WorkFlow.Id == workFlow.Id && a.QualifiedName == "Extract E2B"))
+            {
+                activities.Add(new Activity { QualifiedName = "Extract E2B", WorkFlow = workFlow, ActivityType = ActivityTypes.UserDrivenActivity });
             }
 
-            if (!context.PatientStatuses.Any(ce => ce.Description == "Suspended"))
+            var spontaneousWorkFlow = context.WorkFlows.Single(wf => wf.Description == "New Spontaneous Surveilliance Report");
+            if (!context.Activities.Any(a => a.WorkFlow.Id == spontaneousWorkFlow.Id && a.QualifiedName == "Confirm Report Data"))
             {
-                patientStatuses.Add(new PatientStatus { Description = "Suspended" });
+                activities.Add(new Activity { QualifiedName = "Confirm Report Data", WorkFlow = spontaneousWorkFlow, ActivityType = ActivityTypes.UserDrivenActivity });
+            }
+            if (!context.Activities.Any(a => a.WorkFlow.Id == spontaneousWorkFlow.Id && a.QualifiedName == "Set MedDRA and Causality"))
+            {
+                activities.Add(new Activity { QualifiedName = "Set MedDRA and Causality", WorkFlow = spontaneousWorkFlow, ActivityType = ActivityTypes.UserDrivenActivity });
+            }
+            if (!context.Activities.Any(a => a.WorkFlow.Id == spontaneousWorkFlow.Id && a.QualifiedName == "Extract E2B"))
+            {
+                activities.Add(new Activity { QualifiedName = "Extract E2B", WorkFlow = spontaneousWorkFlow, ActivityType = ActivityTypes.UserDrivenActivity });
             }
 
-            if (!context.PatientStatuses.Any(ce => ce.Description == "Transferred Out"))
-            {
-                patientStatuses.Add(new PatientStatus { Description = "Transferred Out" });
-            }
-
-            if (!context.PatientStatuses.Any(ce => ce.Description == "Died"))
-            {
-                patientStatuses.Add(new PatientStatus { Description = "Died" });
-            }
-
-            return patientStatuses;
+            return activities;
         }
 
-        private IEnumerable<AttachmentType> PrepareAttachmentTypes(PVIMSDbContext context)
+        private static IEnumerable<ActivityExecutionStatus> PrepareActivityExecutionStatusesForActiveSurveillance(PVIMSDbContext context)
+        {
+            List<ActivityExecutionStatus> activityExecutionStatuses = new List<ActivityExecutionStatus>();
+
+            var activity = context.Activities.Single(a => a.WorkFlow.Description == "New Active Surveilliance Report" && a.QualifiedName == "Confirm Report Data");
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Confirm Report Data" && a.Description == "UNCONFIRMED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "UNCONFIRMED", Activity = activity, FriendlyDescription = "Report submitted for confirmation" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Confirm Report Data" && a.Description == "CONFIRMED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CONFIRMED", Activity = activity, FriendlyDescription = "Report confirmed by technician" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Confirm Report Data" && a.Description == "DELETED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "DELETED", Activity = activity, FriendlyDescription = "Report deleted by technician" });
+            }
+
+            var meddraActivity = context.Activities.Single(a => a.WorkFlow.Description == "New Active Surveilliance Report" && a.QualifiedName == "Set MedDRA and Causality");
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "NOTSET"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "NOTSET", Activity = meddraActivity, FriendlyDescription = "Report ready for MedDRA and Causality" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "MEDDRASET"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "MEDDRASET", Activity = meddraActivity, FriendlyDescription = "MedDRA term set by technician" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CLASSIFICATIONSET"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CLASSIFICATIONSET", Activity = meddraActivity, FriendlyDescription = "Report classified by technician" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CAUSALITYSET"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CAUSALITYSET", Activity = meddraActivity, FriendlyDescription = "Causality set by technician" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CAUSALITYCONFIRMED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CAUSALITYCONFIRMED", Activity = meddraActivity, FriendlyDescription = "Causality confirmed by technician" });
+            }
+
+            var e2bActivity = context.Activities.Single(a => a.WorkFlow.Description == "New Active Surveilliance Report" && a.QualifiedName == "Extract E2B");
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Extract E2B" && a.Description == "NOTGENERATED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "NOTGENERATED", Activity = e2bActivity, FriendlyDescription = "Report ready for E2B submission" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Extract E2B" && a.Description == "E2BINITIATED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "E2BINITIATED", Activity = e2bActivity, FriendlyDescription = "E2B data generated for report" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Extract E2B" && a.Description == "E2BGENERATED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "E2BGENERATED", Activity = e2bActivity, FriendlyDescription = "E2B report generated" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Active Surveilliance Report" && a.Activity.QualifiedName == "Extract E2B" && a.Description == "E2BSUBMITTED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "E2BSUBMITTED", Activity = e2bActivity, FriendlyDescription = "E2B report submitted" });
+            }
+
+            return activityExecutionStatuses;
+        }
+
+        private static IEnumerable<ActivityExecutionStatus> PrepareActivityExecutionStatusesForSpontaneousSurveilliance(PVIMSDbContext context)
+        {
+            List<ActivityExecutionStatus> activityExecutionStatuses = new List<ActivityExecutionStatus>();
+
+            var activity = context.Activities.Single(a => a.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.QualifiedName == "Confirm Report Data");
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Confirm Report Data" && a.Description == "UNCONFIRMED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "UNCONFIRMED", Activity = activity, FriendlyDescription = "Report submitted for confirmation" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Confirm Report Data" && a.Description == "CONFIRMED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CONFIRMED", Activity = activity, FriendlyDescription = "Report confirmed by technician" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Confirm Report Data" && a.Description == "DELETED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "DELETED", Activity = activity, FriendlyDescription = "Report deleted by technician" });
+            }
+
+            var meddraActivity = context.Activities.Single(a => a.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.QualifiedName == "Set MedDRA and Causality");
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "NOTSET"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "NOTSET", Activity = meddraActivity, FriendlyDescription = "Report ready for MedDRA and Causality" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "MEDDRASET"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "MEDDRASET", Activity = meddraActivity, FriendlyDescription = "MedDRA term set by technician" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CLASSIFICATIONSET"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CLASSIFICATIONSET", Activity = meddraActivity, FriendlyDescription = "Report classified by technician" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CAUSALITYSET"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CAUSALITYSET", Activity = meddraActivity, FriendlyDescription = "Causality set by technician" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Set MedDRA and Causality" && a.Description == "CAUSALITYCONFIRMED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "CAUSALITYCONFIRMED", Activity = meddraActivity, FriendlyDescription = "Causality confirmed by technician" });
+            }
+
+            var e2bActivity = context.Activities.Single(a => a.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.QualifiedName == "Extract E2B");
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Extract E2B" && a.Description == "NOTGENERATED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "NOTGENERATED", Activity = e2bActivity, FriendlyDescription = "Report ready for E2B submission" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Extract E2B" && a.Description == "E2BINITIATED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "E2BINITIATED", Activity = e2bActivity, FriendlyDescription = "E2B data generated for report" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Extract E2B" && a.Description == "E2BGENERATED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "E2BGENERATED", Activity = e2bActivity, FriendlyDescription = "E2B report generated" });
+            }
+            if (!context.ActivityExecutionStatuses.Any(a => a.Activity.WorkFlow.Description == "New Spontaneous Surveilliance Report" && a.Activity.QualifiedName == "Extract E2B" && a.Description == "E2BSUBMITTED"))
+            {
+                activityExecutionStatuses.Add(new ActivityExecutionStatus { Description = "E2BSUBMITTED", Activity = e2bActivity, FriendlyDescription = "E2B report submitted" });
+            }
+
+            return activityExecutionStatuses;
+        }
+
+        private static IEnumerable<AttachmentType> PrepareAttachmentTypes(PVIMSDbContext context)
         {
             List<AttachmentType> attachmentTypes = new List<AttachmentType>();
 
             if (!context.AttachmentTypes.Any(ce => ce.Key == "doc"))
-                attachmentTypes.Add(new AttachmentType { Description = "MS Word 2003-2007 Document", Key = "doc" });
+                attachmentTypes.Add(new AttachmentType("MS Word 2003-2007 Document", "doc"));
 
             if (!context.AttachmentTypes.Any(ce => ce.Key == "xls"))
-                attachmentTypes.Add(new AttachmentType { Description = "MS Excel 2003-2007 Document", Key = "xls" });
+                attachmentTypes.Add(new AttachmentType("MS Excel 2003-2007 Document", "xls"));
 
             if (!context.AttachmentTypes.Any(ce => ce.Key == "docx"))
-                attachmentTypes.Add(new AttachmentType { Description = "MS Word Document", Key = "docx" });
+                attachmentTypes.Add(new AttachmentType("MS Word Document", "docx"));
 
             if (!context.AttachmentTypes.Any(ce => ce.Key == "xlsx"))
-                attachmentTypes.Add(new AttachmentType { Description = "MS Excel Document", Key = "xlsx" });
+                attachmentTypes.Add(new AttachmentType("MS Excel Document", "xlsx"));
 
             if (!context.AttachmentTypes.Any(ce => ce.Key == "pdf"))
-                attachmentTypes.Add(new AttachmentType { Description = "Portable Document Format", Key = "pdf" });
+                attachmentTypes.Add(new AttachmentType("Portable Document Format", "pdf"));
 
             if (!context.AttachmentTypes.Any(ce => ce.Key == "jpg"))
-                attachmentTypes.Add(new AttachmentType { Description = "Image | JPEG", Key = "jpg" });
+                attachmentTypes.Add(new AttachmentType("Image | JPEG", "jpg"));
 
             if (!context.AttachmentTypes.Any(ce => ce.Key == "jpeg"))
-                attachmentTypes.Add(new AttachmentType { Description = "Image | JPEG", Key = "jpeg" });
+                attachmentTypes.Add(new AttachmentType("Image | JPEG", "jpeg"));
 
             if (!context.AttachmentTypes.Any(ce => ce.Key == "png"))
-                attachmentTypes.Add(new AttachmentType { Description = "Image | PNG", Key = "png" });
+                attachmentTypes.Add(new AttachmentType("Image | PNG", "png"));
 
             if (!context.AttachmentTypes.Any(ce => ce.Key == "bmp"))
-                attachmentTypes.Add(new AttachmentType { Description = "Image | BMP", Key = "bmp" });
+                attachmentTypes.Add(new AttachmentType("Image | BMP", "bmp"));
 
             if (!context.AttachmentTypes.Any(ce => ce.Key == "xml"))
-                attachmentTypes.Add(new AttachmentType { Description = "XML Document", Key = "xml" });
+                attachmentTypes.Add(new AttachmentType("XML Document", "xml"));
 
             return attachmentTypes;
         }
 
-        private IEnumerable<Outcome> PrepareOutcomes(PVIMSDbContext context)
+        private static IEnumerable<CareEvent> PrepareCareEvents(PVIMSDbContext context)
         {
-            List<Outcome> outcomes = new List<Outcome>();
+            List<CareEvent> careEvents = new List<CareEvent>();
 
-            if (!context.Outcomes.Any(ce => ce.Description == "Recovered/Resolved"))
-                outcomes.Add(new Outcome { Description = "Recovered/Resolved" });
+            if (!context.CareEvents.Any(ce => ce.Description == "Capture Vitals"))
+                careEvents.Add(new CareEvent { Description = "Capture Vitals" });
 
-            if (!context.Outcomes.Any(ce => ce.Description == "Recovered/Resolved With Sequelae"))
-                outcomes.Add(new Outcome { Description = "Recovered/Resolved With Sequelae" });
+            if (!context.CareEvents.Any(ce => ce.Description == "Doctor Assessment"))
+                careEvents.Add(new CareEvent { Description = "Doctor Assessment" });
 
-            if (!context.Outcomes.Any(ce => ce.Description == "Recovering/Resolving"))
-                outcomes.Add(new Outcome { Description = "Recovering/Resolving" });
+            if (!context.CareEvents.Any(ce => ce.Description == "Nurse Assessment"))
+                careEvents.Add(new CareEvent { Description = "Nurse Assessment" });
 
-            if (!context.Outcomes.Any(ce => ce.Description == "Not Recovered/Not Resolved"))
-                outcomes.Add(new Outcome { Description = "Not Recovered/Not Resolved" });
-
-            if (!context.Outcomes.Any(ce => ce.Description == "Fatal"))
-                outcomes.Add(new Outcome { Description = "Fatal" });
-
-            if (!context.Outcomes.Any(ce => ce.Description == "Unknown"))
-                outcomes.Add(new Outcome { Description = "Unknown" });
-
-            return outcomes;
+            return careEvents;
         }
 
-        private IEnumerable<TreatmentOutcome> PrepareTreatmentOutcomes(PVIMSDbContext context)
+        private static IEnumerable<Config> PrepareConfigs(PVIMSDbContext context)
         {
-            List<TreatmentOutcome> treatmentOutcomes = new List<TreatmentOutcome>();
+            List<Config> configs = new List<Config>();
 
-            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Cured"))
-                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Cured" });
+            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.E2BVersion))
+            {
+                var e2bConfig = new Config { ConfigType = ConfigType.E2BVersion, ConfigValue = "E2B(R2) ICH Report" };
+                e2bConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                configs.Add(e2bConfig);
+            }
 
-            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Treatment Completed"))
-                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Treatment Completed" });
+            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.WebServiceSubscriberList))
+            {
+                var subscriberConfig = new Config { ConfigType = ConfigType.WebServiceSubscriberList, ConfigValue = "NOT SPECIFIED" };
+                subscriberConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                configs.Add(subscriberConfig);
+            }
 
-            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Treatment Failed"))
-                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Treatment Failed" });
+            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.AssessmentScale))
+            {
+                var assessmentConfig = new Config { ConfigType = ConfigType.AssessmentScale, ConfigValue = "Both Scales" };
+                assessmentConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                configs.Add(assessmentConfig);
+            }
 
-            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Died"))
-                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Died" });
+            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.MedDRAVersion))
+            {
+                var meddraConfig = new Config { ConfigType = ConfigType.MedDRAVersion, ConfigValue = "23.0" };
+                meddraConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                configs.Add(meddraConfig);
+            }
 
-            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Lost to Follow-up"))
-                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Lost to Follow-up" });
+            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.ReportInstanceNewAlertCount))
+            {
+                var instanceConfig = new Config { ConfigType = ConfigType.ReportInstanceNewAlertCount, ConfigValue = "0" };
+                instanceConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                configs.Add(instanceConfig);
+            }
 
-            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Not Evaluated"))
-                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Not Evaluated" });
+            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.MedicationOnsetCheckPeriodWeeks))
+            {
+                var onsetConfig = new Config { ConfigType = ConfigType.MedicationOnsetCheckPeriodWeeks, ConfigValue = "5" };
+                onsetConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                configs.Add(onsetConfig);
+            }
 
-            return treatmentOutcomes;
+            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.MetaDataLastUpdated))
+            {
+                var metaConfig = new Config { ConfigType = ConfigType.MetaDataLastUpdated, ConfigValue = DateTime.Now.ToString("yyyy-MM-dd HH:mm") };
+                metaConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                configs.Add(metaConfig);
+            }
+
+            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.PharmadexLink))
+            {
+                var siteConfig = new Config { ConfigType = ConfigType.PharmadexLink, ConfigValue = "NOT SPECIFIED" };
+                siteConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                configs.Add(siteConfig);
+            }
+
+            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.ReportInstanceFeedbackAlertCount))
+            {
+                var instanceConfig = new Config { ConfigType = ConfigType.ReportInstanceFeedbackAlertCount, ConfigValue = "0" };
+                instanceConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                configs.Add(instanceConfig);
+            }
+
+            return configs;
         }
 
-        private IEnumerable<Priority> PreparePriorities(PVIMSDbContext context)
+        private static IEnumerable<ContextType> PrepareContextTypes(PVIMSDbContext context)
         {
-            List<Priority> priorities = new List<Priority>();
+            List<ContextType> contextTypes = new List<ContextType>();
 
-            if (!context.Priorities.Any(ce => ce.Description == "Not Set"))
-                priorities.Add(new Priority { Description = "Not Set" });
+            if (!context.ContextTypes.Any(ce => ce.Description == "Encounter"))
+                contextTypes.Add(new ContextType { Description = "Encounter" });
 
-            if (!context.Priorities.Any(ce => ce.Description == "Urgent"))
-                priorities.Add(new Priority { Description = "Urgent" });
+            if (!context.ContextTypes.Any(ce => ce.Description == "Patient"))
+                contextTypes.Add(new ContextType { Description = "Patient" });
 
-            if (!context.Priorities.Any(ce => ce.Description == "High"))
-                priorities.Add(new Priority { Description = "High" });
+            if (!context.ContextTypes.Any(ce => ce.Description == "Pregnancy"))
+                contextTypes.Add(new ContextType { Description = "Pregnancy" });
 
-            if (!context.Priorities.Any(ce => ce.Description == "Medium"))
-                priorities.Add(new Priority { Description = "Medium" });
+            if (!context.ContextTypes.Any(ce => ce.Description == "Global"))
+                contextTypes.Add(new ContextType { Description = "Global" });
 
-            if (!context.Priorities.Any(ce => ce.Description == "Low"))
-                priorities.Add(new Priority { Description = "Low" });
+            if (!context.ContextTypes.Any(ce => ce.Description == "PatientClinicalEvent"))
+                contextTypes.Add(new ContextType { Description = "PatientClinicalEvent" });
 
-            return priorities;
+            if (!context.ContextTypes.Any(ce => ce.Description == "DatasetInstance"))
+                contextTypes.Add(new ContextType { Description = "DatasetInstance" });
+
+            return contextTypes;
         }
 
-        private IEnumerable<FacilityType> PrepareFacilityTypes(PVIMSDbContext context)
+        private static IEnumerable<DatasetElementType> PrepareDatasetElementTypes(PVIMSDbContext context)
+        {
+            List<DatasetElementType> datasetElementTypes = new List<DatasetElementType>();
+
+            if (!context.DatasetElementTypes.Any(ce => ce.Description == "Generic"))
+                datasetElementTypes.Add(new DatasetElementType { Description = "Generic" });
+
+            return datasetElementTypes;
+        }
+
+        private static IEnumerable<FacilityType> PrepareFacilityTypes(PVIMSDbContext context)
         {
             List<FacilityType> facilityTypes = new List<FacilityType>();
 
@@ -242,54 +437,38 @@ namespace PVIMS.API.Infrastructure
             return facilityTypes;
         }
 
-        private IEnumerable<SiteContactDetail> PrepareSiteContactDetails(PVIMSDbContext context)
+        private static IEnumerable<FieldType> PrepareFieldTypes(PVIMSDbContext context)
         {
-            List<SiteContactDetail> siteContactDetails = new List<SiteContactDetail>();
+            List<FieldType> fieldTypes = new List<FieldType>();
 
-            if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.RegulatoryAuthority))
-            {
-                var regulatoryContactDetail = new SiteContactDetail { ContactType = ContactType.RegulatoryAuthority, ContactFirstName = "Not", ContactSurname = "Specified", StreetAddress = "None", City = "None", OrganisationName = "None" };
-                regulatoryContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                siteContactDetails.Add(regulatoryContactDetail);
-            }
+            if (!context.FieldTypes.Any(ce => ce.Description == "Listbox"))
+                fieldTypes.Add(new FieldType { Description = "Listbox" });
 
-            if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.ReportingAuthority))
-            {
-                var reportingContactDetail = new SiteContactDetail { ContactType = ContactType.ReportingAuthority, ContactFirstName = "Uppsala", ContactSurname = "Monitoring Centre", StreetAddress = "Bredgrand 7B", City = "Uppsala", State = "None", PostCode = "75320", ContactEmail = "info@who-umc.org", ContactNumber = "18656060", CountryCode = "46", OrganisationName = "UMC" };
-                reportingContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                siteContactDetails.Add(reportingContactDetail);
-            }
+            if (!context.FieldTypes.Any(ce => ce.Description == "DropDownList"))
+                fieldTypes.Add(new FieldType { Description = "DropDownList" });
 
-            return siteContactDetails;
+            if (!context.FieldTypes.Any(ce => ce.Description == "AlphaNumericTextbox"))
+                fieldTypes.Add(new FieldType { Description = "AlphaNumericTextbox" });
+
+            if (!context.FieldTypes.Any(ce => ce.Description == "NumericTextbox"))
+                fieldTypes.Add(new FieldType { Description = "NumericTextbox" });
+
+            if (!context.FieldTypes.Any(ce => ce.Description == "YesNo"))
+                fieldTypes.Add(new FieldType { Description = "YesNo" });
+
+            if (!context.FieldTypes.Any(ce => ce.Description == "Date"))
+                fieldTypes.Add(new FieldType { Description = "Date" });
+
+            if (!context.FieldTypes.Any(ce => ce.Description == "Table"))
+                fieldTypes.Add(new FieldType { Description = "Table" });
+
+            if (!context.FieldTypes.Any(ce => ce.Description == "System"))
+                fieldTypes.Add(new FieldType { Description = "System" });
+
+            return fieldTypes;
         }
 
-        private IEnumerable<CareEvent> PrepareCareEvents(PVIMSDbContext context)
-        {
-            List<CareEvent> careEvents = new List<CareEvent>();
-
-            if (!context.CareEvents.Any(ce => ce.Description == "Capture Vitals"))
-                careEvents.Add(new CareEvent { Description = "Capture Vitals" });
-
-            if (!context.CareEvents.Any(ce => ce.Description == "Doctor Assessment"))
-                careEvents.Add(new CareEvent { Description = "Doctor Assessment" });
-
-            if (!context.CareEvents.Any(ce => ce.Description == "Nurse Assessment"))
-                careEvents.Add(new CareEvent { Description = "Nurse Assessment" });
-
-            return careEvents;
-        }
-
-        private IEnumerable<DatasetElementType> PrepareDatasetElementTypes(PVIMSDbContext context)
-        {
-            List<DatasetElementType> datasetElementTypes = new List<DatasetElementType>();
-
-            if (!context.DatasetElementTypes.Any(ce => ce.Description == "Generic"))
-                datasetElementTypes.Add(new DatasetElementType { Description = "Generic" });
-
-            return datasetElementTypes;
-        }
-
-        private IEnumerable<LabResult> PrepareLabResults(PVIMSDbContext context)
+        private static IEnumerable<LabResult> PrepareLabResults(PVIMSDbContext context)
         {
             List<LabResult> labResults = new List<LabResult>();
 
@@ -329,7 +508,7 @@ namespace PVIMS.API.Infrastructure
             return labResults;
         }
 
-        private IEnumerable<LabTestUnit> PrepareLabTestUnits(PVIMSDbContext context)
+        private static IEnumerable<LabTestUnit> PrepareLabTestUnits(PVIMSDbContext context)
         {
             List<LabTestUnit> labTestUnits = new List<LabTestUnit>();
 
@@ -462,60 +641,7 @@ namespace PVIMS.API.Infrastructure
             return labTestUnits;
         }
 
-        private IEnumerable<FieldType> PrepareFieldTypes(PVIMSDbContext context)
-        {
-            List<FieldType> fieldTypes = new List<FieldType>();
-
-            if (!context.FieldTypes.Any(ce => ce.Description == "Listbox"))
-                fieldTypes.Add(new FieldType { Description = "Listbox" });
-
-            if (!context.FieldTypes.Any(ce => ce.Description == "DropDownList"))
-                fieldTypes.Add(new FieldType { Description = "DropDownList" });
-
-            if (!context.FieldTypes.Any(ce => ce.Description == "AlphaNumericTextbox"))
-                fieldTypes.Add(new FieldType { Description = "AlphaNumericTextbox" });
-
-            if (!context.FieldTypes.Any(ce => ce.Description == "NumericTextbox"))
-                fieldTypes.Add(new FieldType { Description = "NumericTextbox" });
-
-            if (!context.FieldTypes.Any(ce => ce.Description == "YesNo"))
-                fieldTypes.Add(new FieldType { Description = "YesNo" });
-
-            if (!context.FieldTypes.Any(ce => ce.Description == "Date"))
-                fieldTypes.Add(new FieldType { Description = "Date" });
-
-            if (!context.FieldTypes.Any(ce => ce.Description == "Table"))
-                fieldTypes.Add(new FieldType { Description = "Table" });
-
-            if (!context.FieldTypes.Any(ce => ce.Description == "System"))
-                fieldTypes.Add(new FieldType { Description = "System" });
-
-            return fieldTypes;
-        }
-
-        private IEnumerable<MetaTableType> PrepareMetaTableTypes(PVIMSDbContext context)
-        {
-            List<MetaTableType> metaTableTypes = new List<MetaTableType>();
-
-            if (!context.MetaTableTypes.Any(ce => ce.Description == "Core"))
-                metaTableTypes.Add(new MetaTableType { MetaTableTypeGuid = new Guid("7C1FE90D-2082-464E-AEFD-337E81088312"), Description = "Core" });
-
-            if (!context.MetaTableTypes.Any(ce => ce.Description == "CoreChild"))
-                metaTableTypes.Add(new MetaTableType { MetaTableTypeGuid = new Guid("94040819-D706-40BF-B3D1-66A0655A0BEF"), Description = "CoreChild" });
-
-            if (!context.MetaTableTypes.Any(ce => ce.Description == "Child"))
-                metaTableTypes.Add(new MetaTableType { MetaTableTypeGuid = new Guid("E4E98018-D67B-417E-973D-E25E36FF23DB"), Description = "Child" });
-
-            if (!context.MetaTableTypes.Any(ce => ce.Description == "History"))
-                metaTableTypes.Add(new MetaTableType { MetaTableTypeGuid = new Guid("F80D75CF-AAC7-48CE-A6FF-B8188F4B284C"), Description = "History" });
-
-            if (!context.MetaTableTypes.Any(ce => ce.Description == "Lookup"))
-                metaTableTypes.Add(new MetaTableType { MetaTableTypeGuid = new Guid("68FDA9E5-911A-48DD-895B-8DFD038BE41D"), Description = "Lookup" });
-
-            return metaTableTypes;
-        }
-
-        private IEnumerable<MetaColumnType> PrepareMetaColumnTypes(PVIMSDbContext context)
+        private static IEnumerable<MetaColumnType> PrepareMetaColumnTypes(PVIMSDbContext context)
         {
             List<MetaColumnType> metaColumnTypes = new List<MetaColumnType>();
 
@@ -573,7 +699,29 @@ namespace PVIMS.API.Infrastructure
             return metaColumnTypes;
         }
 
-        private IEnumerable<MetaWidgetType> PrepareMetaWidgetTypes(PVIMSDbContext context)
+        private static IEnumerable<MetaTableType> PrepareMetaTableTypes(PVIMSDbContext context)
+        {
+            List<MetaTableType> metaTableTypes = new List<MetaTableType>();
+
+            if (!context.MetaTableTypes.Any(ce => ce.Description == "Core"))
+                metaTableTypes.Add(new MetaTableType { MetaTableTypeGuid = new Guid("7C1FE90D-2082-464E-AEFD-337E81088312"), Description = "Core" });
+
+            if (!context.MetaTableTypes.Any(ce => ce.Description == "CoreChild"))
+                metaTableTypes.Add(new MetaTableType { MetaTableTypeGuid = new Guid("94040819-D706-40BF-B3D1-66A0655A0BEF"), Description = "CoreChild" });
+
+            if (!context.MetaTableTypes.Any(ce => ce.Description == "Child"))
+                metaTableTypes.Add(new MetaTableType { MetaTableTypeGuid = new Guid("E4E98018-D67B-417E-973D-E25E36FF23DB"), Description = "Child" });
+
+            if (!context.MetaTableTypes.Any(ce => ce.Description == "History"))
+                metaTableTypes.Add(new MetaTableType { MetaTableTypeGuid = new Guid("F80D75CF-AAC7-48CE-A6FF-B8188F4B284C"), Description = "History" });
+
+            if (!context.MetaTableTypes.Any(ce => ce.Description == "Lookup"))
+                metaTableTypes.Add(new MetaTableType { MetaTableTypeGuid = new Guid("68FDA9E5-911A-48DD-895B-8DFD038BE41D"), Description = "Lookup" });
+
+            return metaTableTypes;
+        }
+
+        private static IEnumerable<MetaWidgetType> PrepareMetaWidgetTypes(PVIMSDbContext context)
         {
             List<MetaWidgetType> metaWidgetTypes = new List<MetaWidgetType>();
 
@@ -589,95 +737,140 @@ namespace PVIMS.API.Infrastructure
             return metaWidgetTypes;
         }
 
-        private IEnumerable<Config> PrepareConfigs(PVIMSDbContext context)
+        private static IEnumerable<Outcome> PrepareOutcomes(PVIMSDbContext context)
         {
-            List<Config> configs = new List<Config>();
+            List<Outcome> outcomes = new List<Outcome>();
 
-            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.E2BVersion))
-            {
-                var e2bConfig = new Config { ConfigType = ConfigType.E2BVersion, ConfigValue = "E2B(R2) ICH Report" };
-                e2bConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                configs.Add(e2bConfig);
-            }
+            if (!context.Outcomes.Any(ce => ce.Description == "Recovered/Resolved"))
+                outcomes.Add(new Outcome { Description = "Recovered/Resolved" });
 
-            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.WebServiceSubscriberList))
-            {
-                var subscriberConfig = new Config { ConfigType = ConfigType.WebServiceSubscriberList, ConfigValue = "NOT SPECIFIED" };
-                subscriberConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                configs.Add(subscriberConfig);
-            }
+            if (!context.Outcomes.Any(ce => ce.Description == "Recovered/Resolved With Sequelae"))
+                outcomes.Add(new Outcome { Description = "Recovered/Resolved With Sequelae" });
 
-            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.AssessmentScale))
-            {
-                var assessmentConfig = new Config { ConfigType = ConfigType.AssessmentScale, ConfigValue = "Both Scales" };
-                assessmentConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                configs.Add(assessmentConfig);
-            }
+            if (!context.Outcomes.Any(ce => ce.Description == "Recovering/Resolving"))
+                outcomes.Add(new Outcome { Description = "Recovering/Resolving" });
 
-            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.MedDRAVersion))
-            {
-                var meddraConfig = new Config { ConfigType = ConfigType.MedDRAVersion, ConfigValue = "23.0" };
-                meddraConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                configs.Add(meddraConfig);
-            }
+            if (!context.Outcomes.Any(ce => ce.Description == "Not Recovered/Not Resolved"))
+                outcomes.Add(new Outcome { Description = "Not Recovered/Not Resolved" });
 
-            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.ReportInstanceNewAlertCount))
-            {
-                var instanceConfig = new Config { ConfigType = ConfigType.ReportInstanceNewAlertCount, ConfigValue = "0" };
-                instanceConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                configs.Add(instanceConfig);
-            }
+            if (!context.Outcomes.Any(ce => ce.Description == "Fatal"))
+                outcomes.Add(new Outcome { Description = "Fatal" });
 
-            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.MedicationOnsetCheckPeriodWeeks))
-            {
-                var onsetConfig = new Config { ConfigType = ConfigType.MedicationOnsetCheckPeriodWeeks, ConfigValue = "5" };
-                onsetConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                configs.Add(onsetConfig);
-            }
+            if (!context.Outcomes.Any(ce => ce.Description == "Unknown"))
+                outcomes.Add(new Outcome { Description = "Unknown" });
 
-            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.MetaDataLastUpdated))
-            {
-                var metaConfig = new Config { ConfigType = ConfigType.MetaDataLastUpdated, ConfigValue = DateTime.Now.ToString("yyyy-MM-dd HH:mm") };
-                metaConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                configs.Add(metaConfig);
-            }
-
-            if (!context.Configs.Any(ce => ce.ConfigType == ConfigType.PharmadexLink))
-            {
-                var siteConfig = new Config { ConfigType = ConfigType.PharmadexLink, ConfigValue = "NOT SPECIFIED" };
-                siteConfig.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                configs.Add(siteConfig);
-            }
-
-            return configs;
+            return outcomes;
         }
 
-        private IEnumerable<ContextType> PrepareContextTypes(PVIMSDbContext context)
+        private static IEnumerable<PatientStatus> PreparePatientStatus(PVIMSDbContext context)
         {
-            List<ContextType> contextTypes = new List<ContextType>();
+            List<PatientStatus> patientStatuses = new List<PatientStatus>();
 
-            if (!context.ContextTypes.Any(ce => ce.Description == "Encounter"))
-                contextTypes.Add(new ContextType { Description = "Encounter" });
+            if (!context.PatientStatuses.Any(ce => ce.Description == "Active"))
+            {
+                patientStatuses.Add(new PatientStatus { Description = "Active" });
+            }
 
-            if (!context.ContextTypes.Any(ce => ce.Description == "Patient"))
-                contextTypes.Add(new ContextType { Description = "Patient" });
+            if (!context.PatientStatuses.Any(ce => ce.Description == "Suspended"))
+            {
+                patientStatuses.Add(new PatientStatus { Description = "Suspended" });
+            }
 
-            if (!context.ContextTypes.Any(ce => ce.Description == "Pregnancy"))
-                contextTypes.Add(new ContextType { Description = "Pregnancy" });
+            if (!context.PatientStatuses.Any(ce => ce.Description == "Transferred Out"))
+            {
+                patientStatuses.Add(new PatientStatus { Description = "Transferred Out" });
+            }
 
-            if (!context.ContextTypes.Any(ce => ce.Description == "Global"))
-                contextTypes.Add(new ContextType { Description = "Global" });
+            if (!context.PatientStatuses.Any(ce => ce.Description == "Died"))
+            {
+                patientStatuses.Add(new PatientStatus { Description = "Died" });
+            }
 
-            if (!context.ContextTypes.Any(ce => ce.Description == "PatientClinicalEvent"))
-                contextTypes.Add(new ContextType { Description = "PatientClinicalEvent" });
-
-            if (!context.ContextTypes.Any(ce => ce.Description == "DatasetInstance"))
-                contextTypes.Add(new ContextType { Description = "DatasetInstance" });
-
-            return contextTypes;
+            return patientStatuses;
         }
 
-        private AsyncRetryPolicy CreatePolicy(ILogger<PVIMSContextSeed> logger, string prefix, int retries = 3)
+        private static IEnumerable<Priority> PreparePriorities(PVIMSDbContext context)
+        {
+            List<Priority> priorities = new List<Priority>();
+
+            if (!context.Priorities.Any(ce => ce.Description == "Not Set"))
+                priorities.Add(new Priority { Description = "Not Set" });
+
+            if (!context.Priorities.Any(ce => ce.Description == "Urgent"))
+                priorities.Add(new Priority { Description = "Urgent" });
+
+            if (!context.Priorities.Any(ce => ce.Description == "High"))
+                priorities.Add(new Priority { Description = "High" });
+
+            if (!context.Priorities.Any(ce => ce.Description == "Medium"))
+                priorities.Add(new Priority { Description = "Medium" });
+
+            if (!context.Priorities.Any(ce => ce.Description == "Low"))
+                priorities.Add(new Priority { Description = "Low" });
+
+            return priorities;
+        }
+
+        private static IEnumerable<SiteContactDetail> PrepareSiteContactDetails(PVIMSDbContext context)
+        {
+            List<SiteContactDetail> siteContactDetails = new List<SiteContactDetail>();
+
+            if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.RegulatoryAuthority))
+            {
+                var regulatoryContactDetail = new SiteContactDetail { ContactType = ContactType.RegulatoryAuthority, ContactFirstName = "Not", ContactSurname = "Specified", StreetAddress = "None", City = "None", OrganisationName = "None" };
+                regulatoryContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                siteContactDetails.Add(regulatoryContactDetail);
+            }
+
+            if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.ReportingAuthority))
+            {
+                var reportingContactDetail = new SiteContactDetail { ContactType = ContactType.ReportingAuthority, ContactFirstName = "Uppsala", ContactSurname = "Monitoring Centre", StreetAddress = "Bredgrand 7B", City = "Uppsala", State = "None", PostCode = "75320", ContactEmail = "info@who-umc.org", ContactNumber = "18656060", CountryCode = "46", OrganisationName = "UMC" };
+                reportingContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                siteContactDetails.Add(reportingContactDetail);
+            }
+
+            return siteContactDetails;
+        }
+
+        private static IEnumerable<TreatmentOutcome> PrepareTreatmentOutcomes(PVIMSDbContext context)
+        {
+            List<TreatmentOutcome> treatmentOutcomes = new List<TreatmentOutcome>();
+
+            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Cured"))
+                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Cured" });
+
+            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Treatment Completed"))
+                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Treatment Completed" });
+
+            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Treatment Failed"))
+                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Treatment Failed" });
+
+            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Died"))
+                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Died" });
+
+            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Lost to Follow-up"))
+                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Lost to Follow-up" });
+
+            if (!context.TreatmentOutcomes.Any(ce => ce.Description == "Not Evaluated"))
+                treatmentOutcomes.Add(new TreatmentOutcome { Description = "Not Evaluated" });
+
+            return treatmentOutcomes;
+        }
+
+        private static IEnumerable<WorkFlow> PrepareWorkFlows(PVIMSDbContext context)
+        {
+            List<WorkFlow> workFlows = new List<WorkFlow>();
+
+            if (!context.WorkFlows.Any(wf => wf.Description == "New Active Surveilliance Report"))
+                workFlows.Add(new WorkFlow("New Active Surveilliance Report", new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219")));
+
+            if (!context.WorkFlows.Any(wf => wf.Description == "New Spontaneous Surveilliance Report"))
+                workFlows.Add(new WorkFlow("New Spontaneous Surveilliance Report", new Guid("4096D0A3-45F7-4702-BDA1-76AEDE41B986")));
+
+            return workFlows;
+        }
+
+        private static AsyncRetryPolicy CreatePolicy(ILogger<PVIMSContextSeed> logger, string prefix, int retries = 3)
         {
             return Policy.Handle<SqlException>().
                 WaitAndRetryAsync(

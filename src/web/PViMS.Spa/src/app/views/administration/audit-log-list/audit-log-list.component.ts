@@ -115,12 +115,12 @@ export class AuditLogListComponent extends BaseComponent implements OnInit, Afte
   getFacilityList(): void {
     let self = this;
     self.facilityService.getAllFacilities()
-        .pipe(takeUntil(self._unsubscribeAll))
-        .subscribe(result => {
-          self.facilityList = result;
-        }, error => {
-          self.handleError(error, "Error fetching facility list");
-        });
+      .pipe(takeUntil(self._unsubscribeAll))
+      .subscribe(result => {
+        self.facilityList = result;
+      }, error => {
+        self.handleError(error, "Error fetching facility list");
+      });
   }  
 
   loadGrid(): void {

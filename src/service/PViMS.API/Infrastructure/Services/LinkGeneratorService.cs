@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models.Parameters;
+using PVIMS.API.Models.ValueTypes;
 using System;
 
 namespace PVIMS.API.Infrastructure.Services
@@ -21,7 +22,9 @@ namespace PVIMS.API.Infrastructure.Services
 
         public string CreateIdResourceUriForWrapper(ResourceUriType type,
             string actionName,
-            IdResourceParameters idResourceParameters)
+            string orderBy, 
+            int pageNumber, 
+            int pageSize)
         {
             switch (type)
             {
@@ -29,26 +32,26 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, actionName, 
                       new
                       {
-                          orderBy = idResourceParameters.OrderBy,
-                          pageNumber = idResourceParameters.PageNumber - 1,
-                          pageSize = idResourceParameters.PageSize
+                          orderBy,
+                          pageNumber = pageNumber - 1,
+                          pageSize
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, actionName,
                       new
                       {
-                          orderBy = idResourceParameters.OrderBy,
-                          pageNumber = idResourceParameters.PageNumber + 1,
-                          pageSize = idResourceParameters.PageSize
+                          orderBy,
+                          pageNumber = pageNumber + 1,
+                          pageSize
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, actionName,
                       new
                       {
-                          orderBy = idResourceParameters.OrderBy,
-                          pageNumber = idResourceParameters.PageNumber,
-                          pageSize = idResourceParameters.PageSize
+                          orderBy,
+                          pageNumber,
+                          pageSize
                       });
             }
         }
@@ -362,7 +365,11 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreateConceptsResourceUri(ResourceUriType type,
-           ConceptResourceParameters conceptResourceParameters)
+            string orderBy,
+            string searchTerm,
+            YesNoBothValueType active,
+            int pageNumber,
+            int pageSize)
         {
             switch (type)
             {
@@ -370,32 +377,32 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetConceptsByIdentifier",
                       new
                       {
-                          orderBy = conceptResourceParameters.OrderBy,
-                          pageNumber = conceptResourceParameters.PageNumber - 1,
-                          pageSize = conceptResourceParameters.PageSize,
-                          SearchTerm = conceptResourceParameters.SearchTerm,
-                          Active = conceptResourceParameters.Active
+                          orderBy,
+                          pageNumber = pageNumber - 1,
+                          pageSize,
+                          searchTerm,
+                          active
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetConceptsByIdentifier",
                       new
                       {
-                          orderBy = conceptResourceParameters.OrderBy,
-                          pageNumber = conceptResourceParameters.PageNumber + 1,
-                          pageSize = conceptResourceParameters.PageSize,
-                          SearchTerm = conceptResourceParameters.SearchTerm,
-                          Active = conceptResourceParameters.Active
+                          orderBy,
+                          pageNumber = pageNumber + 1,
+                          pageSize,
+                          searchTerm,
+                          active
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetConceptsByIdentifier",
                       new
                       {
-                          orderBy = conceptResourceParameters.OrderBy,
-                          pageNumber = conceptResourceParameters.PageNumber,
-                          pageSize = conceptResourceParameters.PageSize,
-                          SearchTerm = conceptResourceParameters.SearchTerm,
-                          Active = conceptResourceParameters.Active
+                          orderBy,
+                          pageNumber,
+                          pageSize,
+                          searchTerm,
+                          active
                       });
             }
         }
@@ -497,7 +504,10 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreateEncountersResourceUri(ResourceUriType type,
-           EncounterResourceParameters encounterResourceParameters)
+           string orderBy,
+           string facilityName,
+           int pageNumber,
+           int pageSize)
         {
             switch (type)
             {
@@ -505,29 +515,29 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetEncountersByDetail",
                       new
                       {
-                          orderBy = encounterResourceParameters.OrderBy,
-                          facilityName = encounterResourceParameters.FacilityName,
-                          pageNumber = encounterResourceParameters.PageNumber - 1,
-                          pageSize = encounterResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber - 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetEncountersByDetail",
                       new
                       {
-                          orderBy = encounterResourceParameters.OrderBy,
-                          facilityName = encounterResourceParameters.FacilityName,
-                          pageNumber = encounterResourceParameters.PageNumber + 1,
-                          pageSize = encounterResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber + 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetEncountersByDetail",
                       new
                       {
-                          orderBy = encounterResourceParameters.OrderBy,
-                          facilityName = encounterResourceParameters.FacilityName,
-                          pageNumber = encounterResourceParameters.PageNumber,
-                          pageSize = encounterResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber,
+                          pageSize = pageSize
                       });
             }
         }
@@ -542,39 +552,6 @@ namespace PVIMS.API.Infrastructure.Services
         {
             return _linkGenerator.GetPathByName(_accessor.HttpContext, $"GetEnrolmentForPatient",
               new { patientId, id = enrolmentId });
-        }
-
-        public string CreateFacilitiesResourceUri(ResourceUriType type,
-           FacilityResourceParameters facilityResourceParameters)
-        {
-            switch (type)
-            {
-                case ResourceUriType.PreviousPage:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetFacilitiesByIdentifier",
-                      new
-                      {
-                          orderBy = facilityResourceParameters.OrderBy,
-                          pageNumber = facilityResourceParameters.PageNumber - 1,
-                          pageSize = facilityResourceParameters.PageSize
-                      });
-                case ResourceUriType.NextPage:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetFacilitiesByIdentifier",
-                      new
-                      {
-                          orderBy = facilityResourceParameters.OrderBy,
-                          pageNumber = facilityResourceParameters.PageNumber + 1,
-                          pageSize = facilityResourceParameters.PageSize
-                      });
-                case ResourceUriType.Current:
-                default:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetFacilitiesByIdentifier",
-                      new
-                      {
-                          orderBy = facilityResourceParameters.OrderBy,
-                          pageNumber = facilityResourceParameters.PageNumber,
-                          pageSize = facilityResourceParameters.PageSize
-                      });
-            }
         }
 
         public string CreateMetaWidgetResourceUri(long metaPageId, long metaWidgetId)
@@ -593,46 +570,6 @@ namespace PVIMS.API.Infrastructure.Services
         {
             return _linkGenerator.GetPathByName(_accessor.HttpContext, $"CreatePatientEnrolment",
               new { patientId });
-        }
-
-        public string CreateNewReportInstancesResourceUri(Guid workFlowGuid,
-           ResourceUriType type,
-           ReportInstanceNewResourceParameters reportInstanceResourceParameters)
-        {
-            switch (type)
-            {
-                case ResourceUriType.PreviousPage:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetReportInstancesByDetail",
-                      new
-                      {
-                          workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          searchTerm = reportInstanceResourceParameters.SearchTerm,
-                          pageNumber = reportInstanceResourceParameters.PageNumber - 1,
-                          pageSize = reportInstanceResourceParameters.PageSize
-                      });
-                case ResourceUriType.NextPage:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetReportInstancesByDetail",
-                      new
-                      {
-                          workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          searchTerm = reportInstanceResourceParameters.SearchTerm,
-                          pageNumber = reportInstanceResourceParameters.PageNumber + 1,
-                          pageSize = reportInstanceResourceParameters.PageSize
-                      });
-                case ResourceUriType.Current:
-                default:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetReportInstancesByDetail",
-                      new
-                      {
-                          workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          searchTerm = reportInstanceResourceParameters.SearchTerm,
-                          pageNumber = reportInstanceResourceParameters.PageNumber,
-                          pageSize = reportInstanceResourceParameters.PageSize
-                      });
-            }
         }
 
         public string CreateOutstandingVisitReportResourceUri(ResourceUriType type,
@@ -672,7 +609,10 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreatePatientsResourceUri(ResourceUriType type,
-           PatientResourceParameters patientResourceParameters)
+           string orderBy,
+           string facilityName,
+           int pageNumber,
+           int pageSize)
         {
             switch (type)
             {
@@ -680,29 +620,29 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetPatientsByIdentifier",
                       new
                       {
-                          orderBy = patientResourceParameters.OrderBy,
-                          facilityName = patientResourceParameters.FacilityName,
-                          pageNumber = patientResourceParameters.PageNumber - 1,
-                          pageSize = patientResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber - 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetPatientsByIdentifier",
                       new
                       {
-                          orderBy = patientResourceParameters.OrderBy,
-                          facilityName = patientResourceParameters.FacilityName,
-                          pageNumber = patientResourceParameters.PageNumber + 1,
-                          pageSize = patientResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber + 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetPatientsByIdentifier",
                       new
                       {
-                          orderBy = patientResourceParameters.OrderBy,
-                          facilityName = patientResourceParameters.FacilityName,
-                          pageNumber = patientResourceParameters.PageNumber,
-                          pageSize = patientResourceParameters.PageSize
+                          orderBy,
+                          facilityName,
+                          pageNumber = pageNumber,
+                          pageSize = pageSize
                       });
             }
         }
@@ -820,7 +760,12 @@ namespace PVIMS.API.Infrastructure.Services
 
         public string CreateReportInstancesResourceUri(Guid workFlowGuid, 
            ResourceUriType type,
-           ReportInstanceResourceParameters reportInstanceResourceParameters)
+           string orderBy,
+           string qualifiedName,
+           DateTime searchFrom,
+           DateTime searchTo,
+           int pageNumber,
+           int pageSize)
         {
             switch (type)
             {
@@ -829,24 +774,24 @@ namespace PVIMS.API.Infrastructure.Services
                       new
                       {
                           workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          qualifiedName = reportInstanceResourceParameters.QualifiedName,
-                          searchFrom = reportInstanceResourceParameters.SearchFrom,
-                          searchTo = reportInstanceResourceParameters.SearchTo,
-                          pageNumber = reportInstanceResourceParameters.PageNumber - 1,
-                          pageSize = reportInstanceResourceParameters.PageSize
+                          orderBy,
+                          qualifiedName,
+                          searchFrom,
+                          searchTo,
+                          pageNumber = pageNumber - 1,
+                          pageSize
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetReportInstancesByDetail",
                       new
                       {
                           workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          qualifiedName = reportInstanceResourceParameters.QualifiedName,
-                          searchFrom = reportInstanceResourceParameters.SearchFrom,
-                          searchTo = reportInstanceResourceParameters.SearchTo,
-                          pageNumber = reportInstanceResourceParameters.PageNumber + 1,
-                          pageSize = reportInstanceResourceParameters.PageSize
+                          orderBy,
+                          qualifiedName,
+                          searchFrom,
+                          searchTo,
+                          pageNumber = pageNumber + 1,
+                          pageSize
                       });
                 case ResourceUriType.Current:
                 default:
@@ -854,12 +799,12 @@ namespace PVIMS.API.Infrastructure.Services
                       new
                       {
                           workFlowGuid,
-                          orderBy = reportInstanceResourceParameters.OrderBy,
-                          qualifiedName = reportInstanceResourceParameters.QualifiedName,
-                          searchFrom = reportInstanceResourceParameters.SearchFrom,
-                          searchTo = reportInstanceResourceParameters.SearchTo,
-                          pageNumber = reportInstanceResourceParameters.PageNumber,
-                          pageSize = reportInstanceResourceParameters.PageSize
+                          orderBy,
+                          qualifiedName,
+                          searchFrom,
+                          searchTo,
+                          pageNumber,
+                          pageSize
                       });
             }
         }

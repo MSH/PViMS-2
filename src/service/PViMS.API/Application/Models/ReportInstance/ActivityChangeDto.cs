@@ -14,7 +14,6 @@ namespace PVIMS.API.Models
         /// Comments associated to the change in status
         /// </summary>
         [DataMember]
-        [StringLength(100)]
         public string Comments { get; set; }
 
         /// <summary>
@@ -33,7 +32,6 @@ namespace PVIMS.API.Models
         /// Code for submitting E2B
         /// </summary>
         [DataMember]
-        [StringLength(20)]
         public string ContextCode { get; set; }
 
         /// <summary>

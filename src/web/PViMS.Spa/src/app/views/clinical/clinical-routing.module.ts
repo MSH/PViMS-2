@@ -3,7 +3,6 @@ import { Routes } from '@angular/router';
 import { EncounterSearchComponent } from './encounter/encounter-search/encounter-search.component';
 import { AppointmentSearchComponent } from './appointment/appointment-search/appointment-search.component';
 import { EncounterViewComponent } from './encounter/encounter-view/encounter-view.component';
-import { FormListComponent } from './form/formlist/formlist.component';
 import { FormAComponent } from './form/form-a/form-a.component';
 import { FormBComponent } from './form/form-b/form-b.component';
 import { FormCComponent } from './form/form-c/form-c.component';
@@ -13,6 +12,10 @@ import { PatientViewComponent } from './patient/patient-view/patient-view.compon
 import { FeedbackSearchComponent } from './feedback/feedback-search/feedback-search.component';
 import { CohortSearchComponent } from './cohort/cohort-search/cohort-search.component';
 import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/cohort-enrolment-list.component';
+import { FormADRComponent } from './form/form-adr/form-adr.component';
+import { LandingComponent } from './form/landing/landing.component';
+import { PendingChangesGuard } from 'app/shared/guards/component-can-deactive';
+import { FormListComponent } from './form/form-list/form-list.component';
 
 export const ClinicalRoutes: Routes = [
   {
@@ -58,12 +61,17 @@ export const ClinicalRoutes: Routes = [
       data: { title: 'Encounter View', breadcrumb: 'Encounter View' }
     },
     {
-      path: 'formlist',
+      path: 'form-landing',
+      component: LandingComponent,
+      data: { title: 'List All Forms for Capture', breadcrumb: 'Forms' }
+    },
+    {
+      path: 'form-list/:type',
       component: FormListComponent,
       data: { title: 'List All Forms for Capture', breadcrumb: 'Forms' }
     },
     {
-      path: 'synchronise',
+      path: 'synchronise/:type',
       component: SynchroniseComponent,
       data: { title: 'Synchronise', breadcrumb: 'Synchronise' }
     },
@@ -81,6 +89,12 @@ export const ClinicalRoutes: Routes = [
       path: 'formc/:id',
       component: FormCComponent,
       data: { title: 'Pregnancy Form C', breadcrumb: 'Pregnancy Form C' }
+    },
+    {
+      path: 'formadr/:id',
+      component: FormADRComponent,
+      canDeactivate: [PendingChangesGuard],
+      data: { title: 'Adverse Drug Reaction Form', breadcrumb: 'Adverse Drug Reaction Form' }
     }
   ]
   }

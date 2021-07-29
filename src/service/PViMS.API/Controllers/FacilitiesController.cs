@@ -1,23 +1,19 @@
-﻿using AutoMapper;
-using LinqKit;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using PVIMS.API.Application.Commands.FacilityAggregate;
+using PVIMS.API.Application.Queries.FacilityAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Paging;
-using PVIMS.Core.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
@@ -27,29 +23,20 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class FacilitiesController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
-        private readonly IRepositoryInt<Facility> _facilityRepository;
-        private readonly IRepositoryInt<FacilityType> _facilityTypeRepository;
-        private readonly IUnitOfWorkInt _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly ILinkGeneratorService _linkGeneratorService;
+        private readonly ILogger<FacilitiesController> _logger;
 
-        public FacilitiesController(IPropertyMappingService propertyMappingService,
+        public FacilitiesController(IMediator mediator, 
+            IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
-            IMapper mapper,
-            ILinkGeneratorService linkGeneratorService,
-            IRepositoryInt<Facility> facilityRepository,
-            IRepositoryInt<FacilityType> facilityTypeRepository,
-            IUnitOfWorkInt unitOfWork)
+            ILogger<FacilitiesController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
-            _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
-            _facilityTypeRepository = facilityTypeRepository ?? throw new ArgumentNullException(nameof(facilityTypeRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -61,7 +48,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<FacilityIdentifierDto>> GetFacilitiesByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<FacilityIdentifierDto>>> GetFacilitiesByIdentifier(
             [FromQuery] FacilityResourceParameters facilityResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<FacilityIdentifierDto>
@@ -70,13 +57,34 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedFacilitiesWithLinks = GetFacilities<FacilityIdentifierDto>(facilityResourceParameters);
+            var query = new FacilitiesIdentifierQuery(
+                facilityResourceParameters.OrderBy,
+                facilityResourceParameters.PageNumber,
+                facilityResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<FacilityIdentifierDto>(mappedFacilitiesWithLinks.TotalCount, mappedFacilitiesWithLinks);
-            var wrapperWithLinks = CreateLinksForFacilities(wrapper, facilityResourceParameters,
-                mappedFacilitiesWithLinks.HasNext, mappedFacilitiesWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: FacilitiesIdentifierQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = facilityResourceParameters.PageSize,
+                currentPage = facilityResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -89,7 +97,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<FacilityDetailDto>> GetFacilitiesByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<FacilityDetailDto>>> GetFacilitiesByDetail(
             [FromQuery] FacilityResourceParameters facilityResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<FacilityDetailDto>
@@ -98,13 +106,34 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedFacilitiesWithLinks = GetFacilities<FacilityDetailDto>(facilityResourceParameters);
+            var query = new FacilitiesDetailQuery(
+                facilityResourceParameters.OrderBy,
+                facilityResourceParameters.PageNumber,
+                facilityResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<FacilityDetailDto>(mappedFacilitiesWithLinks.TotalCount, mappedFacilitiesWithLinks);
-            var wrapperWithLinks = CreateLinksForFacilities(wrapper, facilityResourceParameters,
-                mappedFacilitiesWithLinks.HasNext, mappedFacilitiesWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: FacilitiesDetailQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = facilityResourceParameters.PageSize,
+                currentPage = facilityResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -118,15 +147,22 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public async Task<ActionResult<FacilityIdentifierDto>> GetFacilityByIdentifier(long id)
+        public async Task<ActionResult<FacilityIdentifierDto>> GetFacilityByIdentifier(int id)
         {
-            var mappedFacility = await GetFacilityAsync<FacilityIdentifierDto>(id);
-            if (mappedFacility == null)
+            var query = new FacilityIdentifierQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: FacilityIdentifierQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForFacility<FacilityIdentifierDto>(mappedFacility));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -141,15 +177,22 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<FacilityDetailDto>> GetFacilityByDetail(long id)
+        public async Task<ActionResult<FacilityDetailDto>> GetFacilityByDetail(int id)
         {
-            var mappedFacility = await GetFacilityAsync<FacilityDetailDto>(id);
-            if (mappedFacility == null)
+            var query = new FacilityDetailQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: FacilityDetailQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForFacility<FacilityDetailDto>(mappedFacility));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -161,7 +204,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<FacilityTypeIdentifierDto>> GetFacilityTypesByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<FacilityTypeIdentifierDto>>> GetFacilityTypesByIdentifier(
             [FromQuery] FacilityTypeResourceParameters facilityTypeResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<FacilityTypeIdentifierDto, FacilityType>
@@ -170,13 +213,34 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedFacilityTypesWithLinks = GetFacilityTypes<FacilityTypeIdentifierDto>(facilityTypeResourceParameters);
+            var query = new FacilityTypesIdentifierQuery(
+                facilityTypeResourceParameters.OrderBy,
+                facilityTypeResourceParameters.PageNumber,
+                facilityTypeResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<FacilityTypeIdentifierDto>(mappedFacilityTypesWithLinks.TotalCount, mappedFacilityTypesWithLinks);
-            //var wrapperWithLinks = CreateLinksForFacilities(wrapper, medicationResourceParameters,
-            //    mappedMedicationsWithLinks.HasNext, mappedMedicationsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: FacilityTypesIdentifierQuery");
 
-            return Ok(wrapper);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = facilityTypeResourceParameters.PageSize,
+                currentPage = facilityTypeResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -196,89 +260,24 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Custom validation
-            if (_facilityRepository.Queryable().Any(f => f.FacilityName == facilityForUpdate.FacilityName))
+            var command = new AddFacilityCommand(facilityForUpdate.FacilityName, facilityForUpdate.FacilityCode, facilityForUpdate.FacilityType, facilityForUpdate.TelNumber, facilityForUpdate.MobileNumber, facilityForUpdate.FaxNumber);
+
+            _logger.LogInformation(
+                "----- Sending command: AddFacilityCommand - {facilityName}",
+                command.FacilityName);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                ModelState.AddModelError("Message", "A facility with the specified facility name already exists.");
-                return BadRequest(ModelState);
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(facilityForUpdate.FacilityName, @"[-a-zA-Z0-9. '()]").Count < facilityForUpdate.FacilityName.Length)
-            {
-                ModelState.AddModelError("Message", "Facility name contains invalid characters (Enter A-Z, a-z, 0-9, space, period, apostrophe, round brackets)");
-                return BadRequest(ModelState);
-            }
-
-            if (_facilityRepository.Queryable().Any(f => f.FacilityCode == facilityForUpdate.FacilityCode))
-            {
-                ModelState.AddModelError("Message", "A facility with the specified facility code already exists.");
-                return BadRequest(ModelState);
-            }
-
-            if (Regex.Matches(facilityForUpdate.FacilityCode, @"[-a-zA-Z0-9]").Count < facilityForUpdate.FacilityCode.Length)
-            {
-                ModelState.AddModelError("Message", "Facility code contains invalid characters (Enter A-Z, a-z, 0-9)");
-                return BadRequest(ModelState);
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.ContactNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.ContactNumber, @"[-a-zA-Z0-9]").Count < facilityForUpdate.ContactNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Telephone number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.MobileNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.MobileNumber, @"[-a-zA-Z0-9]").Count < facilityForUpdate.MobileNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Mobile number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.FaxNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.FaxNumber, @"[a-zA-Z0-9]").Count < facilityForUpdate.FaxNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Fax number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            long id = 0;
-
-            if (ModelState.IsValid)
-            {
-                var facilityType = _facilityTypeRepository.Get(ft => ft.Description == facilityForUpdate.FacilityType);
-
-                var newFacility = new Facility()
-                {
-                    FacilityName = facilityForUpdate.FacilityName,
-                    FacilityCode = facilityForUpdate.FacilityCode,
-                    FacilityType = facilityType,
-                    FaxNumber = facilityForUpdate.FaxNumber,
-                    MobileNumber = facilityForUpdate.MobileNumber,
-                    TelNumber = facilityForUpdate.ContactNumber
-                };
-
-                _facilityRepository.Save(newFacility);
-                id = newFacility.Id;
-            }
-
-            var mappedFacility = await GetFacilityAsync<FacilityIdentifierDto>(id);
-            if (mappedFacility == null)
-            {
-                return StatusCode(500, "Unable to locate newly added facility");
-            }
-
-            return CreatedAtRoute("GetFacilityByIdentifier",
+            return CreatedAtAction("GetFacilityByDetail",
                 new
                 {
-                    id = mappedFacility.Id
-                }, CreateLinksForFacility<FacilityIdentifierDto>(mappedFacility));
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -289,7 +288,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPut("facilities/{id}", Name = "UpdateFacility")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdateFacility(long id,
+        public async Task<IActionResult> UpdateFacility(int id,
             [FromBody] FacilityForUpdateDto facilityForUpdate)
         {
             if (facilityForUpdate == null)
@@ -298,77 +297,17 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var facilityFromRepo = await _facilityRepository.GetAsync(f => f.Id == id);
-            if (facilityFromRepo == null)
+            var command = new ChangeFacilityDetailsCommand(id, facilityForUpdate.FacilityName, facilityForUpdate.FacilityCode, facilityForUpdate.FacilityType, facilityForUpdate.TelNumber, facilityForUpdate.MobileNumber, facilityForUpdate.FaxNumber);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeFacilityDetailsCommand - {Id}",
+                command.Id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
-            }
-
-            var type = _facilityTypeRepository.Get(ft => ft.Description == facilityForUpdate.FacilityType);
-
-            // Custom validation
-            if (_facilityRepository.Queryable().Any(f => f.Id != id && f.FacilityName == facilityForUpdate.FacilityName))
-            {
-                ModelState.AddModelError("Message", "Another facility with the specified name already exists.");
-                return BadRequest(ModelState);
-            }
-
-            if (Regex.Matches(facilityForUpdate.FacilityName, @"[-a-zA-Z0-9. '()]").Count < facilityForUpdate.FacilityName.Length)
-            {
-                ModelState.AddModelError("Message", "Facility name contains invalid characters (Enter A-Z, a-z, 0-9, space, period, apostrophe, round brackets)");
-                return BadRequest(ModelState);
-            }
-
-            if (_facilityRepository.Queryable().Any(f => f.Id != id && f.FacilityCode == facilityForUpdate.FacilityCode))
-            {
-                ModelState.AddModelError("Message", "Another facility with the specified code already exists.");
-                return BadRequest(ModelState);
-            }
-
-            if (Regex.Matches(facilityForUpdate.FacilityCode, @"[-a-zA-Z0-9]").Count < facilityForUpdate.FacilityCode.Length)
-            {
-                ModelState.AddModelError("Message", "Facility code contains invalid characters (Enter A-Z, a-z, 0-9)");
-                return BadRequest(ModelState);
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.ContactNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.ContactNumber, @"[-a-zA-Z0-9]").Count < facilityForUpdate.ContactNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Telephone number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.MobileNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.MobileNumber, @"[-a-zA-Z0-9]").Count < facilityForUpdate.MobileNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Mobile number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (!String.IsNullOrEmpty(facilityForUpdate.FaxNumber))
-            {
-                if (Regex.Matches(facilityForUpdate.FaxNumber, @"[a-zA-Z0-9]").Count < facilityForUpdate.FaxNumber.Length)
-                {
-                    ModelState.AddModelError("Message", "Fax number contains invalid characters (Enter A-Z, a-z, 0-9)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (ModelState.IsValid)
-            {
-                facilityFromRepo.FacilityName = facilityForUpdate.FacilityName;
-                facilityFromRepo.FacilityCode = facilityForUpdate.FacilityCode;
-                facilityFromRepo.FacilityType = type;
-                facilityFromRepo.FaxNumber = facilityForUpdate.FaxNumber;
-                facilityFromRepo.MobileNumber = facilityForUpdate.MobileNumber;
-                facilityFromRepo.TelNumber = facilityForUpdate.ContactNumber;
-
-                _facilityRepository.Update(facilityFromRepo);
-                _unitOfWork.Complete();
+                return BadRequest("Command not created");
             }
 
             return Ok();
@@ -380,196 +319,22 @@ namespace PVIMS.API.Controllers
         /// <param name="id">The unique id of the facility</param>
         /// <returns></returns>
         [HttpDelete("facilities/{id}", Name = "DeleteFacility")]
-        public async Task<IActionResult> DeleteFacility(long id)
+        public async Task<IActionResult> DeleteFacility(int id)
         {
-            var facilityFromRepo = await _facilityRepository.GetAsync(f => f.Id == id);
-            if (facilityFromRepo == null)
-            {
-                return NotFound();
-            }
+            var command = new DeleteFacilityCommand(id);
 
-            if (facilityFromRepo.PatientFacilities.Count > 0 || facilityFromRepo.UserFacilities.Count > 0)
-            {
-                ModelState.AddModelError("Message", "Unable to delete as item is in use.");
-                return BadRequest(ModelState);
-            }
+            _logger.LogInformation(
+                "----- Sending command: DeleteFacilityCommand - {Id}",
+                command.Id);
 
-            if (ModelState.IsValid)
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                _facilityRepository.Delete(facilityFromRepo);
-                _unitOfWork.Complete();
+                return BadRequest("Command not created");
             }
 
             return NoContent();
-        }
-
-        /// <summary>
-        /// Get facilities from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="facilityResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetFacilities<T>(FacilityResourceParameters facilityResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = facilityResourceParameters.PageNumber,
-                PageSize = facilityResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<Facility>(facilityResourceParameters.OrderBy, "asc");
-
-            var pagedFacilitiesFromRepo = _facilityRepository.List(pagingInfo, null, orderby, "");
-            if (pagedFacilitiesFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedFacilities = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedFacilitiesFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedFacilitiesFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedFacilities.TotalCount,
-                    pageSize = mappedFacilities.PageSize,
-                    currentPage = mappedFacilities.CurrentPage,
-                    totalPages = mappedFacilities.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedFacilities.ForEach(dto => CreateLinksForFacility(dto));
-
-                return mappedFacilities;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get single facility from repository and auto map to Dto
-        /// </summary>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private async Task<T> GetFacilityAsync<T>(long id) where T : class
-        {
-            var predicate = PredicateBuilder.New<Facility>(true);
-
-            // Build remaining expressions
-            predicate = predicate.And(f => f.Id == id);
-
-            var facilityFromRepo = await _facilityRepository.GetAsync(predicate);
-
-            if (facilityFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedFacility = _mapper.Map<T>(facilityFromRepo);
-
-                return mappedFacility;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get facility types from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="facilityTypeResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetFacilityTypes<T>(FacilityTypeResourceParameters facilityTypeResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = facilityTypeResourceParameters.PageNumber,
-                PageSize = facilityTypeResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<FacilityType>(facilityTypeResourceParameters.OrderBy, "asc");
-
-            var pagedFacilityTypesFromRepo = _facilityTypeRepository.List(pagingInfo, null, orderby, "");
-            if (pagedFacilityTypesFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedFacilityTypes = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedFacilityTypesFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedFacilityTypesFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedFacilityTypes.TotalCount,
-                    pageSize = mappedFacilityTypes.PageSize,
-                    currentPage = mappedFacilityTypes.CurrentPage,
-                    totalPages = mappedFacilityTypes.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                //mappedMedications.ForEach(dto => CreateLinksForFacility(dto));
-
-                return mappedFacilityTypes;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="facilityResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForFacilities(
-            LinkedResourceBaseDto wrapper,
-            FacilityResourceParameters facilityResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateFacilitiesResourceUri(ResourceUriType.Current, facilityResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateFacilitiesResourceUri(ResourceUriType.NextPage, facilityResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateFacilitiesResourceUri(ResourceUriType.PreviousPage, facilityResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private FacilityIdentifierDto CreateLinksForFacility<T>(T dto)
-        {
-            FacilityIdentifierDto identifier = (FacilityIdentifierDto)(object)dto;
-
-            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Facility", identifier.Id), "self", "GET"));
-            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateDeleteResourceUri("Facility", identifier.Id), "self", "DELETE"));
-
-            return identifier;
         }
     }
 }

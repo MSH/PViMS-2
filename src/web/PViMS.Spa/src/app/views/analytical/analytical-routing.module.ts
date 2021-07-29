@@ -1,9 +1,10 @@
 import { Routes } from '@angular/router';
 import { SpontaneousAnalyserComponent } from './analyser/spontaneous-analyser/spontaneous-analyser.component';
-import { ActivityhistoryComponent } from './report/activity-history/activity-history.component';
+import { ActivityHistoryComponent } from './report/activity-history/activity-history.component';
 import { ReportSearchComponent } from './report/report-search/report-search.component';
 import { LandingComponent } from './landing/landing.component';
 import { ActiveAnalyserComponent } from './analyser/active-analyser/active-analyser.component';
+import { ReportTaskListComponent } from './report/report-task/report-task-list.component';
 
 export const AnalyticalRoutes: Routes = [
   {
@@ -31,9 +32,20 @@ export const AnalyticalRoutes: Routes = [
       runGuardsAndResolvers: 'always'
     },
     {
+      path: 'reportsearch/:wuid/:qualifiedName',
+      component: ReportSearchComponent,
+      data: { title: 'Search For a Report', breadcrumb: 'Reports' },
+      runGuardsAndResolvers: 'always'
+    },
+    {
       path: 'activityhistory/:wuid/:id',
-      component: ActivityhistoryComponent,
-      data: { title: 'Report Activities', breadcrumb: 'Reports' }
+      component: ActivityHistoryComponent,
+      data: { title: 'Report Activities', breadcrumb: 'Activity' }
+    },
+    {
+      path: 'reporttask/:wuid/:id',
+      component: ReportTaskListComponent,
+      data: { title: 'Report Tasks', breadcrumb: 'Tasks' }
     }]
   }
 ];

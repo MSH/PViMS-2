@@ -88,7 +88,6 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
 
   ngAfterViewInit(): void {
     let self = this;
-    console.log('paginator was ' + self.mainGridPaginator);
     self.viewModel.mainGrid.setupAdvance(
        null, null, self.mainGridPaginator)
        .subscribe(() => { self.loadGrid(); });

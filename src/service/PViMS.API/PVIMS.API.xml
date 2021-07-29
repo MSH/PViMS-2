@@ -4,6 +4,51 @@
         <name>PViMS.API</name>
     </assembly>
     <members>
+        <member name="T:PVIMS.API.Application.Queries.ReportInstanceAggregate.ReportInstanceEventDto">
+            <summary>
+            A activity history value representation containing audit details of all activities
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Queries.ReportInstanceAggregate.ReportInstanceEventDto.Id">
+            <summary>
+            The unique identifier of the status event
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Queries.ReportInstanceAggregate.ReportInstanceEventDto.PatientClinicalEventId">
+            <summary>
+            The unique identifier of the adverse event the activity has been performed against
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Queries.ReportInstanceAggregate.ReportInstanceEventDto.AdverseEvent">
+            <summary>
+            The adverse event the activity has been performed against
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Queries.ReportInstanceAggregate.ReportInstanceEventDto.Activity">
+            <summary>
+            The activity the action has been performed against
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Queries.ReportInstanceAggregate.ReportInstanceEventDto.ExecutionEvent">
+            <summary>
+            The event that has been executed
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Queries.ReportInstanceAggregate.ReportInstanceEventDto.ExecutedBy">
+            <summary>
+            Who has executed the event
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Queries.ReportInstanceAggregate.ReportInstanceEventDto.ExecutedDate">
+            <summary>
+            The date and time the event was executed
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Queries.ReportInstanceAggregate.ReportInstanceEventDto.Comments">
+            <summary>
+            Any additional comments
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.LoginRequestDto.UserName">
             <summary>
             Login username
@@ -364,6 +409,11 @@
             A attribute value representation containing the custom attribute values that have been assigned to a household or member
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.AttributeValueDto.Id">
+            <summary>
+            The unique id of the attribute
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.AttributeValueDto.Category">
             <summary>
             The category that the attribute key has been associated to
@@ -380,6 +430,21 @@
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.AttributeValueDto.SelectionValue">
+            <summary>
+            The value of the attribute
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.AttributeValueForPostDto">
+            <summary>
+            A attribute value representation containing the custom attribute values that have been assigned to a household or member
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.AttributeValueForPostDto.Id">
+            <summary>
+            The unique id of the attribute
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.AttributeValueForPostDto.Value">
             <summary>
             The value of the attribute
             </summary>
@@ -1996,7 +2061,7 @@
             The type of the facility
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.FacilityForUpdateDto.ContactNumber">
+        <member name="P:PVIMS.API.Models.FacilityForUpdateDto.TelNumber">
             <summary>
             The telephone number
             </summary>
@@ -2957,34 +3022,39 @@
             The globally unique identifier for the meta table
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.NotificationDto.Identifier">
+        <member name="T:PVIMS.API.Models.NotificationDto">
             <summary>
-            Identifier of notification
+            A notification representation DTO
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.NotificationDto.Icon">
+        <member name="P:PVIMS.API.Models.NotificationDto.Summary">
             <summary>
-            Notification icon
+            The summary of the notification
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.NotificationDto.Time">
+        <member name="P:PVIMS.API.Models.NotificationDto.Detail">
             <summary>
-            When the notification was created
+            Additional details of the notification
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.NotificationDto.Message">
+        <member name="P:PVIMS.API.Models.NotificationDto.NotificationType">
             <summary>
-            Details of the notification
+            The type of notification created
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.NotificationDto.Route">
+        <member name="P:PVIMS.API.Models.NotificationDto.NotificationClassification">
             <summary>
-            For routing purposed
+            The classification of notification created
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.NotificationDto.Color">
+        <member name="P:PVIMS.API.Models.NotificationDto.CreatedDetail">
             <summary>
-            Color scheme to use
+            Details of the notification creation
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.NotificationDto.ContextRoute">
+            <summary>
+            The contextual route to access the task list
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.Parameters.AnalyserTermSetResourceParameters.ConditionId">
@@ -3378,6 +3448,16 @@
             Attribute must appear in payload to be sortable
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.Parameters.PatientByConditionResourceParameters.CustomAttributeKey">
+            <summary>
+            Filter patients by custom attribute key
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.Parameters.PatientByConditionResourceParameters.CustomAttributeValue">
+            <summary>
+            Filter patients by custom attribute value
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.Parameters.PatientResourceParameters.OrderBy">
             <summary>
             Specify the order you would like patients returned in  
@@ -3438,16 +3518,16 @@
             Provide the ability to filter by the resources status
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.Parameters.ReportInstanceNewResourceParameters.OrderBy">
+        <member name="P:PVIMS.API.Models.Parameters.ReportInstanceActivityResourceParameters.OrderBy">
             <summary>
             Specify the order you would like report instances returned in  
             Default order attribute is Id  
             Attribute must appear in payload to be sortable
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.Parameters.ReportInstanceNewResourceParameters.SearchTerm">
+        <member name="P:PVIMS.API.Models.Parameters.ReportInstanceActivityResourceParameters.QualifiedName">
             <summary>
-            Filter reports by generic search term
+            Filter reports by activity qualified name
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.Parameters.ReportInstanceResourceParameters.OrderBy">
@@ -3669,6 +3749,11 @@
             The MedDra term as set by the PV specialist
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.PatientClinicalEventExpandedDto.SetClassification">
+            <summary>
+            The classification as set by the PV specialist
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.PatientClinicalEventExpandedDto.Medications">
             <summary>
             Medications which have causality set
@@ -3677,6 +3762,11 @@
         <member name="P:PVIMS.API.Models.PatientClinicalEventExpandedDto.Activity">
             <summary>
             All activity for this reporting instance
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientClinicalEventExpandedDto.Tasks">
+            <summary>
+            All tasks that have been allocated to this clinical event
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.PatientClinicalEventForUpdateDto.SourceDescription">
@@ -3711,7 +3801,7 @@
         </member>
         <member name="P:PVIMS.API.Models.PatientClinicalEventIdentifierDto.Id">
             <summary>
-            The unique Id of the patient ondition
+            The unique Id of the patient clinical event
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.PatientClinicalEventIdentifierDto.PatientClinicalEventGuid">
@@ -4166,7 +4256,7 @@
         </member>
         <member name="P:PVIMS.API.Models.PatientMedicationForUpdateDto.Attributes">
             <summary>
-            Condition custom attributes
+            Medication custom attributes
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.PatientMedicationIdentifierDto">
@@ -4217,6 +4307,16 @@
         <member name="P:PVIMS.API.Models.PatientAttachmentForCreationDto.Attachment">
             <summary>
             The posted attachment
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientCustomAttributesForUpdateDto.Attributes">
+            <summary>
+            Patient custom attributes and associated values
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientDateOfBirthForUpdateDto.DateOfBirth">
+            <summary>
+            The date of birth of the patient
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.PatientDetailDto">
@@ -4347,6 +4447,11 @@
         <member name="P:PVIMS.API.Models.PatientExpandedDto.Activity">
             <summary>
             Activity per clinical event
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientFacilityForUpdateDto.FacilityName">
+            <summary>
+            The unique name of the facility the patient is changing to
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.PatientForCreationDto.FirstName">
@@ -4482,6 +4587,26 @@
         <member name="P:PVIMS.API.Models.PatientIdentifierDto.FacilityName">
             <summary>
             The current facility of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientNameForUpdateDto.FirstName">
+            <summary>
+            The first name of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientNameForUpdateDto.LastName">
+            <summary>
+            The first name of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientNameForUpdateDto.MiddleName">
+            <summary>
+            The first name of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientNotesForUpdateDto.Notes">
+            <summary>
+            Generic patient notes for the patient
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.PatientStatusDto">
@@ -4689,6 +4814,11 @@
             The incidence rate for the population set
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceClassificationForUpdateDto.ReportClassification">
+            <summary>
+            The classification of the report
+            </summary>
+        </member>
         <member name="T:PVIMS.API.Models.ReportInstanceDetailDto">
             <summary>
             A report instance representation DTO - FULL DETAILS
@@ -4699,14 +4829,14 @@
             Details of the source clinical event as described by the patient or reporter
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.TerminologyMedDra">
-            <summary>
-            Terminology that has been set by the pv specialist
-            </summary>
-        </member>
         <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.PatientIdentifier">
             <summary>
-            Patient identification details
+            Patient identifier
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.ReportClassification">
+            <summary>
+            The classification of the report
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.PatientId">
@@ -4729,29 +4859,44 @@
             E2B xml file unique identifier
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.TerminologyMedDra">
+            <summary>
+            Terminology that has been set by the pv specialist
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.CreatedDetail">
             <summary>
-            Details of the household creation
+            Details of the report creation
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.UpdatedDetail">
             <summary>
-            Details of the last update to the household
+            Details of the last update to the report
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.QualifiedName">
             <summary>
-            The qualified name of the activity
+            The qualified name of the current activity of the report
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.CurrentStatus">
             <summary>
-            The current status of the activity
+            The status of the current activity of the report
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.E2BInstance">
             <summary>
             The e2b dataset that has been generated for this report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.TaskCount">
+            <summary>
+            The number of tasks that have been allocated to this report
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.ActiveTaskCount">
+            <summary>
+            The number of tasks that have been allocated to this report that have not been completed or cancelled
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.SpontaneousInstance">
@@ -4762,6 +4907,21 @@
         <member name="P:PVIMS.API.Models.ReportInstanceDetailDto.Medications">
             <summary>
             Medications associated to the reporting instance
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.ReportInstanceExpandedDto">
+            <summary>
+            A report instance representation DTO including events and comments collections
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceExpandedDto.Events">
+            <summary>
+            All events that have taken place against this report instance
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceExpandedDto.Tasks">
+            <summary>
+            All tasks that have been allocated to this report instance
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.ReportInstanceIdentifierDto">
@@ -4849,9 +5009,144 @@
             The globally unique identifier for the medication
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceTaskCommentForCreationDto.Comment">
+            <summary>
+            The comment to be added
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.ReportInstanceTaskCommentIdentifierDto">
+            <summary>
+            A report instance task comment representation DTO - IDENTIFIER ONLY
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceTaskCommentIdentifierDto.Id">
+            <summary>
+            The unique Id of the report instance task comment
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceTaskCommentIdentifierDto.Comment">
+            <summary>
+            The comment that is added to the task
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceTaskDetailsForUpdateDto.Source">
+            <summary>
+            The source of that data quality task
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceTaskDetailsForUpdateDto.Description">
+            <summary>
+            A detailed description of the task requirement
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceTaskForCreationDto.Source">
+            <summary>
+            The source of that data quality task
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceTaskForCreationDto.Description">
+            <summary>
+            A detailed description of the task requirement
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceTaskForCreationDto.TaskType">
+            <summary>
+            The type of task
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.ReportInstanceTaskIdentifierDto">
+            <summary>
+            A report instance task representation DTO - IDENTIFIER ONLY
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceTaskIdentifierDto.Id">
+            <summary>
+            The unique Id of the report instance task
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.ReportInstanceTaskStatusForUpdateDto.TaskStatus">
+            <summary>
+            The status of task
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.ReportInstanceTerminologyForUpdateDto.TerminologyMedDraId">
             <summary>
             The unique identifier of the meddra term
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.TaskCommentDto">
+            <summary>
+            A comment that can be allocated by a system user to a task
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskCommentDto.Id">
+            <summary>
+            The unique identifier of the comment
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskCommentDto.Comment">
+            <summary>
+            The comment noted by the user
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskCommentDto.CreatedInitials">
+            <summary>
+            The initials of the user that created the comment
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskCommentDto.CreatedDetail">
+            <summary>
+            Details of the comment creation
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskCommentDto.UpdatedDetail">
+            <summary>
+            Details of the last update to the comment
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Models.TaskDto">
+            <summary>
+            A representation of a task that can be allocated to a report instance
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskDto.Id">
+            <summary>
+            The unique identifier of the task
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskDto.Source">
+            <summary>
+            The data source necessitating the task
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskDto.Description">
+            <summary>
+            A detailed description of the task
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskDto.TaskType">
+            <summary>
+            The type of task that has been allocated
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskDto.TaskStatus">
+            <summary>
+            The current status of the task
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskDto.CreatedDetail">
+            <summary>
+            Details of the task creation
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskDto.UpdatedDetail">
+            <summary>
+            Details of the last update to the task
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.TaskDto.Comments">
+            <summary>
+            All events that have taken place against this report instance
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.RiskFactorDetailDto">
@@ -5159,6 +5454,11 @@
             The number of reports currently in this state
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.ActivitySummaryDto.NewFeedbackInstanceCount">
+            <summary>
+            The number of new feedback items in this state
+            </summary>
+        </member>
         <member name="T:PVIMS.API.Models.WorkFlowDetailDto">
             <summary>
             A work flow representation DTO - FULL DETAILS
@@ -5169,14 +5469,14 @@
             The number of new reports for this work flow
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.WorkFlowDetailDto.NewFeedbackInstanceCount">
+        <member name="P:PVIMS.API.Models.WorkFlowDetailDto.AnalysisActivity">
             <summary>
-            The number of new feedback items for this work flow
+            Activity summary for this work flow item for analysis purposes
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.WorkFlowDetailDto.ActivityItems">
+        <member name="P:PVIMS.API.Models.WorkFlowDetailDto.FeedbackActivity">
             <summary>
-            Activity summary for this work flow item
+            Activity summary for this work flow item for feedback purposes
             </summary>
         </member>
         <member name="T:PVIMS.API.Models.WorkFlowIdentifierDto">
@@ -5224,51 +5524,6 @@
             The name of the work plan
             </summary>
         </member>
-        <member name="T:PVIMS.API.Application.Queries.ReportInstance.ReportInstanceEventDto">
-            <summary>
-            A activity history value representation containing audit details of all activities
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Application.Queries.ReportInstance.ReportInstanceEventDto.Id">
-            <summary>
-            The unique identifier of the status event
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Application.Queries.ReportInstance.ReportInstanceEventDto.PatientClinicalEventId">
-            <summary>
-            The unique identifier of the adverse event the activity has been performed against
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Application.Queries.ReportInstance.ReportInstanceEventDto.AdverseEvent">
-            <summary>
-            The adverse event the activity has been performed against
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Application.Queries.ReportInstance.ReportInstanceEventDto.Activity">
-            <summary>
-            The activity the action has been performed against
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Application.Queries.ReportInstance.ReportInstanceEventDto.ExecutionEvent">
-            <summary>
-            The event that has been executed
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Application.Queries.ReportInstance.ReportInstanceEventDto.ExecutedBy">
-            <summary>
-            Who has executed the event
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Application.Queries.ReportInstance.ReportInstanceEventDto.ExecutedDate">
-            <summary>
-            The date and time the event was executed
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Application.Queries.ReportInstance.ReportInstanceEventDto.Comments">
-            <summary>
-            Any additional comments
-            </summary>
-        </member>
         <member name="M:PVIMS.API.Controllers.AccountController.Ping">
             <summary>
             Ping service to check if API endpoint is available
@@ -5299,18 +5554,6 @@
             </summary>
             <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of NotificationDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.AccountController.PrepareNotificationsForClinician(System.DateTime)">
-            <summary>
-            Get notification messages for clinician
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.AccountController.PrepareNotificationsForAnalyst(System.DateTime)">
-            <summary>
-            Get notification messages for analyst
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:PVIMS.API.Controllers.AccountController.CreateNotificationForActiveReports(System.DateTime)">
             <summary>
              Prepare notification for active reports
@@ -5321,13 +5564,6 @@
         <member name="M:PVIMS.API.Controllers.AccountController.CreateNotificationForSpontaneousReports(System.DateTime)">
             <summary>
              Prepare notification for spontaneous reports
-            </summary>
-            <param name="compDate">The paramterised date to check against</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.AccountController.CreateNotificationForActiveCausality(System.DateTime)">
-            <summary>
-             Prepare notification for active causality reports
             </summary>
             <param name="compDate">The paramterised date to check against</param>
             <returns></returns>
@@ -5761,54 +5997,6 @@
             <param name="enrolmentForDelete">The deletion payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupEnrolmentsController.GetCohortGroupEnrolments``1(System.Int32,PVIMS.API.Models.Parameters.CohortGroupEnrolmentResourceParameters)">
-            <summary>
-            Get cohort group enrolments from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="cohortGroupId">The unique identifier of the cohort group</param>
-            <param name="cohortGroupEnrolmentResourceParameters">Standard parameters for representing resource</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupEnrolmentsController.GetCohortGroupEnrolmentAsync``1(System.Int64,System.Int64)">
-            <summary>
-            Get single cohortGroupEnrolment from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="patientId">unique identifier of the patient </param>
-            <param name="id">Resource guid to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupEnrolmentsController.GetEnrolmentAsync(System.Int64)">
-            <summary>
-            Get single appointment from repository using primary key and auto map to Dto
-            </summary>
-            <param name="enrolmentId">Primary key of the enrolment</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupEnrolmentsController.CreateLinksForCohortGroupEnrolment``1(``0)">
-            <summary>
-             Prepare HATEOAS links for a single resource
-            </summary>
-            <param name="patientId">The unique identifier of the patient</param>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupEnrolmentsController.CreateLinksForEnrolment``1(System.Int64,``0)">
-            <summary>
-             Prepare HATEOAS links for a single resource
-            </summary>
-            <param name="patientId">The unique identifier of the patient</param>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupEnrolmentsController.CustomCohortGroupEnrolmentMap(PVIMS.API.Models.EnrolmentDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
         <member name="M:PVIMS.API.Controllers.CohortGroupsController.GetCohortGroupsByIdentifier(PVIMS.API.Models.Parameters.IdResourceParameters)">
             <summary>
             Get all cohort groups using a valid media type 
@@ -5848,7 +6036,7 @@
             <param name="cohortGroupForUpdate">The cohort group payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupsController.UpdateCohortGroup(System.Int64,PVIMS.API.Models.CohortGroupForUpdateDto)">
+        <member name="M:PVIMS.API.Controllers.CohortGroupsController.UpdateCohortGroup(System.Int32,PVIMS.API.Models.CohortGroupForUpdateDto)">
             <summary>
             Update an existing cohort group
             </summary>
@@ -5856,44 +6044,11 @@
             <param name="cohortGroupForUpdate">The cohort group payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupsController.DeleteCohortGroup(System.Int64)">
+        <member name="M:PVIMS.API.Controllers.CohortGroupsController.DeleteCohortGroup(System.Int32)">
             <summary>
             Delete an existing cohort group
             </summary>
             <param name="id">The unique id of the cohort group</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupsController.GetCohortGroupAsync``1(System.Int32)">
-            <summary>
-            Get single cohort group from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-            <param name="id">Resource id to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupsController.GetCohortGroups``1(PVIMS.API.Models.Parameters.IdResourceParameters)">
-            <summary>
-            Get cohort groups from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="cohortGroupResourceParameters">Standard parameters for representing resource</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupsController.CreateLinksForCohortGroup``1(``0)">
-            <summary>
-             Prepare HATEOAS links for a single resource
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.CohortGroupsController.CreateLinksForCohortGroups(PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.IdResourceParameters,System.Boolean,System.Boolean)">
-            <summary>
-            Prepare HATEOAS links for a identifier based collection resource
-            </summary>
-            <param name="wrapper">The linked dto wrapper that will host each link</param>
-            <param name="cohortGroupResourceParameters">Standard parameters for representing resource</param>
-            <param name="hasNext">Are there additional pages</param>
-            <param name="hasPrevious">Are there previous pages</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.ConceptsController.GetConceptsByIdentifier(PVIMS.API.Models.Parameters.ConceptResourceParameters)">
@@ -5938,7 +6093,7 @@
             </summary>
             <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MedicationFormIdentifierDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.ConceptsController.GetConceptByIdentifier(System.Int64)">
+        <member name="M:PVIMS.API.Controllers.ConceptsController.GetConceptByIdentifier(System.Int32)">
             <summary>
             Get a single concept using it's unique code and valid media type 
             </summary>
@@ -6017,14 +6172,6 @@
             </summary>
             <typeparam name="T">Identifier or detail Dto</typeparam>
             <param name="id">Resource id to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.ConceptsController.GetConcepts``1(PVIMS.API.Models.Parameters.ConceptResourceParameters)">
-            <summary>
-            Get concepts from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="conceptResourceParameters">Standard parameters for representing resource</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.ConceptsController.GetProducts``1(PVIMS.API.Models.Parameters.ProductResourceParameters)">
@@ -6766,7 +6913,7 @@
             <param name="id">The unique identifier for the Encounter</param>
             <returns>An ActionResult of type EncounterIdentifierDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.EncountersController.GetEncounterByDetail(System.Int64,System.Int64)">
+        <member name="M:PVIMS.API.Controllers.EncountersController.GetEncounterByDetail(System.Int32,System.Int32)">
             <summary>
             Get a single Encounter using it's unique id and valid media type 
             </summary>
@@ -6774,7 +6921,7 @@
             <param name="id">The unique identifier for the Encounter</param>
             <returns>An ActionResult of type EncounterDetailDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.EncountersController.GetEncounterByExpanded(System.Int64,System.Int64)">
+        <member name="M:PVIMS.API.Controllers.EncountersController.GetEncounterByExpanded(System.Int32,System.Int32)">
             <summary>
             Get a single Encounter using it's unique code and valid media type 
             </summary>
@@ -6815,38 +6962,6 @@
             <typeparam name="T">Identifier or detail Dto</typeparam>
             <param name="patientId">unique identifier of the patient </param>
             <param name="id">Resource guid to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.EncountersController.GetEncounters``1(PVIMS.API.Models.Parameters.EncounterResourceParameters)">
-            <summary>
-            Get encounters from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-            <param name="encounterResourceParameters">Standard parameters for representing resource</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.EncountersController.CustomEncounterMap(PVIMS.API.Models.EncounterDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.EncountersController.CustomEncounterMap(PVIMS.API.Models.EncounterExpandedDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.EncountersController.CreateLinksForEncounters(PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.EncounterResourceParameters,System.Boolean,System.Boolean)">
-            <summary>
-            Prepare HATEOAS links for a identifier based collection resource
-            </summary>
-            <param name="wrapper">The linked dto wrapper that will host each link</param>
-            <param name="encounterResourceParameters">Standard parameters for representing resource</param>
-            <param name="hasNext">Are there additional pages</param>
-            <param name="hasPrevious">Are there previous pages</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.EncountersController.CreateLinksForEncounter``1(System.Int64,``0)">
@@ -6967,14 +7082,14 @@
             </summary>
             <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of FacilityDetailDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.FacilitiesController.GetFacilityByIdentifier(System.Int64)">
+        <member name="M:PVIMS.API.Controllers.FacilitiesController.GetFacilityByIdentifier(System.Int32)">
             <summary>
             Get a single facility using it's unique id and valid media type 
             </summary>
             <param name="id">The unique identifier for the Facility</param>
             <returns>An ActionResult of type FacilityIdentifierDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.FacilitiesController.GetFacilityByDetail(System.Int64)">
+        <member name="M:PVIMS.API.Controllers.FacilitiesController.GetFacilityByDetail(System.Int32)">
             <summary>
             Get a single facility using it's unique id and valid media type 
             </summary>
@@ -6994,7 +7109,7 @@
             <param name="facilityForUpdate">The facility payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.FacilitiesController.UpdateFacility(System.Int64,PVIMS.API.Models.FacilityForUpdateDto)">
+        <member name="M:PVIMS.API.Controllers.FacilitiesController.UpdateFacility(System.Int32,PVIMS.API.Models.FacilityForUpdateDto)">
             <summary>
             Update an existing facility
             </summary>
@@ -7002,51 +7117,11 @@
             <param name="facilityForUpdate">The facility payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.FacilitiesController.DeleteFacility(System.Int64)">
+        <member name="M:PVIMS.API.Controllers.FacilitiesController.DeleteFacility(System.Int32)">
             <summary>
             Delete an existing facility
             </summary>
             <param name="id">The unique id of the facility</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.FacilitiesController.GetFacilities``1(PVIMS.API.Models.Parameters.FacilityResourceParameters)">
-            <summary>
-            Get facilities from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="facilityResourceParameters">Standard parameters for representing resource</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.FacilitiesController.GetFacilityAsync``1(System.Int64)">
-            <summary>
-            Get single facility from repository and auto map to Dto
-            </summary>
-            <param name="id">Resource id to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.FacilitiesController.GetFacilityTypes``1(PVIMS.API.Models.Parameters.FacilityTypeResourceParameters)">
-            <summary>
-            Get facility types from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="facilityTypeResourceParameters">Standard parameters for representing resource</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.FacilitiesController.CreateLinksForFacilities(PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.FacilityResourceParameters,System.Boolean,System.Boolean)">
-            <summary>
-            Prepare HATEOAS links for a identifier based collection resource
-            </summary>
-            <param name="wrapper">The linked dto wrapper that will host each link</param>
-            <param name="facilityResourceParameters">Standard parameters for representing resource</param>
-            <param name="hasNext">Are there additional pages</param>
-            <param name="hasPrevious">Are there previous pages</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.FacilitiesController.CreateLinksForFacility``1(``0)">
-            <summary>
-             Prepare HATEOAS links for a single resource
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.HolidaysController.GetHolidaysByIdentifier(PVIMS.API.Models.Parameters.HolidayResourceParameters)">
@@ -7381,7 +7456,7 @@
             </summary>
             <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of MetaDependencyDetailDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.MetaController.RefreshMeta">
+        <member name="M:PVIMS.API.Controllers.MetaController.RefreshMetaAsync">
             <summary>
             Refresh meta data
             </summary>
@@ -7669,7 +7744,7 @@
             <param name="id">The unique id of the meta report</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.MetaReportsController.UpdateMetaReportAttributes(System.Int64,System.Int64,PVIMS.API.Models.MetaReportForAttributeUpdateDto)">
+        <member name="M:PVIMS.API.Controllers.MetaReportsController.UpdateMetaReportAttributes(System.Int64,PVIMS.API.Models.MetaReportForAttributeUpdateDto)">
             <summary>
             Update an existing meta report attributes
             </summary>
@@ -7796,7 +7871,7 @@
             <param name="dto">The dto that the link has been added to</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.GetPatientClinicalEventByIdentifier(System.Int64,System.Int64)">
+        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.GetPatientClinicalEventByIdentifier(System.Int32,System.Int32)">
             <summary>
             Get a single patient clinical event using it's unique id and valid media type 
             </summary>
@@ -7804,7 +7879,7 @@
             <param name="id">The unique identifier for the patient clinical event</param>
             <returns>An ActionResult of type PatientClinicalEventIdentifierDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.GetPatientClinicalEventByDetail(System.Int64,System.Int64)">
+        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.GetPatientClinicalEventByDetail(System.Int32,System.Int32)">
             <summary>
             Get a single patient clinical event using it's unique code and valid media type 
             </summary>
@@ -7812,7 +7887,7 @@
             <param name="id">The unique identifier for the patient clinical event</param>
             <returns>An ActionResult of type PatientClinicalEventDetailDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.GetPatientClinicalEventByExpanded(System.Int64,System.Int64)">
+        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.GetPatientClinicalEventByExpanded(System.Int32,System.Int32)">
             <summary>
             Get a single patient clinical event using it's unique code and valid media type 
             </summary>
@@ -7828,7 +7903,7 @@
             <param name="clinicalEventForUpdate">The clinical event payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.UpdatePatientClinicalEvent(System.Int64,System.Int64,PVIMS.API.Models.PatientClinicalEventForUpdateDto)">
+        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.UpdatePatientClinicalEvent(System.Int32,System.Int32,PVIMS.API.Models.PatientClinicalEventForUpdateDto)">
             <summary>
             Update an existing patient clinical event
             </summary>
@@ -7837,7 +7912,7 @@
             <param name="clinicalEventForUpdate">The condition payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.ArchivePatientClinicalEvent(System.Int64,System.Int64,PVIMS.API.Models.ArchiveDto)">
+        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.ArchivePatientClinicalEvent(System.Int32,System.Int32,PVIMS.API.Models.ArchiveDto)">
             <summary>
             Delete an existing patient clinical event
             </summary>
@@ -7845,54 +7920,6 @@
             <param name="id">The unique id of the clinical event</param>
             <param name="conditionForDelete">The deletion payload</param>
             <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.GetPatientClinicalEventAsync``1(System.Int64,System.Int64)">
-            <summary>
-            Get single patient clinical event from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="patientId">Parent resource id to search by</param>
-            <param name="id">Resource id to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.CreateLinksForPatientClinicalEvent``1(``0)">
-            <summary>
-             Prepare HATEOAS links for a single resource
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.CustomPatientClinicalEventMap(PVIMS.API.Models.PatientClinicalEventDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.CustomPatientClinicalEventMapAsync(PVIMS.API.Models.PatientClinicalEventExpandedDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.GetSelectionValue(System.String,System.String)">
-            <summary>
-            Get the corresponding selection value
-            </summary>
-            <param name="attributeKey">The custom attribute key look up value</param>
-            <param name="selectionKey">The selection key look up value</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.ValidateClinicalEventForUpdateModel(PVIMS.Core.Entities.Patient,PVIMS.API.Models.PatientClinicalEventForUpdateDto,System.Int64)">
-            <summary>
-            Validate the input model for updating a clinical event
-            </summary>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientClinicalEventsController.PrepareClinicalEventDetail(PVIMS.API.Models.PatientClinicalEventForUpdateDto)">
-            <summary>
-            Prepare the model for the clinical event
-            </summary>
         </member>
         <member name="M:PVIMS.API.Controllers.PatientConditionsController.GetPatientConditionByIdentifier(System.Int64,System.Int64)">
             <summary>
@@ -7902,7 +7929,7 @@
             <param name="id">The unique identifier for the patient condition</param>
             <returns>An ActionResult of type PatientConditionIdentifierDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientConditionsController.GetPatientConditionByDetail(System.Int64,System.Int64)">
+        <member name="M:PVIMS.API.Controllers.PatientConditionsController.GetPatientConditionByDetail(System.Int32,System.Int32)">
             <summary>
             Get a single patient condition using it's unique code and valid media type 
             </summary>
@@ -7918,7 +7945,7 @@
             <param name="conditionForUpdate">The condition payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientConditionsController.UpdatePatientCondition(System.Int64,System.Int64,PVIMS.API.Models.PatientConditionForUpdateDto)">
+        <member name="M:PVIMS.API.Controllers.PatientConditionsController.UpdatePatientCondition(System.Int32,System.Int32,PVIMS.API.Models.PatientConditionForUpdateDto)">
             <summary>
             Update an existing patient condition
             </summary>
@@ -7945,13 +7972,6 @@
             <param name="id">Resource id to search by</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientConditionsController.CustomPatientConditionMap(PVIMS.API.Models.PatientConditionDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
         <member name="M:PVIMS.API.Controllers.PatientConditionsController.CreateLinksForPatientCondition``1(``0)">
             <summary>
              Prepare HATEOAS links for a single resource
@@ -7968,14 +7988,6 @@
             <summary>
             Prepare the model for the condition
             </summary>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientConditionsController.GetSelectionValue(System.String,System.String)">
-            <summary>
-            Get the corresponding selection value
-            </summary>
-            <param name="attributeKey">The custom attribute key look up value</param>
-            <param name="selectionKey">The selection key look up value</param>
-            <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.PatientLabTestsController.GetPatientLabTestByIdentifier(System.Int64,System.Int64)">
             <summary>
@@ -8060,7 +8072,7 @@
             <param name="selectionKey">The selection key look up value</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.GetPatientMedicationByIdentifier(System.Int64,System.Int64)">
+        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.GetPatientMedicationByIdentifier(System.Int32,System.Int32)">
             <summary>
             Get a single patient medication using it's unique id and valid media type 
             </summary>
@@ -8068,7 +8080,7 @@
             <param name="id">The unique identifier for the patient medication</param>
             <returns>An ActionResult of type PatientMedicationIdentifierDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.GetPatientMedicationByDetail(System.Int64,System.Int64)">
+        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.GetPatientMedicationByDetail(System.Int32,System.Int32)">
             <summary>
             Get a single patient medication using it's unique code and valid media type 
             </summary>
@@ -8084,7 +8096,7 @@
             <param name="medicationForUpdate">The medication payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.UpdatePatientMedication(System.Int64,System.Int64,PVIMS.API.Models.PatientMedicationForUpdateDto)">
+        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.UpdatePatientMedication(System.Int32,System.Int32,PVIMS.API.Models.PatientMedicationForUpdateDto)">
             <summary>
             Update an existing patient medication
             </summary>
@@ -8093,61 +8105,13 @@
             <param name="medicationForUpdate">The medication payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.ArchivePatientMedication(System.Int64,System.Int64,PVIMS.API.Models.ArchiveDto)">
+        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.ArchivePatientMedication(System.Int32,System.Int32,PVIMS.API.Models.ArchiveDto)">
             <summary>
             Delete an existing patient medication
             </summary>
             <param name="patientId">The unique identifier of the patient</param>
             <param name="id">The unique id of the medication</param>
             <param name="medicationForDelete">The deletion payload</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.GetPatientMedicationAsync``1(System.Int64,System.Int64)">
-            <summary>
-            Get single patient medication from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="patientId">Parent resource id to search by</param>
-            <param name="id">Resource id to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.CustomPatientMedicationMap(PVIMS.API.Models.PatientMedicationDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.CreateLinksForPatientMedication``1(``0)">
-            <summary>
-             Prepare HATEOAS links for a single resource
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.ValidateMedicationForUpdateModel(PVIMS.Core.Entities.Patient,PVIMS.API.Models.PatientMedicationForUpdateDto,System.Int64)">
-            <summary>
-            Validate the input model for updating a medication
-            </summary>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.PrepareMedicationDetail(PVIMS.API.Models.PatientMedicationForUpdateDto)">
-            <summary>
-            Prepare the model for the medication
-            </summary>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.GetSelectionValue(System.String,System.String)">
-            <summary>
-            Get the corresponding selection value
-            </summary>
-            <param name="attributeKey">The custom attribute key look up value</param>
-            <param name="selectionKey">The selection key look up value</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientMedicationsController.AddOrUpdateMedicationsToReportInstanceAsync(PVIMS.Core.Entities.PatientMedication)">
-            <summary>
-            Modify source report instance with medification changes
-            </summary>
-            <param name="patientMedication">The medication to be updated</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.PatientsController.GetPatientsByIdentifier(PVIMS.API.Models.Parameters.PatientResourceParameters)">
@@ -8168,6 +8132,15 @@
             </param>
             <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of PatientDetailDto</returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.PatientsController.GetPatientByCondition(PVIMS.API.Models.Parameters.PatientByConditionResourceParameters)">
+            <summary>
+            Get a single patient by searching for a matching concomitant condition
+            </summary>
+            <param name="patientByConditionResourceParameters">
+            Specify condition search term
+            </param>
+            <returns>An ActionResult of type PatientExpandedDto</returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.PatientsController.GetPatientByIdentifier(System.Int64)">
             <summary>
             Get a single Patient using it's unique id and valid media type 
@@ -8175,14 +8148,14 @@
             <param name="id">The unique identifier for the Patient</param>
             <returns>An ActionResult of type PatientIdentifierDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.GetPatientByDetail(System.Int64)">
+        <member name="M:PVIMS.API.Controllers.PatientsController.GetPatientByDetail(System.Int32)">
             <summary>
             Get a single Patient using it's unique code and valid media type 
             </summary>
             <param name="id">The unique identifier for the Patient</param>
             <returns>An ActionResult of type ProgramDetailDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.GetPatientByExpanded(System.Int64)">
+        <member name="M:PVIMS.API.Controllers.PatientsController.GetPatientByExpanded(System.Int32)">
             <summary>
             Get a single Patient using it's unique code and valid media type 
             </summary>
@@ -8264,12 +8237,44 @@
             <param name="patientForCreation">The patient payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.UpdatePatient(System.Int32,PVIMS.API.Models.PatientForUpdateDto)">
+        <member name="M:PVIMS.API.Controllers.PatientsController.UpdatePatientCustomAttributes(System.Int32,PVIMS.API.Models.PatientCustomAttributesForUpdateDto)">
             <summary>
-            Update an existing patient
+            Update the custom attributes of the patient
             </summary>
             <param name="id">The unique id of the patient</param>
-            <param name="patientForUpdate">The patient payload</param>
+            <param name="patientCustomAttributesForUpdate">The patient custom attributes payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.PatientsController.UpdatePatientDateOfBirth(System.Int32,PVIMS.API.Models.PatientDateOfBirthForUpdateDto)">
+            <summary>
+            Update the date of the birth of the patient
+            </summary>
+            <param name="id">The unique id of the patient</param>
+            <param name="patientDateOfBirthForUpdate">The patient date of birth payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.PatientsController.UpdatePatientFacility(System.Int32,PVIMS.API.Models.PatientFacilityForUpdateDto)">
+            <summary>
+            Update the current facility of the patient
+            </summary>
+            <param name="id">The unique id of the patient</param>
+            <param name="patientFacilityForUpdate">The patient facility payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.PatientsController.UpdatePatientName(System.Int32,PVIMS.API.Models.PatientNameForUpdateDto)">
+            <summary>
+            Update the name of the patient
+            </summary>
+            <param name="id">The unique id of the patient</param>
+            <param name="patientNameForUpdate">The patient name payload</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.PatientsController.UpdatePatientNotes(System.Int32,PVIMS.API.Models.PatientNotesForUpdateDto)">
+            <summary>
+            Update the generic notes of the patient
+            </summary>
+            <param name="id">The unique id of the patient</param>
+            <param name="patientNotesForUpdate">The patient notes payload</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.PatientsController.ArchivePatient(System.Int64,PVIMS.API.Models.ArchiveDto)">
@@ -8288,7 +8293,7 @@
             <param name="patientAttachmentForCreation">The attachment payload</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.ArchivePatientAttachment(System.Int64,System.Int64,PVIMS.API.Models.ArchiveDto)">
+        <member name="M:PVIMS.API.Controllers.PatientsController.ArchivePatientAttachment(System.Int32,System.Int32,PVIMS.API.Models.ArchiveDto)">
             <summary>
             Archive an existing attachment
             </summary>
@@ -8312,24 +8317,6 @@
             <typeparam name="T">Identifier or detail Dto</typeparam>
             <param name="patientId">Resource parent id to search by</param>
             <param name="id">Resource id to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.GetPatients``1(PVIMS.API.Models.Parameters.PatientResourceParameters)">
-            <summary>
-            Get patients from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-            <param name="patientResourceParameters">Standard parameters for representing resource</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.CreateLinksForPatients(PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.PatientResourceParameters,System.Boolean,System.Boolean)">
-            <summary>
-            Prepare HATEOAS links for a identifier based collection resource
-            </summary>
-            <param name="wrapper">The linked dto wrapper that will host each link</param>
-            <param name="patientResourceParameters">Standard parameters for representing resource</param>
-            <param name="hasNext">Are there additional pages</param>
-            <param name="hasPrevious">Are there previous pages</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.PatientsController.CreateLinksForPatientMedicationReport(PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.PatientMedicationReportResourceParameters,System.Boolean,System.Boolean)">
@@ -8397,42 +8384,6 @@
             <param name="dto">The dto that the link has been added to</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.CustomPatientMap(PVIMS.API.Models.PatientDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.CustomPatientMapAsync(PVIMS.API.Models.PatientExpandedDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.CustomCohortGroupMap(PVIMS.API.Models.CohortGroupPatientDetailDto,PVIMS.Core.Entities.Patient)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <param name="patient">The patient to be used to determine what enrolments to load</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.CustomClinicalEventMap(PVIMS.API.Models.PatientClinicalEventDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.CustomMedicationMap(PVIMS.API.Models.PatientMedicationDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
         <member name="M:PVIMS.API.Controllers.PatientsController.CustomPatientMedicationReportMap(PVIMS.API.Models.PatientMedicationReportDto)">
             <summary>
              Map additional dto detail elements not handled through automapper
@@ -8446,43 +8397,6 @@
             </summary>
             <param name="dto">The dto that the link has been added to</param>
             <param name="patientTreatmentReportResourceParameters">Standard parameters for representing resource</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.GetCohortGroups(System.Int64)">
-            <summary>
-            Get a list of cohort groups
-            </summary>
-            <param name="id">Resource id to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.GetCohortGroupEnrolment(System.Int64,System.Int64)">
-            <summary>
-            Get a list of cohort groups
-            </summary>
-            <param name="cohortGroupId">Resource id to search by</param>
-            <param name="patientId">The patient id to be used to determine what enrolments to load</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.GetSelectionValue(System.String,System.String)">
-            <summary>
-            Get the corresponding selection value
-            </summary>
-            <param name="attributeKey">The custom attribute key look up value</param>
-            <param name="selectionKey">The selection key look up value</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.CreateLinksForEnrolment(PVIMS.API.Models.EnrolmentIdentifierDto)">
-            <summary>
-             Prepare HATEOAS links for a single resource for enrolments
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.CreateLinksForCohortGroup(PVIMS.API.Models.CohortGroupPatientDetailDto)">
-            <summary>
-             Prepare HATEOAS links for a single resource for cohort groups
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.PatientsController.GetAdverseEventResults``1(PVIMS.API.Models.Parameters.AdverseEventReportResourceParameters)">
@@ -8524,26 +8438,6 @@
             <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
             <param name="patientMedicationReportResourceParameters">Standard parameters for representing resource</param>
             <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.ValidatePatientForCreationModel(PVIMS.API.Models.PatientForCreationDto)">
-            <summary>
-            Validate the input model for adding a new patient
-            </summary>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.ValidatePatientForUpdateModel(PVIMS.API.Models.PatientForUpdateDto)">
-            <summary>
-            Validate the input model for updating an existing patient
-            </summary>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.PreparePatientDetail(PVIMS.API.Models.PatientForCreationDto)">
-            <summary>
-            Prepare the model for adding a new patient
-            </summary>
-        </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.PreparePatientDetail(PVIMS.API.Models.PatientForUpdateDto)">
-            <summary>
-            Prepare the model for updating an existing patient
-            </summary>
         </member>
         <member name="M:PVIMS.API.Controllers.PrioritiesController.GetPrioritiesByIdentifier(PVIMS.API.Models.Parameters.IdResourceParameters)">
             <summary>
@@ -8597,6 +8491,14 @@
             <param name="id">The unique id of the report instance</param>
             <returns>An ActionResult of type ReportInstanceDetailDto</returns>
         </member>
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetReportInstanceByExpanded(System.Guid,System.Int32)">
+            <summary>
+            Get a single report instance using it's unique id and valid media type 
+            </summary>
+            <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+            <param name="id">The unique id of the report instance</param>
+            <returns>An ActionResult of type ReportInstanceExpandedDto</returns>
+        </member>
         <member name="M:PVIMS.API.Controllers.ReportInstancesController.DownloadPatientSummary(System.Guid,System.Int32)">
             <summary>
             Download a summary for the patient
@@ -8615,7 +8517,7 @@
             </param>
             <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of ReportInstanceDetailDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetNewReportInstancesByDetail(System.Guid,PVIMS.API.Models.Parameters.ReportInstanceNewResourceParameters)">
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetNewReportInstancesByDetail(System.Guid,PVIMS.API.Models.Parameters.IdResourceParameters)">
             <summary>
             Get all new report instances using a valid media type 
             </summary>
@@ -8625,7 +8527,17 @@
             </param>
             <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of ReportInstanceDetailDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetFeedbackReportInstancesByDetail(System.Guid,PVIMS.API.Models.Parameters.ReportInstanceNewResourceParameters)">
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetAnalysisReportInstancesByDetail(System.Guid,PVIMS.API.Models.Parameters.ReportInstanceActivityResourceParameters)">
+            <summary>
+            Get all report instances for analysis using a valid media type 
+            </summary>
+            <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+            <param name="reportInstanceResourceParameters">
+            Specify paging and filtering information (including requested page number and page size)
+            </param>
+            <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of ReportInstanceDetailDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetFeedbackReportInstancesByDetail(System.Guid,PVIMS.API.Models.Parameters.ReportInstanceActivityResourceParameters)">
             <summary>
             Get all report instances for feedback using a valid media type 
             </summary>
@@ -8634,14 +8546,6 @@
             Specify paging and filtering information (including requested page number and page size)
             </param>
             <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of ReportInstanceDetailDto</returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetActivityExecutionStatusEvents(System.Guid,System.Int32)">
-            <summary>
-            Get all activity events for a given report instance
-            </summary>
-            <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-            <param name="reportinstanceId">The unique identifier of the work flow that report instances are associated to</param>
-            <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of ActivityExecutionStatusEventDto</returns>
         </member>
         <member name="M:PVIMS.API.Controllers.ReportInstancesController.DownloadActivitySingleAttachment(System.Guid,System.Int32,System.Int32,System.Int32)">
             <summary>
@@ -8663,13 +8567,22 @@
             </param>
             <returns>An ActionResult of type CausalityReportDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.UpdateReportInstanceStatus(System.Guid,System.Int32,PVIMS.API.Models.ActivityChangeDto)">
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.UpdateReportInstanceActivity(System.Guid,System.Int32,PVIMS.API.Models.ActivityChangeDto)">
             <summary>
-            Set report instance status
+            Change report instance activity
             </summary>
             <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
             <param name="id">The unique identifier of the reporting instance</param>
             <param name="activityChange">The payload for setting the new status</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.UpdateReportInstanceClassification(System.Guid,System.Int32,PVIMS.API.Models.ReportInstanceClassificationForUpdateDto)">
+            <summary>
+            Change report classification
+            </summary>
+            <param name="workFlowGuid">The unique identifier of the work flow that the report instance is associated to</param>
+            <param name="id">The unique identifier of the reporting instance</param>
+            <param name="reportInstanceClassificationForUpdate">The payload for setting the new classification</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.ReportInstancesController.UpdateReportInstanceTerminology(System.Guid,System.Int32,PVIMS.API.Models.ReportInstanceTerminologyForUpdateDto)">
@@ -8679,14 +8592,6 @@
             <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
             <param name="id">The unique identifier of the reporting instance</param>
             <param name="terminologyForUpdate">The payload for setting the new status</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.CreateE2BInstance(System.Guid,System.Int32)">
-            <summary>
-            Create an E2B instance for the report
-            </summary>
-            <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-            <param name="id">The unique identifier of the reporting instance</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.ReportInstancesController.UpdateReportInstanceMedicationCausality(System.Guid,System.Int32,System.Int32,PVIMS.API.Models.ReportInstanceMedicationCausalityForUpdateDto)">
@@ -8699,89 +8604,79 @@
             <param name="causalityForUpdate">The payload for setting the new causality</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetReportInstanceAsync``1(System.Guid,System.Int64)">
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.CreateE2BInstance(System.Guid,System.Int32)">
             <summary>
-            Get single report instance from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-            <param name="id">Resource id to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetReportInstances``1(System.Guid,PVIMS.API.Models.Parameters.ReportInstanceResourceParameters)">
-            <summary>
-            Get report instances from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-            <param name="workFlowGuid">The uniwue identifier of the work flow that report instances are associated to</param>
-            <param name="reportInstanceResourceParameters">Standard parameters for representing resource</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetNewReportInstances``1(System.Guid,PVIMS.API.Models.Parameters.ReportInstanceNewResourceParameters)">
-            <summary>
-            Get new report instances
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetFeedbackReportInstancesAsync``1(System.Guid,PVIMS.API.Models.Parameters.ReportInstanceNewResourceParameters)">
-            <summary>
-            Get new report instances for clinical feedback
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetActivityExecutionStatusEvents``1(System.Guid,System.Int32)">
-            <summary>
-            Get report instances from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-            <param name="workFlowGuid">The uniwue identifier of the work flow that report instances are associated to</param>
-            <param name="reportinstanceId">The unique identifier of the work flow that report instances are associated to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.CreateLinksForReportInstances(System.Guid,PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.ReportInstanceResourceParameters,System.Boolean,System.Boolean)">
-            <summary>
-            Prepare HATEOAS links for a identifier based collection resource
+            Create an E2B instance for the report
             </summary>
             <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-            <param name="wrapper">The linked dto wrapper that will host each link</param>
-            <param name="reportInstanceResourceParameters">Standard parameters for representing resource</param>
-            <param name="hasNext">Are there additional pages</param>
-            <param name="hasPrevious">Are there previous pages</param>
+            <param name="id">The unique identifier of the reporting instance</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.CreateLinksForNewReportInstances(System.Guid,PVIMS.API.Models.LinkedResourceBaseDto,PVIMS.API.Models.Parameters.ReportInstanceNewResourceParameters,System.Boolean,System.Boolean)">
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetReportInstanceTaskByIdentifier(System.Guid,System.Int32,System.Int32)">
             <summary>
-            Prepare HATEOAS links for a identifier based collection resource
+            Get a single report instance task using it's unique id and valid media type 
             </summary>
             <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-            <param name="wrapper">The linked dto wrapper that will host each link</param>
-            <param name="reportInstanceNewResourceParameters">Standard parameters for representing resource</param>
-            <param name="hasNext">Are there additional pages</param>
-            <param name="hasPrevious">Are there previous pages</param>
-            <returns></returns>
+            <param name="reportInstanceId">The unique id of the report instance</param>
+            <param name="id">The unique id of the report instance task</param>
+            <returns>An ActionResult of type ReportInstanceTaskIdentifierDto</returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.CreateLinksForReportInstance``1(System.Guid,``0)">
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetReportInstanceTaskByDetail(System.Guid,System.Int32,System.Int32)">
             <summary>
-             Prepare HATEOAS links for a single resource
+            Get a single report instance task using it's unique id and valid media type 
             </summary>
             <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-            <param name="dto">The dto that the link has been added to</param>
+            <param name="reportInstanceId">The unique id of the report instance</param>
+            <param name="id">The unique id of the report instance task</param>
+            <returns>An ActionResult of type TaskDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.CreateReportInstanceTask(System.Guid,System.Int32,PVIMS.API.Models.ReportInstanceTaskForCreationDto)">
+            <summary>
+            Add a new task to a report instance
+            </summary>
+            <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+            <param name="reportInstanceId">The unique identifier of the reporting instance</param>
+            <param name="reportInstanceTaskForCreation">The payload containing details of the task</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.CustomReportInstanceMap(PVIMS.API.Models.ReportInstanceDetailDto)">
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.UpdateReportInstanceTaskDetails(System.Guid,System.Int32,System.Int32,PVIMS.API.Models.ReportInstanceTaskDetailsForUpdateDto)">
             <summary>
-             Map additional dto detail elements not handled through automapper
+            Change task details for report instance task
             </summary>
-            <param name="dto">The dto that the link has been added to</param>
+            <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+            <param name="reportInstanceId">The unique identifier of the reporting instance</param>
+            <param name="id">The unique identifier of the reporting instance task</param>
+            <param name="reportInstanceTaskDetailsForUpdate">The payload for updating task details</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.CustomActivityExecutionStatusEventMap(PVIMS.API.Models.ActivityExecutionStatusEventDto)">
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.UpdateReportInstanceTaskStatus(System.Guid,System.Int32,System.Int32,PVIMS.API.Models.ReportInstanceTaskStatusForUpdateDto)">
             <summary>
-             Map additional dto detail elements not handled through automapper
+            Change current status for report instance task
             </summary>
-            <param name="dto">The dto that the link has been added to</param>
+            <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+            <param name="reportInstanceId">The unique identifier of the reporting instance</param>
+            <param name="id">The unique identifier of the reporting instance task</param>
+            <param name="reportInstanceTaskStatusForUpdate">The payload for updating task status</param>
+            <returns></returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetReportInstanceTaskCommentByIdentifier(System.Guid,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Get a single report instance task comment using it's unique id and valid media type 
+            </summary>
+            <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+            <param name="reportInstanceId">The unique id of the report instance</param>
+            <param name="reportInstanceTaskId">The unique id of the report instance task</param>
+            <param name="id">The unique id of the report instance task</param>
+            <returns>An ActionResult of type ReportInstanceTaskCommentIdentifierDto</returns>
+        </member>
+        <member name="M:PVIMS.API.Controllers.ReportInstancesController.CreateReportInstanceTaskComment(System.Guid,System.Int32,System.Int32,PVIMS.API.Models.ReportInstanceTaskCommentForCreationDto)">
+            <summary>
+            Add a new comment to a report instance task
+            </summary>
+            <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
+            <param name="reportInstanceId">The unique identifier of the reporting instance</param>
+            <param name="reportInstanceTaskId">The unique identifier of the reporting instance task</param>
+            <param name="reportInstanceTaskCommentForCreation">The payload containing details of the task comment</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.ReportInstancesController.GetCausalityResults``1(PVIMS.API.Models.Parameters.CausalityReportResourceParameters)">
@@ -8838,14 +8733,6 @@
             <summary>
             E2B data mapping for active datasets
             </summary>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.ReportInstancesController.CustomReportInstanceMedicationMap(PVIMS.Core.Aggregates.ReportInstanceAggregate.ReportInstance,PVIMS.API.Models.ReportInstanceMedicationDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="reportInstance">The report instance that the medication is associated to</param>
-            <param name="dto">The dto that the link has been added to</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.ReportInstancesController.CreateLinksForCausalityReport(PVIMS.API.Models.LinkedResourceBaseDto,System.Guid,PVIMS.API.Models.Parameters.CausalityReportResourceParameters,System.Boolean,System.Boolean)">
@@ -9093,50 +8980,6 @@
             Specify paging and filtering information (including requested page number and page size)
             </param>
             <returns>An ActionResult</returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.WorkFlowsController.GetWorkFlowAsync``1(System.Guid)">
-            <summary>
-            Get single workFlow from repository and auto map to Dto
-            </summary>
-            <typeparam name="T">Identifier or detail Dto</typeparam>
-            <param name="id">Resource id to search by</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.WorkFlowsController.CustomWorkFlowMapAsync(PVIMS.API.Models.WorkFlowDetailDto)">
-            <summary>
-             Map additional dto detail elements not handled through automapper
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.WorkFlowsController.CreateLinksForWorkFlow``1(``0)">
-            <summary>
-             Prepare HATEOAS links for a single resource
-            </summary>
-            <param name="dto">The dto that the link has been added to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.WorkFlowsController.GetReportInstancesCount(System.Guid,System.String)">
-            <summary>
-            Get a total number of report instances as per the designated activity
-            </summary>
-            <param name="workFlowGuid">The uniwue identifier of the work flow that report instances are associated to</param>
-            <param name="qualifiedName">The activity to get the report instance count for</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.WorkFlowsController.GetNewReportInstancesCount(System.Guid)">
-            <summary>
-            Get a total number of new report instances
-            </summary>
-            <param name="workFlowGuid">The uniwue identifier of the work flow that report instances are associated to</param>
-            <returns></returns>
-        </member>
-        <member name="M:PVIMS.API.Controllers.WorkFlowsController.GetNewFeedbackCount(System.Guid)">
-            <summary>
-            Get a total number of new report instances with feedback for clinician
-            </summary>
-            <param name="workFlowGuid">The uniwue identifier of the work flow that report instances are associated to</param>
-            <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.WorkPlansController.GetWorkPlansByIdentifier(PVIMS.API.Models.Parameters.IdResourceParameters)">
             <summary>

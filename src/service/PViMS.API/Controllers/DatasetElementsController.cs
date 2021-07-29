@@ -304,7 +304,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetDatasetElementByIdentifier",
+                return CreatedAtAction("GetDatasetElementByIdentifier",
                     new
                     {
                         id = mappedDatasetElement.Id
@@ -387,7 +387,7 @@ namespace PVIMS.API.Controllers
                 rule.RuleActive = datasetElementForUpdate.SingleDatasetRule == Models.ValueTypes.YesNoValueType.Yes;
 
                 _datasetElementRepository.Update(datasetElementFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -443,7 +443,7 @@ namespace PVIMS.API.Controllers
                 }
 
                 _datasetElementRepository.Delete(datasetElementFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

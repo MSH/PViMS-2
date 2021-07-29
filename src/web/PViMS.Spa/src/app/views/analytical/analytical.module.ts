@@ -7,32 +7,42 @@ import { SharedMaterialModule } from 'app/shared/shared-material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedModule } from 'app/shared/shared.module';
-import { TranslateModule } from '@ngx-translate/core';
-
 import { SpontaneousAnalyserComponent } from './analyser/spontaneous-analyser/spontaneous-analyser.component';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
-import { ActivityhistoryComponent } from './report/activity-history/activity-history.component';
+import { ActivityHistoryComponent } from './report/activity-history/activity-history.component';
 import { ActivityStatusChangePopupComponent } from './report/activity-status-change-popup/activity-status-change.popup.component';
 import { ReportSearchComponent } from './report/report-search/report-search.component';
-import { NaranjoPopupComponent } from './report/naranjo-popup/naranjo.popup.component';
-import { SetMeddraPopupComponent } from './report/set-meddra-popup/set-meddra.popup.component';
+import { NaranjoPopupComponent } from './report/report-search/naranjo-popup/naranjo.popup.component';
+import { SetMeddraPopupComponent } from './report/report-search/set-meddra-popup/set-meddra.popup.component';
 import { DatasetInstancePopupComponent } from './report/dataset-instance-popup/dataset-instance.popup.component';
 import { LandingComponent } from './landing/landing.component';
-import { WhoPopupComponent } from './report/who-popup/who.popup.component';
+import { WhoPopupComponent } from './report/report-search/who-popup/who.popup.component';
 import { ActiveAnalyserComponent } from './analyser/active-analyser/active-analyser.component';
+import { ReportTaskListComponent } from './report/report-task/report-task-list.component';
+import { ReportTaskAddPopupComponent } from './report/report-task/report-task-add-popup/report-task-add.popup.component';
+import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-task-details-popup/change-task-details.popup.component';
+import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task-status-popup/change-task-status.popup.component';
+import { SetClassificationPopupComponent } from './report/report-search/set-classification/set-classification.popup.component';
+import { MedicationListPopupComponent } from './report/report-search/medications-popup/medication-list.popup.component';
 
 @NgModule({
   declarations: [
-    SpontaneousAnalyserComponent, 
     ActiveAnalyserComponent, 
-    ReportSearchComponent, 
-    ActivityhistoryComponent,
+    ActivityHistoryComponent,
     ActivityStatusChangePopupComponent,
-    SetMeddraPopupComponent, 
-    NaranjoPopupComponent,
-    WhoPopupComponent,
+    ChangeTaskDetailsPopupComponent,
+    ChangeTaskStatusPopupComponent,
     DatasetInstancePopupComponent,
-    LandingComponent
+    LandingComponent,
+    MedicationListPopupComponent,
+    NaranjoPopupComponent,
+    ReportSearchComponent, 
+    ReportTaskAddPopupComponent,
+    ReportTaskListComponent,
+    SetClassificationPopupComponent,
+    SetMeddraPopupComponent, 
+    SpontaneousAnalyserComponent,
+    WhoPopupComponent
   ],
   imports: [
     CommonModule,
@@ -41,17 +51,21 @@ import { ActiveAnalyserComponent } from './analyser/active-analyser/active-analy
     SharedComponentsModule,
     SharedMaterialModule,
     SharedModule,
-    TranslateModule,
     PerfectScrollbarModule,
     RouterModule.forChild(AnalyticalRoutes)
   ],
   entryComponents:
   [
     ActivityStatusChangePopupComponent,
-    SetMeddraPopupComponent, 
+    ChangeTaskDetailsPopupComponent,
+    ChangeTaskStatusPopupComponent,
+    DatasetInstancePopupComponent,
+    MedicationListPopupComponent,
     NaranjoPopupComponent,
-    WhoPopupComponent,
-    DatasetInstancePopupComponent
+    ReportTaskAddPopupComponent,    
+    SetClassificationPopupComponent,
+    SetMeddraPopupComponent, 
+    WhoPopupComponent
   ]  
 })
 export class AnalyticalModule { }

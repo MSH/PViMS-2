@@ -1,36 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.IO;
-using System.Linq;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Ionic.Zip;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using PVIMS.API.Application.Commands.AttachmentAggregate;
+using PVIMS.API.Application.Commands.PatientAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Entities.Keyless;
-using PVIMS.Core.Models;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using PVIMS.Infrastructure;
-using PVIMS.API.Application.Queries.ReportInstance;
+using PVIMS.API.Application.Queries.PatientAggregate;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
 {
@@ -39,9 +37,9 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class PatientsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
-        private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<Encounter> _encounterRepository;
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
@@ -50,35 +48,22 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<PatientLabTest> _patientLabTestRepository;
         private readonly IRepositoryInt<PatientFacility> _patientFacilityRepository;
         private readonly IRepositoryInt<PatientStatusHistory> _patientStatusHistoryRepository;
-        private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly IRepositoryInt<Appointment> _appointmentRepository;
         private readonly IRepositoryInt<Attachment> _attachmentRepository;
-        private readonly IRepositoryInt<AttachmentType> _attachmentTypeRepository;
-        private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
         private readonly IRepositoryInt<CohortGroupEnrolment> _cohortGroupEnrolmentRepository;
-        private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
-        private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
-        private readonly IRepositoryInt<EncounterType> _encounterTypeRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
-        private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
-        private readonly IReportInstanceQueries _reportInstanceQueries;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IReportService _reportService;
-        private readonly IPatientService _patientService;
-        private readonly IWorkFlowService _workFlowService;
-        private readonly IArtefactService _artefactService;
-        private readonly ICustomAttributeService _customAttributeService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly PVIMSDbContext _context;
+        private readonly ILogger<PatientsController> _logger;
 
-        public PatientsController(IPropertyMappingService propertyMappingService, 
+        public PatientsController(IMediator mediator, 
+            IPropertyMappingService propertyMappingService, 
             ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
-            ITypeExtensionHandler modelExtensionBuilder,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<Encounter> encounterRepository,
             IRepositoryInt<PatientCondition> patientConditionRepository,
@@ -87,33 +72,20 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<PatientLabTest> patientLabTestRepository,
             IRepositoryInt<PatientFacility> patientFacilityRepository,
             IRepositoryInt<PatientStatusHistory> patientStatusHistoryRepository,
-            IRepositoryInt<Facility> facilityRepository,
             IRepositoryInt<Appointment> appointmentRepository,
             IRepositoryInt<Attachment> attachmentRepository,
-            IRepositoryInt<AttachmentType> attachmentTypeRepository,
-            IRepositoryInt<CohortGroup> cohortGroupRepository,
             IRepositoryInt<CohortGroupEnrolment> cohortGroupEnrolmentRepository,
-            IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
-            IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
-            IRepositoryInt<EncounterType> encounterTypeRepository,
             IRepositoryInt<User> userRepository,
-            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
-            IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
-            IReportInstanceQueries reportInstanceQueries,
             IReportService reportService,
-            IPatientService patientService,
-            IWorkFlowService workFlowService,
-            IArtefactService artefactService,
             IUnitOfWorkInt unitOfWork,
-            ICustomAttributeService customAttributeService,
             IHttpContextAccessor httpContextAccessor,
-            PVIMSDbContext dbContext)
+            ILogger<PatientsController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
-            _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _encounterRepository = encounterRepository ?? throw new ArgumentNullException(nameof(encounterRepository));
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
@@ -122,27 +94,14 @@ namespace PVIMS.API.Controllers
             _patientLabTestRepository = patientLabTestRepository ?? throw new ArgumentNullException(nameof(patientLabTestRepository));
             _patientFacilityRepository = patientFacilityRepository ?? throw new ArgumentNullException(nameof(patientFacilityRepository));
             _patientStatusHistoryRepository = patientStatusHistoryRepository ?? throw new ArgumentNullException(nameof(patientStatusHistoryRepository));
-            _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
             _appointmentRepository = appointmentRepository ?? throw new ArgumentNullException(nameof(appointmentRepository));
             _attachmentRepository = attachmentRepository ?? throw new ArgumentNullException(nameof(attachmentRepository));
-            _attachmentTypeRepository = attachmentTypeRepository ?? throw new ArgumentNullException(nameof(attachmentTypeRepository));
-            _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
             _cohortGroupEnrolmentRepository = cohortGroupEnrolmentRepository ?? throw new ArgumentNullException(nameof(cohortGroupEnrolmentRepository));
-            _terminologyMeddraRepository = terminologyMeddraRepository ?? throw new ArgumentNullException(nameof(terminologyMeddraRepository));
-            _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
-            _encounterTypeRepository = encounterTypeRepository ?? throw new ArgumentNullException(nameof(encounterTypeRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
-            _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
-            _reportInstanceQueries = reportInstanceQueries ?? throw new ArgumentNullException(nameof(reportInstanceQueries));
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
-            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
-            _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
-            _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _customAttributeService = customAttributeService ?? throw new ArgumentNullException(nameof(customAttributeService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -157,7 +116,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<PatientIdentifierDto>> GetPatientsByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<PatientIdentifierDto>>> GetPatientsByIdentifier(
             [FromQuery] PatientResourceParameters patientResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<PatientIdentifierDto>
@@ -166,13 +125,40 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedPatientsWithLinks = GetPatients<PatientIdentifierDto>(patientResourceParameters);
+            var query = new PatientsIdentifierQuery(patientResourceParameters.OrderBy,
+                patientResourceParameters.FacilityName,
+                patientResourceParameters.CustomAttributeId,
+                patientResourceParameters.CustomAttributeValue,
+                patientResourceParameters.PatientId,
+                patientResourceParameters.DateOfBirth,
+                patientResourceParameters.FirstName,
+                patientResourceParameters.LastName,
+                patientResourceParameters.PageNumber,
+                patientResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<PatientIdentifierDto>(mappedPatientsWithLinks.TotalCount, mappedPatientsWithLinks);
-            var wrapperWithLinks = CreateLinksForPatients(wrapper, patientResourceParameters,
-                mappedPatientsWithLinks.HasNext, mappedPatientsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: GetPatientsIdentifierQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = patientResourceParameters.PageSize,
+                currentPage = patientResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -188,7 +174,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<PatientDetailDto>> GetPatientsByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<PatientDetailDto>>> GetPatientsByDetail(
             [FromQuery] PatientResourceParameters patientResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<PatientDetailDto, Patient>
@@ -197,40 +183,68 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            if (!String.IsNullOrWhiteSpace(patientResourceParameters.FirstName))
+            var query = new PatientsDetailQuery(patientResourceParameters.OrderBy,
+                patientResourceParameters.FacilityName,
+                patientResourceParameters.CustomAttributeId,
+                patientResourceParameters.CustomAttributeValue,
+                patientResourceParameters.PatientId,
+                patientResourceParameters.DateOfBirth,
+                patientResourceParameters.FirstName,
+                patientResourceParameters.LastName,
+                patientResourceParameters.PageNumber,
+                patientResourceParameters.PageSize);
+
+            _logger.LogInformation(
+                "----- Sending query: GetPatientsDetailQuery");
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                if (Regex.Matches(patientResourceParameters.FirstName, @"[-a-zA-Z ']").Count < patientResourceParameters.FirstName.Length)
-                {
-                    ModelState.AddModelError("Message", "First name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-                }
+                return BadRequest("Query not created");
             }
 
-            if (!String.IsNullOrWhiteSpace(patientResourceParameters.LastName))
+            // Prepare pagination data for response
+            var paginationMetadata = new
             {
-                if (Regex.Matches(patientResourceParameters.LastName, @"[-a-zA-Z ']").Count < patientResourceParameters.LastName.Length)
-                {
-                    ModelState.AddModelError("Message", "Last name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-                }
-            }
+                totalCount = queryResult.RecordCount,
+                pageSize = patientResourceParameters.PageSize,
+                currentPage = patientResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
 
-            if (!String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue))
-            {
-                if (Regex.Matches(patientResourceParameters.CustomAttributeValue, @"[-a-zA-Z ']").Count < patientResourceParameters.CustomAttributeValue.Length)
-                {
-                    ModelState.AddModelError("Message", "Custom attribute value contains invalid characters (Enter A-Z, a-z, 0-9, space, apostrophe)");
-                }
-            }
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
 
-            var mappedPatientsWithLinks = GetPatients<PatientDetailDto>(patientResourceParameters);
+            return Ok(queryResult);
+        }
 
-            // Add custom mappings to patients
-            mappedPatientsWithLinks.ForEach(dto => CustomPatientMap(dto));
+        /// <summary>
+        /// Get a single patient by searching for a matching concomitant condition
+        /// </summary>
+        /// <param name="patientByConditionResourceParameters">
+        /// Specify condition search term
+        /// </param>
+        /// <returns>An ActionResult of type PatientExpandedDto</returns>
+        [HttpGet(Name = "GetPatientByCondition")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult<PatientExpandedDto>> GetPatientByCondition(
+            [FromQuery] PatientByConditionResourceParameters patientByConditionResourceParameters)
+        {
+            var query = new PatientExpandedByConditionTermQuery(
+                patientByConditionResourceParameters.CustomAttributeKey,
+                patientByConditionResourceParameters.CustomAttributeValue);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<PatientDetailDto>(mappedPatientsWithLinks.TotalCount, mappedPatientsWithLinks);
-            var wrapperWithLinks = CreateLinksForPatients(wrapper, patientResourceParameters,
-                mappedPatientsWithLinks.HasNext, mappedPatientsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: PatientExpandedByConditionTermQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -267,15 +281,22 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<PatientDetailDto>> GetPatientByDetail(long id)
+        public async Task<ActionResult<PatientDetailDto>> GetPatientByDetail(int id)
         {
-            var mappedPatient = await GetPatientAsync<PatientDetailDto>(id);
-            if (mappedPatient == null)
+            var query = new PatientDetailQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetPatientDetailQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForPatient<PatientDetailDto>(CustomPatientMap(mappedPatient)));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -290,15 +311,22 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<PatientExpandedDto>> GetPatientByExpanded(long id)
+        public async Task<ActionResult<PatientExpandedDto>> GetPatientByExpanded(int id)
         {
-            var mappedPatient = await GetPatientAsync<PatientExpandedDto>(id);
-            if (mappedPatient == null)
+            var query = new PatientExpandedQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: GetPatientExpandedQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForPatient<PatientExpandedDto>(await CustomPatientMapAsync(mappedPatient)));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -506,7 +534,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult> DownloadSingleAttachment(int patientId, int id)
         {
-            var attachmentFromRepo = await _attachmentRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
+            var attachmentFromRepo = await _attachmentRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id, new string[] { "AttachmentType" });
             if (attachmentFromRepo == null)
             {
                 return NotFound();
@@ -630,135 +658,186 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Ensure patient record does not exist
-            var identifier_record = patientForCreation.Attributes[ _customAttributeRepository.Get(ca => ca.AttributeKey == "Medical Record Number").Id];
-            var identifier_id = patientForCreation.Attributes[_customAttributeRepository.Get(ca => ca.AttributeKey == "Patient Identity Number").Id];
+            var command = new AddPatientCommand(patientForCreation.FirstName, patientForCreation.LastName, patientForCreation.MiddleName, patientForCreation.DateOfBirth, patientForCreation.FacilityName,
+                patientForCreation.ConditionGroupId, patientForCreation.MeddraTermId, patientForCreation.CohortGroupId, patientForCreation.EnroledDate, patientForCreation.StartDate, patientForCreation.OutcomeDate, patientForCreation.Comments,
+                patientForCreation.EncounterTypeId, patientForCreation.PriorityId, patientForCreation.EncounterDate, patientForCreation.Attributes);
 
-            List<CustomAttributeParameter> parameters = new List<CustomAttributeParameter>();
-            parameters.Add(new CustomAttributeParameter() { AttributeKey = "Medical Record Number", AttributeValue = identifier_record });
-            parameters.Add(new CustomAttributeParameter() { AttributeKey = "Patient Identity Number", AttributeValue = identifier_id });
+            _logger.LogInformation(
+                "----- Sending command: AddPatientCommand - {lastName}",
+                command.LastName);
 
-            if (!_patientService.isUnique(parameters))
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                ModelState.AddModelError("Message", "Potential duplicate patient. Check medical record number and patient identity number.");
+                return BadRequest("Command not created");
             }
 
-            ValidatePatientForCreationModel(patientForCreation);
-
-            long id = 0;
-
-            if (ModelState.IsValid)
-            {
-                var patientDetail = PreparePatientDetail(patientForCreation);
-                if (!patientDetail.IsValid())
+            return CreatedAtAction("GetPatientByIdentifier",
+                new
                 {
-                    patientDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
-
-                if (ModelState.IsValid)
-                {
-                    patientDetail.FirstName = patientForCreation.FirstName;
-                    patientDetail.Surname = patientForCreation.LastName;
-                    patientDetail.MiddleName = patientForCreation.MiddleName;
-                    patientDetail.DateOfBirth = patientForCreation.DateOfBirth;
-                    patientDetail.CurrentFacilityName = patientForCreation.FacilityName;
-                    patientDetail.CohortGroupId = patientForCreation.CohortGroupId;
-                    patientDetail.EnroledDate = patientForCreation.EnroledDate;
-                    patientDetail.EncounterTypeId = patientForCreation.EncounterTypeId;
-                    patientDetail.PriorityId = patientForCreation.PriorityId;
-                    patientDetail.EncounterDate = patientForCreation.EncounterDate;
-
-                    id = _patientService.AddPatient(patientDetail);
-                    _unitOfWork.Complete();
-
-                    var mappedPatient = await GetPatientAsync<PatientIdentifierDto>(id);
-                    if (mappedPatient == null)
-                    {
-                        return StatusCode(500, "Unable to locate newly added patient");
-                    }
-
-                    return CreatedAtRoute("GetPatientByIdentifier",
-                        new
-                        {
-                            id = mappedPatient.Id
-                        }, CreateLinksForPatient<PatientIdentifierDto>(mappedPatient));
-                }
-            }
-
-            return BadRequest(ModelState);
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
-        /// Update an existing patient
+        /// Update the custom attributes of the patient
         /// </summary>
         /// <param name="id">The unique id of the patient</param>
-        /// <param name="patientForUpdate">The patient payload</param>
+        /// <param name="patientCustomAttributesForUpdate">The patient custom attributes payload</param>
         /// <returns></returns>
-        [HttpPut("{id}", Name = "UpdatePatient")]
+        [HttpPut("{id}/custom", Name = "UpdatePatientCustomAttributes")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdatePatient(int id,
-            [FromBody] PatientForUpdateDto patientForUpdate)
+        public async Task<IActionResult> UpdatePatientCustomAttributes(int id,
+            [FromBody] PatientCustomAttributesForUpdateDto patientCustomAttributesForUpdate)
         {
-            if (patientForUpdate == null)
+            if (patientCustomAttributesForUpdate == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == id);
-            if (patientFromRepo == null)
+            var command = new ChangePatientCustomAttributesCommand(id, patientCustomAttributesForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
+
+            _logger.LogInformation(
+                "----- Sending command: ChangePatientCustomAttributesCommand - {patientId}",
+                id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            var facilityFromRepo = _facilityRepository.Get(f => f.FacilityName == patientForUpdate.FacilityName);
-            if (facilityFromRepo == null)
+            return Ok();
+        }
+
+        /// <summary>
+        /// Update the date of the birth of the patient
+        /// </summary>
+        /// <param name="id">The unique id of the patient</param>
+        /// <param name="patientDateOfBirthForUpdate">The patient date of birth payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}/dateofbirth", Name = "UpdatePatientDateOfBirth")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdatePatientDateOfBirth(int id,
+            [FromBody] PatientDateOfBirthForUpdateDto patientDateOfBirthForUpdate)
+        {
+            if (patientDateOfBirthForUpdate == null)
             {
-                ModelState.AddModelError("Message", "Unable to locate facility");
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            // Ensure patient record does not exist
-            var identifier_record = patientForUpdate.Attributes[_customAttributeRepository.Get(ca => ca.AttributeKey == "Medical Record Number").Id];
-            var identifier_id = patientForUpdate.Attributes[_customAttributeRepository.Get(ca => ca.AttributeKey == "Patient Identity Number").Id];
+            var command = new ChangePatientDateOfBirthCommand(id, patientDateOfBirthForUpdate.DateOfBirth);
 
-            List<CustomAttributeParameter> parameters = new List<CustomAttributeParameter>();
-            parameters.Add(new CustomAttributeParameter() { AttributeKey = "Medical Record Number", AttributeValue = identifier_record });
-            parameters.Add(new CustomAttributeParameter() { AttributeKey = "Patient Identity Number", AttributeValue = identifier_id });
+            _logger.LogInformation(
+                "----- Sending command: ChangePatientDateOfBirthCommand - {patientId}",
+                id);
 
-            if (!_patientService.isUnique(parameters, id))
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                ModelState.AddModelError("Message", "Potential duplicate patient. Check medical record number and patient identity number.");
+                return BadRequest("Command not created");
             }
 
-            ValidatePatientForUpdateModel(patientForUpdate);
+            return Ok();
+        }
 
-            if (ModelState.IsValid)
+        /// <summary>
+        /// Update the current facility of the patient
+        /// </summary>
+        /// <param name="id">The unique id of the patient</param>
+        /// <param name="patientFacilityForUpdate">The patient facility payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}/facility", Name = "UpdatePatientFacility")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdatePatientFacility(int id,
+            [FromBody] PatientFacilityForUpdateDto patientFacilityForUpdate)
+        {
+            if (patientFacilityForUpdate == null)
             {
-                var patientDetail = PreparePatientDetail(patientForUpdate);
-                if (!patientDetail.IsValid())
-                {
-                    patientDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
-
-                if (ModelState.IsValid)
-                {
-                    patientFromRepo.FirstName = patientForUpdate.FirstName;
-                    patientFromRepo.Surname = patientForUpdate.LastName;
-                    patientFromRepo.MiddleName = patientForUpdate.MiddleName;
-                    patientFromRepo.DateOfBirth = patientForUpdate.DateOfBirth;
-                    patientFromRepo.Notes = patientForUpdate.Notes;
-
-                    patientFromRepo.SetPatientFacility(facilityFromRepo);
-
-                    _modelExtensionBuilder.UpdateExtendable(patientFromRepo, patientDetail.CustomAttributes, "Admin");
-
-                    _patientRepository.Update(patientFromRepo);
-                    _unitOfWork.Complete();
-
-                    return Ok();
-                }
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            return BadRequest(ModelState);
+            var command = new ChangePatientFacilityCommand(id, patientFacilityForUpdate.FacilityName);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangePatientFacilityCommand - {patientId}",
+                id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Update the name of the patient
+        /// </summary>
+        /// <param name="id">The unique id of the patient</param>
+        /// <param name="patientNameForUpdate">The patient name payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}/name", Name = "UpdatePatientName")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdatePatientName(int id, 
+            [FromBody] PatientNameForUpdateDto patientNameForUpdate)
+        {
+            if (patientNameForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+            }
+
+            var command = new ChangePatientNameCommand(id, patientNameForUpdate.FirstName, patientNameForUpdate.MiddleName, patientNameForUpdate.LastName);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangePatientNameCommand - {patientId}",
+                id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Update the generic notes of the patient
+        /// </summary>
+        /// <param name="id">The unique id of the patient</param>
+        /// <param name="patientNotesForUpdate">The patient notes payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}/notes", Name = "UpdatePatientNotes")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdatePatientNotes(int id,
+            [FromBody] PatientNotesForUpdateDto patientNotesForUpdate)
+        {
+            if (patientNotesForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+            }
+
+            var command = new ChangePatientNotesCommand(id, patientNotesForUpdate.Notes);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangePatientNotesCommand - {patientId}",
+                id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
         }
 
         /// <summary>
@@ -803,10 +882,7 @@ namespace PVIMS.API.Controllers
 
                 foreach (var attachment in patientFromRepo.Attachments.Where(x => !x.Archived))
                 {
-                    attachment.Archived = true;
-                    attachment.ArchivedDate = DateTime.Now;
-                    attachment.ArchivedReason = patientForDelete.Reason;
-                    attachment.AuditUser = user;
+                    attachment.ArchiveAttachment(user, patientForDelete.Reason);
                     _attachmentRepository.Update(attachment);
                 }
 
@@ -839,10 +915,7 @@ namespace PVIMS.API.Controllers
 
                 foreach (var patientClinicalEvent in patientFromRepo.PatientClinicalEvents.Where(x => !x.Archived))
                 {
-                    patientClinicalEvent.Archived = true;
-                    patientClinicalEvent.ArchivedDate = DateTime.Now;
-                    patientClinicalEvent.ArchivedReason = patientForDelete.Reason;
-                    patientClinicalEvent.AuditUser = user;
+                    patientClinicalEvent.ArchiveClinicalEvent(user, patientForDelete.Reason);
                     _patientClinicalEventRepository.Update(patientClinicalEvent);
                 }
 
@@ -866,10 +939,7 @@ namespace PVIMS.API.Controllers
 
                 foreach (var patientMedication in patientFromRepo.PatientMedications.Where(x => !x.Archived))
                 {
-                    patientMedication.Archived = true;
-                    patientMedication.ArchivedDate = DateTime.Now;
-                    patientMedication.ArchivedReason = patientForDelete.Reason;
-                    patientMedication.AuditUser = user;
+                    patientMedication.ArchiveMedication(user, patientForDelete.Reason);
                     _patientMedicationRepository.Update(patientMedication);
                 }
 
@@ -887,7 +957,7 @@ namespace PVIMS.API.Controllers
                 patientFromRepo.ArchivedReason = patientForDelete.Reason;
                 patientFromRepo.AuditUser = user;
                 _patientRepository.Update(patientFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -910,73 +980,25 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new attachment");
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var command = new AddAttachmentCommand(patientId, patientAttachmentForCreation.Description, patientAttachmentForCreation.Attachment);
+
+            _logger.LogInformation(
+                "----- Sending command: AddAttachmentCommand - {patientId}",
+                patientId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            if (!String.IsNullOrEmpty(patientAttachmentForCreation.Description))
-            {
-                if (Regex.Matches(patientAttachmentForCreation.Description, @"[a-zA-Z0-9 ]").Count < patientAttachmentForCreation.Description.Length)
+            return CreatedAtAction("GetPatientAttachmentByIdentifier",
+                new
                 {
-                    ModelState.AddModelError("Message", "Description contains invalid characters (Enter A-Z, a-z, 0-9, space)");
-                    return BadRequest(ModelState);
-                }
-            }
-
-            if (patientAttachmentForCreation.Attachment.Length > 0)
-            {
-                var fileExtension = Path.GetExtension(patientAttachmentForCreation.Attachment.FileName).Replace(".", "");
-                var attachmentType = _attachmentTypeRepository.Get(at => at.Key == fileExtension);
-
-                if (attachmentType == null)
-                {
-                    ModelState.AddModelError("Message", "Invalid file type, please select another file");
-                    return BadRequest(ModelState);
-                }
-
-                var fileName = ContentDispositionHeaderValue.Parse(patientAttachmentForCreation.Attachment.ContentDisposition).FileName.Trim();
-
-                if (fileName.Length > 50)
-                {
-                    ModelState.AddModelError("Message", "Maximumum file name length of 50 characters, please rename the file before uploading");
-                    return BadRequest(ModelState);
-                }
-
-                // Create the attachment
-                BinaryReader reader = new BinaryReader(patientAttachmentForCreation.Attachment.OpenReadStream());
-                byte[] buffer = reader.ReadBytes((int)patientAttachmentForCreation.Attachment.Length);
-
-                var attachment = new Attachment
-                {
-                    Patient = patientFromRepo,
-                    Description = patientAttachmentForCreation.Description,
-                    FileName = patientAttachmentForCreation.Attachment.FileName,
-                    AttachmentType = attachmentType,
-                    Size = patientAttachmentForCreation.Attachment.Length,
-                    Content = buffer
-                };
-
-                _attachmentRepository.Save(attachment);
-                _unitOfWork.Complete();
-
-                var mappedAttachment = await GetAttachmentAsync<AttachmentIdentifierDto>(patientId, attachment.Id);
-                if (mappedAttachment == null)
-                {
-                    return StatusCode(500, "Unable to locate newly added attachment");
-                }
-
-                return CreatedAtRoute("GetPatientAttachmentByIdentifier",
-                    new
-                    {
-                        id = mappedAttachment.Id
-                    }, CreateLinksForAttachment<AttachmentIdentifierDto>(patientId, mappedAttachment));
-            }
-            else
-            {
-                return BadRequest();
-            }
+                    patientId,
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -987,40 +1009,29 @@ namespace PVIMS.API.Controllers
         /// <param name="attachmentForDelete">The deletion payload</param>
         /// <returns></returns>
         [HttpPut("{patientId}/attachments/{id}/archive", Name = "ArchivePatientAttachment")]
-        public async Task<IActionResult> ArchivePatientAttachment(long patientId, long id,
+        public async Task<IActionResult> ArchivePatientAttachment(int patientId, int id,
             [FromBody] ArchiveDto attachmentForDelete)
         {
-            var attachmentFromRepo = await _attachmentRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (attachmentFromRepo == null)
+            if (attachmentForDelete == null)
             {
-                return NotFound();
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            if (Regex.Matches(attachmentForDelete.Reason, @"[-a-zA-Z0-9 .']").Count < attachmentForDelete.Reason.Length)
+            var command = new ArchiveAttachmentCommand(patientId, id, attachmentForDelete.Reason);
+
+            _logger.LogInformation(
+                "----- Sending command: ArchiveAttachmentCommand - {patientId}: {attachmentId}",
+                command.PatientId,
+                command.AttachmentId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                ModelState.AddModelError("Message", "Reason contains invalid characters (Enter A-Z, a-z, space, period, apostrophe)");
+                return BadRequest("Command not created");
             }
 
-            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var user = _userRepository.Get(u => u.UserName == userName);
-            if (user == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate user");
-            }
-
-            if (ModelState.IsValid)
-            {
-                attachmentFromRepo.Archived = true;
-                attachmentFromRepo.ArchivedDate = DateTime.Now;
-                attachmentFromRepo.ArchivedReason = attachmentForDelete.Reason;
-                attachmentFromRepo.AuditUser = user;
-                _attachmentRepository.Update(attachmentFromRepo);
-                _unitOfWork.Complete();
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -1064,104 +1075,6 @@ namespace PVIMS.API.Controllers
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Get patients from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="patientResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetPatients<T>(PatientResourceParameters patientResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = patientResourceParameters.PageNumber,
-                PageSize = patientResourceParameters.PageSize
-            };
-
-            var facility = !String.IsNullOrWhiteSpace(patientResourceParameters.FacilityName) ? _facilityRepository.Get(f => f.FacilityName == patientResourceParameters.FacilityName) : null;
-            var customAttribute = _customAttributeRepository.Get(ca => ca.Id == patientResourceParameters.CustomAttributeId);
-            var path = customAttribute?.CustomAttributeType == CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute";
-
-            List <SqlParameter> parameters = new List<SqlParameter>();
-            parameters.Add(new SqlParameter("@FacilityId", facility != null ? facility.Id : 0));
-            parameters.Add(new SqlParameter("@PatientId", patientResourceParameters.PatientId.ToString()));
-            parameters.Add(new SqlParameter("@FirstName", !String.IsNullOrWhiteSpace(patientResourceParameters.FirstName) ? (Object)patientResourceParameters.FirstName : DBNull.Value));
-            parameters.Add(new SqlParameter("@LastName", !String.IsNullOrWhiteSpace(patientResourceParameters.LastName) ? (Object)patientResourceParameters.LastName : DBNull.Value));
-            parameters.Add(new SqlParameter("@DateOfBirth", patientResourceParameters.DateOfBirth > DateTime.MinValue ? (Object)patientResourceParameters.DateOfBirth : DBNull.Value));
-            parameters.Add(new SqlParameter("@CustomAttributeKey", !String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue) ? (Object)customAttribute?.AttributeKey : DBNull.Value));
-            parameters.Add(new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue) ? (Object)path : DBNull.Value));
-            parameters.Add(new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(patientResourceParameters.CustomAttributeValue) ? (Object)patientResourceParameters.CustomAttributeValue : DBNull.Value));
-
-            var resultsFromService = PagedCollection<EncounterList>.Create(_context.EncounterLists
-                .FromSqlRaw("spSearchEncounters @FacilityId, @PatientId, @FirstName, @LastName, @SearchFrom, @SearchTo, @CustomAttributeKey, @CustomPath, @CustomValue",
-                        parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (resultsFromService != null)
-            {
-                // Map EF entity to Dto
-                var mappedPatients = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(resultsFromService),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    resultsFromService.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedPatients.TotalCount,
-                    pageSize = mappedPatients.PageSize,
-                    currentPage = mappedPatients.CurrentPage,
-                    totalPages = mappedPatients.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedPatients.ForEach(dto => CreateLinksForPatient(dto));
-
-                return mappedPatients;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="patientResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForPatients(
-            LinkedResourceBaseDto wrapper,
-            PatientResourceParameters patientResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreatePatientsResourceUri(ResourceUriType.Current, patientResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreatePatientsResourceUri(ResourceUriType.NextPage, patientResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreatePatientsResourceUri(ResourceUriType.PreviousPage, patientResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
         }
 
         /// <summary>
@@ -1385,172 +1298,6 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
         /// <returns></returns>
-        private PatientDetailDto CustomPatientMap(PatientDetailDto dto)
-        {
-            var patient = _patientRepository.Get(p => p.Id == dto.Id);
-            IExtendable patientExtended = patient;
-
-            if (patient == null)
-            {
-                return dto;
-            }
-
-            // Map all custom attributes
-            dto.PatientAttributes = _modelExtensionBuilder.BuildModelExtension(patientExtended)
-                .Select(h => new AttributeValueDto()
-                {
-                    Key = h.AttributeKey,
-                    Value = h.Value.ToString(),
-                    Category = h.Category,
-                    SelectionValue = (h.Type == CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
-                }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
-
-            var attribute = patientExtended.GetAttributeValue("Medical Record Number");
-            dto.MedicalRecordNumber = attribute != null ? attribute.ToString() : "";
-
-            return dto;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private async Task<PatientExpandedDto> CustomPatientMapAsync(PatientExpandedDto dto)
-        {
-            var patient = await _patientRepository.GetAsync(p => p.Id == dto.Id);
-            IExtendable patientExtended = patient;
-
-            if (patient == null)
-            {
-                return dto;
-            }
-
-            // Map all custom attributes
-            dto.PatientAttributes = _modelExtensionBuilder.BuildModelExtension(patientExtended)
-                .Select(h => new AttributeValueDto()
-                {
-                    Key = h.AttributeKey,
-                    Value = h.Value.ToString(),
-                    Category = h.Category,
-                    SelectionValue = (h.Type == CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
-                }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
-
-            // Map additional attributes to main dto
-            var attribute = patientExtended.GetAttributeValue("Medical Record Number");
-            dto.MedicalRecordNumber = attribute != null ? attribute.ToString() : "";
-
-            // Add custom mappings to adverse events
-            dto.PatientClinicalEvents.ForEach(clinicalEvent => CustomClinicalEventMap(clinicalEvent));
-
-            // Add custom mappings to medications
-            dto.PatientMedications.ForEach(medication => CustomMedicationMap(medication));
-
-            // Cohort groups
-            var mappedCohortGroups = GetCohortGroups(dto.Id);
-
-            // Add custom mappings to cohort groups
-            mappedCohortGroups.ForEach(cohortGroup => CustomCohortGroupMap(cohortGroup, patient));
-            dto.CohortGroups = mappedCohortGroups;
-
-            // Condition groups
-            int[] terms = _patientConditionRepository.List(pc => pc.Patient.Id == patient.Id && pc.TerminologyMedDra != null && !pc.Archived && !pc.Patient.Archived)
-                .Select(p => p.TerminologyMedDra.Id)
-                .ToArray();
-
-            List<PatientConditionGroupDto> groupArray = new List<PatientConditionGroupDto>();
-            foreach (var cm in _conditionMeddraRepository.List(cm => terms.Contains(cm.TerminologyMedDra.Id))
-                .ToList())
-            {
-                var tempCondition = cm.GetConditionForPatient(patient);
-                if (tempCondition != null)
-                {
-                    var group = new PatientConditionGroupDto()
-                    {
-                        ConditionGroup = cm.Condition.Description,
-                        Status = tempCondition.OutcomeDate != null ? "Case Closed" : "Case Open",
-                        PatientConditionId = tempCondition.Id,
-                        StartDate = tempCondition.OnsetDate.ToString("yyyy-MM-dd"),
-                        Detail = String.Format("{0} started on {1}", tempCondition.TerminologyMedDra.DisplayName, tempCondition.OnsetDate.ToString("yyyy-MM-dd"))
-                    };
-                    groupArray.Add(group);
-                }
-            }
-            dto.ConditionGroups = groupArray;
-
-            // Activity
-            var activity = await _reportInstanceQueries.GetExecutionStatusEventsForPatientViewAsync(patient.Id);
-            dto.Activity = activity.ToList();
-
-            return dto;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <param name="patient">The patient to be used to determine what enrolments to load</param>
-        /// <returns></returns>
-        private CohortGroupPatientDetailDto CustomCohortGroupMap(CohortGroupPatientDetailDto dto, Patient patient)
-        {
-            // Condition group enrolments
-            var mappedCohortGroupEnrolment = GetCohortGroupEnrolment(dto.Id, patient.Id);
-            dto.CohortGroupEnrolment = mappedCohortGroupEnrolment != null ? CreateLinksForEnrolment(mappedCohortGroupEnrolment) : null;
-
-            // Condition start date
-            dto.ConditionStartDate = patient.GetConditionForGroupAndDate(dto.Condition, DateTime.Today)?.OnsetDate.ToString("yyyy-MM-dd");
-
-            // Cohort group links
-            return CreateLinksForCohortGroup(dto);
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private PatientClinicalEventDetailDto CustomClinicalEventMap(PatientClinicalEventDetailDto dto)
-        {
-            var clinicalEvent = _patientClinicalEventRepository.Get(p => p.Id == dto.Id);
-            IExtendable clinicalEventExtended = clinicalEvent;
-
-            if (clinicalEvent == null)
-            {
-                return dto;
-            }
-
-            dto.ReportDate = _customAttributeService.GetCustomAttributeValue("PatientClinicalEvent", "Date of Report", clinicalEventExtended);
-            dto.IsSerious = _customAttributeService.GetCustomAttributeValue("PatientClinicalEvent", "Is the adverse event serious?", clinicalEventExtended);
-
-            // Cohort group links
-            return dto;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private PatientMedicationDetailDto CustomMedicationMap(PatientMedicationDetailDto dto)
-        {
-            var medication = _patientMedicationRepository.Get(p => p.Id == dto.Id);
-            IExtendable medicationExtended = medication;
-
-            if (medication == null)
-            {
-                return dto;
-            }
-
-            dto.IndicationType = _customAttributeService.GetCustomAttributeValue("PatientMedication", "Type of Indication", medicationExtended);
-
-            return dto;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
         private PatientMedicationReportDto CustomPatientMedicationReportMap(PatientMedicationReportDto dto)
         {
             dto.Patients = _mapper.Map<List<PatientListDto>>(_reportService.GetPatientListByDrugItems(dto.ConceptId));
@@ -1567,88 +1314,6 @@ namespace PVIMS.API.Controllers
         private PatientTreatmentReportDto CustomPatientTreatmentReportMap(PatientTreatmentReportDto dto, PatientTreatmentReportResourceParameters patientTreatmentReportResourceParameters)
         {
             dto.Patients = _mapper.Map<List<PatientListDto>>(_reportService.GetPatientListOnStudyItems(patientTreatmentReportResourceParameters.SearchFrom, patientTreatmentReportResourceParameters.SearchTo, patientTreatmentReportResourceParameters.PatientOnStudyCriteria, dto.FacilityId));
-
-            return dto;
-        }
-
-        /// <summary>
-        /// Get a list of cohort groups
-        /// </summary>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private List<CohortGroupPatientDetailDto> GetCohortGroups(long id)
-        {
-            var cohortGroupsFromRepo = _cohortGroupRepository.List();
-
-            if (cohortGroupsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedCohortGroups = _mapper.Map<List<CohortGroupPatientDetailDto>>(cohortGroupsFromRepo);
-
-                return mappedCohortGroups;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get a list of cohort groups
-        /// </summary>
-        /// <param name="cohortGroupId">Resource id to search by</param>
-        /// <param name="patientId">The patient id to be used to determine what enrolments to load</param>
-        /// <returns></returns>
-        private EnrolmentIdentifierDto GetCohortGroupEnrolment(long cohortGroupId, long patientId)
-        {
-            var cohortGroupEnrolmentsFromRepo = _cohortGroupEnrolmentRepository.List(cge => cge.CohortGroup.Id == cohortGroupId && cge.Patient.Id == patientId && !cge.Archived);
-            if (cohortGroupEnrolmentsFromRepo != null)
-            {
-                if(cohortGroupEnrolmentsFromRepo.Count > 0)
-                {
-                    var cohortGroupEnrolment = cohortGroupEnrolmentsFromRepo.First();
-                    // Map EF entity to Dto
-                    var mappedCohortGroupEnrolment = _mapper.Map<EnrolmentIdentifierDto>(cohortGroupEnrolment);
-
-                    return mappedCohortGroupEnrolment;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get the corresponding selection value
-        /// </summary>
-        /// <param name="attributeKey">The custom attribute key look up value</param>
-        /// <param name="selectionKey">The selection key look up value</param>
-        /// <returns></returns>
-        private string GetSelectionValue(string attributeKey, string selectionKey)
-        {
-            var selectionitem = _selectionDataItemRepository.Get(s => s.AttributeKey == attributeKey && s.SelectionKey == selectionKey);
-
-            return (selectionitem == null) ? string.Empty : selectionitem.Value;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource for enrolments
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private EnrolmentIdentifierDto CreateLinksForEnrolment(EnrolmentIdentifierDto dto)
-        {
-            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateEnrolmentForPatientResourceUri(dto.PatientId, dto.Id), "self", "GET"));
-            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDeenrolmentForPatientResourceUri(dto.PatientId, dto.Id), "deenrol", "PUT"));
-
-            return dto;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource for cohort groups
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private CohortGroupPatientDetailDto CreateLinksForCohortGroup(CohortGroupPatientDetailDto dto)
-        {
-            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("CohortGroup", dto.Id), "self", "GET"));
 
             return dto;
         }
@@ -1872,221 +1537,6 @@ namespace PVIMS.API.Controllers
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Validate the input model for adding a new patient
-        /// </summary>
-        private void ValidatePatientForCreationModel(PatientForCreationDto patientForCreation)
-        {
-            if (Regex.Matches(patientForCreation.FirstName, @"[-a-zA-Z ']").Count < patientForCreation.FirstName.Length)
-            {
-                ModelState.AddModelError("Message", "First name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-            }
-
-            if (!String.IsNullOrEmpty(patientForCreation.MiddleName))
-            {
-                if (Regex.Matches(patientForCreation.MiddleName, @"[-a-zA-Z ']").Count < patientForCreation.MiddleName.Length)
-                {
-                    ModelState.AddModelError("Message", "Middle name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-                }
-            }
-
-            if (Regex.Matches(patientForCreation.LastName, @"[-a-zA-Z ']").Count < patientForCreation.LastName.Length)
-            {
-                ModelState.AddModelError("Message", "Last name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-            }
-
-            if (patientForCreation.DateOfBirth > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Date of birth should be before current date");
-            }
-
-            if (patientForCreation.DateOfBirth < DateTime.Today.AddYears(-120))
-            {
-                ModelState.AddModelError("Message", "Date of birth cannot be so far in the past");
-            }
-
-            var termSource = _terminologyMeddraRepository.Get(tm => tm.Id == patientForCreation.MeddraTermId);
-            if (termSource == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate meddra term");
-            }
-
-            if (patientForCreation.CohortGroupId.HasValue && patientForCreation.CohortGroupId > 0)
-            {
-                var cohortGroup = _cohortGroupRepository.Get(cg => cg.Id == patientForCreation.CohortGroupId);
-                if (cohortGroup == null)
-                {
-                    ModelState.AddModelError("Message", "Unable to locate cohort group");
-                }
-
-                if (!patientForCreation.EnroledDate.HasValue)
-                {
-                    ModelState.AddModelError("Message", "Cohort enrollment date must be specified if cohort selected");
-                }
-                else
-                {
-                    if (patientForCreation.EnroledDate > DateTime.Today)
-                    {
-                        ModelState.AddModelError("Message", "Cohort enrollment date should be before current date");
-                    }
-                    if (patientForCreation.EnroledDate < patientForCreation.DateOfBirth)
-                    {
-                        ModelState.AddModelError("Message", "Cohort enrollment date should be after date of birth");
-                    }
-                }
-            }
-
-            if (patientForCreation.StartDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Condition start date should be before current date");
-            }
-            if (patientForCreation.StartDate < patientForCreation.DateOfBirth)
-            {
-                ModelState.AddModelError("Message", "Condition start date should be after date of birth");
-            }
-
-            if (patientForCreation.OutcomeDate.HasValue)
-            {
-                if (patientForCreation.OutcomeDate > DateTime.Today)
-                {
-                    ModelState.AddModelError("Message", "Condition outcome date should be before current date");
-                }
-                if (patientForCreation.OutcomeDate < patientForCreation.StartDate)
-                {
-                    ModelState.AddModelError("Message", "Condition outcome date should be after start date");
-                }
-            }
-
-            var encounterType = _encounterTypeRepository.Get(et => et.Id == patientForCreation.EncounterTypeId);
-            if (encounterType == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate encounter type");
-            }
-
-            if (patientForCreation.EncounterDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Encounter date should be before current date");
-            }
-            if (patientForCreation.EncounterDate < patientForCreation.DateOfBirth)
-            {
-                ModelState.AddModelError("Message", "Encounter date should be after date of birth");
-            }
-        }
-
-        /// <summary>
-        /// Validate the input model for updating an existing patient
-        /// </summary>
-        private void ValidatePatientForUpdateModel(PatientForUpdateDto patientForUpdate)
-        {
-            if (Regex.Matches(patientForUpdate.FirstName, @"[-a-zA-Z ']").Count < patientForUpdate.FirstName.Length)
-            {
-                ModelState.AddModelError("Message", "First name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-            }
-
-            if (!String.IsNullOrEmpty(patientForUpdate.MiddleName))
-            {
-                if (Regex.Matches(patientForUpdate.MiddleName, @"[-a-zA-Z ']").Count < patientForUpdate.MiddleName.Length)
-                {
-                    ModelState.AddModelError("Message", "Middle name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-                }
-            }
-
-            if (Regex.Matches(patientForUpdate.LastName, @"[-a-zA-Z ']").Count < patientForUpdate.LastName.Length)
-            {
-                ModelState.AddModelError("Message", "Last name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
-            }
-
-            if (patientForUpdate.DateOfBirth > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Date of birth should be before current date");
-            }
-
-            if (patientForUpdate.DateOfBirth < DateTime.Today.AddYears(-120))
-            {
-                ModelState.AddModelError("Message", "Date of birth cannot be so far in the past");
-            }
-        }
-
-        /// <summary>
-        /// Prepare the model for adding a new patient
-        /// </summary>
-        private PatientDetailForCreation PreparePatientDetail(PatientForCreationDto patientForCreation)
-        {
-            var patientDetail = new PatientDetailForCreation();
-            patientDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<Patient>();
-
-            // Update patient custom attributes from source
-            foreach (var newAttribute in patientForCreation.Attributes)
-            {
-                var customAttribute = _customAttributeRepository.Get(ca => ca.Id == newAttribute.Key);
-                if (customAttribute != null)
-                {
-                    // Validate attribute exists for household entity and is a PMT attribute
-                    var attributeDetail = patientDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
-                    if (attributeDetail == null)
-                    {
-                        ModelState.AddModelError("Message", $"Unable to locate custom attribute on patient {newAttribute.Key}");
-                    }
-                    else
-                    {
-                        attributeDetail.Value = newAttribute.Value;
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("Message", $"Unable to locate custom attribute {newAttribute.Key}");
-                }
-            }
-
-            // Prepare primary condition
-            var conditionDetail = new ConditionDetail();
-            conditionDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<PatientCondition>();
-            var termSource = _terminologyMeddraRepository.Get(tm => tm.Id == patientForCreation.MeddraTermId);
-
-            conditionDetail.MeddraTermId = termSource.Id;
-            conditionDetail.ConditionSource = termSource.MedDraTerm;
-            conditionDetail.OnsetDate = patientForCreation.StartDate;
-            conditionDetail.OutcomeDate = patientForCreation.OutcomeDate;
-
-            patientDetail.Conditions.Add(conditionDetail);
-
-            return patientDetail;
-        }
-
-        /// <summary>
-        /// Prepare the model for updating an existing patient
-        /// </summary>
-        private PatientDetailForCreation PreparePatientDetail(PatientForUpdateDto patientForUpdate)
-        {
-            var patientDetail = new PatientDetailForCreation();
-            patientDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<Patient>();
-
-            // Update patient custom attributes from source
-            foreach (var newAttribute in patientForUpdate.Attributes)
-            {
-                var customAttribute = _customAttributeRepository.Get(ca => ca.Id == newAttribute.Key);
-                if (customAttribute != null)
-                {
-                    // Validate attribute exists for household entity and is a PMT attribute
-                    var attributeDetail = patientDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
-                    if (attributeDetail == null)
-                    {
-                        ModelState.AddModelError("Message", $"Unable to locate custom attribute on patient {newAttribute.Key}");
-                    }
-                    else
-                    {
-                        attributeDetail.Value = newAttribute.Value;
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("Message", $"Unable to locate custom attribute {newAttribute.Key}");
-                }
-            }
-
-            return patientDetail;
         }
     }
 }

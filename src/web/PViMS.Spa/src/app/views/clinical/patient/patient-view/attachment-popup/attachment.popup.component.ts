@@ -51,7 +51,7 @@ export class AttachmentPopupComponent extends BasePopupComponent implements OnIn
     let self = this;
     self.setBusy(true);
 
-    self.patientService.saveAttachment(self.data.patientId, self.fileToUpload, self.itemForm.value)
+    self.patientService.saveAttachment(self.data.patientId, self.fileToUpload, self.itemForm.get('description').value)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.notify("Attachment successfully uploaded!", "Success");

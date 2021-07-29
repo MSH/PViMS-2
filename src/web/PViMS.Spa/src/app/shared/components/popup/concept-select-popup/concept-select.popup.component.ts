@@ -39,7 +39,7 @@ export class ConceptSelectPopupComponent extends BasePopupComponent implements O
 
   ngOnInit(): void {
     this.itemForm = this._formBuilder.group({
-      searchOption: ['Product', Validators.required],
+      searchOption: ['Concept', Validators.required],
       searchTerm: [''],
       active: ['Yes']      
     })

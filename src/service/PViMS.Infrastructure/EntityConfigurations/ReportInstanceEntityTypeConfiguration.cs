@@ -38,6 +38,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasColumnName("WorkFlow_Id");
 
+            configuration
+                .Property(c => c.ReportClassificationId)
+                .IsRequired();
+
             configuration.HasOne(d => d.CreatedBy)
                 .WithMany(p => p.ReportInstanceCreations)
                 .HasForeignKey(d => d.CreatedById);

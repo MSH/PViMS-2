@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace PVIMS.API.Models
 {
@@ -9,21 +8,16 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The first name of the patient
         /// </summary>
-        [Required]
-        [StringLength(30)]
         public string FirstName { get; set; }
 
         /// <summary>
         /// The first name of the patient
         /// </summary>
-        [Required]
-        [StringLength(30)]
         public string LastName { get; set; }
 
         /// <summary>
         /// The first name of the patient
         /// </summary>
-        [StringLength(30)]
         public string MiddleName { get; set; }
 
         /// <summary>
@@ -34,20 +28,16 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The facility that the patient is being registered against
         /// </summary>
-        [Required]
-        [StringLength(100)]
         public string FacilityName { get; set; }
 
         /// <summary>
         /// The primary condition group for the patient
         /// </summary>
-        [Required]
         public int ConditionGroupId { get; set; }
 
         /// <summary>
         /// The meddra term that has been associated to the primary group that the patient belongs to
         /// </summary>
-        [Required]
         public int MeddraTermId { get; set; }
 
         /// <summary>
@@ -73,7 +63,6 @@ namespace PVIMS.API.Models
         /// <summary>
         /// Any comments associated to th
         /// </summary>
-        [StringLength(100)]
         public string Comments { get; set; }
 
         /// <summary>
@@ -84,19 +73,16 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The type of encounter on patient registration
         /// </summary>
-        [Required]
         public int EncounterTypeId { get; set; }
 
         /// <summary>
         /// The priority of the encounter
         /// </summary>
-        [Required]
         public int PriorityId { get; set; }
 
         /// <summary>
         /// The date of the encounter
         /// </summary>
         public DateTime EncounterDate { get; set; }
-
     }
 }

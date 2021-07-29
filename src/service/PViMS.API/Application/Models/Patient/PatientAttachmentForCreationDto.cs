@@ -8,7 +8,6 @@ namespace PVIMS.API.Models
         /// <summary>
         /// A description of the file
         /// </summary>
-        [StringLength(100)]
         public string Description { get; set; }
 
         /// <summary>

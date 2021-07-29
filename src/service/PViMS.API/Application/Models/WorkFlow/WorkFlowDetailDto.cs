@@ -15,15 +15,15 @@ namespace PVIMS.API.Models
         public int NewReportInstanceCount { get; set; }
 
         /// <summary>
-        /// The number of new feedback items for this work flow
+        /// Activity summary for this work flow item for analysis purposes
         /// </summary>
         [DataMember]
-        public int NewFeedbackInstanceCount { get; set; }
+        public ActivitySummaryDto[] AnalysisActivity { get; set; }
 
         /// <summary>
-        /// Activity summary for this work flow item
+        /// Activity summary for this work flow item for feedback purposes
         /// </summary>
         [DataMember]
-        public ActivitySummaryDto[] ActivityItems { get; set; }
+        public ActivitySummaryDto[] FeedbackActivity { get; set; }
     }
 }

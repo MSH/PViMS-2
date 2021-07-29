@@ -7,7 +7,7 @@ namespace PVIMS.API.Models
     /// A activity history value representation containing audit details of all activities
     /// </summary>
     [DataContract()]
-    public class ActivityExecutionStatusEventDto : LinkedResourceBaseDto
+    public class ActivityExecutionStatusEventDto
     {
         /// <summary>
         /// The unique identifier of the status event

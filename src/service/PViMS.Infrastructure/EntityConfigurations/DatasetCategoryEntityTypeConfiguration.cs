@@ -23,11 +23,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.Property(c => c.CategoryOrder)
                 .IsRequired(true);
 
-            configuration.HasOne(c => c.Dataset)
-                .WithMany()
-                .HasForeignKey("Dataset_Id")
-                .IsRequired(true);
-
             configuration.Property(c => c.FriendlyName)
                 .HasMaxLength(150);
 
@@ -55,7 +50,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasForeignKey(d => d.DatasetId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            configuration.HasIndex(new string[] { "Dataset_Id", "DatasetCategoryName" }).IsUnique(true);
+            configuration.HasIndex(e => new { e.DatasetId, e.DatasetCategoryName }).IsUnique(true);
             configuration.HasIndex(e => e.DatasetId);
         }
     }

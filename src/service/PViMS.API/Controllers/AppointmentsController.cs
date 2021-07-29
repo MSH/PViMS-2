@@ -289,7 +289,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added appointment");
                 }
 
-                return CreatedAtRoute("GetAppointmentByIdentifier",
+                return CreatedAtAction("GetAppointmentByIdentifier",
                     new
                     {
                         patientId,
@@ -368,7 +368,7 @@ namespace PVIMS.API.Controllers
                 appointmentFromRepo.CancellationReason = appointmentForUpdate.CancellationReason;
 
                 _appointmentRepository.Update(appointmentFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -414,7 +414,7 @@ namespace PVIMS.API.Controllers
                 appointmentFromRepo.Dna = true;
 
                 _appointmentRepository.Update(appointmentFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -468,7 +468,7 @@ namespace PVIMS.API.Controllers
                 appointmentFromRepo.ArchivedReason = appointmentForDelete.Reason;
                 appointmentFromRepo.AuditUser = user;
                 _appointmentRepository.Update(appointmentFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }

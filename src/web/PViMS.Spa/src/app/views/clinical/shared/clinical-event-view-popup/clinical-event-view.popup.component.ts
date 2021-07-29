@@ -16,8 +16,16 @@ import { GridModel } from 'app/shared/models/grid.model';
 
 @Component({
   templateUrl: './clinical-event-view.popup.component.html',
-  styleUrls: ['./clinical-event-view.popup.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-identifier { flex: 0 0 55% !important; width: 55% !important; }
+    .mat-column-naranjo { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-who { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-adverse-event { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-meddra-term { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-task-count { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-status { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }
+  `],  
   animations: egretAnimations
 })
 export class ClinicalEventViewPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
@@ -27,7 +35,6 @@ export class ClinicalEventViewPopupComponent extends BasePopupComponent implemen
 
   customAttributeList: CustomAttributeDetailModel[] = [];
   clinicalEventAttributes: AttributeValueModel[];
-  setMedDraTerm: string;
 
   arrayAttributes: {
     id: number;
@@ -78,14 +85,15 @@ export class ClinicalEventViewPopupComponent extends BasePopupComponent implemen
     self.patientService.getPatientClinicalEventExpanded(self.data.patientId, self.data.clinicalEventId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        console.log(result);
+        self.CLog(result, 'patient clinical event expanded');
         self.updateForm(self.viewModelForm, result);
 
         self.viewModel.mainGrid.updateBasic(result.activity);
         self.viewModel.medicineGrid.updateBasic(result.medications);
 
         self.clinicalEventAttributes = result.clinicalEventAttributes;
-        self.setMedDraTerm = result.setMedDraTerm;
+        self.viewModel.setMedDraTerm = result.setMedDraTerm;
+        self.viewModel.setClassification = result.setClassification;
 
         self.getCustomAttributeList();
       }, error => {
@@ -149,6 +157,9 @@ class ViewModel {
   medicineGrid: GridModel<MedicineGridRecordModel> =
       new GridModel<MedicineGridRecordModel>
           (['identifier', 'naranjo', 'who']);
+
+  setMedDraTerm: string;
+  setClassification: string;
 }
 
 class GridRecordModel {

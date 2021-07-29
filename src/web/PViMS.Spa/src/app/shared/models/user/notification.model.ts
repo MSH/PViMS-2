@@ -1,8 +1,8 @@
 export interface NotificationModel {
-    icon: string;
-    message: string;
-    route: string;
-    color: string;
-    time: string;
-    identifier: string;
+    summary: string;
+    detail: string;
+    notificationType: string;
+    notificationClassification: string;
+    createdDetail: string;
+    contextRoute: string;
 }

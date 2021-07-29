@@ -208,7 +208,7 @@ namespace PVIMS.API.Controllers
                 return StatusCode(500, "Unable to locate newly added enrolment");
             }
 
-            return CreatedAtRoute("GetPatientEnrolmentByIdentifier",
+            return CreatedAtAction("GetPatientEnrolmentByIdentifier",
                 new
                 {
                     patientId,
@@ -268,10 +268,10 @@ namespace PVIMS.API.Controllers
                 enrolmentFromRepo.DeenroledDate = deenroledDate;
 
                 _cohortGroupEnrolmentRepository.Update(enrolmentFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
-            return CreatedAtRoute("GetPatientEnrolmentByIdentifier",
+            return CreatedAtAction("GetPatientEnrolmentByIdentifier",
                 new
                 {
                     patientId,
@@ -330,7 +330,7 @@ namespace PVIMS.API.Controllers
                 enrolmentFromRepo.AuditUser = user;
 
                 _cohortGroupEnrolmentRepository.Update(enrolmentFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -338,13 +338,6 @@ namespace PVIMS.API.Controllers
             return BadRequest(ModelState);
         }
 
-        /// <summary>
-        /// Get cohort group enrolments from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="cohortGroupId">The unique identifier of the cohort group</param>
-        /// <param name="cohortGroupEnrolmentResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
         private PagedCollection<T> GetCohortGroupEnrolments<T>(int cohortGroupId, CohortGroupEnrolmentResourceParameters cohortGroupEnrolmentResourceParameters) where T : class
         {
             var pagingInfo = new PagingInfo()
@@ -388,13 +381,6 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        /// Get single cohortGroupEnrolment from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="patientId">unique identifier of the patient </param>
-        /// <param name="id">Resource guid to search by</param>
-        /// <returns></returns>
         private async Task<T> GetCohortGroupEnrolmentAsync<T>(long patientId, long id) where T : class
         {
             var predicate = PredicateBuilder.New<CohortGroupEnrolment>(true);
@@ -417,11 +403,6 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        /// Get single appointment from repository using primary key and auto map to Dto
-        /// </summary>
-        /// <param name="enrolmentId">Primary key of the enrolment</param>
-        /// <returns></returns>
         private async Task<EnrolmentIdentifierDto> GetEnrolmentAsync(long enrolmentId)
         {
             var predicate = PredicateBuilder.New<CohortGroupEnrolment>(true);
@@ -440,12 +421,6 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="patientId">The unique identifier of the patient</param>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
         private EnrolmentIdentifierDto CreateLinksForCohortGroupEnrolment<T>(T dto)
         {
             EnrolmentIdentifierDto identifier = (EnrolmentIdentifierDto)(object)dto;
@@ -455,12 +430,6 @@ namespace PVIMS.API.Controllers
             return identifier;
         }
 
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="patientId">The unique identifier of the patient</param>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
         private EnrolmentIdentifierDto CreateLinksForEnrolment<T>(long patientId, T dto)
         {
             EnrolmentIdentifierDto identifier = (EnrolmentIdentifierDto)(object)dto;
@@ -471,11 +440,6 @@ namespace PVIMS.API.Controllers
             return identifier;
         }
 
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
         private EnrolmentDetailDto CustomCohortGroupEnrolmentMap(EnrolmentDetailDto dto)
         {
             var patientFromRepo = _patientRepository.Get(p => p.Id == dto.PatientId);

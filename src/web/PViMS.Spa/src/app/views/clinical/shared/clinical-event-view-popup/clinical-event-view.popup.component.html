@@ -9,9 +9,21 @@
           <mat-tab label="{{'Terminology and Causality' | translate}}">
             <mat-card-content class="m-1 p-5" style="height: 500px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column">
-                <div fxFlex="100" class="card-title-text mat-bg-accent p-24 mb-6" *ngIf="setMedDraTerm != null">
-                  {{"MedDra term set to" | translate }} : {{ setMedDraTerm }}
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'MedDra term set to' | translate }}</mat-label>
+                    <input matInput readonly value="{{viewModel.setMedDraTerm}}">
+                  </mat-form-field>
                 </div>
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Classification set to' | translate }}</mat-label>
+                    <input matInput readonly value="{{viewModel.setClassification}}">
+                  </mat-form-field>
+                </div>
+              </div>
+              <div fxLayout="row wrap" fxLayout.lt-sm="column">
+                <div class="card-title-text font-weight-bold p-12">{{'Causality' | translate}}</div>
                 <div fxFlex="100" class="table-container">
                   <mat-table [dataSource]="viewModel?.medicineGrid?.records"
                             [@animate]="{value:'50'}">

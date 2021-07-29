@@ -143,7 +143,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetLabTestByIdentifier",
+                return CreatedAtAction("GetLabTestByIdentifier",
                     new
                     {
                         id = mappedLabTest.Id
@@ -194,7 +194,7 @@ namespace PVIMS.API.Controllers
                 labTestFromRepo.Active = (labTestForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
 
                 _labTestRepository.Update(labTestFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -219,7 +219,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _labTestRepository.Delete(labTestFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

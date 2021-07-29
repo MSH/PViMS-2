@@ -64,6 +64,33 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.OnsetDate, opt => opt.MapFrom(src => src.OnsetDate.HasValue ? Convert.ToDateTime(src.OnsetDate).ToString("yyyy-MM-dd") : ""))
                 .ForMember(dest => dest.ResolutionDate, opt => opt.MapFrom(src => src.ResolutionDate.HasValue ? Convert.ToDateTime(src.ResolutionDate).ToString("yyyy-MM-dd") : ""));
 
+            CreateMap<PatientCondition, PatientConditionIdentifierDto>();
+            CreateMap<PatientCondition, PatientConditionDetailDto>()
+                .ForMember(dest => dest.SourceDescription, opt => opt.MapFrom(src => src.ConditionSource))
+                .ForMember(dest => dest.MedDraTerm, opt => opt.MapFrom(src => src.TerminologyMedDra.MedDraTerm))
+                .ForMember(dest => dest.SourceTerminologyMedDraId, opt => opt.MapFrom(src => src.TerminologyMedDra.Id))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.OnsetDate.ToString("yyyy-MM-dd")))
+                .ForMember(dest => dest.Outcome, opt => opt.MapFrom(src => src.Outcome.Description))
+                .ForMember(dest => dest.OutcomeDate, opt => opt.MapFrom(src => src.OutcomeDate.HasValue ? Convert.ToDateTime(src.OutcomeDate).ToString("yyyy-MM-dd") : ""))
+                .ForMember(dest => dest.TreatmentOutcome, opt => opt.MapFrom(src => src.TreatmentOutcome.Description));
+
+            CreateMap<PatientLabTest, PatientLabTestIdentifierDto>();
+            CreateMap<PatientLabTest, PatientLabTestDetailDto>()
+                .ForMember(dest => dest.TestDate, opt => opt.MapFrom(src => src.TestDate.ToString("yyyy-MM-dd")))
+                .ForMember(dest => dest.LabTest, opt => opt.MapFrom(src => src.LabTest.Description))
+                .ForMember(dest => dest.TestResultCoded, opt => opt.MapFrom(src => src.TestResult))
+                .ForMember(dest => dest.TestResultValue, opt => opt.MapFrom(src => src.LabValue))
+                .ForMember(dest => dest.TestUnit, opt => opt.MapFrom(src => src.TestUnit.Description));
+
+            CreateMap<PatientMedication, PatientMedicationIdentifierDto>();
+            CreateMap<PatientMedication, PatientMedicationDetailDto>()
+                .ForMember(dest => dest.SourceDescription, opt => opt.MapFrom(src => src.MedicationSource))
+                .ForMember(dest => dest.ConceptId, opt => opt.MapFrom(src => src.Concept.Id))
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Product.Id))
+                .ForMember(dest => dest.Medication, opt => opt.MapFrom(src => src.Product != null ? $"{src.Concept.ConceptName} ({src.Concept.MedicationForm.Description}) ({src.Product.ProductName})" : $"{src.Concept.ConceptName} ({src.Concept.MedicationForm.Description})"))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate.ToString("yyyy-MM-dd")))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate.HasValue ? src.EndDate.Value.ToString("yyyy-MM-dd") : ""));
+
             CreateMap<AdverseEventList, AdverseEventReportDto>()
                 .ForMember(dest => dest.AdverseEvent, opt => opt.MapFrom(src => src.Description));
             CreateMap<AdverseEventQuarterlyList, AdverseEventFrequencyReportDto>()

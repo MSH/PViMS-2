@@ -7,10 +7,10 @@
       <div fxFlex="100" class="pr-1">
         <mat-tab-group>
           <mat-tab label="{{'Basic Information' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 300px;">
+            <mat-card-content class="m-1 p-5" style="height: 450px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="50" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                       <input matInput formControlName="firstName" placeholder="{{'First name' | translate }}" required>
                       <mat-hint>{{'Maximum length' | translate}} 30</mat-hint> 
                       <mat-error *ngIf="viewModelForm.get('firstName').hasError('required')">
@@ -24,8 +24,8 @@
                       </mat-error>            
                   </mat-form-field>        
                 </div>
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="50" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                       <input matInput formControlName="lastName" placeholder="{{'Last name' | translate }}" required>
                       <mat-hint>{{'Maximum length' | translate}} 30</mat-hint> 
                       <mat-error *ngIf="viewModelForm.get('lastName').hasError('required')">
@@ -39,8 +39,8 @@
                       </mat-error>
                   </mat-form-field>
                 </div>
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="50" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                       <input matInput formControlName="middleName" placeholder="{{'Middle name' | translate }}">
                       <mat-hint>{{'Maximum length' | translate}} 30</mat-hint> 
                       <mat-error *ngIf="viewModelForm.get('middleName').hasError('maxlength')">
@@ -51,15 +51,15 @@
                       </mat-error>
                   </mat-form-field>
                 </div>
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="50" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                     <input matInput formControlName="dateOfBirth" placeholder="{{'Date of birth' | translate}}" [matDatepicker]="birthDateDatepicker" required>
                     <mat-datepicker-toggle matSuffix [for]="birthDateDatepicker"></mat-datepicker-toggle>
                   </mat-form-field>
                   <mat-datepicker #birthDateDatepicker startView="multi-year"></mat-datepicker>
                 </div>
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="50" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                     <mat-select formControlName="facilityName" placeholder="{{'Facility' | translate}}" required>
                         <mat-option *ngFor="let facility of facilityList" [value]="facility">
                             {{facility}}
@@ -74,29 +74,29 @@
             </mat-card-content>
           </mat-tab>
           <mat-tab label="{{'Detail Information' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 300px;">
+            <mat-card-content class="m-1 p-5" style="height: 450px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" formGroupName="attributes">
-                <div fxFlex="50" class="pr-1" *ngFor="let attribute of customAttributeList">
-                  <mat-form-field class="p-8 full-width" *ngIf="attribute.customAttributeType == 'String'">
+                <div fxFlex="50" class="pr-1 mt-24" *ngFor="let attribute of customAttributeList">
+                  <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'String'">
                     <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" [required]="attribute.required">
                     <mat-hint *ngIf="attribute.stringMaxLength != null">
                       {{'Maximum length' | translate}} {{attribute.stringMaxLength}}
                     </mat-hint>
                   </mat-form-field>
-                  <mat-form-field class="p-8 full-width" *ngIf="attribute.customAttributeType == 'Numeric'">
+                  <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'Numeric'">
                     <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" type="number" [required]="attribute.required">
                     <mat-hint *ngIf="attribute.numericMinValue != null && attribute.numericMaxValue != null">
                       {{'Valid between ' | translate}} {{attribute.numericMinValue}} {{'and ' | translate}} {{attribute.numericMaxValue}}
                     </mat-hint>
                   </mat-form-field>        
                   <span *ngIf="attribute.customAttributeType == 'DateTime'">
-                    <mat-form-field class="p-8 full-width">
+                    <mat-form-field class="full-width">
                       <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" [matDatepicker]="datepicker" [required]="attribute.required">
                       <mat-datepicker-toggle matSuffix [for]="datepicker"></mat-datepicker-toggle>
                     </mat-form-field>        
                     <mat-datepicker #datepicker startView="multi-year"></mat-datepicker>
                   </span>
-                  <mat-form-field class="p-8 full-width" *ngIf="attribute.customAttributeType == 'Selection'">
+                  <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'Selection'">
                     <mat-select formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" [required]="attribute.required">
                       <mat-option *ngFor="let item of attribute.selectionDataItems" value="{{item.selectionKey}}">
                         {{item.value | translate}}
@@ -108,7 +108,7 @@
             </mat-card-content>
           </mat-tab>
           <mat-tab label="{{'Notes' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 300px;">
+            <mat-card-content class="m-1 p-5" style="height: 450px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
                 <div fxFlex="100" class="pr-1">
                   <quill-editor theme="snow" formControlName="notes"></quill-editor>

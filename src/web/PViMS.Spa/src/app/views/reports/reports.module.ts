@@ -6,7 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedMaterialModule } from 'app/shared/shared-material.module';
 import { SharedModule } from 'app/shared/shared.module';
-import { TranslateModule } from '@ngx-translate/core';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { RouterModule } from '@angular/router';
 import { ReportRoutes } from './reports-routing.module';
@@ -45,7 +44,6 @@ import { ReportViewerComponent } from './report-viewer/report-viewer.component';
     SharedComponentsModule,
     SharedMaterialModule,
     SharedModule,
-    TranslateModule,
     PerfectScrollbarModule,
     RouterModule.forChild(ReportRoutes)
   ],

@@ -141,7 +141,7 @@ namespace PVIMS.API.Controllers
                 return StatusCode(500, "Unable to locate newly added item");
             }
 
-            return CreatedAtRoute("GetHolidayByIdentifier",
+            return CreatedAtAction("GetHolidayByIdentifier",
                 new
                 {
                     id = mappedHoliday.Id
@@ -185,7 +185,7 @@ namespace PVIMS.API.Controllers
                 holidayFromRepo.Description = holidayForUpdate.Description;
 
                 _holidayRepository.Update(holidayFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -208,7 +208,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _holidayRepository.Delete(holidayFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();

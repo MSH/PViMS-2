@@ -228,7 +228,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetEncounterTypeByIdentifier",
+                return CreatedAtAction("GetEncounterTypeByIdentifier",
                     new
                     {
                         id = mappedEncounterType.Id
@@ -281,7 +281,7 @@ namespace PVIMS.API.Controllers
                 encounterTypeFromRepo.Help = encounterTypeForUpdate.Help;
 
                 _encounterTypeRepository.Update(encounterTypeFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -319,7 +319,7 @@ namespace PVIMS.API.Controllers
                 }
 
                 _encounterTypeRepository.Delete(encounterTypeFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }

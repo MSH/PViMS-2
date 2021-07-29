@@ -13,6 +13,11 @@ import { PatientClinicalEventExpandedModel } from '../models/patient/patient-cli
 import { PatientLabTestDetailModel } from '../models/patient/patient-lab-test.detail.model';
 import { PatientMedicationReportWrapperModel } from '../models/patient/patient-medication.report.model';
 import { PatientTreatmentReportWrapperModel } from '../models/patient/patient-treatment.report.model';
+import { PatientCustomAttributesForUpdateModel } from '../models/patient/patient-custom-attributes-for-update.model';
+import { PatientDateOfBirthForUpdateModel } from '../models/patient/patient-date-of-birth-for-update.model';
+import { PatientFacilityForUpdateModel } from '../models/patient/patient-facility-for-update.model';
+import { PatientNotesForUpdateModel } from '../models/patient/patient-notes-for-update.model';
+import { PatientNameForUpdateModel } from '../models/patient/patient-name-for-update.model';
 
 @Injectable({ providedIn: 'root' })
 export class PatientService extends BaseService {
@@ -25,7 +30,6 @@ export class PatientService extends BaseService {
 
     searchPatient(filterModel: any): any {
       let parameters: ParameterKeyValueModel[] = [];
-      console.log(filterModel);
       parameters.push(<ParameterKeyValueModel> { key: 'facilityName', value: filterModel.facilityName });
       if (filterModel.patientId != null && filterModel.patientId != '') {
           parameters.push(<ParameterKeyValueModel> { key: 'patientId', value: filterModel.patientId });
@@ -48,6 +52,17 @@ export class PatientService extends BaseService {
 
       return this.Get<PatientDetailWrapperModel>('', 'application/vnd.pvims.detail.v1+json', parameters);
     }
+
+    getPatientByCondition(filterModel: any): any {
+      let parameters: ParameterKeyValueModel[] = [];
+
+      parameters.push(<ParameterKeyValueModel> { key: 'customAttributeKey', value: filterModel.customAttributeKey });
+      parameters.push(<ParameterKeyValueModel> { key: 'customAttributeValue', value: filterModel.customAttributeValue });
+      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: '1'});
+      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: '10'});
+
+      return this.Get<PatientExpandedModel>('', 'application/vnd.pvims.expanded.v1+json', parameters);
+    }    
 
     getPatientExpanded(id: number): any {
         let parameters: ParameterKeyValueModel[] = [];
@@ -168,14 +183,45 @@ export class PatientService extends BaseService {
       return this.Download(`/patients/${patientId}/attachments`, 'application/vnd.pvims.attachment.v1+xml', parameters);
     }
 
-    savePatient(id: number, model: any): any {
+    savePatient(model: any): any {
+      let shallowModel = this.transformModelForDate(model);
+      return this.Post('', shallowModel);
+    }
+
+    updatePatientCustomAttributes(id: number, model: PatientCustomAttributesForUpdateModel): any {
       let shallowModel = this.transformModelForDate(model);
       if(id == 0) {
-        return this.Post('', shallowModel);
+        return null;
       }
-      else {
-        return this.Put(`${id}`, shallowModel);
+      return this.Put(`${id}/custom`, shallowModel);
+    }
+
+    updatePatientDateOfBirth(id: number, model: PatientDateOfBirthForUpdateModel): any {
+      if(id == 0) {
+        return null;
       }
+      return this.Put(`${id}/dateofbirth`, model);
+    }
+
+    updatePatientFacility(id: number, model: PatientFacilityForUpdateModel): any {
+      if(id == 0) {
+        return null;
+      }
+      return this.Put(`${id}/facility`, model);
+    }
+
+    updatePatientName(id: number, model: PatientNameForUpdateModel): any {
+      if(id == 0) {
+        return null;
+      }
+      return this.Put(`${id}/name`, model);
+    }
+
+    updatePatientNotes(id: number, model: PatientNotesForUpdateModel): any {
+      if(id == 0) {
+        return null;
+      }
+      return this.Put(`${id}/notes`, model);
     }
 
     savePatientCondition(patientId: number, id: number, model: any): any {
@@ -218,9 +264,9 @@ export class PatientService extends BaseService {
       }
     }    
 
-    saveAttachment(patientId: number, fileToUpload: File, model: any): any {
+    saveAttachment(patientId: number, fileToUpload: File, description: string): any {
       const formData: FormData = new FormData();
-      formData.append('description', model.description);
+      formData.append('description', description);
       formData.append('attachment', fileToUpload, fileToUpload.name);
 
       return this.PostFile(`${patientId}/attachments`, formData);

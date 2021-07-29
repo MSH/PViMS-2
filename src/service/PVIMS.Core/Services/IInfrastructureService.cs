@@ -1,5 +1,6 @@
 ﻿using PVIMS.Core.Entities;
 using PVIMS.Core.ValueTypes;
+using System.Threading.Tasks;
 
 namespace PVIMS.Core.Services
 {
@@ -8,6 +9,6 @@ namespace PVIMS.Core.Services
         bool HasAssociatedData(DatasetElement element);
         DatasetElement GetTerminologyMedDra();
         Config GetOrCreateConfig(ConfigType configType);
-        void SetConfigValue(ConfigType configType, string configValue);
+        Task SetConfigValueAsync(ConfigType configType, string configValue);
     }
 }

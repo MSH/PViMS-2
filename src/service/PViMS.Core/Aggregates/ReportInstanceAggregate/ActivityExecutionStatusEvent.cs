@@ -45,15 +45,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         public void AddAttachment(string fileName, AttachmentType attachmentType, long size, Byte[] content, string description)
         {
-            var newAttachment = new Attachment
-            {
-                Description = description,
-                FileName = fileName,
-                AttachmentType = attachmentType,
-                Size = size,
-                Content = content
-            };
-
+            var newAttachment = new Attachment(content, description, fileName, size, attachmentType, null, null, this);
             _attachments.Add(newAttachment);
         }
     }
