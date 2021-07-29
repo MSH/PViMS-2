@@ -38,6 +38,10 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './form-adr.component.html',
+  styles: [`
+    .mat-column-file-name { flex: 0 0 85% !important; width: 85% !important; }
+    .mat-column-actions { flex: 0 0 5% !important; width: 5% !important; }
+  `],   
   animations: egretAnimations
 })
 export class FormADRComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -145,7 +149,9 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     self.getCustomAttributeList();
     self.accountService.connected$.subscribe(val => {
       self.viewModel.connected = val;
-    });    
+    });
+    
+    self.viewModel.attachmentGrid.setupBasic(null, null, null);    
   }
 
   ngAfterViewInit(): void {
@@ -192,6 +198,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
         form.formAttachments.forEach(attachment => {
           self.viewModel.attachments.push({ description: attachment.description, file: attachment.file })  
         });
+        self.viewModel.attachmentGrid.updateBasic(self.viewModel.attachments);            
 
         self.viewModel.patientFound = true;
         self.viewModel.isComplete = form.completeStatus == 'Complete';
@@ -295,12 +302,14 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           return;
         }
         self.viewModel.attachments.push(res);
+        self.viewModel.attachmentGrid.updateBasic(self.viewModel.attachments);
       })
   }
 
   removeAttachment(index: number): void {
     let self = this;
     self.viewModel.attachments.splice(index, 1)
+    self.viewModel.attachmentGrid.updateBasic(self.viewModel.attachments);    
 
     this.notify("Attachment removed successfully!", "Success");
   }
@@ -648,7 +657,10 @@ class ViewModel {
 
   customAttributeKey = 'Case Number';
   customAttributeList: CustomAttributeDetailModel[] = [];
-  
+ 
+  attachmentGrid: GridModel<FormAttachmentModel> =
+    new GridModel<FormAttachmentModel>
+        (['file-name', 'actions']);
   attachments: FormAttachmentModel[] = [];
 
   medicationGrid: GridModel<MedicationGridRecordModel> =

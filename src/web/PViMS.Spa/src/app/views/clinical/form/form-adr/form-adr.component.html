@@ -407,30 +407,36 @@
                 <div class="p-24 light-gray rounded">
                   Please add lab result documentation pertinent to the adverse event <span class="font-weight-bold text-red">(maximum of 5 attachments)</span>
                 </div>
-                <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="end" class="p-2 mt-12" *ngIf="!viewModel.isComplete && !viewModel.isSynched">
+                <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="end" class="p-2 mt-12" *ngIf="!viewModel.isSynched">
                   <button mat-raised-button color="accent" class="mr-12" (click)="openAttachmentPopUp()" [disabled]="viewModel.attachments.length >= 5">Add Attachment</button>
                 </div>
                 <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-2 mt-12">
-                  <div fxFlex="20" *ngFor="let attachment of viewModel?.attachments; let i = index;">
-                    <mat-card class="flex-item p-12 mat-elevation-z6 rounded">
-                      <mat-card-title class="text-center">
-                        <div class="card-title-text light-gray p-12">
-                          {{attachment.file.name}}
-                        </div>
-                      </mat-card-title>                       
-                      <mat-card-content>
-                        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
-                          <div fxFlex="100" class="text-center pt-16 pb-16 border-right-light">
-                            <span class="m-0 text-muted">{{attachment.description}}</span>
-                          </div>        
-                        </div>
-                        <div class="m-8 text-center">
-                          <button mat-mini-fab color="warn" (click)="removeAttachment(i)" *ngIf="!viewModel.isComplete && !viewModel.isSynched">
+                  <div class="table-container" fxFlex="100">
+                    <mat-table [dataSource]="viewModel?.attachmentGrid?.records"
+                              [@animate]="{value:'50'}">
+      
+                      <ng-container matColumnDef="file-name">
+                          <mat-header-cell *matHeaderCellDef>{{'File name' | translate}}</mat-header-cell>
+                          <mat-cell *matCellDef="let record">
+                            <div class="pt-12 pb-12">
+                              <span class="font-weight-bold">{{record.file.name}}</span><br/>
+                              <small class="text-muted">{{record.description}}</small>
+                            </div>
+                          </mat-cell>
+                      </ng-container>
+                              
+                      <ng-container matColumnDef="actions">
+                        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                        <mat-cell *matCellDef="let record">
+                          <button mat-icon-button color="warn" (click)="removeAttachment(i)">
                             <mat-icon>clear</mat-icon>
                           </button>
-                        </div>
-                      </mat-card-content>
-                    </mat-card>
+                        </mat-cell>
+                      </ng-container>
+                    
+                      <mat-header-row *matHeaderRowDef="viewModel?.attachmentGrid?.displayedColumns; sticky:true"></mat-header-row>
+                      <mat-row *matRowDef="let record; columns: viewModel?.attachmentGrid?.displayedColumns;"></mat-row>
+                    </mat-table>
                   </div>
                 </div>
               </div>

@@ -7,9 +7,9 @@
     </div>
   </div>
 </div>
-<div fxLayout="row wrap">
-  <div fxFlex="25" fxFlex.md="50" fxFlex.sm="75" fxFlex.sm="100" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
-    <mat-card class="p-12 mat-elevation-z6 rounded" *ngFor="let action of viewModel?.formList">
+<div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+  <div fxFlex.xl="25" fxFlex.gt-sm="50" fxFlex.sm="75" fxFlex.sm="100" *ngFor="let action of viewModel?.formList">
+    <mat-card class="p-12 mat-elevation-z6 rounded">
       <mat-card-title class="text-center">
         <div class="card-title-text light-gray p-12">
           {{action.formName | translate}}
