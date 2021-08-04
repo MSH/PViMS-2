@@ -24,6 +24,7 @@ import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-tas
 import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task-status-popup/change-task-status.popup.component';
 import { SetClassificationPopupComponent } from './report/report-search/set-classification/set-classification.popup.component';
 import { MedicationListPopupComponent } from './report/report-search/medications-popup/medication-list.popup.component';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 @NgModule({
   declarations: [
@@ -47,10 +48,10 @@ import { MedicationListPopupComponent } from './report/report-search/medications
   imports: [
     CommonModule,
     FormsModule,
-    ReactiveFormsModule,
     SharedComponentsModule,
     SharedMaterialModule,
     SharedModule,
+    NgApexchartsModule,
     PerfectScrollbarModule,
     RouterModule.forChild(AnalyticalRoutes)
   ],

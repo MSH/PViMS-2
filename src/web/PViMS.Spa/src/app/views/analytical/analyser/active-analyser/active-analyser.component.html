@@ -366,55 +366,56 @@
       </div>
 
       <div class="card-body p-12" [hidden]="selectedOption != 3">
-        <mat-card>
-          <mat-card-title class="m-0 p-05 light-gray">
-            <div class="card-title-text" fxLayout="row wrap" fxLayoutAlign="start">
-              <h1>{{'Exposed cases per medication' | translate}}</h1>
-            </div>
-          </mat-card-title>
-          <mat-card-content class="m-0" style="overflow-y: auto; height: 500px;">
-            <ngx-charts-line-chart
-              animations=true
-              [scheme]="colorScheme"
-              schemeType="ordinal"
-              legend="false"
-              showXAxisLabel="true"
-              showYAxisLabel="true"
-              xAxis="true"
-              yAxis="true"
-              [xAxisLabel]="xAxisLabel"
-              [yAxisLabel]="yExposedAxisLabel"
-              timeline="true"
-              [results]="exposedSeries"
-              >
-            </ngx-charts-line-chart>              
-          </mat-card-content>
-        </mat-card>
-        <mat-card>
-          <mat-card-title class="m-0 p-05 light-gray">
-            <div class="card-title-text" fxLayout="row wrap" fxLayoutAlign="start">
-              <h1>{{'Relative risks per medication' | translate}}</h1>
-            </div>
-          </mat-card-title>
-          <mat-card-content class="m-1" style="overflow-y: auto; height: 500px;">
-            <ngx-charts-line-chart
-              animations=true
-              [scheme]="colorScheme"
-              schemeType="ordinal"
-              legend="false"
-              showXAxisLabel="true"
-              showYAxisLabel="true"
-              xAxis="true"
-              yAxis="true"
-              [xAxisLabel]="xAxisLabel"
-              [yAxisLabel]="yRiskAxisLabel"
-              timeline="true"
-              [results]="riskSeries"
-              >
-            </ngx-charts-line-chart>              
-          </mat-card-content>
-        </mat-card>
-
+        <div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+          <div fxFlex.gt-xs="50" fxFlex.xs="100" class="card-body p-12" style="height: 450px;">
+            <mat-card>
+              <mat-card-title class="m-0 p-05 light-gray">
+                <div class="card-title-text" fxLayout="row wrap" fxLayoutAlign="start">
+                  <h1>{{'Exposed cases per medication' | translate}}</h1>
+                </div>
+              </mat-card-title>
+              <mat-card-content class="m-0" style="overflow-y: auto; height: 500px;">
+                <apx-chart
+                  [series]="exposedChartOptions?.series"
+                  [chart]="exposedChartOptions?.chart"
+                  [dataLabels]="exposedChartOptions?.dataLabels"
+                  [plotOptions]="exposedChartOptions?.plotOptions"
+                  [yaxis]="exposedChartOptions?.yaxis"
+                  [legend]="exposedChartOptions?.legend"
+                  [fill]="exposedChartOptions?.fill"
+                  [stroke]="exposedChartOptions?.stroke"
+                  [tooltip]="exposedChartOptions?.tooltip"
+                  [xaxis]="exposedChartOptions?.xaxis"
+                ></apx-chart>
+              </mat-card-content>
+            </mat-card>
+    
+          </div>
+          <div fxFlex.gt-xs="50" fxFlex.xs="100" class="card-body p-12" style="height: 450px;">
+            <mat-card>
+              <mat-card-title class="m-0 p-05 light-gray">
+                <div class="card-title-text" fxLayout="row wrap" fxLayoutAlign="start">
+                  <h1>{{'Relative risks per medication' | translate}}</h1>
+                </div>
+              </mat-card-title>
+              <mat-card-content class="m-0" style="overflow-y: auto; height: 500px;">
+                <apx-chart
+                  [series]="relativeChartOptions?.series"
+                  [chart]="relativeChartOptions?.chart"
+                  [dataLabels]="relativeChartOptions?.dataLabels"
+                  [plotOptions]="relativeChartOptions?.plotOptions"
+                  [yaxis]="relativeChartOptions?.yaxis"
+                  [legend]="relativeChartOptions?.legend"
+                  [fill]="relativeChartOptions?.fill"
+                  [stroke]="relativeChartOptions?.stroke"
+                  [tooltip]="relativeChartOptions?.tooltip"
+                  [xaxis]="relativeChartOptions?.xaxis"
+                ></apx-chart>
+              </mat-card-content>
+            </mat-card>
+    
+          </div>
+        </div>
       </div>  
 
       <div class="card-body p-12" [hidden]="selectedOption != 4">
