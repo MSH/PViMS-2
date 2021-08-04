@@ -165,6 +165,7 @@ namespace PViMS.API
                 {
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.identifier.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.detail.v1+json");
+                    jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.summary.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.expanded.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.search.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.groupvalue.v1+json");
@@ -194,6 +195,7 @@ namespace PViMS.API
                 {
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.identifier.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.detail.v1+xml");
+                    xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.summary.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.expanded.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.search.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.groupvalue.v1+xml");

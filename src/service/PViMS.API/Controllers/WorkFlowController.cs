@@ -107,6 +107,36 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Get a single workFlow using it's unique id and valid media type - shaped for summarise record counts per work flow
+        /// </summary>
+        /// <param name="id">The unique identifier for the workFlow</param>
+        /// <returns>An ActionResult of type WorkFlowSummaryDto</returns>
+        [HttpGet("workflow/{id}", Name = "GetWorkFlowBySummary")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Produces("application/vnd.pvims.summary.v1+json", "application/vnd.pvims.summary.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.summary.v1+json", "application/vnd.pvims.summary.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult<WorkFlowSummaryDto>> GetWorkFlowBySummary(Guid id)
+        {
+            var query = new WorkFlowSummaryQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: WorkFlowSummaryQuery - {workFlowGuid}",
+                id.ToString());
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            return Ok(queryResult);
+        }
+
+        /// <summary>
         /// Download a dataset for corresponding work flow
         /// </summary>
         /// <param name="id">The unique id of the work flow you would like to download the dataset for</param>

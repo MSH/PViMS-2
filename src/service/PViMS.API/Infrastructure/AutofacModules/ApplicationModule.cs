@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using PVIMS.API.Application.Queries.ReportInstanceAggregate;
+using PVIMS.API.Application.Queries.WorkFlowAggregate;
 using PVIMS.Core.Repositories;
 using PVIMS.Infrastructure.Repositories;
 using PVIMS.Services;
@@ -26,6 +27,10 @@ namespace PVIMS.API.Infrastructure.AutofacModules
 
             builder.Register(c => new ReportInstanceQueries(QueriesConnectionString))
                 .As<IReportInstanceQueries>()
+                .InstancePerLifetimeScope();
+
+            builder.Register(c => new WorkFlowQueries(QueriesConnectionString))
+                .As<IWorkFlowQueries>()
                 .InstancePerLifetimeScope();
 
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
