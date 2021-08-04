@@ -778,6 +778,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<TaskDto>> GetReportInstanceTaskByDetail(Guid workFlowGuid, int reportInstanceId, int id)
         {
             var query = new ReportInstanceTaskDetailQuery(workFlowGuid, reportInstanceId, id);
