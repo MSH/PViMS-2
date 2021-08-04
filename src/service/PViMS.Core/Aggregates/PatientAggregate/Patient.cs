@@ -93,23 +93,9 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public string FullName
-        {
-            get
-            {
-                return FirstName.Trim() + ' ' + Surname.Trim();
-            }
-        }
-
-        public string CurrentFacilityName
-        {
-            get
-            {
-                var currentFacility = GetCurrentFacility();
-
-                return currentFacility == null ? "** Not set **" : currentFacility.Facility.FacilityName;
-            }
-        }
+        public string FullName => FirstName.Trim() + ' ' + Surname.Trim();
+        public string CurrentFacilityName => CurrentFacility == null ? "** Not set **" : CurrentFacility.Facility.FacilityName;
+        public string CurrentFacilityCode => CurrentFacility == null ? "** Not set **" : CurrentFacility.Facility.FacilityCode;
 
         public DateTime? LatestEncounterDate
         {
@@ -126,12 +112,14 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public PatientFacility GetCurrentFacility()
+        public PatientFacility CurrentFacility
         {
-            if (PatientFacilities.Count == 0) {
-                return null;
-            }
-            else {
+            get
+            {
+                if (PatientFacilities.Count == 0)
+                {
+                    return null;
+                }
                 return PatientFacilities.OrderByDescending(f => f.EnrolledDate).ThenByDescending(f => f.Id).First();
             }
         }
@@ -650,7 +638,7 @@ namespace PVIMS.Core.Entities
                 throw new ArgumentNullException(nameof(facility));
             }
 
-            var currentFacility = GetCurrentFacility();
+            var currentFacility = CurrentFacility;
             if (currentFacility?.Facility.Id == facility.Id) 
             {
                 throw new DomainException("Unable to set the facility to the same facility");

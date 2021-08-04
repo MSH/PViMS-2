@@ -19,13 +19,15 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         public virtual WorkFlow WorkFlow { get; set; }
 
         public Guid ContextGuid { get; private set; }
+
         public string Identifier { get; private set; }
+        public string SourceIdentifier { get; private set; }
         public string PatientIdentifier { get; private set; }
+        public string FacilityIdentifier { get; private set; }
 
         public int? TerminologyMedDraId { get; private set; }
         public virtual TerminologyMedDra TerminologyMedDra { get; private set; }
 
-        public string SourceIdentifier { get; private set; }
         public int ReportClassificationId { get; private set; }
 
         private List<ActivityInstance> _activities;
@@ -44,7 +46,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             _tasks = new List<ReportInstanceTask>();
         }
 
-        public ReportInstance(WorkFlow workFlow, User currentUser, Guid contextGuid, string patientIdentifier, string sourceIdentifier)
+        public ReportInstance(WorkFlow workFlow, User currentUser, Guid contextGuid, string patientIdentifier, string sourceIdentifier, string facilityIdentifier)
 		{
             _activities = new List<ActivityInstance>();
             _medications = new List<ReportInstanceMedication>();
@@ -55,8 +57,10 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             ReportClassificationId = ReportClassification.Unclassified.Id;
 
             ContextGuid = contextGuid;
+            
             PatientIdentifier = patientIdentifier;
             SourceIdentifier = sourceIdentifier;
+            FacilityIdentifier = facilityIdentifier;
 
             WorkFlowId = workFlow.Id;
             WorkFlow = workFlow;

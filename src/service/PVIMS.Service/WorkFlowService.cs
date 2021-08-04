@@ -77,11 +77,21 @@ namespace PVIMS.Services
             await _unitOfWork.CompleteAsync();
         }
 
-        public async Task CreateWorkFlowInstanceAsync(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier)
+        public async Task CreateWorkFlowInstanceAsync(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier, string facilityIdentifier)
         {
-            if (String.IsNullOrWhiteSpace(workFlowName))
+            if (string.IsNullOrWhiteSpace(workFlowName))
             {
-                throw new ArgumentNullException($"{nameof(workFlowName)} Parameter may not be null");
+                throw new ArgumentException($"'{nameof(workFlowName)}' cannot be null or whitespace.", nameof(workFlowName));
+            }
+
+            if (string.IsNullOrWhiteSpace(sourceIdentifier))
+            {
+                throw new ArgumentException($"'{nameof(sourceIdentifier)}' cannot be null or whitespace.", nameof(sourceIdentifier));
+            }
+
+            if (string.IsNullOrWhiteSpace(facilityIdentifier))
+            {
+                throw new ArgumentException($"'{nameof(facilityIdentifier)}' cannot be null or whitespace.", nameof(facilityIdentifier));
             }
 
             // Ensure instance does not exist for this context
@@ -101,7 +111,7 @@ namespace PVIMS.Services
             var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid);
             if (reportInstance == null)
             {
-                reportInstance = new ReportInstance(workFlow, currentUser, contextGuid, patientIdentifier, sourceIdentifier);
+                reportInstance = new ReportInstance(workFlow, currentUser, contextGuid, patientIdentifier, sourceIdentifier, facilityIdentifier);
                 await _reportInstanceRepository.SaveAsync(reportInstance);
 
                 reportInstance.SetSystemIdentifier();

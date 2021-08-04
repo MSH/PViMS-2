@@ -702,7 +702,7 @@ namespace PVIMS.API.Controllers
                 return dto;
             }
 
-            dto.Facility = patient.GetCurrentFacility()?.Facility.DisplayName;
+            dto.Facility = patient.CurrentFacility?.Facility.DisplayName;
 
             return dto;
         }

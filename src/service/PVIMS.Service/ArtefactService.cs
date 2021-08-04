@@ -1235,7 +1235,7 @@ namespace PVIMS.Services
             tr.Append(PrepareHeaderCell("Gender", headerWidth));
             tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("Patient", "Gender", patientExtended), cellWidth));
             tr.Append(PrepareHeaderCell("Facility", headerWidth));
-            tr.Append(PrepareCell(patientEvent.Patient.GetCurrentFacility().Facility.FacilityName, cellWidth));
+            tr.Append(PrepareCell(patientEvent.Patient.CurrentFacility.Facility.FacilityName, cellWidth));
 
             table.AppendChild<TableRow>(tr);
 

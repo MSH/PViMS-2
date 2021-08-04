@@ -57,7 +57,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
         public async Task<PatientClinicalEventIdentifierDto> Handle(AddClinicalEventToPatientCommand message, CancellationToken cancellationToken)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] { "PatientClinicalEvents.SourceTerminologyMedDra", "PatientMedications.Concept" });
+            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] { "PatientClinicalEvents.SourceTerminologyMedDra", "PatientMedications.Concept", "PatientFacilities.Facility" });
             if (patientFromRepo == null)
             {
                 throw new KeyNotFoundException("Unable to locate patient");
@@ -84,10 +84,13 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
             _patientRepository.Update(patientFromRepo);
 
-            await _workFlowService.CreateWorkFlowInstanceAsync("New Active Surveilliance Report",
-                newPatientClinicalEvent.PatientClinicalEventGuid,
-                patientFromRepo.FullName,
-                newPatientClinicalEvent.SourceTerminologyMedDra?.DisplayName ?? newPatientClinicalEvent.SourceDescription);
+            // TODO Move to domain event
+            await _workFlowService.CreateWorkFlowInstanceAsync(
+                workFlowName: "New Active Surveilliance Report",
+                contextGuid: newPatientClinicalEvent.PatientClinicalEventGuid,
+                patientIdentifier: patientFromRepo.FullName,
+                sourceIdentifier: newPatientClinicalEvent.SourceTerminologyMedDra?.DisplayName ?? newPatientClinicalEvent.SourceDescription,
+                facilityIdentifier: patientFromRepo.CurrentFacilityCode);
 
             await LinkMedicationsToClinicalEvent(patientFromRepo, newPatientClinicalEvent.OnsetDate, newPatientClinicalEvent.PatientClinicalEventGuid);
 

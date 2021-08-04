@@ -1008,7 +1008,7 @@ namespace PVIMS.API.Controllers
                         patientIdentifier = datasetInstance.GetInstanceValue("Identification Number");
                     }
                     var sourceIdentifier = datasetInstance.GetInstanceValue("Description of reaction");
-                    await _workflowService.CreateWorkFlowInstanceAsync("New Spontaneous Surveilliance Report", datasetInstance.DatasetInstanceGuid, patientIdentifier, sourceIdentifier);
+                    await _workflowService.CreateWorkFlowInstanceAsync("New Spontaneous Surveilliance Report", datasetInstance.DatasetInstanceGuid, patientIdentifier, sourceIdentifier, "PUBLIC");
 
                     // Prepare medications
                     List<ReportInstanceMedicationListItem> medications = new List<ReportInstanceMedicationListItem>();
