@@ -49,6 +49,7 @@ import { ClinicalEventTaskPopupComponent } from './feedback/clinical-event-task-
 import { ChangeTaskStatusPopupComponent } from './feedback/change-task-status-popup/change-task-status.popup.component';
 import { FormADRMedicationPopupComponent } from './shared/form-adr-medication-popup/form-adr-medication.popup.component';
 import { FormListComponent } from './form/form-list/form-list.component';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 @NgModule({
   imports: [
@@ -60,6 +61,7 @@ import { FormListComponent } from './form/form-list/form-list.component';
     PerfectScrollbarModule,
     QuillModule,
     WebcamModule,
+    NgApexchartsModule,
     RouterModule.forChild(ClinicalRoutes)
   ],
   declarations: 

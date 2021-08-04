@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -23,6 +23,24 @@ import { WorkFlowService } from 'app/shared/services/work-flow.service';
 import { ClinicalEventViewPopupComponent } from '../../shared/clinical-event-view-popup/clinical-event-view.popup.component';
 import { WorkFlowDetailModel } from 'app/shared/models/work-flow/work-flow.detail.model';
 import { ClinicalEventTaskPopupComponent } from '../clinical-event-task-popup/clinical-event-task.popup.component';
+import { WorkFlowSummaryModel } from 'app/shared/models/work-flow/work-flow.summary.model';
+import { ClassificationSummaryModel } from 'app/shared/models/work-flow/classification-summary.model';
+import { SeriesValueListModel } from 'app/shared/models/dataset/series-value-list.model';
+import { SeriesValueListItemModel } from 'app/shared/models/dataset/series-value-list-item.model';
+import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexLegend, ApexPlotOptions, ApexStroke, ApexTooltip, ApexXAxis, ApexYAxis, ChartComponent } from 'ng-apexcharts';
+
+export type ChartOptions = {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  dataLabels: ApexDataLabels;
+  plotOptions: ApexPlotOptions;
+  yaxis: ApexYAxis;
+  xaxis: ApexXAxis;
+  fill: ApexFill;
+  tooltip: ApexTooltip;
+  stroke: ApexStroke;
+  legend: ApexLegend;
+};
 
 @Component({
   templateUrl: './feedback-search.component.html',
@@ -39,6 +57,9 @@ import { ClinicalEventTaskPopupComponent } from '../clinical-event-task-popup/cl
   animations: egretAnimations
 })
 export class FeedbackSearchComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild("chart") chart: ChartComponent;
+  public classificationChartOptions: Partial<ChartOptions>;
+  public facilityChartOptions: Partial<ChartOptions>;
 
   constructor(
     protected _activatedRoute: ActivatedRoute,
@@ -96,14 +117,30 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
   loadData(): void {
     let self = this;
     self.setBusy(true);
-    self.workFlowService.getWorkFlowDetail(self.viewModel.workflowId)
-      .pipe(takeUntil(self._unsubscribeAll))
-      .pipe(finalize(() => self.setBusy(false)))
-      .subscribe(result => {
-        self.viewModel.workFlow = result;
-      }, error => {
-        this.handleError(error, "Error loading work flow");
-      });
+
+    const requestArray = [];
+
+    requestArray.push(self.workFlowService.getWorkFlowDetail(self.viewModel.workflowId));
+    requestArray.push(self.workFlowService.getWorkFlowSummary(self.viewModel.workflowId));
+
+    forkJoin(requestArray)
+      .subscribe(
+        data => {
+          self.CLog(data[0], 'get work flow detail')
+          self.CLog(data[1], 'get work flow summary')
+
+          self.viewModel.workFlow = data[0] as WorkFlowDetailModel;
+          self.viewModel.workFlowSummary = data[1] as WorkFlowSummaryModel;
+
+          self.pepareChartSeries();
+          self.initClassificationChart();
+          self.CLog(self.viewModel.mainSeries, 'main series');
+
+          self.setBusy(false);
+        },
+        error => {
+          this.handleError(error, "Error preparing view");
+        }); 
   }  
 
   ngOnDestroy(): void {
@@ -112,12 +149,15 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
     this.eventService.removeAll(FeedbackSearchComponent.name);
   }
 
-  selectActivity(qualifiedName: string): void {
+  selectActivity(activity: string): void {
     let self = this;
 
-    self.updateForm(self.viewModelForm, {qualifiedName: qualifiedName});
+    self.updateForm(self.viewModelForm, {qualifiedName: activity});
+    if(activity == 'Summary') {
+      return;
+    }
 
-    switch(qualifiedName) { 
+    switch(activity) { 
       case 'Confirm Report Data': { 
         self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'task-count', 'status', 'actions'])
         break; 
@@ -131,7 +171,6 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
          break; 
       } 
     } 
-
 
     self.viewModel.searchContext = "Activity";
     self.loadGrid();
@@ -210,6 +249,122 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
         })
     }
   }
+
+  private pepareChartSeries() {
+    const self = this;
+
+    const aesi: SeriesValueListModel = 
+    {
+      name: 'AESI',
+      series: self.prepareSeriesItem(self.viewModel.workFlowSummary.classifications.find(c => c.classification == 'AESI'))
+    };
+    self.viewModel.mainSeries.push(aesi);
+    const sae: SeriesValueListModel = 
+    {
+      name: 'SAE',
+      series: self.prepareSeriesItem(self.viewModel.workFlowSummary.classifications.find(c => c.classification == 'SAE'))
+    };
+    self.viewModel.mainSeries.push(sae);
+    const significant: SeriesValueListModel = 
+    {
+      name: 'Clinically Significant',
+      series: self.prepareSeriesItem(self.viewModel.workFlowSummary.classifications.find(c => c.classification == 'Clinically Significant'))
+    };
+    self.viewModel.mainSeries.push(significant);
+  }
+
+  private prepareSeriesItem(classification: any): SeriesValueListItemModel[] {
+    const self = this;
+    let series: SeriesValueListItemModel[] = [];
+    if(classification == null) {
+      return series;
+    }
+    const classificationValueItem: SeriesValueListItemModel = {
+      name: 'Classifications',
+      value: classification.classificationCount
+    };
+    series.push(classificationValueItem);
+    const causalityValueItem: SeriesValueListItemModel = {
+      name: 'One drug causative',
+      value: classification.causativeCount
+    };
+    series.push(causalityValueItem);
+    const e2bValueItem: SeriesValueListItemModel = {
+      name: 'E2B',
+      value: classification.e2BCount
+    };
+    series.push(e2bValueItem);
+    return series;
+  }
+
+  private initClassificationChart() {
+    this.classificationChartOptions = {
+      series: [
+        {
+          name: "Submissions",
+          data: this.getValueFromSeries(0)
+        },
+        {
+          name: "Least one drug causative",
+          data: this.getValueFromSeries(1)
+        },
+        {
+          name: "E2B Submitted",
+          data: this.getValueFromSeries(2)
+        }
+      ],
+      chart: {
+        type: "bar",
+        height: 350
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: "45%"
+        }
+      },
+      dataLabels: {
+        enabled: true
+      },
+      stroke: {
+        show: true,
+        width: 2,
+        colors: ["transparent"]
+      },
+      xaxis: {
+        categories: ['SAE', 'AESI', 'Clinically Significant']
+      },
+      yaxis: {
+        title: {
+          text: ""
+        }
+      },
+      fill: {
+        opacity: 1
+      },
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return val + " reports";
+          }
+        }
+      }
+    };
+  }
+
+  private getValueFromSeries(valueItem: number): any[] {
+    let values: number[] = [];
+    if(this.viewModel.mainSeries[0]?.series.length > 0) {
+      values.push(this.viewModel.mainSeries[0]?.series[valueItem]?.value);
+    }
+    if(this.viewModel.mainSeries[1]?.series.length > 0) {
+      values.push(this.viewModel.mainSeries[1]?.series[valueItem]?.value);
+    }
+    if(this.viewModel.mainSeries[2]?.series.length > 0) {
+      values.push(this.viewModel.mainSeries[2]?.series[valueItem]?.value);
+    }
+    return values;
+  }
 }
 
 class ViewModel {
@@ -220,6 +375,8 @@ class ViewModel {
   workflowId = '892F3305-7819-4F18-8A87-11CBA3AEE219';
   workFlow: WorkFlowDetailModel;
 
+  workFlowSummary: WorkFlowSummaryModel;
+
   selectedTab = 0;
   searchContext: '' | 'Activity' | 'Term' = '';
 
@@ -227,6 +384,8 @@ class ViewModel {
   searchFrom: Moment;
   searchTo: Moment;
   searchTerm: string;
+
+  mainSeries: SeriesValueListModel[] = [];
 
 }
 
