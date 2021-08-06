@@ -50,8 +50,8 @@ INSERT [dbo].[DatasetXmlAttribute] (AttributeName, AttributeValue, Created, Last
 CATEGORY ichicsrmessageheader
 **************************************************/
 DECLARE @dscid int
-INSERT [dbo].[DatasetCategory] ([DatasetCategoryName], [CategoryOrder], [Dataset_Id]) 
-	VALUES (N'Message Header', 1, @dsid)
+INSERT [dbo].[DatasetCategory] ([DatasetCategoryName], [CategoryOrder], [Dataset_Id], [System], [Acute], [Chronic], [Public]) 
+	VALUES (N'Message Header', 1, @dsid, 1, 0, 0, 0)
 set @dscid = (SELECT @@IDENTITY)
 
 -- category node
