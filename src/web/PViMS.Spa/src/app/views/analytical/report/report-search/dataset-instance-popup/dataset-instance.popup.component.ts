@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
@@ -14,7 +14,6 @@ import { DatasetService } from 'app/shared/services/dataset.service';
 
 @Component({
   templateUrl: './dataset-instance.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class DatasetInstancePopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
@@ -47,7 +46,6 @@ export class DatasetInstancePopupComponent extends BasePopupComponent implements
 
   ngAfterViewInit(): void {
     let self = this;
-    console.log(self.data.instanceId);
     if (self.data.instanceId > 0) {
       self.loadData();
     }
@@ -59,7 +57,7 @@ export class DatasetInstancePopupComponent extends BasePopupComponent implements
     self.datasetService.getDatasetInstanceDetail(self.data.datasetId, self.data.instanceId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        console.log(result);
+        self.CLog(result, 'dataset instance detail');
         // handle dynamic data
         self.datasetCategories = result.datasetCategories;
         // Add elements to form group

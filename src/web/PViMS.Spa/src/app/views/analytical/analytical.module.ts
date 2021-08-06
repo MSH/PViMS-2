@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AnalyticalRoutes } from './analytical-routing.module';
 import { SharedMaterialModule } from 'app/shared/shared-material.module';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedModule } from 'app/shared/shared.module';
 import { SpontaneousAnalyserComponent } from './analyser/spontaneous-analyser/spontaneous-analyser.component';
@@ -14,7 +14,7 @@ import { ActivityStatusChangePopupComponent } from './report/activity-status-cha
 import { ReportSearchComponent } from './report/report-search/report-search.component';
 import { NaranjoPopupComponent } from './report/report-search/naranjo-popup/naranjo.popup.component';
 import { SetMeddraPopupComponent } from './report/report-search/set-meddra-popup/set-meddra.popup.component';
-import { DatasetInstancePopupComponent } from './report/dataset-instance-popup/dataset-instance.popup.component';
+import { DatasetInstancePopupComponent } from './report/report-search/dataset-instance-popup/dataset-instance.popup.component';
 import { LandingComponent } from './landing/landing.component';
 import { WhoPopupComponent } from './report/report-search/who-popup/who.popup.component';
 import { ActiveAnalyserComponent } from './analyser/active-analyser/active-analyser.component';

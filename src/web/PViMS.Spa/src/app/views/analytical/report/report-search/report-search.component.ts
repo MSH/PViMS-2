@@ -32,7 +32,7 @@ import { PatientService } from 'app/shared/services/patient.service';
 import { NaranjoPopupComponent } from './naranjo-popup/naranjo.popup.component';
 import { ReportInstanceMedicationDetailModel } from 'app/shared/models/report-instance/report-instance-medication.detail.model';
 import { SetMeddraPopupComponent } from './set-meddra-popup/set-meddra.popup.component';
-import { DatasetInstancePopupComponent } from '../dataset-instance-popup/dataset-instance.popup.component';
+import { DatasetInstancePopupComponent } from './dataset-instance-popup/dataset-instance.popup.component';
 import { WorkFlowService } from 'app/shared/services/work-flow.service';
 import { WorkFlowDetailModel } from 'app/shared/models/work-flow/work-flow.detail.model';
 import { LinkModel } from 'app/shared/models/link.model';
