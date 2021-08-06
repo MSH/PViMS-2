@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Entities.Keyless;
@@ -10,7 +11,6 @@ using PVIMS.Core.ValueTypes;
 using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -342,7 +342,7 @@ namespace PVIMS.Services
                 var dataset = _datasetRepository.Get(d => d.Id == encounterTypeWorkPlan.WorkPlan.Dataset.Id);
                 if (dataset != null)
                 {
-                    var datasetInstance = dataset.CreateInstance(newEncounter.Id, encounterTypeWorkPlan);
+                    var datasetInstance = dataset.CreateInstance(newEncounter.Id, "", encounterTypeWorkPlan, null, null);
                     _datasetInstanceRepository.Save(datasetInstance);
                 }
             }

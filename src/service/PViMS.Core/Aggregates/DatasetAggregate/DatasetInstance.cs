@@ -2,34 +2,55 @@
 using System.Collections.Generic;
 using System.Linq;
 using PVIMS.Core.CustomAttributes;
+using PVIMS.Core.Entities;
 using PVIMS.Core.Exceptions;
 using PVIMS.Core.ValueTypes;
 
-namespace PVIMS.Core.Entities
+namespace PVIMS.Core.Aggregates.DatasetAggregate
 {
     public class DatasetInstance : AuditedEntityBase
     {
-        public DatasetInstance()
+        public int ContextId { get; private set; }
+        public string Tag { get; private set; }
+        public Guid DatasetInstanceGuid { get; private set; }
+        public DatasetInstanceStatus Status { get; private set; }
+
+        public int DatasetId { get; private set; }
+        public virtual Dataset Dataset { get; private set; }
+
+        public int? EncounterTypeWorkPlanId { get; private set; }
+        public virtual EncounterTypeWorkPlan EncounterTypeWorkPlan { get; private set; }
+
+        private List<DatasetInstanceValue> _datasetInstanceValues;
+        public IEnumerable<DatasetInstanceValue> DatasetInstanceValues => _datasetInstanceValues.AsReadOnly();
+
+        protected DatasetInstance()
         {
+            _datasetInstanceValues = new List<DatasetInstanceValue>();
+        }
+
+        public DatasetInstance(Dataset dataset, int contextId, string tag, EncounterTypeWorkPlan encounterTypeWorkPlan)
+        {
+            _datasetInstanceValues = new List<DatasetInstanceValue>();
+
             DatasetInstanceGuid = Guid.NewGuid();
             Status = DatasetInstanceStatus.INCOMPLETE;
 
-            DatasetInstanceValues = new HashSet<DatasetInstanceValue>();
+            Dataset = dataset;
+            DatasetId = dataset.Id;
+
+            ContextId = contextId;
+            Tag = tag;
+            EncounterTypeWorkPlanId = encounterTypeWorkPlan?.Id;
+            EncounterTypeWorkPlan = encounterTypeWorkPlan;
         }
 
-        public int ContextId { get; set; }
-        public int DatasetId { get; set; }
-        public int? EncounterTypeWorkPlanId { get; set; }
-        public string Tag { get; set; }
-        public Guid DatasetInstanceGuid { get; set; }
-        public DatasetInstanceStatus Status { get; set; }
+        public void ChangeStatusToComplete()
+        {
+            Status = DatasetInstanceStatus.COMPLETE;
+        }
 
-        public virtual Dataset Dataset { get; set; }
-        public virtual EncounterTypeWorkPlan EncounterTypeWorkPlan { get; set; }
-
-        public virtual ICollection<DatasetInstanceValue> DatasetInstanceValues { get; set; }
-
-        public void InitialiseValues(string tag, DatasetInstance sourceInstance, PatientClinicalEvent clinicalEvent)
+        public void InitialiseValuesForSpontaneousDataset(string tag, DatasetInstance spontaneousReport)
         {
             foreach (DatasetCategory dc in Dataset.DatasetCategories)
             {
@@ -42,15 +63,27 @@ namespace PVIMS.Core.Entities
                     }
                     else
                     {
-                        // Default using mapped value
-                        if(sourceInstance != null)
-                        {
-                            MapValuesUsingInstance(dce, tag, sourceInstance);
-                        }
-                        if (clinicalEvent != null)
-                        {
-                            MapValuesUsingEvent(dce, tag, clinicalEvent);
-                        }
+                        MapValuesUsingInstance(dce, tag, spontaneousReport);
+                    }
+                }
+            }
+
+        }
+
+        public void InitialiseValuesForActiveDataset(string tag, PatientClinicalEvent activeReport)
+        {
+            foreach (DatasetCategory dc in Dataset.DatasetCategories)
+            {
+                foreach (DatasetCategoryElement dce in dc.DatasetCategoryElements)
+                {
+                    // Default using default value
+                    if (dce.DatasetElement.DefaultValue != null && dce.DatasetElement.DefaultValue != "")
+                    {
+                        SetInstanceValue(dce.DatasetElement, dce.DatasetElement.DefaultValue);
+                    }
+                    else
+                    {
+                        MapValuesUsingEvent(dce, tag, activeReport);
                     }
                 }
             }
@@ -373,7 +406,7 @@ namespace PVIMS.Core.Entities
         {
             var datasetInstanceValue = new DatasetInstanceValue(datasetElement, this, instanceValue);
 
-            DatasetInstanceValues.Add(datasetInstanceValue);
+            _datasetInstanceValues.Add(datasetInstanceValue);
 
             return datasetInstanceValue;
         }
@@ -415,7 +448,7 @@ namespace PVIMS.Core.Entities
             {
                 if (string.IsNullOrWhiteSpace(instanceValue))
                 {
-                    DatasetInstanceValues.Remove(datasetInstanceValue);
+                    _datasetInstanceValues.Remove(datasetInstanceValue);
                     datasetInstanceValue = null;
                 }
                 else

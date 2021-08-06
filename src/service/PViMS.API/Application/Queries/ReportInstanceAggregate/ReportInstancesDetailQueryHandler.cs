@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using LinqKit;
 using System.Linq;
 using PVIMS.API.Helpers;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 
 namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {

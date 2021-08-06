@@ -27,6 +27,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Threading.Tasks;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 
 namespace PVIMS.Services
 {

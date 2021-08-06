@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Keyless;

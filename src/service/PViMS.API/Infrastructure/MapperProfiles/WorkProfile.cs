@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using PVIMS.API.Models;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Entities;
 
 namespace PVIMS.API.MapperProfiles

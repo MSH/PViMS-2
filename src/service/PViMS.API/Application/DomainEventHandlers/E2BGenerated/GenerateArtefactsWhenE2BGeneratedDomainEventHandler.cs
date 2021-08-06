@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using PViMS.Core.Events;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;

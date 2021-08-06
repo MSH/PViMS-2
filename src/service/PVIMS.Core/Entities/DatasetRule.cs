@@ -1,4 +1,5 @@
-﻿using PVIMS.Core.ValueTypes;
+﻿using PVIMS.Core.Aggregates.DatasetAggregate;
+using PVIMS.Core.ValueTypes;
 
 namespace PVIMS.Core.Entities
 {

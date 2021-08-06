@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Paging;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -420,14 +421,7 @@ namespace PVIMS.API.Controllers
 
             if (ModelState.IsValid)
             {
-                var newDataset = new Dataset()
-                {
-                    DatasetName = datasetForUpdate.DatasetName,
-                    Help = datasetForUpdate.Help,
-                    ContextType = contextType,
-                    Active = true
-                };
-
+                var newDataset = new Dataset(datasetForUpdate.DatasetName, contextType, "", "", datasetForUpdate.Help, "");
                 _datasetRepository.Save(newDataset);
                 id = newDataset.Id;
 
@@ -670,9 +664,7 @@ namespace PVIMS.API.Controllers
 
             if (ModelState.IsValid)
             {
-                datasetFromRepo.DatasetName = datasetForUpdate.DatasetName;
-                datasetFromRepo.Help = datasetForUpdate.Help;
-
+                datasetFromRepo.ChangeDatasetDetails(datasetForUpdate.DatasetName, datasetForUpdate.Help);
                 _datasetRepository.Update(datasetFromRepo);
                 await _unitOfWork.CompleteAsync();
 
@@ -931,8 +923,8 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 // Prepare new dataset
-                var datasetInstance = datasetFromRepo.CreateInstance(1, null);
-                datasetInstance.Status = DatasetInstanceStatus.COMPLETE;
+                var datasetInstance = datasetFromRepo.CreateInstance(1, "", null, null, null);
+                datasetInstance.ChangeStatusToComplete();
 
                 // Update dataset instance values
                 foreach (var elementValue in elementValues)
@@ -1365,7 +1357,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private int GetNextCategoryOrder(Dataset dataset)
         {
-            return dataset.DatasetCategories.Count == 0 ? 1 : _unitOfWork.Repository<DatasetCategory>().Queryable().Where(dc => dc.Dataset.Id == dataset.Id).OrderByDescending(dc => dc.CategoryOrder).First().CategoryOrder + 1;
+            return dataset.DatasetCategories.Count() == 0 ? 1 : _unitOfWork.Repository<DatasetCategory>().Queryable().Where(dc => dc.Dataset.Id == dataset.Id).OrderByDescending(dc => dc.CategoryOrder).First().CategoryOrder + 1;
         }
 
         /// <summary>

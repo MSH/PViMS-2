@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 
 namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
@@ -192,7 +193,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             }
         }
 
-        private async Task MapE2BInstanceForReportInstanceAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto)
+        private async Task MapE2BInstanceForReportInstanceAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto) 
         {
             var latestExecutionEvent = reportInstanceFromRepo.CurrentActivity.GetLatestEvent();
             if (latestExecutionEvent != null)
@@ -387,7 +388,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
                     .First(ee => ee.ExecutionStatus.Id == reportInstanceFromRepo.CurrentActivity.CurrentStatus.Id);
                 var tag = (reportInstanceFromRepo.WorkFlow.Description == "New Active Surveilliance Report") ? "Active" : "Spontaneous";
 
-                var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.Tag == tag && di.ContextId == evt.Id);
+                var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.Tag == tag && di.ContextId == evt.Id, new string[] { "Dataset" });
                 if (datasetInstance != null)
                 {
                     mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDatasetInstanceResourceUri(datasetInstance.Dataset.Id, datasetInstance.Id), "updatee2b", "PUT"));

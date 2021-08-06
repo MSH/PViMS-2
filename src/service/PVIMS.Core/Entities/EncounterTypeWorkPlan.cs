@@ -1,3 +1,4 @@
+using PVIMS.Core.Aggregates.DatasetAggregate;
 using System.Collections.Generic;
 
 namespace PVIMS.Core.Entities
