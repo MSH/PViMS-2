@@ -1,27 +1,28 @@
 ﻿using AutoMapper;
 using LinqKit;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
+using PVIMS.API.Application.Queries.DatasetAggregate;
+using PVIMS.Core.Aggregates.DatasetAggregate;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Paging;
 using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Extensions = PVIMS.Core.Utilities.Extensions;
-using PVIMS.Core.Repositories;
-using PVIMS.Core.Paging;
-using PVIMS.Core.Aggregates.DatasetAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -29,9 +30,9 @@ namespace PVIMS.API.Controllers
     [Route("api/datasets")]
     public class DatasetsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<Dataset> _datasetRepository;
-        private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<DatasetCategory> _datasetCategoryRepository;
         private readonly IRepositoryInt<DatasetCategoryElement> _datasetCategoryElementRepository;
         private readonly IRepositoryInt<DatasetElement> _datasetElementRepository;
@@ -41,25 +42,28 @@ namespace PVIMS.API.Controllers
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IWorkFlowService _workflowService;
+        private readonly ILogger<DatasetsController> _logger;
 
-        public DatasetsController(ITypeHelperService typeHelperService,
+        public DatasetsController(
+            IMediator mediator, 
+            ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Dataset> datasetRepository,
-            IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<DatasetCategory> datasetCategoryRepository,
             IRepositoryInt<DatasetCategoryElement> datasetCategoryElementRepository,
             IRepositoryInt<DatasetElement> datasetElementRepository,
             IRepositoryInt<DatasetElementSub> datasetElementSubRepository,
             IRepositoryInt<ContextType> contextTypeRepository,
             IUnitOfWorkInt unitOfWork,
-            IWorkFlowService workflowService)
+            IWorkFlowService workflowService,
+            ILogger<DatasetsController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
-            _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _datasetCategoryRepository = datasetCategoryRepository ?? throw new ArgumentNullException(nameof(datasetCategoryRepository));
             _datasetCategoryElementRepository = datasetCategoryElementRepository ?? throw new ArgumentNullException(nameof(datasetCategoryElementRepository));
             _datasetElementRepository = datasetElementRepository ?? throw new ArgumentNullException(nameof(datasetElementRepository));
@@ -67,6 +71,7 @@ namespace PVIMS.API.Controllers
             _contextTypeRepository = contextTypeRepository ?? throw new ArgumentNullException(nameof(contextTypeRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _workflowService = workflowService ?? throw new ArgumentNullException(nameof(workflowService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -328,21 +333,23 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public async Task<ActionResult<DatasetInstanceIdentifierDto>> GetDatasetInstanceByIdentifier(long datasetId, long id)
+        public async Task<ActionResult<DatasetInstanceIdentifierDto>> GetDatasetInstanceByIdentifier(int datasetId, int id)
         {
-            var datasetFromRepo = await _datasetRepository.GetAsync(f => f.Id == datasetId);
-            if (datasetFromRepo == null)
+            var query = new DatasetInstanceIdentifierQuery(datasetId, id);
+
+            _logger.LogInformation(
+                "----- Sending query: DatasetInstanceIdentifierQuery - {datasetId}: {id}",
+                datasetId,
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return BadRequest();
+                return BadRequest("Query not created");
             }
 
-            var mappedDatasetInstance = await GetDatasetInstanceAsync<DatasetInstanceIdentifierDto>(datasetId, id);
-            if (mappedDatasetInstance == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(CreateLinksForDatasetInstance<DatasetInstanceIdentifierDto>(datasetFromRepo.Id, mappedDatasetInstance));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -358,21 +365,23 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<DatasetInstanceDetailDto>> GetDatasetInstanceByDetail(long datasetId, long id)
+        public async Task<ActionResult<DatasetInstanceDetailDto>> GetDatasetInstanceByDetail(int datasetId, int id)
         {
-            var datasetFromRepo = await _datasetRepository.GetAsync(f => f.Id == datasetId);
-            if (datasetFromRepo == null)
+            var query = new DatasetInstanceDetailQuery(datasetId, id);
+
+            _logger.LogInformation(
+                "----- Sending query: DatasetInstanceDetailQuery - {datasetId}: {id}",
+                datasetId,
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return BadRequest();
+                return BadRequest("Query not created");
             }
 
-            var mappedDatasetInstance = await GetDatasetInstanceAsync<DatasetInstanceDetailDto>(datasetId, id);
-            if (mappedDatasetInstance == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(CreateLinksForDatasetInstance<DatasetInstanceDetailDto>(datasetFromRepo.Id, CustomDatasetInstanceMap(mappedDatasetInstance)));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -1224,28 +1233,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Get single dataset instance from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="datasetId">Parent resource id to search by</param>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private async Task<T> GetDatasetInstanceAsync<T>(long datasetId, long id) where T : class
-        {
-            var datasetInstanceFromRepo = await _datasetInstanceRepository.GetAsync(f => f.Dataset.Id == datasetId && f.Id == id);
-
-            if (datasetInstanceFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedDatasetInstance = _mapper.Map<T>(datasetInstanceFromRepo);
-
-                return mappedDatasetInstance;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Get single dataset category from repository and auto map to Dto
         /// </summary>
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
@@ -1307,21 +1294,6 @@ namespace PVIMS.API.Controllers
         /// <summary>
         ///  Prepare HATEOAS links for a single resource
         /// </summary>
-        /// <param name="datasetId">Unique id of the dataset being queried for instances</param>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private DatasetInstanceIdentifierDto CreateLinksForDatasetInstance<T>(long datasetId, T dto)
-        {
-            DatasetInstanceIdentifierDto identifier = (DatasetInstanceIdentifierDto)(object)dto;
-
-            //identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "DatasetInstance", identifier.Id), "self", "GET"));
-
-            return identifier;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
         /// <param name="datasetId">Unique id of the dataset being queried for categories</param>
         /// <param name="dto">The dto that the link has been added to</param>
         /// <returns></returns>
@@ -1368,70 +1340,6 @@ namespace PVIMS.API.Controllers
         private int GetNextFieldOrder(DatasetCategory datasetCategory)
         {
             return datasetCategory.DatasetCategoryElements.Count == 0 ? 1 : _unitOfWork.Repository<DatasetCategoryElement>().Queryable().Where(dc => dc.DatasetCategory.Id == datasetCategory.Id).OrderByDescending(dc => dc.FieldOrder).First().FieldOrder + 1;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private DatasetInstanceDetailDto CustomDatasetInstanceMap(DatasetInstanceDetailDto dto)
-        {
-            var datasetInstanceFromRepo = _datasetInstanceRepository.Get(di => di.Id == dto.Id);
-            if (datasetInstanceFromRepo == null)
-            {
-                return dto;
-            }
-
-            var groupedDatasetCategories = datasetInstanceFromRepo.Dataset.DatasetCategories
-                .SelectMany(dc => dc.DatasetCategoryElements).OrderBy(dc => dc.FieldOrder)
-                .GroupBy(dce => dce.DatasetCategory)
-                .ToList();
-
-            dto.DatasetCategories = groupedDatasetCategories
-                .Select(dsc => new DatasetCategoryViewDto
-                {
-                    DatasetCategoryId = dsc.Key.Id,
-                    DatasetCategoryName = dsc.Key.DatasetCategoryName,
-                    DatasetCategoryDisplayName = dsc.Key.FriendlyName ?? dsc.Key.DatasetCategoryName,
-                    DatasetCategoryHelp = dsc.Key.Help,
-                    DatasetCategoryDisplayed = true,
-                    DatasetElements = dsc.Select(element => new DatasetElementViewDto
-                    {
-                        DatasetElementId = element.DatasetElement.Id,
-                        DatasetElementName = element.DatasetElement.ElementName,
-                        DatasetElementDisplayName = element.FriendlyName ?? element.DatasetElement.ElementName,
-                        DatasetElementHelp = element.Help,
-                        DatasetElementDisplayed = true,
-                        DatasetElementChronic = false,
-                        DatasetElementSystem = element.DatasetElement.System,
-                        DatasetElementType = element.DatasetElement.Field.FieldType.Description,
-                        DatasetElementValue = datasetInstanceFromRepo.GetInstanceValue(element.DatasetElement.ElementName),
-                        StringMaxLength = element.DatasetElement.Field.MaxLength,
-                        NumericMinValue = element.DatasetElement.Field.MinSize,
-                        NumericMaxValue = element.DatasetElement.Field.MaxSize,
-                        Required = element.DatasetElement.Field.Mandatory,
-                        SelectionDataItems = element.DatasetElement.Field.FieldValues.Select(fv => new SelectionDataItemDto() { SelectionKey = fv.Value, Value = fv.Value }).ToList(),
-                        DatasetElementSubs = element.DatasetElement.DatasetElementSubs.Select(elementSub => new DatasetElementSubViewDto
-                        {
-                            DatasetElementSubId = elementSub.Id,
-                            DatasetElementSubName = elementSub.ElementName,
-                            DatasetElementSubType = elementSub.Field.FieldType.Description,
-                            DatasetElementSubDisplayName = elementSub.FriendlyName ?? elementSub.ElementName,
-                            DatasetElementSubHelp = elementSub.Help,
-                            DatasetElementSubSystem = elementSub.System,
-                            StringMaxLength = elementSub.Field.MaxLength,
-                            NumericMinValue = elementSub.Field.MinSize,
-                            NumericMaxValue = elementSub.Field.MaxSize,
-                            Required = elementSub.Field.Mandatory,
-                            SelectionDataItems = elementSub.Field.FieldValues.Select(fv => new SelectionDataItemDto() { SelectionKey = fv.Value, Value = fv.Value }).ToList(),
-                        }).ToArray()
-                    })
-                    .ToArray()
-                })
-                .ToArray();
-
-            return dto;
         }
 
         /// <summary>

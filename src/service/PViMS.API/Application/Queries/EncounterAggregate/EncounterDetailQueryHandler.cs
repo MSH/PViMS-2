@@ -73,11 +73,11 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
                     && di.EncounterTypeWorkPlan.EncounterType.Id == encounterFromRepo.EncounterType.Id
                     , new string[] { "Dataset.ContextType"
                         , "EncounterTypeWorkPlan.EncounterType"
-                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategory"
-                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategory"
+                        , "Dataset.DatasetCategories.DatasetCategoryElements"
                         , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldValues"
                         , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs"
-                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategoryElementConditions" });
+                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategoryElementConditions"
+                        , "DatasetInstanceValues"});
 
             if (datasetInstanceFromRepo != null)
             {
