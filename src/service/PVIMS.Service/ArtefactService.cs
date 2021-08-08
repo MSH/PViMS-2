@@ -1,10 +1,6 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using A = DocumentFormat.OpenXml.Drawing;
-using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
-using FontSize = DocumentFormat.OpenXml.Wordprocessing.FontSize;
-using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 using Microsoft.AspNetCore.Hosting;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
@@ -35,11 +31,6 @@ namespace PVIMS.Services
     {
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
-        private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
-        private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
-        private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
-
-        private readonly IHostingEnvironment _environment;
 
         public ICustomAttributeService _attributeService { get; set; }
         public IPatientService _patientService { get; set; }
@@ -48,19 +39,12 @@ namespace PVIMS.Services
             ICustomAttributeService attributeService,
             IPatientService patientService,
             IHostingEnvironment environment,
-            IRepositoryInt<DatasetInstance> datasetInstanceRepository,
-            IRepositoryInt<ReportInstance> reportInstanceRepository,
-            IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
-            IRepositoryInt<PatientMedication> patientMedicationRepository)
+            IRepositoryInt<DatasetInstance> datasetInstanceRepository)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _attributeService = attributeService ?? throw new ArgumentNullException(nameof(attributeService));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
-            _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
-            _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
-            _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
-            _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
         public ArtefactInfoModel CreateActiveDatasetForDownload(long[] patientIds, long cohortGroupId)
@@ -320,6 +304,158 @@ namespace PVIMS.Services
                     r.Style.Font.SetFromFont(new System.Drawing.Font("Arial", 10, FontStyle.Regular));
                     r.Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     r.AutoFitColumns();
+                }
+
+                pck.Save();
+            }
+
+            return model;
+        }
+
+        public ArtefactInfoModel CreateSpontaneousDatasetForDownload()
+        {
+            var model = new ArtefactInfoModel();
+            var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
+
+            model.Path = Path.GetTempPath();
+            model.FileName = $"SpontaneousDataExtract_{generatedDate}.xlsx";
+
+            using (var pck = new ExcelPackage(new FileInfo(model.FullPath)))
+            {
+                // *************************************
+                // Create sheet - Main Spontaneous
+                // *************************************
+                var ws = pck.Workbook.Worksheets.Add("Spontaneous");
+                ws.View.ShowGridLines = true;
+
+                var rowCount = 1;
+                var colCount = 2;
+                var maxColCount = 1;
+
+                List<string> columns = new List<string>();
+
+                // Header
+                ws.Cells["A1"].Value = "Unique Identifier";
+
+                var dataset = _unitOfWork.Repository<Dataset>().Queryable().Single(ds => ds.DatasetName == "Spontaneous Report");
+                foreach (DatasetCategory category in dataset.DatasetCategories)
+                {
+                    foreach (DatasetCategoryElement element in category.DatasetCategoryElements.Where(dce => dce.DatasetElement.System == false && dce.DatasetElement.Field.FieldType.Description != "Table"))
+                    {
+                        ws.Cells[GetExcelColumnName(colCount) + "1"].Value = element.DatasetElement.ElementName;
+                        columns.Add(element.DatasetElement.ElementName);
+                        colCount += 1;
+                    }
+                }
+                maxColCount = colCount - 1;
+
+                //Set the header and format it
+                using (var r = ws.Cells["A1:" + GetExcelColumnName(maxColCount) + "1"])
+                {
+                    r.Style.Font.SetFromFont(new System.Drawing.Font("Arial", 10, FontStyle.Bold));
+                    r.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                    r.Style.HorizontalAlignment = ExcelHorizontalAlignment.CenterContinuous;
+                    r.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    r.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(23, 55, 93));
+                }
+
+                // Data
+                foreach (ReportInstance reportInstance in _unitOfWork.Repository<ReportInstance>()
+                    .Queryable()
+                    .Where(ri => ri.WorkFlow.WorkFlowGuid.ToString() == "4096D0A3-45F7-4702-BDA1-76AEDE41B986" && ri.Activities.Any(a => a.QualifiedName == "Confirm Report Data" && a.CurrentStatus.Description != "DELETED")))
+                {
+                    DatasetInstance datasetInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().Single(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
+
+                    rowCount += 1;
+                    ws.Cells["A" + rowCount].Value = datasetInstance.DatasetInstanceGuid.ToString();
+
+                    foreach (var value in datasetInstance.DatasetInstanceValues.Where(div1 => div1.DatasetElement.System == false && div1.DatasetElement.Field.FieldType.Description != "Table").OrderBy(div2 => div2.Id))
+                    {
+                        colCount = columns.IndexOf(value.DatasetElement.ElementName) + 2;
+                        ws.Cells[GetExcelColumnName(colCount) + rowCount].Value = value.InstanceValue;
+                    };
+                }
+
+                //format row
+                using (var r = ws.Cells["A1:" + GetExcelColumnName(maxColCount) + rowCount])
+                {
+                    r.Style.Font.SetFromFont(new System.Drawing.Font("Arial", 10, FontStyle.Regular));
+                    r.Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                    r.AutoFitColumns();
+                }
+
+                // *************************************
+                // Create sheet - Sub tables
+                // *************************************
+                foreach (DatasetCategory category in dataset.DatasetCategories)
+                {
+                    foreach (DatasetCategoryElement element in category.DatasetCategoryElements.Where(dce => dce.DatasetElement.System == false && dce.DatasetElement.Field.FieldType.Description == "Table"))
+                    {
+                        ws = pck.Workbook.Worksheets.Add(element.DatasetElement.ElementName);
+                        ws.View.ShowGridLines = true;
+
+                        // Write headers
+                        colCount = 2;
+                        rowCount = 1;
+
+                        ws.Cells["A1"].Value = "Unique Identifier";
+
+                        foreach (var subElement in element.DatasetElement.DatasetElementSubs.Where(des1 => des1.System == false).OrderBy(des2 => des2.Id))
+                        {
+                            ws.Cells[GetExcelColumnName(colCount) + "1"].Value = subElement.ElementName;
+                            colCount += 1;
+                        }
+                        maxColCount = colCount - 1;
+
+                        //Set the header and format it
+                        using (var r = ws.Cells["A1:" + GetExcelColumnName(maxColCount) + "1"])
+                        {
+                            r.Style.Font.SetFromFont(new System.Drawing.Font("Arial", 10, FontStyle.Bold));
+                            r.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                            r.Style.HorizontalAlignment = ExcelHorizontalAlignment.CenterContinuous;
+                            r.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            r.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(23, 55, 93));
+                        }
+
+                        // Data
+                        foreach (var value in _unitOfWork.Repository<DatasetInstanceValue>()
+                            .Queryable()
+                            .Where(div1 => div1.DatasetElement.Id == element.DatasetElement.Id && div1.DatasetInstanceSubValues.Count > 0 && div1.DatasetInstance.Status == Core.ValueTypes.DatasetInstanceStatus.COMPLETE).OrderBy(div2 => div2.Id))
+                        {
+                            // Get report and ensure it is not deleted
+                            ReportInstance reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().SingleOrDefault(ri => ri.ContextGuid == value.DatasetInstance.DatasetInstanceGuid);
+
+                            if (reportInstance != null)
+                            {
+                                if (reportInstance.Activities.Any(a => a.QualifiedName == "Confirm Report Data" && a.CurrentStatus.Description != "DELETED"))
+                                {
+                                    // Get unique contexts
+                                    var contexts = value.DatasetInstance.GetInstanceSubValuesContext(value.DatasetElement.ElementName);
+                                    foreach (var context in contexts)
+                                    {
+                                        rowCount += 1;
+                                        ws.Cells["A" + rowCount].Value = value.DatasetInstance.DatasetInstanceGuid.ToString();
+
+                                        foreach (var subvalue in value.DatasetInstance.GetInstanceSubValues(value.DatasetElement.ElementName, context))
+                                        {
+                                            if (subvalue.DatasetElementSub.System == false)
+                                            {
+                                                colCount = value.DatasetElement.DatasetElementSubs.ToList().IndexOf(subvalue.DatasetElementSub) + 2;
+                                                ws.Cells[GetExcelColumnName(colCount) + rowCount].Value = subvalue.InstanceValue;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        //format row
+                        using (var r = ws.Cells["A1:" + GetExcelColumnName(maxColCount) + rowCount])
+                        {
+                            r.Style.Font.SetFromFont(new System.Drawing.Font("Arial", 10, FontStyle.Regular));
+                            r.Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                            r.AutoFitColumns();
+                        }
+                    }
                 }
 
                 pck.Save();
@@ -783,1614 +919,6 @@ namespace PVIMS.Services
             {
                 sourceDocument.Save(streamWriter);
             }
-        }
-
-        public async Task<ArtefactInfoModel> CreatePatientSummaryForActiveReportAsync(Guid contextGuid)
-        {
-            var model = new ArtefactInfoModel();
-            var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
-
-            var patientClinicalEvent = await _patientClinicalEventRepository.GetAsync(pce => pce.PatientClinicalEventGuid == contextGuid);
-            if (patientClinicalEvent == null)
-            {
-                throw new KeyNotFoundException(nameof(patientClinicalEvent));
-            }
-
-            var extendable = (IExtendable)patientClinicalEvent;
-            var extendableValue = await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Is the adverse event serious?", extendable);
-            var isSerious = extendableValue == "Yes";
-
-            model.Path = Path.GetTempPath();
-            var fileNamePrefix = isSerious ? "SAEReport_Active" : "PatientSummary_Active";
-            model.FileName = $"{fileNamePrefix}{patientClinicalEvent.Patient.Id}_{generatedDate}.docx";
-
-            using (var document = WordprocessingDocument.Create(Path.Combine(model.Path, model.FileName), WordprocessingDocumentType.Document))
-            {
-                // Add a main document part. 
-                MainDocumentPart mainPart = document.AddMainDocumentPart();
-
-                // Create the document structure and add some text.
-                mainPart.Document = new Document();
-                Body body = new Body();
-
-                SectionProperties sectionProps = new SectionProperties();
-                PageMargin pageMargin = new PageMargin() { Top = 404, Right = (UInt32Value)504U, Bottom = 404, Left = (UInt32Value)504U, Header = (UInt32Value)720U, Footer = (UInt32Value)720U, Gutter = (UInt32Value)0U };
-                sectionProps.Append(pageMargin);
-                body.Append(sectionProps);
-
-                mainPart.Document.AppendChild(body);
-            };
-
-            using (var document = WordprocessingDocument.Open(Path.Combine(model.Path, model.FileName), true))
-            {
-                var doc = document.MainDocumentPart.Document;
-                var body = doc.Body;
-
-                // Add page header
-                body.Append(AddPatientSummaryPageHeader(isSerious ? "SERIOUS ADVERSE EVENT" : "PATIENT SUMMARY", document));
-
-                var tableHeader = AddTableHeader("A. BASIC PATIENT INFORMATION");
-                body.Append(tableHeader);
-                var basicInformationtable = await AddBasicInformationTableAsync(patientClinicalEvent);
-                body.Append(basicInformationtable);
-                var notesTable = AddNotesTable();
-                body.Append(notesTable);
-
-                tableHeader = AddTableHeader("B. PRE-EXISITING CONDITIONS");
-                body.Append(tableHeader);
-                var conditiontable = AddConditionTable(patientClinicalEvent);
-                body.Append(conditiontable);
-
-                tableHeader = AddTableHeader("C. ADVERSE EVENT INFORMATION");
-                body.Append(tableHeader);
-                var adverseEventtable = await AddAdverseEventTableAsync(patientClinicalEvent, isSerious);
-                body.Append(adverseEventtable);
-                notesTable = AddNotesTable();
-                body.Append(notesTable);
-
-                tableHeader = AddTableHeader("D. MEDICATIONS");
-                body.Append(tableHeader);
-                var medicationtable = await AddMedicationTableAsync(patientClinicalEvent);
-                body.Append(medicationtable);
-                notesTable = AddNotesForMedicationTable();
-                body.Append(notesTable);
-
-                tableHeader = AddTableHeader("E. CLINICAL EVALUATIONS");
-                body.Append(tableHeader);
-                var evaluationtable = AddEvaluationTable(patientClinicalEvent);
-                body.Append(evaluationtable);
-                notesTable = AddNotesTable();
-                body.Append(notesTable);
-
-                tableHeader = AddTableHeader("F. WEIGHT HISTORY");
-                body.Append(tableHeader);
-                var weighttable = AddWeightTable(patientClinicalEvent);
-                body.Append(weighttable);
-                notesTable = AddNotesTable();
-                body.Append(notesTable);
-
-                document.Save();
-            }
-
-            return model;
-        }
-
-        public async Task<ArtefactInfoModel> CreatePatientSummaryForSpontaneousReportAsync(Guid contextGuid)
-        {
-            var model = new ArtefactInfoModel();
-            var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
-
-            var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.DatasetInstanceGuid == contextGuid);
-            if (datasetInstance == null)
-            {
-                throw new KeyNotFoundException(nameof(datasetInstance));
-            }
-
-            var isSerious = !String.IsNullOrWhiteSpace(datasetInstance.GetInstanceValue("Reaction serious details"));
-
-            model.Path = Path.GetTempPath();
-            var fileNamePrefix = isSerious ? "SAEReport_Spontaneous" : "PatientSummary_Spontaneous";
-            model.FileName = $"{fileNamePrefix}{datasetInstance.Id}_{generatedDate}.docx";
-
-            using (var document = WordprocessingDocument.Create(Path.Combine(model.Path, model.FileName), WordprocessingDocumentType.Document))
-            {
-                // Add a main document part. 
-                MainDocumentPart mainPart = document.AddMainDocumentPart();
-
-                // Create the document structure and add some text.
-                mainPart.Document = new Document();
-                Body body = new Body();
-
-                SectionProperties sectionProps = new SectionProperties();
-                PageMargin pageMargin = new PageMargin() { Top = 404, Right = (UInt32Value)504U, Bottom = 404, Left = (UInt32Value)504U, Header = (UInt32Value)720U, Footer = (UInt32Value)720U, Gutter = (UInt32Value)0U };
-                sectionProps.Append(pageMargin);
-                body.Append(sectionProps);
-
-                mainPart.Document.AppendChild(body);
-            };
-
-            using (var document = WordprocessingDocument.Open(Path.Combine(model.Path, model.FileName), true))
-            {
-                var doc = document.MainDocumentPart.Document;
-                var body = doc.Body;
-
-                // Add page header
-                body.Append(AddPatientSummaryPageHeader("PATIENT SUMMARY", document));
-
-                var tableHeader = AddTableHeader("A. BASIC PATIENT INFORMATION");
-                body.Append(tableHeader);
-                var basicInformationtable = AddBasicInformationTable(datasetInstance);
-                body.Append(basicInformationtable);
-                var notesTable = AddNotesTable();
-                body.Append(notesTable);
-
-                tableHeader = AddTableHeader("B. ADVERSE EVENT INFORMATION");
-                body.Append(tableHeader);
-                var adverseEventtable = AddAdverseEventTable(datasetInstance, isSerious);
-                body.Append(adverseEventtable);
-                notesTable = AddNotesTable();
-                body.Append(notesTable);
-
-                tableHeader = AddTableHeader("C. MEDICATIONS");
-                body.Append(tableHeader);
-                var medicationtable = AddMedicationTable(datasetInstance);
-                body.Append(medicationtable);
-                notesTable = AddNotesForMedicationTable();
-                body.Append(notesTable);
-
-                tableHeader = AddTableHeader("D. CLINICAL EVALUATIONS");
-                body.Append(tableHeader);
-                var evaluationtable = AddEvaluationTable(datasetInstance);
-                body.Append(evaluationtable);
-                notesTable = AddNotesTable();
-                body.Append(notesTable);
-
-                document.Save();
-            }
-
-            return model;
-        }
-
-        public ArtefactInfoModel CreateSpontaneousDatasetForDownload()
-        {
-            var model = new ArtefactInfoModel();
-            var generatedDate = DateTime.Now.ToString("yyyyMMddhhmmss");
-
-            model.Path = Path.GetTempPath();
-            model.FileName = $"SpontaneousDataExtract_{generatedDate}.xlsx";
-
-            using (var pck = new ExcelPackage(new FileInfo(model.FullPath)))
-            {
-                // *************************************
-                // Create sheet - Main Spontaneous
-                // *************************************
-                var ws = pck.Workbook.Worksheets.Add("Spontaneous");
-                ws.View.ShowGridLines = true;
-
-                var rowCount = 1;
-                var colCount = 2;
-                var maxColCount = 1;
-
-                List<string> columns = new List<string>();
-
-                // Header
-                ws.Cells["A1"].Value = "Unique Identifier";
-
-                var dataset = _unitOfWork.Repository<Dataset>().Queryable().Single(ds => ds.DatasetName == "Spontaneous Report");
-                foreach (DatasetCategory category in dataset.DatasetCategories)
-                {
-                    foreach (DatasetCategoryElement element in category.DatasetCategoryElements.Where(dce => dce.DatasetElement.System == false && dce.DatasetElement.Field.FieldType.Description != "Table"))
-                    {
-                        ws.Cells[GetExcelColumnName(colCount) + "1"].Value = element.DatasetElement.ElementName;
-                        columns.Add(element.DatasetElement.ElementName);
-                        colCount += 1;
-                    }
-                }
-                maxColCount = colCount - 1;
-
-                //Set the header and format it
-                using (var r = ws.Cells["A1:" + GetExcelColumnName(maxColCount) + "1"])
-                {
-                    r.Style.Font.SetFromFont(new System.Drawing.Font("Arial", 10, FontStyle.Bold));
-                    r.Style.Font.Color.SetColor(System.Drawing.Color.White);
-                    r.Style.HorizontalAlignment = ExcelHorizontalAlignment.CenterContinuous;
-                    r.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                    r.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(23, 55, 93));
-                }
-
-                // Data
-                foreach (ReportInstance reportInstance in _unitOfWork.Repository<ReportInstance>()
-                    .Queryable()
-                    .Where(ri => ri.WorkFlow.WorkFlowGuid.ToString() == "4096D0A3-45F7-4702-BDA1-76AEDE41B986" && ri.Activities.Any(a => a.QualifiedName == "Confirm Report Data" && a.CurrentStatus.Description != "DELETED")))
-                {
-                    DatasetInstance datasetInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().Single(di => di.DatasetInstanceGuid == reportInstance.ContextGuid);
-
-                    rowCount += 1;
-                    ws.Cells["A" + rowCount].Value = datasetInstance.DatasetInstanceGuid.ToString();
-
-                    foreach (var value in datasetInstance.DatasetInstanceValues.Where(div1 => div1.DatasetElement.System == false && div1.DatasetElement.Field.FieldType.Description != "Table").OrderBy(div2 => div2.Id))
-                    {
-                        colCount = columns.IndexOf(value.DatasetElement.ElementName) + 2;
-                        ws.Cells[GetExcelColumnName(colCount) + rowCount].Value = value.InstanceValue;
-                    };
-                }
-
-                //format row
-                using (var r = ws.Cells["A1:" + GetExcelColumnName(maxColCount) + rowCount])
-                {
-                    r.Style.Font.SetFromFont(new System.Drawing.Font("Arial", 10, FontStyle.Regular));
-                    r.Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                    r.AutoFitColumns();
-                }
-
-                // *************************************
-                // Create sheet - Sub tables
-                // *************************************
-                foreach (DatasetCategory category in dataset.DatasetCategories)
-                {
-                    foreach (DatasetCategoryElement element in category.DatasetCategoryElements.Where(dce => dce.DatasetElement.System == false && dce.DatasetElement.Field.FieldType.Description == "Table"))
-                    {
-                        ws = pck.Workbook.Worksheets.Add(element.DatasetElement.ElementName);
-                        ws.View.ShowGridLines = true;
-
-                        // Write headers
-                        colCount = 2;
-                        rowCount = 1;
-
-                        ws.Cells["A1"].Value = "Unique Identifier";
-
-                        foreach (var subElement in element.DatasetElement.DatasetElementSubs.Where(des1 => des1.System == false).OrderBy(des2 => des2.Id))
-                        {
-                            ws.Cells[GetExcelColumnName(colCount) + "1"].Value = subElement.ElementName;
-                            colCount += 1;
-                        }
-                        maxColCount = colCount - 1;
-
-                        //Set the header and format it
-                        using (var r = ws.Cells["A1:" + GetExcelColumnName(maxColCount) + "1"])
-                        {
-                            r.Style.Font.SetFromFont(new System.Drawing.Font("Arial", 10, FontStyle.Bold));
-                            r.Style.Font.Color.SetColor(System.Drawing.Color.White);
-                            r.Style.HorizontalAlignment = ExcelHorizontalAlignment.CenterContinuous;
-                            r.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                            r.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(23, 55, 93));
-                        }
-
-                        // Data
-                        foreach (var value in _unitOfWork.Repository<DatasetInstanceValue>()
-                            .Queryable()
-                            .Where(div1 => div1.DatasetElement.Id == element.DatasetElement.Id && div1.DatasetInstanceSubValues.Count > 0 && div1.DatasetInstance.Status == Core.ValueTypes.DatasetInstanceStatus.COMPLETE).OrderBy(div2 => div2.Id))
-                        {
-                            // Get report and ensure it is not deleted
-                            ReportInstance reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().SingleOrDefault(ri => ri.ContextGuid == value.DatasetInstance.DatasetInstanceGuid);
-
-                            if (reportInstance != null)
-                            {
-                                if (reportInstance.Activities.Any(a => a.QualifiedName == "Confirm Report Data" && a.CurrentStatus.Description != "DELETED"))
-                                {
-                                    // Get unique contexts
-                                    var contexts = value.DatasetInstance.GetInstanceSubValuesContext(value.DatasetElement.ElementName);
-                                    foreach (var context in contexts)
-                                    {
-                                        rowCount += 1;
-                                        ws.Cells["A" + rowCount].Value = value.DatasetInstance.DatasetInstanceGuid.ToString();
-
-                                        foreach (var subvalue in value.DatasetInstance.GetInstanceSubValues(value.DatasetElement.ElementName, context))
-                                        {
-                                            if (subvalue.DatasetElementSub.System == false)
-                                            {
-                                                colCount = value.DatasetElement.DatasetElementSubs.ToList().IndexOf(subvalue.DatasetElementSub) + 2;
-                                                ws.Cells[GetExcelColumnName(colCount) + rowCount].Value = subvalue.InstanceValue;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        //format row
-                        using (var r = ws.Cells["A1:" + GetExcelColumnName(maxColCount) + rowCount])
-                        {
-                            r.Style.Font.SetFromFont(new System.Drawing.Font("Arial", 10, FontStyle.Regular));
-                            r.Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            r.AutoFitColumns();
-                        }
-                    }
-                }
-
-                pck.Save();
-            }
-
-            return model;
-        }
-
-        #region "Word Processing"
-
-        private Paragraph AddPatientSummaryPageHeader(string header, WordprocessingDocument document)
-        {
-            PrepareLogo(document);
-
-            Paragraph paragraph = new Paragraph();
-            ParagraphProperties pprop = new ParagraphProperties();
-            Justification CenterHeading = new Justification() { Val = JustificationValues.Center };
-            pprop.Append(CenterHeading);
-            pprop.ParagraphStyleId = new ParagraphStyleId() { Val = "userheading" };
-            paragraph.Append(pprop);
-
-            RunProperties runProperties = new RunProperties();
-            runProperties.AppendChild(new Bold());
-            FontSize fs = new FontSize();
-            fs.Val = "24";
-            runProperties.AppendChild(fs);
-            Run run = new Run();
-            run.AppendChild(runProperties);
-            run.AppendChild(new Text(header));
-            paragraph.Append(run);
-
-            return paragraph;
-        }
-
-        private Table AddTableHeader(string header)
-        {
-            UInt32Value rowHeight = 20;
-
-            // Main header
-            Table mainTable = new Table();
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = "11352" })
-                    );
-
-            mainTable.AppendChild<TableProperties>(tprops);
-
-            var tr = new TableRow();
-            TableRowProperties rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell(header, 11352, false, true));
-            mainTable.AppendChild<TableRow>(tr);
-
-            return mainTable;
-        }
-
-        private async Task<Table> AddBasicInformationTableAsync(PatientClinicalEvent patientEvent)
-        {
-            IExtendable patientEventExtended = patientEvent;
-            IExtendable patientExtended = patientEvent.Patient;
-
-            Table table = new Table();
-
-            var headerWidth = 2500;
-            var cellWidth = 3176;
-            UInt32Value rowHeight = 12;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = headerWidth.ToString() },
-                    new GridColumn() { Width = cellWidth.ToString() },
-                    new GridColumn() { Width = headerWidth.ToString() },
-                    new GridColumn() { Width = cellWidth.ToString() })
-                    );
-
-            table.AppendChild<TableProperties>(tprops);
-
-            // Row 1
-            var tr = new TableRow();
-            TableRowProperties rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Patient Name", headerWidth));
-            tr.Append(PrepareCell(patientEvent.Patient.FullName, cellWidth));
-            tr.Append(PrepareHeaderCell("Date of Birth", headerWidth));
-            tr.Append(PrepareCell(patientEvent.Patient.DateOfBirth != null ? Convert.ToDateTime(patientEvent.Patient.DateOfBirth).ToString("yyyy-MM-dd") : "", cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 2
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Age Group", headerWidth));
-            tr.Append(PrepareCell(patientEventExtended.GetAttributeValue("Age Group") != null ? patientEventExtended.GetAttributeValue("Age Group").ToString() : "", cellWidth));
-            tr.Append(PrepareHeaderCell("Age at time of onset", headerWidth));
-            if (patientEvent.OnsetDate != null && patientEvent.Patient.DateOfBirth != null)
-            {
-                tr.Append(PrepareCell(CalculateAge(Convert.ToDateTime(patientEvent.Patient.DateOfBirth), Convert.ToDateTime(patientEvent.OnsetDate)).ToString() + " years", cellWidth));
-            }
-            else
-            {
-                tr.Append(PrepareCell(string.Empty, cellWidth));
-            }
-            table.AppendChild<TableRow>(tr);
-
-            // Row 3
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Gender", headerWidth));
-            tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("Patient", "Gender", patientExtended), cellWidth));
-            tr.Append(PrepareHeaderCell("Facility", headerWidth));
-            tr.Append(PrepareCell(patientEvent.Patient.CurrentFacility.Facility.FacilityName, cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 4
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Medical Record Number", headerWidth));
-            tr.Append(PrepareCell(patientExtended.GetAttributeValue("Medical Record Number") != null ? patientExtended.GetAttributeValue("Medical Record Number").ToString() : "", cellWidth));
-            tr.Append(PrepareHeaderCell("Identity Number", headerWidth));
-            tr.Append(PrepareCell(patientExtended.GetAttributeValue("Patient Identity Number") != null ? patientExtended.GetAttributeValue("Patient Identity Number").ToString() : "", cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 5
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Weight (kg)", headerWidth));
-            tr.Append(PrepareCell("", cellWidth));
-            tr.Append(PrepareHeaderCell("Height (cm)", headerWidth));
-            tr.Append(PrepareCell("", cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            return table;
-        }
-
-        private Table AddConditionTable(PatientClinicalEvent patientEvent)
-        {
-            IExtendable patientEventExtended = patientEvent;
-            IExtendable patientExtended = patientEvent.Patient;
-
-            Table table = new Table();
-
-            var headerWidth = 2500;
-            var cellWidth = 8852;
-            UInt32Value rowHeight = 12;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = headerWidth.ToString() },
-                    new GridColumn() { Width = cellWidth.ToString() }
-                    ));
-
-            table.AppendChild<TableProperties>(tprops);
-
-            // Conditions
-            var i = 0;
-            foreach (PatientCondition pc in patientEvent.Patient.PatientConditions.Where(pc => pc.OnsetDate <= patientEvent.OnsetDate).OrderByDescending(c => c.OnsetDate))
-            {
-                i += 1;
-                // Row 1
-                var tr = new TableRow();
-                TableRowProperties rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareHeaderCell("Condition " + i.ToString(), headerWidth));
-                tr.Append(PrepareCell(pc.TerminologyMedDra.MedDraTerm, cellWidth, false));
-
-                table.AppendChild<TableRow>(tr);
-
-                // Row 2
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareHeaderCell("Start Date", headerWidth));
-                tr.Append(PrepareCell(pc.OnsetDate.ToString("yyyy-MM-dd"), cellWidth, false));
-
-                table.AppendChild<TableRow>(tr);
-
-                var endDate = pc.OutcomeDate != null ? Convert.ToDateTime(pc.OutcomeDate).ToString("yyyy-MM-dd") : "";
-                // Row 3
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareHeaderCell("End Date", headerWidth));
-                tr.Append(PrepareCell(endDate, cellWidth, false));
-
-                table.AppendChild<TableRow>(tr);
-            }
-
-            return table;
-        }
-
-        private async Task<Table> AddAdverseEventTableAsync(PatientClinicalEvent patientEvent, bool isSerious)
-        {
-            IExtendable patientEventExtended = patientEvent;
-            IExtendable patientExtended = patientEvent.Patient;
-
-            Table table = new Table();
-
-            var headerWidth = 2500;
-            var cellWidth = 3176;
-            UInt32Value rowHeight = 12;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = headerWidth.ToString() },
-                    new GridColumn() { Width = cellWidth.ToString() },
-                    new GridColumn() { Width = headerWidth.ToString() },
-                    new GridColumn() { Width = cellWidth.ToString() })
-                    );
-
-            table.AppendChild<TableProperties>(tprops);
-
-            // Row 1
-            var tr = new TableRow();
-            TableRowProperties rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Source Description", headerWidth));
-            tr.Append(PrepareCell(patientEvent.SourceDescription, cellWidth));
-            tr.Append(PrepareHeaderCell("MedDRA Term", headerWidth));
-            tr.Append(PrepareCell(patientEvent.SourceTerminologyMedDra.MedDraTerm, cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 2
-            var onsetDate = patientEvent.OnsetDate != null ? Convert.ToDateTime(patientEvent.OnsetDate).ToString("yyyy-MM-dd") : "";
-            var resDate = patientEvent.ResolutionDate != null ? Convert.ToDateTime(patientEvent.ResolutionDate).ToString("yyyy-MM-dd") : "";
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Onset Date", headerWidth));
-            tr.Append(PrepareCell(onsetDate, cellWidth));
-            tr.Append(PrepareHeaderCell("Resolution Date", headerWidth));
-            tr.Append(PrepareCell(resDate, cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 3
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Duration", headerWidth));
-            if (!String.IsNullOrWhiteSpace(onsetDate) && !String.IsNullOrWhiteSpace(resDate))
-            {
-                var rduration = (Convert.ToDateTime(resDate) - Convert.ToDateTime(onsetDate)).Days;
-                tr.Append(PrepareCell(rduration.ToString() + " days", cellWidth));
-            }
-            else
-            {
-                tr.Append(PrepareCell(string.Empty, cellWidth));
-            }
-            tr.Append(PrepareHeaderCell("Outcome", headerWidth));
-            tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Outcome", patientEventExtended), cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Cater for seriousness fields
-            if (isSerious)
-            {
-                // Row 4
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareHeaderCell("Seriousness", headerWidth));
-                tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Seriousness", patientEventExtended), cellWidth));
-                tr.Append(PrepareHeaderCell("Grading Scale", headerWidth));
-                tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Severity Grading Scale", patientEventExtended), cellWidth));
-
-                table.AppendChild<TableRow>(tr);
-
-                // Row 5
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareHeaderCell("Severity Grade", headerWidth));
-                tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Severity Grade", patientEventExtended), cellWidth));
-                tr.Append(PrepareHeaderCell("SAE Number", headerWidth));
-                tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "FDA SAE Number", patientEventExtended), cellWidth));
-
-                table.AppendChild<TableRow>(tr);
-            }
-
-            return table;
-        }
-
-        private async Task<Table> AddMedicationTableAsync(PatientClinicalEvent patientEvent)
-        {
-            IExtendable patientEventExtended = patientEvent;
-            IExtendable patientExtended = patientEvent.Patient;
-
-            Table table = new Table();
-
-            UInt32Value rowHeight = 12;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = "2500" },
-                    new GridColumn() { Width = "1250" },
-                    new GridColumn() { Width = "1250" },
-                    new GridColumn() { Width = "1250" },
-                    new GridColumn() { Width = "1250" },
-                    new GridColumn() { Width = "3852" }
-                    ));
-
-            table.AppendChild<TableProperties>(tprops);
-
-            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == patientEvent.PatientClinicalEventGuid);
-            if (reportInstance == null) { return table; };
-
-            var i = 0;
-            foreach (ReportInstanceMedication med in reportInstance.Medications)
-            {
-                i += 1;
-
-                var patientMedication = await _patientMedicationRepository.GetAsync(pm => pm.PatientMedicationGuid == med.ReportInstanceMedicationGuid);
-                if (patientMedication != null)
-                {
-                    IExtendable mcExtended = patientMedication;
-
-                    // Row 1
-                    var endDate = patientMedication.EndDate.HasValue ? patientMedication.EndDate.Value.ToString("yyyy-MM-dd") : "";
-                    var tr = new TableRow();
-                    TableRowProperties rprops = new TableRowProperties(
-                        new TableRowHeight() { Val = rowHeight }
-                        );
-                    tr.AppendChild<TableRowProperties>(rprops);
-
-                    tr.Append(PrepareHeaderCell("Drug " + i.ToString(), 2500));
-                    tr.Append(PrepareHeaderCell("Start Date ", 1250, true, false));
-                    tr.Append(PrepareHeaderCell("End Date ", 1250, true, false));
-                    tr.Append(PrepareHeaderCell("Dose ", 1250, true, false));
-                    tr.Append(PrepareHeaderCell("Route ", 1250, true, false));
-                    tr.Append(PrepareHeaderCell("Indication ", 3852));
-
-                    table.AppendChild<TableRow>(tr);
-
-                    // Row 2
-                    tr = new TableRow();
-                    rprops = new TableRowProperties(
-                        new TableRowHeight() { Val = rowHeight }
-                        );
-                    tr.AppendChild<TableRowProperties>(rprops);
-
-                    tr.Append(PrepareCell(patientMedication.DisplayName, 2500, false));
-                    tr.Append(PrepareCell(patientMedication.StartDate.ToString("yyyy-MM-dd"), 1250));
-                    tr.Append(PrepareCell(endDate, 1250));
-                    tr.Append(PrepareCell(patientMedication.Dose, 1250));
-                    tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientMedication", "Route", mcExtended), 1250));
-                    tr.Append(PrepareCell(await _attributeService.GetCustomAttributeValueAsync("PatientMedication", "Indication", mcExtended), 3852, false));
-
-                    table.AppendChild<TableRow>(tr);
-
-                    // Row 3
-                    tr = new TableRow();
-                    rprops = new TableRowProperties(
-                        new HorizontalMerge { Val = MergedCellValues.Continue },
-                        new TableRowHeight() { Val = rowHeight }
-                        );
-                    tr.AppendChild<TableRowProperties>(rprops);
-
-                    tr.Append(PrepareHeaderCell("C.1 CLINICIAN ACTION TAKEN WITH REGARD TO MEDICINE", 11352, false, false, 6));
-
-                    table.AppendChild<TableRow>(tr);
-
-                    // Row 4
-                    tr = new TableRow();
-                    rprops = new TableRowProperties(
-                        new HorizontalMerge { Val = MergedCellValues.Continue },
-                        new TableRowHeight() { Val = rowHeight }
-                        );
-                    tr.AppendChild<TableRowProperties>(rprops);
-
-                    tr.Append(PrepareCell("", 11352, false, 6));
-
-                    table.AppendChild<TableRow>(tr);
-
-                    // Row 5
-                    tr = new TableRow();
-                    rprops = new TableRowProperties(
-                        new HorizontalMerge { Val = MergedCellValues.Continue },
-                        new TableRowHeight() { Val = rowHeight }
-                        );
-                    tr.AppendChild<TableRowProperties>(rprops);
-
-                    tr.Append(PrepareHeaderCell("C.2 EFFECT OF DECHALLENGE/ RECHALLENGE", 11352, false, false, 6));
-
-                    table.AppendChild<TableRow>(tr);
-
-                    // Row 6
-                    tr = new TableRow();
-                    rprops = new TableRowProperties(
-                        new HorizontalMerge { Val = MergedCellValues.Continue },
-                        new TableRowHeight() { Val = rowHeight }
-                        );
-                    tr.AppendChild<TableRowProperties>(rprops);
-
-                    tr.Append(PrepareCell("", 11352, false, 6));
-
-                    table.AppendChild<TableRow>(tr);
-                }
-            }
-
-            return table;
-        }
-
-        private Table AddEvaluationTable(PatientClinicalEvent patientEvent)
-        {
-            IExtendable patientEventExtended = patientEvent;
-            IExtendable patientExtended = patientEvent.Patient;
-
-            Table table = new Table();
-
-            UInt32Value rowHeight = 12;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = "2500" },
-                    new GridColumn() { Width = "2500" },
-                    new GridColumn() { Width = "6352" }
-                    ));
-
-            table.AppendChild<TableProperties>(tprops);
-
-            // Row 1
-            var tr = new TableRow();
-            TableRowProperties rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Test", 2500));
-            tr.Append(PrepareHeaderCell("Test Date", 2500, true, false));
-            tr.Append(PrepareHeaderCell("Test Result", 6352));
-
-            table.AppendChild<TableRow>(tr);
-
-            foreach (PatientLabTest labTest in patientEvent.Patient.PatientLabTests.Where(lt => lt.TestDate >= patientEvent.OnsetDate).OrderByDescending(lt => lt.TestDate))
-            {
-                // Row 2
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareCell(labTest.LabTest.Description, 2500, false));
-                tr.Append(PrepareCell(labTest.TestDate.ToString("yyyy-MM-dd"), 2500));
-                tr.Append(PrepareCell(labTest.TestResult, 6352, false));
-
-                table.AppendChild<TableRow>(tr);
-            }
-
-            return table;
-        }
-
-        private Table AddWeightTable(PatientClinicalEvent patientEvent)
-        {
-            IExtendable patientEventExtended = patientEvent;
-            IExtendable patientExtended = patientEvent.Patient;
-
-            Table table = new Table();
-
-            UInt32Value rowHeight = 12;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = "2500" },
-                    new GridColumn() { Width = "8852" }
-                    ));
-
-            table.AppendChild<TableProperties>(tprops);
-
-            // Row 1
-            var tr = new TableRow();
-            TableRowProperties rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Weight Date", 2500));
-            tr.Append(PrepareHeaderCell("Weight", 8852, true, false));
-
-            table.AppendChild<TableRow>(tr);
-
-            var weightSeries = _patientService.GetElementValues(patientEvent.Patient.Id, "Weight(kg)", 10);
-
-            if (weightSeries.Length > 0)
-            {
-                foreach (var weight in weightSeries[0].Series)
-                {
-                    // Row 2
-                    tr = new TableRow();
-                    rprops = new TableRowProperties(
-                        new TableRowHeight() { Val = rowHeight }
-                        );
-                    tr.AppendChild<TableRowProperties>(rprops);
-
-                    tr.Append(PrepareCell(weight.Name, 2500, false));
-                    tr.Append(PrepareCell(weight.Value.ToString(), 6352));
-
-                    table.AppendChild<TableRow>(tr);
-                }
-            }
-
-            return table;
-        }
-
-        private Table AddBasicInformationTable(DatasetInstance datasetInstance)
-        {
-            Table table = new Table();
-            DateTime tempdt;
-
-            var temp = datasetInstance.GetInstanceValue("Date of Birth");
-            DateTime dob = DateTime.TryParse(temp, out tempdt) ? tempdt : DateTime.MinValue;
-
-            temp = datasetInstance.GetInstanceValue("Age");
-            string age = temp;
-            temp = datasetInstance.GetInstanceValue("Age Unit");
-            age += " " + temp; // Include age unit
-
-            var headerWidth = 2500;
-            var cellWidth = 3176;
-            UInt32Value rowHeight = 12;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = headerWidth.ToString() },
-                    new GridColumn() { Width = cellWidth.ToString() },
-                    new GridColumn() { Width = headerWidth.ToString() },
-                    new GridColumn() { Width = cellWidth.ToString() })
-                    );
-
-            table.AppendChild<TableProperties>(tprops);
-
-            // Row 1
-            var tr = new TableRow();
-            TableRowProperties rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Patient Name", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Initials"), cellWidth));
-            tr.Append(PrepareHeaderCell("Date of Birth", headerWidth));
-            tr.Append(PrepareCell(dob == DateTime.MinValue ? "" : dob.ToString("yyyy-MM-dd"), cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 2
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Age Group", headerWidth));
-            tr.Append(PrepareCell("", cellWidth));
-            tr.Append(PrepareHeaderCell("Age at time of onset", headerWidth));
-            tr.Append(PrepareCell(age, cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 3
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Gender", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Sex"), cellWidth));
-            tr.Append(PrepareHeaderCell("Facility", headerWidth));
-            tr.Append(PrepareCell("", cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 4
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Medical Record Number", headerWidth));
-            tr.Append(PrepareCell("", cellWidth));
-            tr.Append(PrepareHeaderCell("Identity Number", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Identification Number"), cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 5
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Weight (kg)", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Weight  (kg)"), cellWidth));
-            tr.Append(PrepareHeaderCell("Height (cm)", headerWidth));
-            tr.Append(PrepareCell("", cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            return table;
-        }
-
-        private Table AddAdverseEventTable(DatasetInstance datasetInstance, bool isSerious)
-        {
-            Table table = new Table();
-            DateTime tempdt;
-
-            var reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().Single(ri => ri.ContextGuid == datasetInstance.DatasetInstanceGuid);
-
-            var headerWidth = 2500;
-            var cellWidth = 3176;
-            UInt32Value rowHeight = 12;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = headerWidth.ToString() },
-                    new GridColumn() { Width = cellWidth.ToString() },
-                    new GridColumn() { Width = headerWidth.ToString() },
-                    new GridColumn() { Width = cellWidth.ToString() })
-                    );
-
-            table.AppendChild<TableProperties>(tprops);
-
-            // Row 1
-            var tr = new TableRow();
-            TableRowProperties rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Source Description", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Description of reaction"), cellWidth));
-            tr.Append(PrepareHeaderCell("MedDRA Term", headerWidth));
-            tr.Append(PrepareCell(reportInstance.TerminologyMedDra != null ? reportInstance.TerminologyMedDra.MedDraTerm : string.Empty, cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 2
-            var temp = datasetInstance.GetInstanceValue("Reaction known start date");
-            DateTime onsetDate = DateTime.TryParse(temp, out tempdt) ? tempdt : DateTime.MinValue;
-
-            temp = datasetInstance.GetInstanceValue("Reaction date of recovery");
-            DateTime recoveryDate = DateTime.TryParse(temp, out tempdt) ? tempdt : DateTime.MinValue;
-
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Onset Date", headerWidth));
-            tr.Append(PrepareCell(onsetDate == DateTime.MinValue ? "" : onsetDate.ToString("yyyy-MM-dd"), cellWidth));
-            tr.Append(PrepareHeaderCell("Resolution Date", headerWidth));
-            tr.Append(PrepareCell(recoveryDate == DateTime.MinValue ? "" : recoveryDate.ToString("yyyy-MM-dd"), cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 3
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Duration", headerWidth));
-            if (onsetDate != DateTime.MinValue && recoveryDate != DateTime.MinValue)
-            {
-                var rduration = (recoveryDate - onsetDate).Days;
-                tr.Append(PrepareCell(rduration.ToString() + " days", cellWidth));
-            }
-            else
-            {
-                tr.Append(PrepareCell(string.Empty, cellWidth));
-            }
-            tr.Append(PrepareHeaderCell("Outcome", headerWidth));
-            tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Outcome of reaction"), cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Cater for seriousness fields
-            if (isSerious)
-            {
-                // Row 4
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareHeaderCell("Seriousness", headerWidth));
-                tr.Append(PrepareCell(datasetInstance.GetInstanceValue("Reaction serious details"), cellWidth));
-                tr.Append(PrepareHeaderCell("Grading Scale", headerWidth));
-                tr.Append(PrepareCell("", cellWidth));
-
-                table.AppendChild<TableRow>(tr);
-
-                // Row 5
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareHeaderCell("Severity Grade", headerWidth));
-                tr.Append(PrepareCell("", cellWidth));
-                tr.Append(PrepareHeaderCell("SAE Number", headerWidth));
-                tr.Append(PrepareCell("", cellWidth));
-
-                table.AppendChild<TableRow>(tr);
-            }
-
-            return table;
-        }
-
-        private Table AddMedicationTable(DatasetInstance datasetInstance)
-        {
-            Table table = new Table();
-
-            var reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().Single(ri => ri.ContextGuid == datasetInstance.DatasetInstanceGuid);
-
-            UInt32Value rowHeight = 12;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = "2500" },
-                    new GridColumn() { Width = "1250" },
-                    new GridColumn() { Width = "1250" },
-                    new GridColumn() { Width = "1250" },
-                    new GridColumn() { Width = "1250" },
-                    new GridColumn() { Width = "3852" }
-                    ));
-
-            table.AppendChild<TableProperties>(tprops);
-
-            var sourceProductElement = _unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Product Information");
-            var sourceContexts = datasetInstance.GetInstanceSubValuesContext(sourceProductElement.ElementName);
-
-            var i = 0;
-            foreach (ReportInstanceMedication med in reportInstance.Medications)
-            {
-                i += 1;
-
-                var drugItemValues = datasetInstance.GetInstanceSubValues(sourceProductElement.ElementName, med.ReportInstanceMedicationGuid);
-
-                var startValue = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Start Date");
-                var endValue = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug End Date");
-                var dose = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Dose number");
-                var route = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug route of administration");
-                var indication = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Indication");
-
-                // Row 1
-                var tr = new TableRow();
-                TableRowProperties rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareHeaderCell("Drug " + i.ToString(), 2500));
-                tr.Append(PrepareHeaderCell("Start Date ", 1250, true, false));
-                tr.Append(PrepareHeaderCell("End Date ", 1250, true, false));
-                tr.Append(PrepareHeaderCell("Dose ", 1250, true, false));
-                tr.Append(PrepareHeaderCell("Route ", 1250, true, false));
-                tr.Append(PrepareHeaderCell("Indication ", 3852));
-
-                table.AppendChild<TableRow>(tr);
-
-                // Row 2
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareCell(drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product").InstanceValue, 2500, false));
-                tr.Append(PrepareCell(startValue != null ? Convert.ToDateTime(startValue.InstanceValue).ToString("yyyy-MM-dd") : string.Empty, 1250));
-                tr.Append(PrepareCell(endValue != null ? Convert.ToDateTime(endValue.InstanceValue).ToString("yyyy-MM-dd") : string.Empty, 1250));
-                tr.Append(PrepareCell(dose != null ? dose.InstanceValue : string.Empty, 1250));
-                tr.Append(PrepareCell(route != null ? route.InstanceValue : string.Empty, 1250));
-                tr.Append(PrepareCell(indication != null ? indication.InstanceValue : string.Empty, 3852, false));
-
-                table.AppendChild<TableRow>(tr);
-
-                // Row 3
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new HorizontalMerge { Val = MergedCellValues.Continue },
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareHeaderCell("C.1 CLINICIAN ACTION TAKEN WITH REGARD TO MEDICINE", 11352, false, false, 6));
-
-                table.AppendChild<TableRow>(tr);
-
-                // Row 4
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new HorizontalMerge { Val = MergedCellValues.Continue },
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareCell("", 11352, false, 5));
-
-                table.AppendChild<TableRow>(tr);
-
-                // Row 5
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new HorizontalMerge { Val = MergedCellValues.Continue },
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareHeaderCell("C.2 EFFECT OF DECHALLENGE/ RECHALLENGE", 11352, false, false, 6));
-
-                table.AppendChild<TableRow>(tr);
-
-                // Row 6
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new HorizontalMerge { Val = MergedCellValues.Continue },
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareCell("", 11352, false, 5));
-
-                table.AppendChild<TableRow>(tr);
-            }
-
-            return table;
-        }
-
-        private Table AddEvaluationTable(DatasetInstance datasetInstance)
-        {
-
-            Table table = new Table();
-
-            UInt32Value rowHeight = 12;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = "2500" },
-                    new GridColumn() { Width = "2500" },
-                    new GridColumn() { Width = "6352" }
-                    ));
-
-            table.AppendChild<TableProperties>(tprops);
-
-            // Row 1
-            var tr = new TableRow();
-            TableRowProperties rprops = new TableRowProperties(
-                new TableRowHeight() { Val = rowHeight }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Test", 2500));
-            tr.Append(PrepareHeaderCell("Test Date", 2500, true, false));
-            tr.Append(PrepareHeaderCell("Test Result", 6352));
-
-            table.AppendChild<TableRow>(tr);
-
-            var sourceLabElement = _unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Test Results");
-            var sourceContexts = datasetInstance.GetInstanceSubValuesContext(sourceLabElement.ElementName);
-
-            foreach (Guid sourceContext in sourceContexts)
-            {
-                var labItemValues = datasetInstance.GetInstanceSubValues(sourceLabElement.ElementName, sourceContext);
-
-                var testDate = labItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Test Date");
-                var testResult = labItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Test Result");
-
-                // Row 2
-                tr = new TableRow();
-                rprops = new TableRowProperties(
-                    new TableRowHeight() { Val = rowHeight }
-                    );
-                tr.AppendChild<TableRowProperties>(rprops);
-
-                tr.Append(PrepareCell(labItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Test Name").InstanceValue, 2500, false));
-                tr.Append(PrepareCell(testDate != null ? Convert.ToDateTime(testDate.InstanceValue).ToString("yyyy-MM-dd") : string.Empty, 2500));
-                tr.Append(PrepareCell(testResult != null ? testResult.InstanceValue : string.Empty, 6352, false));
-
-                table.AppendChild<TableRow>(tr);
-            }
-
-            return table;
-        }
-
-        private Table AddNotesTable()
-        {
-            Table table = new Table();
-
-            var headerWidth = 2500;
-            var cellWidth = 8852;
-            UInt32Value rowHeight = 24;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = headerWidth.ToString() },
-                    new GridColumn() { Width = cellWidth.ToString() }
-                    ));
-
-            table.AppendChild<TableProperties>(tprops);
-
-            // Row 1
-            var tr = new TableRow();
-            TableRowProperties rprops = new TableRowProperties(
-                new TableRowHeight() { Val = (UInt32Value)36, HeightType = HeightRuleValues.AtLeast }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("Notes", headerWidth));
-            tr.Append(PrepareCell("", cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            return table;
-        }
-
-        private Table AddNotesForMedicationTable()
-        {
-            Table table = new Table();
-
-            var cellWidth = 11352;
-            UInt32Value rowHeight = 24;
-
-            TableProperties tprops = new TableProperties(
-                new TableBorders(
-                    new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 },
-                    new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
-                    ),
-                new TableGrid(
-                    new GridColumn() { Width = cellWidth.ToString() }
-                    ));
-
-            table.AppendChild<TableProperties>(tprops);
-
-            // Row 1
-            var tr = new TableRow();
-            TableRowProperties rprops = new TableRowProperties(
-                new TableRowHeight() { Val = (UInt32Value)36, HeightType = HeightRuleValues.AtLeast }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareHeaderCell("C.3 Notes", cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            // Row 2
-            tr = new TableRow();
-            rprops = new TableRowProperties(
-                new TableRowHeight() { Val = (UInt32Value)36, HeightType = HeightRuleValues.AtLeast }
-                );
-            tr.AppendChild<TableRowProperties>(rprops);
-
-            tr.Append(PrepareCell("", cellWidth));
-
-            table.AppendChild<TableRow>(tr);
-
-            return table;
-        }
-
-        private TableCell PrepareHeaderCell(string text, int width, bool centre = false, bool bold = false, int mergeCount = 0)
-        {
-            var tc = new TableCell();
-
-            TableCellProperties props = new TableCellProperties(
-                new TableCellWidth { Width = width.ToString() },
-                new Shading { Color = "auto", ThemeFillShade = "D9", Fill = "D9D9D9" },
-                new TableCellMargin(
-                    new BottomMargin { Width = "30" },
-                    new TopMargin { Width = "30" },
-                    new LeftMargin { Width = "30" },
-                    new RightMargin { Width = "30" }
-                    ),
-                new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center }
-                );
-            if (mergeCount > 0) { props.Append(new GridSpan { Val = mergeCount }); };
-            tc.AppendChild<TableCellProperties>(props);
-
-            if (centre)
-            {
-                ParagraphProperties pprop = new ParagraphProperties();
-                Justification CenterHeading = new Justification() { Val = JustificationValues.Center };
-                pprop.Append(CenterHeading);
-                tc.AppendChild<ParagraphProperties>(pprop);
-            };
-
-            RunProperties runProperties = new RunProperties();
-            if (bold) { runProperties.AppendChild(new Bold()); };
-            FontSize fs = new FontSize();
-            fs.Val = "20";
-            runProperties.AppendChild(fs);
-            Run run = new Run();
-            run.AppendChild(runProperties);
-            run.AppendChild(new Text(text));
-
-            tc.Append(new Paragraph(run));
-
-            return tc;
-        }
-
-        private TableCell PrepareCell(string text, int width, bool centre = true, int mergeCount = 0)
-        {
-            var tc = new TableCell();
-
-            TableCellProperties props = new TableCellProperties(
-                new TableCellWidth { Width = width.ToString() },
-                new TableCellMargin(
-                    new BottomMargin { Width = "30" },
-                    new TopMargin { Width = "30" },
-                    new LeftMargin { Width = "30" },
-                    new RightMargin { Width = "30" }
-                    ),
-                new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Center }
-                );
-            if (mergeCount > 0) { props.Append(new GridSpan { Val = mergeCount }); };
-            tc.AppendChild<TableCellProperties>(props);
-
-            if (centre)
-            {
-                ParagraphProperties pprop = new ParagraphProperties();
-                Justification CenterHeading = new Justification() { Val = JustificationValues.Center };
-                pprop.Append(CenterHeading);
-                tc.AppendChild<ParagraphProperties>(pprop);
-            };
-
-            RunProperties runProperties = new RunProperties();
-            FontSize fs = new FontSize();
-            fs.Val = "20";
-            runProperties.AppendChild(fs);
-            Run run = new Run();
-            run.AppendChild(runProperties);
-            run.AppendChild(new Text(text));
-
-            tc.Append(new Paragraph(run));
-
-            return tc;
-        }
-
-        private void PrepareLogo(WordprocessingDocument document)
-        {
-            ImagePart imagePart = document.MainDocumentPart.AddImagePart(ImagePartType.Jpeg);
-
-            var fileName = Path.Combine(_environment.ContentRootPath, "StaticFiles", "SIAPS_USAID_Small.jpg");
-            using (FileStream stream = new FileStream(fileName, FileMode.Open))
-            {
-                imagePart.FeedData(stream);
-            }
-
-            AddImageToBody(document, document.MainDocumentPart.GetIdOfPart(imagePart));
-        }
-
-        private static void AddImageToBody(WordprocessingDocument wordDoc, string relationshipId)
-        {
-            // Define the reference of the image.
-            var element =
-                 new Drawing(
-                     new DW.Inline(
-                         new DW.Extent() { Cx = 1757548L, Cy = 253064L },
-                         new DW.EffectExtent()
-                         {
-                             LeftEdge = 0L,
-                             TopEdge = 0L,
-                             RightEdge = 0L,
-                             BottomEdge = 0L
-                         },
-                         new DW.DocProperties()
-                         {
-                             Id = (UInt32Value)1U,
-                             Name = "Picture 1"
-                         },
-                         new DW.NonVisualGraphicFrameDrawingProperties(
-                             new A.GraphicFrameLocks() { NoChangeAspect = true }),
-                         new A.Graphic(
-                             new A.GraphicData(
-                                 new PIC.Picture(
-                                     new PIC.NonVisualPictureProperties(
-                                         new PIC.NonVisualDrawingProperties()
-                                         {
-                                             Id = (UInt32Value)0U,
-                                             Name = "New Bitmap Image.jpg"
-                                         },
-                                         new PIC.NonVisualPictureDrawingProperties()),
-                                     new PIC.BlipFill(
-                                         new A.Blip(
-                                             new A.BlipExtensionList(
-                                                 new A.BlipExtension()
-                                                 {
-                                                     Uri =
-                                                        "{28A0092B-C50C-407E-A947-70E740481C1C}"
-                                                 })
-                                         )
-                                         {
-                                             Embed = relationshipId,
-                                             CompressionState =
-                                             A.BlipCompressionValues.Print
-                                         },
-                                         new A.Stretch(
-                                             new A.FillRectangle())),
-                                     new PIC.ShapeProperties(
-                                         new A.Transform2D(
-                                             new A.Offset() { X = 0L, Y = 0L },
-                                             new A.Extents() { Cx = 1757548L, Cy = 253064L }),
-                                         new A.PresetGeometry(
-                                             new A.AdjustValueList()
-                                         )
-                                         { Preset = A.ShapeTypeValues.Rectangle }))
-                             )
-                             { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
-                     )
-                     {
-                         DistanceFromTop = (UInt32Value)0U,
-                         DistanceFromBottom = (UInt32Value)0U,
-                         DistanceFromLeft = (UInt32Value)0U,
-                         DistanceFromRight = (UInt32Value)0U,
-                         EditId = "50D07946"
-                     });
-
-            Paragraph paragraph = new Paragraph();
-            ParagraphProperties pprop = new ParagraphProperties();
-            Justification CenterHeading = new Justification() { Val = JustificationValues.Center };
-            pprop.Append(CenterHeading);
-            pprop.ParagraphStyleId = new ParagraphStyleId() { Val = "logoheading" };
-            paragraph.Append(pprop);
-
-            Run run = new Run();
-            run.AppendChild(element);
-            paragraph.Append(run);
-
-            // Append the reference to body, the element should be in a Run.
-            wordDoc.MainDocumentPart.Document.Body.AppendChild(paragraph);
-        }
-
-        #endregion
-
-        private int CalculateAge(DateTime birthDate, DateTime onsetDate)
-        {
-            var age = onsetDate.Year - birthDate.Year;
-            if (onsetDate > birthDate.AddYears(-age)) age--;
-            return age;
         }
 
         //private IEnumerable<MergeElement> GetPatientSummaryMergeElementsForActiveReport(PatientClinicalEvent patientEvent, bool isSerious)

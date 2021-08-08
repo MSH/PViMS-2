@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using PVIMS.Core.Models;
 
 namespace PVIMS.Core.Services
@@ -8,14 +7,10 @@ namespace PVIMS.Core.Services
     {
         ArtefactInfoModel CreateActiveDatasetForDownload(long[] patientIds, long cohortGroupId);
 
+        ArtefactInfoModel CreateSpontaneousDatasetForDownload();
+
         Task<ArtefactInfoModel> CreateDatasetInstanceForDownloadAsync(long datasetInstanceId);
 
         Task<ArtefactInfoModel> CreateE2BAsync(long datasetInstanceId);
-
-        Task<ArtefactInfoModel> CreatePatientSummaryForActiveReportAsync(Guid contextGuid);
-
-        Task<ArtefactInfoModel> CreatePatientSummaryForSpontaneousReportAsync(Guid contextGuid);
-
-        ArtefactInfoModel CreateSpontaneousDatasetForDownload();
     }
 }

@@ -461,6 +461,7 @@ namespace PViMS.API
             services.AddTransient<IArtefactService, ArtefactService>();
             services.AddTransient<IWorkFlowService, WorkFlowService>();
             services.AddTransient<IMedDraService, MedDraService>();
+            services.AddTransient<IWordDocumentService, WordDocumentService>();
 
             IConfigurationSection smtpSettings = configuration.GetSection(nameof(SMTPSettings));
             services.AddTransient<ISMTPMailService, SMTPMailService>(s => new SMTPMailService(
