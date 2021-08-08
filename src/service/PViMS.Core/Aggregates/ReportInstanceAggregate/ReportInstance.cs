@@ -87,7 +87,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                     break;
 
                 case "E2BGENERATED":
-                    AddE2BGeneratedDomainEvent(activityExecutionStatusEvent);
+                    AddE2BGeneratedDomainEvent();
                     break;
 
                 default:
@@ -409,9 +409,9 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             this.AddDomainEvent(domainEvent);
         }
 
-        private void AddE2BGeneratedDomainEvent(ActivityExecutionStatusEvent activityExecutionStatusEvent)
+        private void AddE2BGeneratedDomainEvent()
         {
-            var domainEvent = new E2BGeneratedDomainEvent(this, activityExecutionStatusEvent);
+            var domainEvent = new E2BGeneratedDomainEvent(this);
 
             this.AddDomainEvent(domainEvent);
         }

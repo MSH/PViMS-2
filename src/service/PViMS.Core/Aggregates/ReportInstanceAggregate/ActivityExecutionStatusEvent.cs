@@ -30,6 +30,8 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
 
         public ActivityExecutionStatusEvent(ActivityExecutionStatus newStatus, User currentUser, string comments, string contextCode, DateTime? contextDateTime)
         {
+            _attachments = new List<Attachment>();
+
             EventCreatedById = currentUser.Id;
             EventCreatedBy = currentUser;
 

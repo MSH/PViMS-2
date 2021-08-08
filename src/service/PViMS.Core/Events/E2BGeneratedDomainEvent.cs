@@ -10,12 +10,9 @@ namespace PViMS.Core.Events
     {
         public ReportInstance ReportInstance { get; }
 
-        public ActivityExecutionStatusEvent ActivityExecutionStatusEvent { get; }
-
-        public E2BGeneratedDomainEvent(ReportInstance reportInstance, ActivityExecutionStatusEvent executionEvent)
+        public E2BGeneratedDomainEvent(ReportInstance reportInstance)
         {
             ReportInstance = reportInstance;
-            ActivityExecutionStatusEvent = executionEvent;
         }
     }
 }
