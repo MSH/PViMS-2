@@ -84,7 +84,6 @@ namespace PVIMS.API.Infrastructure.Services
 
                 UInt32Value rowHeight = 20;
 
-                // Main header
                 Table mainTable = new Table();
 
                 TableProperties tprops = new TableProperties(
@@ -98,7 +97,7 @@ namespace PVIMS.API.Infrastructure.Services
                         ),
                     new TableGrid(
                         new GridColumn() { Width = "11352" })
-                        );
+                    );
 
                 mainTable.AppendChild<TableProperties>(tprops);
 
@@ -226,11 +225,9 @@ namespace PVIMS.API.Infrastructure.Services
                 var doc = document.MainDocumentPart.Document;
                 var body = doc.Body;
 
-                Table table = new Table();
-
-                var headerWidth = 2500;
-                var cellWidth = 11352;
                 UInt32Value rowHeight = 24;
+
+                Table table = new Table();
 
                 TableProperties tprops = new TableProperties(
                     new TableBorders(
@@ -242,9 +239,8 @@ namespace PVIMS.API.Infrastructure.Services
                         new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 5 }
                         ),
                     new TableGrid(
-                        new GridColumn() { Width = headerWidth.ToString() },
-                        new GridColumn() { Width = cellWidth.ToString() }
-                        ));
+                        new GridColumn() { Width = "11352" } )
+                    );
 
                 table.AppendChild<TableProperties>(tprops);
 
@@ -256,7 +252,7 @@ namespace PVIMS.API.Infrastructure.Services
                         );
                     tr.AppendChild<TableRowProperties>(rprops);
 
-                    tr.Append(PrepareCell(rows[i], cellWidth));
+                    tr.Append(PrepareCell(rows[i], 11352));
 
                     table.AppendChild<TableRow>(tr);
                 }
@@ -315,8 +311,7 @@ namespace PVIMS.API.Infrastructure.Services
                             c++;
                         }
                     }
-
-                    if (i == 0)
+                    else 
                     {
                         var c = 0;
                         foreach (var value in row)
@@ -327,6 +322,7 @@ namespace PVIMS.API.Infrastructure.Services
                     }
 
                     table.AppendChild<TableRow>(tr);
+                    i++;
                 }
 
                 body.Append(table);

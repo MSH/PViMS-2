@@ -221,7 +221,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.E2BGenerated
 
             if (patientClinicalEvent.OnsetDate.HasValue && patientClinicalEvent.Patient.DateOfBirth.HasValue)
             {
-                rows.Add(new KeyValuePair<string, string>("Age at time of onset", $"${CalculateAge(patientClinicalEvent.Patient.DateOfBirth.Value, patientClinicalEvent.OnsetDate.Value).ToString()} years"));
+                rows.Add(new KeyValuePair<string, string>("Age at time of onset", $"{CalculateAge(patientClinicalEvent.Patient.DateOfBirth.Value, patientClinicalEvent.OnsetDate.Value).ToString()} years"));
             }
             else
             {
@@ -388,7 +388,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.E2BGenerated
                     _wordDocumentService.AddRowTable(rows, new int[] { 2500, 1250, 1250, 1250, 1250, 3852 });
                     _wordDocumentService.AddTableHeader("D.1 CLINICIAN ACTION TAKEN WITH REGARD TO MEDICINE");
                     _wordDocumentService.AddOneColumnTable(new List<string>() { "" });
-                    _wordDocumentService.AddTableHeader("D.2 EFFECT OF DECHALLENGE/ RECHALLENGE");
+                    _wordDocumentService.AddTableHeader("D.2 EFFECT OF DECHALLENGE/RECHALLENGE");
                     _wordDocumentService.AddOneColumnTable(new List<string>() { "" });
                     _wordDocumentService.AddTableHeader("D.3 NOTES");
                     _wordDocumentService.AddOneColumnTable(new List<string>() { "" });
