@@ -10,7 +10,5 @@ namespace PVIMS.Core.Services
         ArtefactInfoModel CreateSpontaneousDatasetForDownload();
 
         Task<ArtefactInfoModel> CreateDatasetInstanceForDownloadAsync(long datasetInstanceId);
-
-        Task<ArtefactInfoModel> CreateE2BAsync(long datasetInstanceId);
     }
 }

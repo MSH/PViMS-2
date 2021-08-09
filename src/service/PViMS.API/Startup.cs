@@ -451,17 +451,18 @@ namespace PViMS.API
 
             services.AddScoped<FormHandler, FormHandler>();
 
-            services.AddTransient<IPropertyMappingService, PropertyMappingService>();
-            services.AddTransient<ITypeHelperService, TypeHelperService>();
-            services.AddTransient<ILinkGeneratorService, LinkGeneratorService>();
-            services.AddTransient<IReportService, ReportService>();
-            services.AddTransient<IInfrastructureService, InfrastructureService>();
-            services.AddTransient<ICustomAttributeService, CustomAttributeService>();
-            services.AddTransient<IPatientService, PatientService>();
             services.AddTransient<IArtefactService, ArtefactService>();
-            services.AddTransient<IWorkFlowService, WorkFlowService>();
+            services.AddTransient<ICustomAttributeService, CustomAttributeService>();
+            services.AddTransient<IInfrastructureService, InfrastructureService>();
+            services.AddTransient<ILinkGeneratorService, LinkGeneratorService>();
             services.AddTransient<IMedDraService, MedDraService>();
+            services.AddTransient<IPatientService, PatientService>();
+            services.AddTransient<IPropertyMappingService, PropertyMappingService>();
+            services.AddTransient<IReportService, ReportService>();
+            services.AddTransient<ITypeHelperService, TypeHelperService>();
             services.AddTransient<IWordDocumentService, WordDocumentService>();
+            services.AddTransient<IWorkFlowService, WorkFlowService>();
+            services.AddTransient<IXmlDocumentService, XmlDocumentService>();
 
             IConfigurationSection smtpSettings = configuration.GetSection(nameof(SMTPSettings));
             services.AddTransient<ISMTPMailService, SMTPMailService>(s => new SMTPMailService(
