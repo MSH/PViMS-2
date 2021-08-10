@@ -76,7 +76,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         {
             if (ExecutionEvents.Count > 0)
             {
-                ExecutionEvents.OrderByDescending(ee => ee.EventDateTime)
+                return ExecutionEvents.OrderByDescending(ee => ee.EventDateTime)
                                 .First(ee => ee.ExecutionStatus.Description == "E2BGENERATED");
             }
             return null;
