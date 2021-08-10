@@ -98,7 +98,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
                 predicate = predicate.And(f => f.Created >= searchFrom && f.Created <= searchTo);
             }
 
-            var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "WorkFlow", "Medications", "TerminologyMedDra", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
+            var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "WorkFlow", "Medications", "TerminologyMedDra", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Activities.ExecutionEvents.Attachments", "Tasks" });
             if (pagedReportsFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -145,11 +145,6 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 
         private async Task CustomMapAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto mappedReportInstanceDto)
         {
-            if (reportInstanceFromRepo == null)
-            {
-                throw new ArgumentNullException(nameof(reportInstanceFromRepo));
-            }
-
             await MapIdsForReportInstanceAsync(reportInstanceFromRepo, mappedReportInstanceDto);
             await MapE2BActivitiesForReportInstanceAsync(reportInstanceFromRepo, mappedReportInstanceDto);
 
