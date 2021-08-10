@@ -453,6 +453,7 @@ namespace PViMS.API
 
             services.AddTransient<IArtefactService, ArtefactService>();
             services.AddTransient<ICustomAttributeService, CustomAttributeService>();
+            services.AddTransient<IExcelDocumentService, ExcelDocumentService>();
             services.AddTransient<IInfrastructureService, InfrastructureService>();
             services.AddTransient<ILinkGeneratorService, LinkGeneratorService>();
             services.AddTransient<IMedDraService, MedDraService>();

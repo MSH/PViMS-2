@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
-using PVIMS.Core.Models;
+﻿using PVIMS.Core.Models;
+using System.Threading.Tasks;
 
-namespace PVIMS.Core.Services
+namespace PVIMS.API.Infrastructure.Services
 {
-    public interface IArtefactService
+    public interface IExcelDocumentService
     {
         ArtefactInfoModel CreateActiveDatasetForDownload(long[] patientIds, long cohortGroupId);
 
