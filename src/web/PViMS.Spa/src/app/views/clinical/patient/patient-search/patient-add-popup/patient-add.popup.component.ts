@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
@@ -16,24 +16,18 @@ import { PriorityIdentifierModel } from 'app/shared/models/encounter/priority.id
 import { PriorityService } from 'app/shared/services/priority.service';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
-import { ConditionDetailModel } from 'app/shared/models/condition/condition.detail.model';
+import { ConditionDetailModel, ConditionDetailWrapperModel } from 'app/shared/models/condition/condition.detail.model';
+import { forkJoin } from 'rxjs';
 
 @Component({
   templateUrl: './patient-add.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class PatientAddPopupComponent extends BasePopupComponent implements OnInit {
   
   public viewModelForm: FormGroup;
-  protected busy: boolean = false;
 
-  facilityList: string[] = [];
-  customAttributeList: CustomAttributeDetailModel[] = [];
-  conditionList: ConditionDetailModel[] = [];
-  selectedCondition: ConditionDetailModel;
-  encounterTypeList: EncounterTypeIdentifierModel[] = [];
-  priorityList: PriorityIdentifierModel[] = [];
+  viewModel: ViewModel = new ViewModel();
 
   arrayAttributes: {
     id: number;
@@ -84,30 +78,70 @@ export class PatientAddPopupComponent extends BasePopupComponent implements OnIn
     self.getCustomAttributeList();
   }
 
-  loadDropDowns(): void {
-    let self = this;
-    self.getFacilityList();
-    self.getConditionList();
-    self.getEncounterTypeList();
-    self.getPriorityList();
-  }  
-
-  getFacilityList(): void {
-    let self = this;
-    self.facilityList = self.accountService.facilities;
+  public onConditionSelected(event) {
+    const value = event.value;
+    var selections = this.viewModel.conditionList.filter(c => c.id == value);
+    this.viewModel.selectedCondition = this.viewModel.conditionList.filter(c => c.id == value)[0];
   }
 
-  getCustomAttributeList(): void {
+  public submit() {
+    let self = this;
+    self.setBusy(true);
+
+    if(self.data.patientId == 0) {
+      self.patientService.savePatient(self.viewModelForm.value)
+        .pipe(finalize(() => self.setBusy(false)))
+        .subscribe(result => {
+          self.notify("Patient successfully saved!", "Success");
+          this.dialogRef.close(this.viewModelForm.value);
+      }, error => {
+        this.handleError(error, "Error saving patient");
+      });
+    }
+  }
+
+  private loadDropDowns(): void {
+    const self = this;
+    self.setBusy(true);
+
+    const requestArray = [];
+    
+    requestArray.push(self.conditionService.getAllConditions());
+    requestArray.push(self.encounterTypeService.getAllEncounterTypes());
+    requestArray.push(self.priorityService.getAllPriorities());
+
+    forkJoin(requestArray)
+      .subscribe(
+        data => {
+          self.CLog(data[0], 'get all conditions')
+          self.CLog(data[1], 'get all encounter types')
+          self.CLog(data[2], 'get all priorities')
+
+          self.viewModel.conditionList = data[0] as ConditionDetailModel[];
+          self.viewModel.encounterTypeList = data[1] as EncounterTypeIdentifierModel[];
+          self.viewModel.priorityList = data[2] as PriorityIdentifierModel[];
+
+          self.viewModel.facilityList = self.accountService.facilities;
+
+          self.setBusy(false);
+        },
+        error => {
+          this.handleError(error, "Error preparing view");
+        });
+
+  }  
+
+  private getCustomAttributeList(): void {
     let self = this;
 
     let attributes = self.viewModelForm.get('attributes') as FormGroup;
 
     self.customAttributeService.getAllCustomAttributes('Patient')
         .subscribe(result => {
-            self.customAttributeList = result;
+            self.viewModel.customAttributeList = result;
 
             // Add custom attributes to form group
-            self.customAttributeList.forEach(attribute => {
+            self.viewModel.customAttributeList.forEach(attribute => {
               var defaultValue = '';
               if(attribute.customAttributeType == 'Selection') {
                 defaultValue = '0';
@@ -131,65 +165,19 @@ export class PatientAddPopupComponent extends BasePopupComponent implements OnIn
             self.throwError(error, error.statusText);
         });
   }
-
-  getConditionList(): void {
-    let self = this;
-
-    self.conditionService.getAllConditions()
-        .subscribe(result => {
-          self.conditionList = result;
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
-  }
-
-  getEncounterTypeList(): void {
-    let self = this;
-
-    self.encounterTypeService.getAllEncounterTypes()
-        .subscribe(result => {
-          self.encounterTypeList = result;
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
-  }
-
-  getPriorityList(): void {
-    let self = this;
-
-    self.priorityService.getAllPriorities()
-        .subscribe(result => {
-          self.priorityList = result;
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
-  }
-
-  public onConditionSelected(event) {
-    const value = event.value;
-    var selections = this.conditionList.filter(c => c.id == value);
-    this.selectedCondition = this.conditionList.filter(c => c.id == value)[0];
-  }
-
-  submit() {
-    let self = this;
-    self.setBusy(true);
-
-    if(self.data.patientId == 0) {
-      self.patientService.savePatient(self.viewModelForm.value)
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-          self.notify("Patient successfully saved!", "Success");
-          this.dialogRef.close(this.viewModelForm.value);
-      }, error => {
-        this.handleError(error, "Error saving patient");
-      });
-    }
-  }
 }
 
 export interface PatientAddPopupData {
   patientId: number;
   title: string;
   payload: any;
+}
+
+class ViewModel {
+  facilityList: string[] = [];
+  customAttributeList: CustomAttributeDetailModel[] = [];
+  conditionList: ConditionDetailModel[] = [];
+  selectedCondition: ConditionDetailModel;
+  encounterTypeList: EncounterTypeIdentifierModel[] = [];
+  priorityList: PriorityIdentifierModel[] = [];
 }
