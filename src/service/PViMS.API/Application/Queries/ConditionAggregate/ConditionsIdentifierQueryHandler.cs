@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LinqKit;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PVIMS.API.Helpers;
@@ -11,34 +12,30 @@ using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using LinqKit;
 
 namespace PVIMS.API.Application.Queries.ConditionAggregate
 {
-    public class ConditionsDetailQueryHandler
-        : IRequestHandler<ConditionsDetailQuery, LinkedCollectionResourceWrapperDto<ConditionDetailDto>>
+    public class ConditionsIdentifierQueryHandler
+        : IRequestHandler<ConditionsIdentifierQuery, LinkedCollectionResourceWrapperDto<ConditionIdentifierDto>>
     {
-        private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
         private readonly IRepositoryInt<Condition> _conditionRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
-        private readonly ILogger<ConditionsDetailQueryHandler> _logger;
+        private readonly ILogger<ConditionsIdentifierQueryHandler> _logger;
 
-        public ConditionsDetailQueryHandler(
-            IRepositoryInt<CohortGroup> cohortGroupRepository,
+        public ConditionsIdentifierQueryHandler(
             IRepositoryInt<Condition> conditionRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            ILogger<ConditionsDetailQueryHandler> logger)
+            ILogger<ConditionsIdentifierQueryHandler> logger)
         {
-            _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
             _conditionRepository = conditionRepository ?? throw new ArgumentNullException(nameof(conditionRepository));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<LinkedCollectionResourceWrapperDto<ConditionDetailDto>> Handle(ConditionsDetailQuery message, CancellationToken cancellationToken)
+        public async Task<LinkedCollectionResourceWrapperDto<ConditionIdentifierDto>> Handle(ConditionsIdentifierQuery message, CancellationToken cancellationToken)
         {
             var pagingInfo = new PagingInfo()
             {
@@ -54,24 +51,19 @@ namespace PVIMS.API.Application.Queries.ConditionAggregate
                 predicate = predicate.And(f => f.Active == (message.Active == Models.ValueTypes.YesNoBothValueType.Yes));
             }
 
-            var pagedConditionsFromRepo = await _conditionRepository.ListAsync(pagingInfo, null, orderby, new string[] { "ConditionLabTests.LabTest", "ConditionMedDras.TerminologyMedDra", "ConditionMedications.Product", "ConditionMedications.Concept", "CohortGroups" });
+            var pagedConditionsFromRepo = await _conditionRepository.ListAsync(pagingInfo, null, orderby);
             if (pagedConditionsFromRepo != null)
             {
                 // Map EF entity to Dto
-                var mappedConditions = PagedCollection<ConditionDetailDto>.Create(_mapper.Map<PagedCollection<ConditionDetailDto>>(pagedConditionsFromRepo),
+                var mappedConditions = PagedCollection<ConditionIdentifierDto>.Create(_mapper.Map<PagedCollection<ConditionIdentifierDto>>(pagedConditionsFromRepo),
                     pagingInfo.PageNumber,
                     pagingInfo.PageSize,
                     pagedConditionsFromRepo.TotalCount);
 
-                foreach (var mappedCondition in mappedConditions)
-                {
-                    await CustomMapAsync(mappedCondition);
-                }
-
                 // Add HATEOAS links to each individual resource
                 mappedConditions.ForEach(dto => CreateLinks(dto));
 
-                var wrapper = new LinkedCollectionResourceWrapperDto<ConditionDetailDto>(pagedConditionsFromRepo.TotalCount, mappedConditions, pagedConditionsFromRepo.TotalPages);
+                var wrapper = new LinkedCollectionResourceWrapperDto<ConditionIdentifierDto>(pagedConditionsFromRepo.TotalCount, mappedConditions, pagedConditionsFromRepo.TotalPages);
 
                 CreateLinksForConditions(wrapper, message.OrderBy, message.PageNumber, message.PageSize,
                     pagedConditionsFromRepo.HasNext, pagedConditionsFromRepo.HasPrevious);
@@ -83,13 +75,7 @@ namespace PVIMS.API.Application.Queries.ConditionAggregate
             return null;
         }
 
-        private async Task CustomMapAsync(ConditionDetailDto dto)
-        {
-            var cohortGroupsFromRepo = await _cohortGroupRepository.ListAsync(cg => cg.Condition.Id == dto.Id);
-            dto.CohortGroups = _mapper.Map<PagedCollection<CohortGroupIdentifierDto>>(cohortGroupsFromRepo);
-        }
-
-        private void CreateLinks(ConditionDetailDto mappedCondition)
+        private void CreateLinks(ConditionIdentifierDto mappedCondition)
         {
             mappedCondition.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Condition", mappedCondition.Id), "self", "GET"));
         }
@@ -102,14 +88,14 @@ namespace PVIMS.API.Application.Queries.ConditionAggregate
         {
             wrapper.Links.Add(
                new LinkDto(
-                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetConditionsByDetail", orderBy, pageNumber, pageSize),
+                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetConditionsByIdentifier", orderBy, pageNumber, pageSize),
                    "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetConditionsByDetail", orderBy, pageNumber, pageSize),
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetConditionsByIdentifier", orderBy, pageNumber, pageSize),
                        "nextPage", "GET"));
             }
 
@@ -117,7 +103,7 @@ namespace PVIMS.API.Application.Queries.ConditionAggregate
             {
                 wrapper.Links.Add(
                    new LinkDto(
-                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetConditionsByDetail", orderBy, pageNumber, pageSize),
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetConditionsByIdentifier", orderBy, pageNumber, pageSize),
                        "previousPage", "GET"));
             }
         }
