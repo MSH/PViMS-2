@@ -1,5 +1,5 @@
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
 using System;
 using System.Collections.Generic;
 

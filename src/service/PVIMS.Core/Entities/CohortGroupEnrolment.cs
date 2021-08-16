@@ -1,4 +1,4 @@
-using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Aggregates.UserAggregate;
 using System;
 
 namespace PVIMS.Core.Entities

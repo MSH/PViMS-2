@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace PVIMS.Core.Entities.Accounts
+namespace PVIMS.Core.Aggregates.UserAggregate
 {
     public enum UserType
     {

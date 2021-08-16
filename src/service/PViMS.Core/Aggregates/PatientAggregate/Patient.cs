@@ -1,5 +1,5 @@
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.CustomAttributes;
-using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Exceptions;
 using PVIMS.Core.Models;
 using PVIMS.Core.Utilities;

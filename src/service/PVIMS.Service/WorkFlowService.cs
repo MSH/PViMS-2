@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
@@ -23,14 +23,12 @@ namespace PVIMS.Services
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public IArtefactService _artefactService { get; set; }
         public ICustomAttributeService _attributeService { get; set; }
         public IPatientService _patientService { get; set; }
 
         public WorkFlowService(IUnitOfWorkInt unitOfWork, 
             ICustomAttributeService attributeService, 
             IPatientService patientService, 
-            IArtefactService artefactService, 
             IRepositoryInt<Activity> activityRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<WorkFlow> workFlowRepository,
@@ -40,7 +38,6 @@ namespace PVIMS.Services
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _attributeService = attributeService ?? throw new ArgumentNullException(nameof(attributeService));
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
-            _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
             _activityRepository = activityRepository ?? throw new ArgumentNullException(nameof(activityRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Aggregates.UserAggregate;
 
 namespace PVIMS.Infrastructure.EntityConfigurations
 {
@@ -22,6 +22,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired();
 
             configuration.Property(e => e.AllowDatasetDownload)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            configuration.Property(e => e.Active)
                 .IsRequired()
                 .HasDefaultValue(false);
 

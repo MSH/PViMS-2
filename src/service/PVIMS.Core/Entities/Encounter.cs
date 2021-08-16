@@ -1,4 +1,4 @@
-using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.SeedWork;
 using System;
 using System.Collections.Generic;

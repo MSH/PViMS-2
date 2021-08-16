@@ -1,7 +1,7 @@
 ﻿using PVIMS.Core.SeedWork;
 using System;
 
-namespace PVIMS.Core.Entities.Accounts
+namespace PVIMS.Core.Aggregates.UserAggregate
 {
     public class RefreshToken : Entity<int>
     {
