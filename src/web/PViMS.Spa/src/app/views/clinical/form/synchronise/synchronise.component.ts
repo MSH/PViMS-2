@@ -14,7 +14,6 @@ import { _routes } from 'app/config/routes';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { ViewErrorPopupComponent } from './viewerror-popup/viewerror.popup.component';
-import { PatientCustomAttributesForUpdateModel } from 'app/shared/models/patient/patient-custom-attributes-for-update.model';
 import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
 import { CustomAttributeService } from 'app/shared/services/custom-attribute.service';
 import { switchMap } from 'rxjs/operators';
@@ -214,19 +213,15 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
         record.submissionStatus = "InProgress";
         
         var firstForm = JSON.parse(form.formValues[1].formControlValue);
-        var secondForm = JSON.parse(form.formValues[2].formControlValue);
 
-        var patientCustomAttributesForUpdate = self.preparePatientCustomAttributesForUpdateModel(secondForm);
-        requestArray.push(this.patientService.updatePatientCustomAttributes(firstForm.patientId, patientCustomAttributesForUpdate));
-
-        var thirdForm = JSON.parse(form.formValues[3].formControlValue);
-        var fourthForm = JSON.parse(form.formValues[4].formControlValue);
-        var sixthForm = JSON.parse(form.formValues[6].formControlValue);
+        var thirdForm = JSON.parse(form.formValues[2].formControlValue);
+        var fourthForm = JSON.parse(form.formValues[3].formControlValue);
+        var sixthForm = JSON.parse(form.formValues[5].formControlValue);
 
         var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel(thirdForm, fourthForm, sixthForm);
         requestArray.push(this.patientService.savePatientClinicalEvent(firstForm.patientId, 0, clinicalEventForUpdate));
     
-        var medications: PatientMedicationForUpdateModel[] = JSON.parse(form.formValues[5].formControlValue);
+        var medications: PatientMedicationForUpdateModel[] = JSON.parse(form.formValues[4].formControlValue);
         medications.forEach(medicationForUpdate => {
           requestArray.push(this.patientService.savePatientMedication(firstForm.patientId, medicationForUpdate.id, medicationForUpdate));
         });
@@ -259,20 +254,6 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
           self.throwError(error, error.statusText);
     });
   }  
-
-  private preparePatientCustomAttributesForUpdateModel(secondForm: any): PatientCustomAttributesForUpdateModel {
-    let self = this;
-
-    const attributesForUpdate: AttributeValueForPostModel[] = [];
-    attributesForUpdate.push(self.prepareAttributeValue('ethnic group', 'ethnicGroup', secondForm));
-    self.CLog(attributesForUpdate, 'patient attributes for submission');
-    const patientCustomAttributesForUpdate: PatientCustomAttributesForUpdateModel = 
-    {
-      attributes: attributesForUpdate
-    };
-
-    return patientCustomAttributesForUpdate;
-  }
 
   private prepareClinicalEventForUpdateModel(thirdForm: any, fourthForm: any, sixthForm: any): PatientClinicalEventForUpdateModel {
     let self = this;

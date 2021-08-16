@@ -35,50 +35,43 @@
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 2" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 2" class="mr-12">brightness_1</mat-icon>
-            <mat-icon color="warn" *ngIf="viewModel.currentStep > 2 && secondFormGroup.invalid" class="mr-12">error</mat-icon>
-            <mat-icon color="accent" *ngIf="viewModel.currentStep > 2 && secondFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <span [class.font-weight-bold]="viewModel.currentStep == 2">Patient particulars</span>
+            <mat-icon color="warn" *ngIf="viewModel.currentStep > 2 && thirdFormGroup.invalid" class="mr-12">error</mat-icon>
+            <mat-icon color="accent" *ngIf="viewModel.currentStep > 2 && thirdFormGroup.valid" class="mr-12">check_circle</mat-icon>
+            <span [class.font-weight-bold]="viewModel.currentStep == 2">Adverse event details</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 3" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 3" class="mr-12">brightness_1</mat-icon>
-            <mat-icon color="warn" *ngIf="viewModel.currentStep > 3 && thirdFormGroup.invalid" class="mr-12">error</mat-icon>
-            <mat-icon color="accent" *ngIf="viewModel.currentStep > 3 && thirdFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <span [class.font-weight-bold]="viewModel.currentStep == 3">Adverse event details</span>
+            <mat-icon color="warn" *ngIf="viewModel.currentStep > 3 && fourthFormGroup.invalid" class="mr-12">error</mat-icon>
+            <mat-icon color="accent" *ngIf="viewModel.currentStep > 3 && fourthFormGroup.valid" class="mr-12">check_circle</mat-icon>
+            <span [class.font-weight-bold]="viewModel.currentStep == 3">Management of the reaction</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 4" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 4" class="mr-12">brightness_1</mat-icon>
-            <mat-icon color="warn" *ngIf="viewModel.currentStep > 4 && fourthFormGroup.invalid" class="mr-12">error</mat-icon>
-            <mat-icon color="accent" *ngIf="viewModel.currentStep > 4 && fourthFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <span [class.font-weight-bold]="viewModel.currentStep == 4">Management of the reaction</span>
+            <mat-icon color="warn" *ngIf="viewModel.currentStep > 4 && fifthFormGroup.invalid" class="mr-12">error</mat-icon>
+            <mat-icon color="accent" *ngIf="viewModel.currentStep > 4 && fifthFormGroup.valid" class="mr-12">check_circle</mat-icon>
+            <span [class.font-weight-bold]="viewModel.currentStep == 4">Suspected medication</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 5" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 5" class="mr-12">brightness_1</mat-icon>
-            <mat-icon color="warn" *ngIf="viewModel.currentStep > 5 && fifthFormGroup.invalid" class="mr-12">error</mat-icon>
-            <mat-icon color="accent" *ngIf="viewModel.currentStep > 5 && fifthFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <span [class.font-weight-bold]="viewModel.currentStep == 5">Suspected medication</span>
+            <mat-icon color="accent" *ngIf="viewModel.currentStep > 5" class="mr-12">check_circle</mat-icon>
+            <span [class.font-weight-bold]="viewModel.currentStep == 5">Reporter particulars</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 6" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 6" class="mr-12">brightness_1</mat-icon>
-            <mat-icon color="accent" *ngIf="viewModel.currentStep > 6" class="mr-12">check_circle</mat-icon>
-            <span [class.font-weight-bold]="viewModel.currentStep == 6">Reporter particulars</span>
-          </div>
-          <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
-            <mat-icon color="primary" *ngIf="viewModel.currentStep < 7" class="mr-12">panorama_fish_eye</mat-icon>
-            <mat-icon color="primary" *ngIf="viewModel.currentStep == 7" class="mr-12">brightness_1</mat-icon>
-            <span [class.font-weight-bold]="viewModel.currentStep == 7">Finish</span>
+            <span [class.font-weight-bold]="viewModel.currentStep == 6">Finish</span>
           </div>
           <div fxLayout="row" fxLayoutGap="1.0%" fxLayoutAlign="center" class="p-2">
             <button mat-raised-button color="" class="mr-12" (click)="previousStep()" [disabled]="viewModel.currentStep == 1" style="width: 120px;">Previous</button>
-            <button mat-raised-button color="accent" (click)="nextStep()" [disabled]="viewModel.currentStep > 6 || !viewModel.patientFound" style="width: 120px;">Next</button>
+            <button mat-raised-button color="accent" (click)="nextStep()" [disabled]="viewModel.currentStep > 5 || !viewModel.patientFound" style="width: 120px;">Next</button>
           </div>
           <div fxLayout="row" fxLayoutGap="1.0%" fxLayoutAlign="center" class="p-2 mt-12">
-            <button mat-raised-button color="primary" class="mr-12" (click)="saveFormOnline()" *ngIf="viewModel.currentStep > 6 && viewModel.formId == 0 && viewModel.connected" [disabled]="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || viewModel.isSynched" style="width: 120px;">{{'Save' | translate}}</button>
+            <button mat-raised-button color="primary" class="mr-12" (click)="saveFormOnline()" *ngIf="viewModel.currentStep > 5 && viewModel.formId == 0 && viewModel.connected" [disabled]="firstFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || viewModel.isSynched" style="width: 120px;">{{'Save' | translate}}</button>
             <button mat-raised-button color="accent" class="mr-12" (click)="saveFormOffline()" *ngIf="(viewModel.formId == 0 && !viewModel.connected) || viewModel.formId > 0" [disabled]="viewModel.isSynched" style="width: 120px;">{{'Save' | translate}}</button>
-            <button mat-raised-button color="primary" (click)="completeFormOffline()" *ngIf="(viewModel.formId == 0 && !viewModel.connected) || (viewModel.formId > 0 && !viewModel?.isComplete)" [disabled]="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || viewModel.isSynched" style="width: 120px;">{{'Complete' | translate}}</button>
+            <button mat-raised-button color="primary" (click)="completeFormOffline()" *ngIf="(viewModel.formId == 0 && !viewModel.connected) || (viewModel.formId > 0 && !viewModel?.isComplete)" [disabled]="firstFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || viewModel.isSynched" style="width: 120px;">{{'Complete' | translate}}</button>
           </div>
         </div>
       </div>
@@ -90,12 +83,12 @@
               <span class="mat-title">Patient selection</span>
   
               <div class="p-24 light-gray rounded">
-                Please enter the TB case identifier of the patient you would like to add the adverse event for ...
+                Please enter the TB case number of the patient you would like to add the adverse event for ...
               </div>
     
               <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
                 <mat-form-field class="p-8 full-width">
-                  <input matInput formControlName="customAttributeValue" placeholder="{{'TB Case Identifier' | translate}}" required>
+                  <input matInput formControlName="customAttributeValue" placeholder="{{'TB case number' | translate}}" required>
                   <mat-error *ngIf="firstFormGroup.get('customAttributeValue').hasError('required')">
                     {{'This is a required field' | translate}}
                   </mat-error>
@@ -105,7 +98,7 @@
                 <button mat-raised-button color="accent" class="mr-12" (click)="getPatient()" [disabled]="firstFormGroup.invalid">Search for Patient</button>
               </div>
               <div class="p-24 mat-bg-warn rounded mt-12" *ngIf="viewModel.errorFindingPatient">
-                Unable to locate the patient using the case identifier specified ...
+                Unable to locate the patient using the case number specified ...
               </div>
             </div>
             <div class="mt-12" *ngIf="viewModel?.patientFound">
@@ -175,35 +168,6 @@
       </div>
   
       <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 2">
-        <form [formGroup]="secondFormGroup" [@fadeInOut2]="">
-  
-          <div class="p-24">
-            <span class="mat-title">Patient particulars</span>
-  
-            <div class="p-24 light-gray rounded">
-              Please update any particulars of the patient
-            </div>            
-    
-            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Ethnic group</mat-label>
-                  <mat-select formControlName="ethnicGroup" required>
-                    <mat-option value="1">Filipino</mat-option>
-                    <mat-option value="2">Chinese</mat-option>
-                    <mat-option value="3">Caucasian</mat-option>
-                  </mat-select>
-                  <mat-error *ngIf="secondFormGroup.get('ethnicGroup').hasError('required')">
-                    Field is required
-                  </mat-error>
-                </mat-form-field>
-              </div>
-            </div>                      
-          </div>
-        </form>
-      </div>
-  
-      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 3">
         <form [formGroup]="thirdFormGroup" [@fadeInOut2]="">
   
           <mat-tab-group>
@@ -445,7 +409,7 @@
         </form>
       </div>
   
-      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 4">
+      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 3">
         <form [formGroup]="fourthFormGroup" [@fadeInOut2]="">
   
           <div class="p-24">
@@ -558,7 +522,7 @@
         </form>
       </div>
   
-      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 5">
+      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 4">
         <form [formGroup]="fifthFormGroup" [@fadeInOut2]="">
   
           <div class="p-24">
@@ -629,7 +593,7 @@
         </form>
       </div>
   
-      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 6">
+      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 5">
         <form [formGroup]="sixthFormGroup" [@fadeInOut2]="">
           <div class="p-24">
             <span class="mat-title">Reporter particulars</span>
@@ -696,16 +660,16 @@
         </form>
       </div>
   
-      <div fxFlex="80" *ngIf="viewModel.currentStep == 7">
+      <div fxFlex="80" *ngIf="viewModel.currentStep == 6">
         <div class="p-24">
           <span class="mat-title">Finish</span>
   
           <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
             <div fxFlex="50">
-              <div *ngIf="firstFormGroup.invalid || secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || sixthFormGroup.invalid" class="card-title-text mat-bg-warn p-24 rounded text-center mt-12"  [@fadeInOut2]="">
+              <div *ngIf="firstFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || sixthFormGroup.invalid" class="card-title-text mat-bg-warn p-24 rounded text-center mt-12"  [@fadeInOut2]="">
                 Please ensure all sections are completed successfully
               </div>
-              <div *ngIf="firstFormGroup.valid && secondFormGroup.valid && thirdFormGroup.valid && fourthFormGroup.valid && fifthFormGroup.valid && sixthFormGroup.valid" class="card-title-text light-gray p-24 rounded text-center mt-12"  [@fadeInOut2]="">
+              <div *ngIf="firstFormGroup.valid && thirdFormGroup.valid && fourthFormGroup.valid && fifthFormGroup.valid && sixthFormGroup.valid" class="card-title-text light-gray p-24 rounded text-center mt-12"  [@fadeInOut2]="">
                 Please click on the finish button to complete the capturing of the adverse event
               </div>
             </div>

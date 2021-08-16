@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, Inject, OnDestroy, OnInit, SkipSelf } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -22,7 +22,6 @@ import { CustomAttributeService } from 'app/shared/services/custom-attribute.ser
 import { _routes } from 'app/config/routes';
 import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
 import { PatientMedicationDetailModel } from 'app/shared/models/patient/patient-medication.detail.model';
-import { PatientCustomAttributesForUpdateModel } from 'app/shared/models/patient/patient-custom-attributes-for-update.model';
 import { FormADRMedicationPopupComponent } from '../../shared/form-adr-medication-popup/form-adr-medication.popup.component';
 import { MetaFormService } from 'app/shared/services/meta-form.service';
 import { Form } from 'app/shared/indexed-db/appdb';
@@ -54,7 +53,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
   public viewModelForm: FormGroup;
   public firstFormGroup: FormGroup;
-  public secondFormGroup: FormGroup;
   public thirdFormGroup: FormGroup;
   public fourthFormGroup: FormGroup;
   public fifthFormGroup: FormGroup;
@@ -80,7 +78,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     // returning true will navigate without confirmation
     // returning false will show a confirm dialog before navigating away
     if(this.firstFormGroup.dirty ||
-      this.secondFormGroup.dirty ||
       this.thirdFormGroup.dirty ||
       this.fourthFormGroup.dirty ||
       this.fifthFormGroup.dirty ||
@@ -111,9 +108,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       dateOfBirth: [''],
       facilityName: [''],
       facilityRegion: [''],
-    });
-    self.secondFormGroup = this._formBuilder.group({
-      ethnicGroup: [null, Validators.required],
     });
     self.thirdFormGroup = this._formBuilder.group({
       dateOfOnset: ['', Validators.required],
@@ -187,12 +181,11 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
         self.updateForm(self.viewModelForm, JSON.parse(form.formValues[0].formControlValue));
         self.updateForm(self.firstFormGroup, JSON.parse(form.formValues[1].formControlValue));
-        self.updateForm(self.secondFormGroup, JSON.parse(form.formValues[2].formControlValue));
-        self.updateForm(self.thirdFormGroup, JSON.parse(form.formValues[3].formControlValue));
-        self.updateForm(self.fourthFormGroup, JSON.parse(form.formValues[4].formControlValue));
-        self.updateForm(self.sixthFormGroup, JSON.parse(form.formValues[6].formControlValue));
+        self.updateForm(self.thirdFormGroup, JSON.parse(form.formValues[2].formControlValue));
+        self.updateForm(self.fourthFormGroup, JSON.parse(form.formValues[3].formControlValue));
+        self.updateForm(self.sixthFormGroup, JSON.parse(form.formValues[5].formControlValue));
 
-        self.viewModel.medications = JSON.parse(form.formValues[5].formControlValue);
+        self.viewModel.medications = JSON.parse(form.formValues[4].formControlValue);
         self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
 
         form.formAttachments.forEach(attachment => {
@@ -206,7 +199,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
         if(self.viewModel.isSynched) {
           self.firstFormGroup.disable();
-          self.secondFormGroup.disable();
           self.thirdFormGroup.disable();
           self.fourthFormGroup.disable();
           self.sixthFormGroup.disable();
@@ -243,8 +235,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.updateForm(self.firstFormGroup, {contactNumber: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Contact Number")});
           self.updateForm(self.firstFormGroup, {address: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Address")});
 
-          self.updateForm(self.secondFormGroup, {ethnicGroup: self.getValueFromAttribute(result.patientAttributes, "Ethnic Group")});
-          
           self.viewModel.medications = self.mapMedicationForUpdateModels(result.patientMedications);
           self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
 
@@ -365,9 +355,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
     const requestArray = [];
 
-    var patientCustomAttributesForUpdate = self.preparePatientCustomAttributesForUpdateModel();
-    requestArray.push(this.patientService.updatePatientCustomAttributes(self.viewModel.patientId, patientCustomAttributesForUpdate));
-
     var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel();
     requestArray.push(this.patientService.savePatientClinicalEvent(self.viewModel.patientId, 0, clinicalEventForUpdate));
 
@@ -386,7 +373,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
         self.notify('Form added successfully!', 'Success');
 
         self.firstFormGroup.markAsPristine();
-        self.secondFormGroup.markAsPristine();
         self.thirdFormGroup.markAsPristine();
         self.fourthFormGroup.markAsPristine();
         self.fifthFormGroup.markAsPristine();
@@ -403,7 +389,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
   saveFormOffline(): void {
     const self = this;
     let otherModels:any[]; 
-    otherModels = [self.secondFormGroup.value, self.thirdFormGroup.value, self.fourthFormGroup.value, self.viewModel.medications, self.sixthFormGroup.value];
+    otherModels = [self.thirdFormGroup.value, self.fourthFormGroup.value, self.viewModel.medications, self.sixthFormGroup.value];
 
     if (self.viewModel.formId == 0) {
       self.metaFormService.saveFormToDatabase('FormADR', self.viewModelForm.value, self.firstFormGroup.value, self.viewModel.attachments, otherModels).then(response =>
@@ -413,7 +399,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
             self.notify('Form saved successfully!', 'Form Saved');
 
             self.firstFormGroup.markAsPristine();
-            self.secondFormGroup.markAsPristine();
             self.thirdFormGroup.markAsPristine();
             self.fourthFormGroup.markAsPristine();
             self.fifthFormGroup.markAsPristine();
@@ -433,7 +418,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
                   self.notify('Form updated successfully!', 'Form Saved');
 
                   self.firstFormGroup.markAsPristine();
-                  self.secondFormGroup.markAsPristine();
                   self.thirdFormGroup.markAsPristine();
                   self.fourthFormGroup.markAsPristine();
                   self.fifthFormGroup.markAsPristine();
@@ -452,7 +436,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     let self = this;
     let otherModels:any[];
 
-    otherModels = [self.secondFormGroup.value, self.thirdFormGroup.value, self.fourthFormGroup.value, self.viewModel.medications, self.sixthFormGroup.value];
+    otherModels = [self.thirdFormGroup.value, self.fourthFormGroup.value, self.viewModel.medications, self.sixthFormGroup.value];
 
     if (self.viewModel.formId == 0) {
       self.metaFormService.saveFormToDatabase('FormADR', self.viewModelForm.value, self.firstFormGroup.value, self.viewModel.attachments, otherModels).then(response =>
@@ -462,7 +446,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
               self.notify('Form saved successfully!', 'Form Saved');
   
               self.firstFormGroup.markAsPristine();
-              self.secondFormGroup.markAsPristine();
               self.thirdFormGroup.markAsPristine();
               self.fourthFormGroup.markAsPristine();
               self.fifthFormGroup.markAsPristine();
@@ -482,7 +465,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
                   self.notify('Form updated successfully!', 'Form Saved');
 
                   self.firstFormGroup.markAsPristine();
-                  self.secondFormGroup.markAsPristine();
                   self.thirdFormGroup.markAsPristine();
                   self.fourthFormGroup.markAsPristine();
                   self.fifthFormGroup.markAsPristine();
@@ -521,25 +503,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       return attribute?.selectionValue;
     }
      return attribute?.value;
-  }
-
-  private getValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
-    let attribute = attributes.find(a => a.key == key);
-     return attribute?.value;
-  }  
-
-  private preparePatientCustomAttributesForUpdateModel(): PatientCustomAttributesForUpdateModel {
-    let self = this;
-
-    const attributesForUpdate: AttributeValueForPostModel[] = [];
-    attributesForUpdate.push(self.prepareAttributeValue('ethnic group', 'ethnicGroup', self.secondFormGroup));
-    
-    const patientCustomAttributesForUpdate: PatientCustomAttributesForUpdateModel = 
-    {
-      attributes: attributesForUpdate
-    };
-
-    return patientCustomAttributesForUpdate;
   }
 
   private prepareClinicalEventForUpdateModel(): PatientClinicalEventForUpdateModel {
