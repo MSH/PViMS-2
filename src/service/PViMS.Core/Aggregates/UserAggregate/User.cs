@@ -2,6 +2,7 @@
 using PVIMS.Core.Aggregates.NotificationAggregate;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -138,13 +139,30 @@ namespace PVIMS.Core.Aggregates.UserAggregate
             IdentityId = identityId;
 
             AllowDatasetDownload = false;
+            Active = true;
             UserType = UserType.User;
 
-            Facilities = facilities.Select(f => new UserFacility(f, this)).ToList();
+            Facilities = facilities?.Select(f => new UserFacility(f, this)).ToList();
         }
 
-        public void ChangeFacilityAccess(List<Facility> facilities)
+        public void ChangeUserDetails(string firstName, string lastName, string userName, string email, bool active, bool allowDatasetDownload)
         {
+            FirstName = firstName;
+            LastName = lastName;
+            UserName = userName;
+            Email = email;
+            Active = active;
+            AllowDatasetDownload = allowDatasetDownload;
+        }
+
+        public void AcceptEula()
+        {
+            if (EulaAcceptanceDate.HasValue)
+            {
+                throw new DomainException("EULA has already been accepted");
+            }
+
+            EulaAcceptanceDate = DateTime.Now;
         }
 
         public string FullName => $"{FirstName} {LastName}";
