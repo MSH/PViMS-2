@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using PViMS.Core.Events;
 using PVIMS.Core.Aggregates.NotificationAggregate;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.ValueTypes;
 using System;

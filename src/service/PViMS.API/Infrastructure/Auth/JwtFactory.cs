@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Aggregates.UserAggregate;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;

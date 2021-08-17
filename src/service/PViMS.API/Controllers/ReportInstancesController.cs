@@ -14,9 +14,10 @@ using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
@@ -27,7 +28,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using PVIMS.Core.Aggregates.DatasetAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -46,10 +46,10 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
+        private readonly IArtefactService _artefactService;
         private readonly IReportService _reportService;
         private readonly IWorkFlowService _workFlowService;
         private readonly IInfrastructureService _infrastructureService;
-        private readonly IArtefactService _artefactService;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<ReportInstancesController> _logger;
@@ -65,10 +65,10 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<User> userRepository,
             IRepositoryInt<WorkFlow> workFlowRepository,
+            IArtefactService artefactService,
             IReportService reportService,
             IInfrastructureService infrastructureService,
             IWorkFlowService workFlowService,
-            IArtefactService artefactService,
             IUnitOfWorkInt unitOfWork,
             IHttpContextAccessor httpContextAccessor,
             ILogger<ReportInstancesController> logger)
@@ -204,8 +204,8 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            var model = workFlowGuid == new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219") ? 
-                await _artefactService.CreatePatientSummaryForActiveReportAsync(reportInstanceFromRepo.ContextGuid) : 
+            var model = workFlowGuid == new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219") ?
+                await _artefactService.CreatePatientSummaryForActiveReportAsync(reportInstanceFromRepo.ContextGuid) :
                 await _artefactService.CreatePatientSummaryForSpontaneousReportAsync(reportInstanceFromRepo.ContextGuid);
 
             return PhysicalFile(model.FullPath, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
@@ -449,7 +449,7 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            var activityExecutionStatusEvent = await _activityExecutionStatusEventRepository.GetAsync(f => f.Id == activityExecutionStatusEventId);
+            var activityExecutionStatusEvent = await _activityExecutionStatusEventRepository.GetAsync(f => f.Id == activityExecutionStatusEventId, new string[] { "Attachments.AttachmentType" });
             if (activityExecutionStatusEvent == null)
             {
                 return NotFound();

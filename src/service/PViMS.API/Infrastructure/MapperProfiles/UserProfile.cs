@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using PVIMS.API.Models;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
 using System;
 using System.Linq;
 
@@ -22,7 +22,7 @@ namespace PVIMS.API.MapperProfiles
             CreateMap<User, UserIdentifierDto>();
             CreateMap<User, UserDetailDto>()
                 .ForMember(dest => dest.AllowDatasetDownload, opt => opt.MapFrom(src => src.AllowDatasetDownload ? "Yes" : "No"))
-                //.ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active ? "Yes" : "No"))
+                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active ? "Yes" : "No"))
                 .ForMember(dest => dest.Facilities, opt => opt.MapFrom(src => src.Facilities.Select(f => f.Facility.FacilityName).ToArray()));
 
             //CreateMap<UserRole, UserRoleDto>()

@@ -4,18 +4,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using PVIMS.API.Application.Queries.WorkFlowAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
-using PVIMS.Core.Services;
 using PVIMS.Core.Repositories;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using PVIMS.API.Application.Queries.WorkFlowAggregate;
 
 namespace PVIMS.API.Controllers
 {
@@ -27,7 +27,7 @@ namespace PVIMS.API.Controllers
         private readonly IMediator _mediator;
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IArtefactService _artefactService;
+        private readonly IExcelDocumentService _excelDocumentService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<WorkFlowsController> _logger;
 
@@ -35,14 +35,14 @@ namespace PVIMS.API.Controllers
             IMediator mediator, 
             IRepositoryInt<WorkFlow> workFlowRepository,
             IRepositoryInt<User> userRepository,
-            IArtefactService artefactService,
+            IExcelDocumentService excelDocumentService,
             IHttpContextAccessor httpContextAccessor,
             ILogger<WorkFlowsController> logger)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
+            _excelDocumentService = excelDocumentService ?? throw new ArgumentNullException(nameof(excelDocumentService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -171,8 +171,8 @@ namespace PVIMS.API.Controllers
             }
 
             var model = id == new Guid("4096D0A3-45F7-4702-BDA1-76AEDE41B986") 
-                ? _artefactService.CreateSpontaneousDatasetForDownload() 
-                : _artefactService.CreateActiveDatasetForDownload(new long[] { }, analyserDatasetResourceParameters?.CohortGroupId ?? 0);
+                ? _excelDocumentService.CreateSpontaneousDatasetForDownload() 
+                : _excelDocumentService.CreateActiveDatasetForDownload(new long[] { }, analyserDatasetResourceParameters?.CohortGroupId ?? 0);
 
             return PhysicalFile(model.FullPath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         }

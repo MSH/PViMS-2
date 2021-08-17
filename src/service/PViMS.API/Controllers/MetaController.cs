@@ -8,9 +8,9 @@ using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
@@ -31,7 +31,6 @@ namespace PVIMS.API.Controllers
     [Route("api")]
     public class MetaController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IInfrastructureService _infrastructureService;
         private readonly IRepositoryInt<MetaTable> _metaTableRepository;
@@ -39,8 +38,6 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<MetaColumn> _metaColumnRepository;
         private readonly IRepositoryInt<MetaColumnType> _metaColumnTypeRepository;
         private readonly IRepositoryInt<MetaDependency> _metaDependencyRepository;
-        private readonly IRepositoryInt<MetaPage> _metaPageRepository;
-        private readonly IRepositoryInt<MetaWidget> _metaWidgetRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
@@ -57,7 +54,7 @@ namespace PVIMS.API.Controllers
             "CohortGroupEnrolment" 
         };
 
-        public MetaController(IPropertyMappingService propertyMappingService,
+        public MetaController(
             ITypeHelperService typeHelperService,
             IInfrastructureService infrastructureService,
             IMapper mapper,
@@ -67,12 +64,9 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<MetaColumn> metaColumnRepository,
             IRepositoryInt<MetaColumnType> metaColumnTypeRepository,
             IRepositoryInt<MetaDependency> metaDependencyRepository,
-            IRepositoryInt<MetaPage> metaPageRepository,
-            IRepositoryInt<MetaWidget> metaWidgetRepository,
             IUnitOfWorkInt unitOfWork,
             PVIMSDbContext dbContext)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _infrastructureService = infrastructureService ?? throw new ArgumentNullException(nameof(infrastructureService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -82,8 +76,6 @@ namespace PVIMS.API.Controllers
             _metaColumnRepository = metaColumnRepository ?? throw new ArgumentNullException(nameof(metaColumnRepository));
             _metaColumnTypeRepository = metaColumnTypeRepository ?? throw new ArgumentNullException(nameof(metaColumnTypeRepository));
             _metaDependencyRepository = metaDependencyRepository ?? throw new ArgumentNullException(nameof(metaDependencyRepository));
-            _metaPageRepository = metaPageRepository ?? throw new ArgumentNullException(nameof(metaPageRepository));
-            _metaWidgetRepository = metaWidgetRepository ?? throw new ArgumentNullException(nameof(metaWidgetRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }

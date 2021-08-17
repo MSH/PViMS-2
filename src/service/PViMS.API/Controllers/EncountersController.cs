@@ -16,7 +16,6 @@ using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
@@ -26,7 +25,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
+using PVIMS.Core.Aggregates.UserAggregate;
 
 namespace PVIMS.API.Controllers
 {

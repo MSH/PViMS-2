@@ -11,11 +11,10 @@ using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
-using PVIMS.Core.Services;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -36,7 +35,7 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<AuditLog> _auditLogRepository;
         private readonly IRepositoryInt<Attachment> _attachmentRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IArtefactService _artefactService;
+        private readonly IExcelDocumentService _excelDocumentService;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -47,7 +46,7 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<AuditLog> auditLogRepository,
             IRepositoryInt<Attachment> attachmentRepository,
             IRepositoryInt<User> userRepository,
-            IArtefactService artefactService,
+            IExcelDocumentService excelDocumentService,
             IHttpContextAccessor httpContextAccessor)
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
@@ -56,7 +55,7 @@ namespace PVIMS.API.Controllers
             _auditLogRepository = auditLogRepository ?? throw new ArgumentNullException(nameof(auditLogRepository));
             _attachmentRepository = attachmentRepository ?? throw new ArgumentNullException(nameof(attachmentRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
+            _excelDocumentService = excelDocumentService ?? throw new ArgumentNullException(nameof(excelDocumentService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
@@ -150,7 +149,7 @@ namespace PVIMS.API.Controllers
 
             var patientIds = GetPatientsFromAuditLogs(auditLogResourceParameters);
 
-            var model = _artefactService.CreateActiveDatasetForDownload(patientIds.ToArray(), 0);
+            var model = _excelDocumentService.CreateActiveDatasetForDownload(patientIds.ToArray(), 0);
 
             return PhysicalFile(model.FullPath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         }

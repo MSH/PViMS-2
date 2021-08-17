@@ -5,11 +5,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
 using PVIMS.Core.ValueTypes;
 using PVIMS.Infrastructure;
-using PVIMS.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,32 +71,15 @@ namespace PVIMS.API.Infrastructure
 
             if (!context.Users.Any(ce => ce.UserName == "Admin"))
             {
-                users.Add(new User {
-                    Email = "admin@mail.com",
-                    LastName = "User",
-                    FirstName = "Admin",
-                    UserName = "Admin",
-                });
+                users.Add(new User("Admin", "Admin", "Admin", "admin@mail.com", Guid.Empty, null));
             }
             if (!context.Users.Any(ce => ce.UserName == "chesad"))
             {
-                users.Add(new User
-                {
-                    Email = "cdesano@mtapsprogram.org",
-                    LastName = "Desano",
-                    FirstName = "Chesa",
-                    UserName = "chesad",
-                });
+                users.Add(new User("Chesa", "Desano", "chesad", "cdesano@mtapsprogram.org", Guid.Empty, null));
             }
             if (!context.Users.Any(ce => ce.UserName == "rhear"))
             {
-                users.Add(new User
-                {
-                    Email = "rromero@mtapsprogram.org",
-                    LastName = "Romero",
-                    FirstName = "Rhea",
-                    UserName = "rhear",
-                });
+                users.Add(new User("Rhea", "Romero", "rhear", "rromero@mtapsprogram.org", Guid.Empty, null));
             }
 
             return users;

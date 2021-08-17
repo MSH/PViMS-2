@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using PViMS.Core.Events;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Aggregates.UserAggregate;
 using System;
 using System.Text;
 using System.Threading;

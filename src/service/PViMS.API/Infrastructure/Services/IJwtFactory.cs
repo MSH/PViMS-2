@@ -1,5 +1,5 @@
 ﻿using PVIMS.API.Infrastructure.Auth;
-using PVIMS.Core.Entities.Accounts;
+using PVIMS.Core.Aggregates.UserAggregate;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
