@@ -606,8 +606,11 @@
               <div fxFlex="50">
                 <mat-form-field class="full-width" appearance="outline">
                   <mat-label>Name of the reporter</mat-label>
-                  <input matInput formControlName="reporterName">
-                  <mat-hint>Maximum length 100</mat-hint> 
+                  <input matInput formControlName="reporterName" required>
+                  <mat-hint>Maximum length 100</mat-hint>
+                  <mat-error *ngIf="sixthFormGroup.get('reporterName').hasError('required')">
+                    Field is required
+                  </mat-error>
                   <mat-error *ngIf="sixthFormGroup.get('reporterName').hasError('maxlength')">
                     {{'Maximum length exceeded' | translate}}
                   </mat-error>
@@ -635,8 +638,11 @@
               <div fxFlex="50">
                 <mat-form-field class="full-width" appearance="outline">
                   <mat-label>Email address</mat-label>
-                  <input matInput formControlName="emailAddress">
+                  <input matInput formControlName="emailAddress" required>
                   <mat-hint>Maximum length 100</mat-hint> 
+                  <mat-error *ngIf="sixthFormGroup.get('emailAddress').hasError('required')">
+                    Field is required
+                  </mat-error>
                   <mat-error *ngIf="sixthFormGroup.get('emailAddress').hasError('maxlength')">
                     {{'Maximum length exceeded' | translate}}
                   </mat-error>            

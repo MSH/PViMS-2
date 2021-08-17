@@ -134,9 +134,9 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     self.fifthFormGroup = this._formBuilder.group({
     });
     self.sixthFormGroup = this._formBuilder.group({
-      reporterName: ['', [Validators.maxLength(100), Validators.pattern("[-a-zA-Z ']*")]],
+      reporterName: ['', [Validators.required, Validators.maxLength(100), Validators.pattern("[-a-zA-Z ']*")]],
       contactNumber: ['', [Validators.maxLength(30), Validators.pattern("[-0-9+']*")]],
-      emailAddress: ['', Validators.maxLength(100)],
+      emailAddress: ['', [Validators.required, Validators.maxLength(100)]],
       profession: [null]
     });
 
