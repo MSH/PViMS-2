@@ -1,26 +1,17 @@
-﻿using AutoMapper;
-using LinqKit;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.Repositories;
-using PVIMS.Core.Paging;
-using PVIMS.Infrastructure.Identity.Entities;
 using System;
-using System.Collections;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PVIMS.API.Application.Commands.UserAggregate;
@@ -38,34 +29,16 @@ namespace PVIMS.API.Controllers
         private readonly IMediator _mediator;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<UserFacility> _userFacilityRepository;
-        private readonly IRepositoryInt<Facility> _facilityRepository;
-        private readonly IUnitOfWorkInt _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly ILinkGeneratorService _linkGeneratorService;
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<UsersController> _logger;
 
         public UsersController(IMediator mediator,
             ITypeHelperService typeHelperService,
-            IMapper mapper,
-            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<User> userRepository,
-            IRepositoryInt<UserFacility> userFacilityRepository,
-            IRepositoryInt<Facility> facilityRepository,
-            IUnitOfWorkInt unitOfWork,
-            UserManager<ApplicationUser> userManager,
             ILogger<UsersController> logger)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _userFacilityRepository = userFacilityRepository ?? throw new ArgumentNullException(nameof(userFacilityRepository));
-            _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -246,75 +219,99 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Update an existing user
+        /// Update an existing user's details
         /// </summary>
         /// <param name="id">The unique id of the user</param>
-        /// <param name="userForUpdate">The user payload</param>
+        /// <param name="userDetailForUpdate">The user payload</param>
         /// <returns></returns>
-        [HttpPut("{id}", Name = "UpdateUser")]
+        [HttpPut("{id}", Name = "UpdateUserDetail")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdateUser(long id,
-            [FromBody] UserForUpdateDto userForUpdate)
+        public async Task<IActionResult> UpdateUserDetail(int id,
+            [FromBody] UserDetailForUpdateDto userDetailForUpdate)
         {
-            if (userForUpdate == null)
+            if (userDetailForUpdate == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
                 return BadRequest(ModelState);
             }
 
-            var userFromRepo = await _userRepository.GetAsync(f => f.Id == id);
-            if (userFromRepo == null)
+            var command = new ChangeUserDetailCommand( id, userDetailForUpdate.FirstName, userDetailForUpdate.LastName, userDetailForUpdate.Email, userDetailForUpdate.UserName, userDetailForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes, userDetailForUpdate.AllowDatasetDownload == Models.ValueTypes.YesNoValueType.Yes);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeUserDetailCommand - {userId}",
+                command.UserId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(userForUpdate.UserName, @"[a-zA-Z0-9 ]").Count < userForUpdate.UserName.Length)
-            {
-                ModelState.AddModelError("Message", "Value contains invalid characters (Enter A-Z, a-z, 0-9, space)");
-            }
+            return Ok();
+        }
 
-            if (Regex.Matches(userForUpdate.FirstName, @"[a-zA-Z ]").Count < userForUpdate.FirstName.Length)
+        /// <summary>
+        /// Update an existing user's facility access
+        /// </summary>
+        /// <param name="id">The unique id of the user</param>
+        /// <param name="userFacilitiesForUpdate">The user payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}/facilities", Name = "UpdateUserFacilities")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdateUserFacilities(int id,
+            [FromBody] UserFacilitiesForUpdateDto userFacilitiesForUpdate)
+        {
+            if (userFacilitiesForUpdate == null)
             {
-                ModelState.AddModelError("Message", "Value contains invalid characters (Enter A-Z, a-z, space)");
-            }
-
-            if (Regex.Matches(userForUpdate.LastName, @"[a-zA-Z ]").Count < userForUpdate.LastName.Length)
-            {
-                ModelState.AddModelError("Message", "Value contains invalid characters (Enter A-Z, a-z, space)");
-            }
-
-            if (userForUpdate.Facilities == null)
-            {
-                ModelState.AddModelError("Message", "At least one facility must be selected");
-            }
-
-            if (userForUpdate.Roles == null)
-            {
-                ModelState.AddModelError("Message", "At least one role must be selected");
-            }
-
-            if (_unitOfWork.Repository<User>().Queryable().
-                Where(l => l.UserName == userForUpdate.UserName && l.Id != id)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Item with same name already exists");
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
                 return BadRequest(ModelState);
             }
 
-            if (ModelState.IsValid)
+            var command = new ChangeUserFacilitiesCommand(id, userFacilitiesForUpdate.Facilities);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeUserFacilitiesCommand - {userId}",
+                command.UserId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                userFromRepo.FirstName = userForUpdate.FirstName;
-                userFromRepo.LastName = userForUpdate.LastName;
-                userFromRepo.UserName = userForUpdate.UserName;
-                //userFromRepo.Active = (userForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
-                userFromRepo.AllowDatasetDownload = (userForUpdate.AllowDatasetDownload == Models.ValueTypes.YesNoValueType.Yes);
+                return BadRequest("Command not created");
+            }
 
-                _userRepository.Update(userFromRepo);
+            return Ok();
+        }
 
-                UpdateUserRoles(userForUpdate, userFromRepo);
-                await UpdateUserFacilitiesAsync(userForUpdate, userFromRepo);
+        /// <summary>
+        /// Update an existing user's roles access
+        /// </summary>
+        /// <param name="id">The unique id of the user</param>
+        /// <param name="userRolesForUpdate">The user payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}/roles", Name = "UpdateUserRoles")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdateUserRoles(int id,
+            [FromBody] UserRolesForUpdateDto userRolesForUpdate)
+        {
+            if (userRolesForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
+            }
 
-                await _unitOfWork.CompleteAsync();
+            var command = new ChangeUserRolesCommand(id, userRolesForUpdate.Roles);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeUserRolesCommand - {userId}",
+                command.UserId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
             }
 
             return Ok();
@@ -326,9 +323,9 @@ namespace PVIMS.API.Controllers
         /// <param name="id">The unique id of the user</param>
         /// <param name="userForPasswordUpdate">The password payload</param>
         /// <returns></returns>
-        [HttpPut("{id}/password", Name = "ResetPassword")]
+        [HttpPut("{id}/password", Name = "UpdateUserPassword")]
         [Consumes("application/json")]
-        public async Task<IActionResult> ResetPassword(long id,
+        public async Task<IActionResult> UpdateUserPassword(int id,
             [FromBody] UserForPasswordUpdateDto userForPasswordUpdate)
         {
             if (userForPasswordUpdate == null)
@@ -337,20 +334,17 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userFromRepo = await _userRepository.GetAsync(f => f.Id == id);
-            if (userFromRepo == null)
-            {
-                return NotFound();
-            }
+            var command = new ChangeUserPasswordCommand(id, userForPasswordUpdate.Password);
 
-            if (ModelState.IsValid)
-            {
-                //userFromRepo.SecurityStamp = Guid.NewGuid().ToString("D");
+            _logger.LogInformation(
+                "----- Sending command: ChangeUserPasswordCommand - {userId}",
+                command.UserId);
 
-                //String hashedNewPassword = _userManager.PasswordHasher.HashPassword(userForPasswordUpdate.Password);
-                //userFromRepo.PasswordHash = hashedNewPassword;
-                _userRepository.Update(userFromRepo);
-                await _unitOfWork.CompleteAsync();
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
             }
 
             return Ok();
@@ -363,26 +357,19 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPut("{id}/accepteula", Name = "AcceptEula")]
         [Consumes("application/json")]
-        public async Task<IActionResult> AcceptEula(long id)
+        public async Task<IActionResult> AcceptEula(int id)
         {
-            var userFromRepo = await _userRepository.GetAsync(f => f.Id == id);
-            if (userFromRepo == null)
-            {
-                return NotFound();
-            }
+            var command = new AcceptEulaCommand(id);
 
-            if (userFromRepo.EulaAcceptanceDate != null)
-            {
-                ModelState.AddModelError("Message", "Eula accepted already");
-                return BadRequest(ModelState);
-            }
+            _logger.LogInformation(
+                "----- Sending command: AcceptEulaCommand - {userId}",
+                command.UserId);
 
-            if (ModelState.IsValid)
-            {
-                userFromRepo.EulaAcceptanceDate = DateTime.Now;
+            var commandResult = await _mediator.Send(command);
 
-                _userRepository.Update(userFromRepo);
-                await _unitOfWork.CompleteAsync();
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
             }
 
             return Ok();
@@ -394,137 +381,22 @@ namespace PVIMS.API.Controllers
         /// <param name="id">The unique id of the user</param>
         /// <returns></returns>
         [HttpDelete("{id}", Name = "DeleteUser")]
-        public async Task<IActionResult> DeleteUser(long id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
-            var userFromRepo = await _userRepository.GetAsync(f => f.Id == id);
-            if (userFromRepo == null)
+            var command = new DeleteUserCommand(id);
+
+            _logger.LogInformation(
+                "----- Sending command: DeleteUserCommand - {userId}",
+                command.UserId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            if (_unitOfWork.Repository<AuditLog>().Queryable()
-                .Any(a => a.User.Id == id))
-            {
-                ModelState.AddModelError("Message", "Unable to delete as item is in use.");
-                return BadRequest(ModelState);
-            }
-
-            if (ModelState.IsValid)
-            {
-                var userFacilityValues = _unitOfWork.Repository<UserFacility>().Queryable().Where(c => c.User.Id == id).ToList();
-                userFacilityValues.ForEach(userFacility => _userFacilityRepository.Delete(userFacility));
-
-                _userRepository.Delete(userFromRepo);
-                await _unitOfWork.CompleteAsync();
-            }
-
-            return NoContent();
-        }
-
-        /// <summary>
-        ///  Handle the updating of roles for an existing usser
-        /// </summary>
-        /// <param name="userForUpdate">The payload containing the list of roles</param>
-        /// <param name="userFromRepo">The user entity that is being updated</param>
-        /// <returns></returns>
-        private void UpdateUserRoles(UserForUpdateDto userForUpdate, User userFromRepo)
-        {
-            //var roleNames = userForUpdate.Roles.ToArray();
-
-            //var roles = _unitOfWork.Repository<Role>().Queryable()
-            //    .Where(r => roleNames.Contains(r.Name))
-            //    .Select(rk => rk.Key)
-            //    .ToArray();
-
-            //// Determine what has been removed
-            //ArrayList deleteCollection = new ArrayList();
-            //ArrayList addCollection = new ArrayList();
-            //foreach (var userRole in _unitOfWork.Repository<UserRole>().Queryable()
-            //    .Include(i1 => i1.Role)
-            //    .Where(r => r.User.Id == userFromRepo.Id))
-            //{
-            //    if (!roles.Contains(userRole.Role.Key))
-            //    {
-            //        deleteCollection.Add(userRole);
-            //    }
-            //}
-
-            //// Determine what needs to be added
-            //foreach (string role in roles)
-            //{
-            //    UserRole userRole = _unitOfWork.Repository<UserRole>().Queryable()
-            //        .SingleOrDefault(ur => ur.User.Id == userFromRepo.Id && ur.Role.Key == role);
-            //    if (userRole == null)
-            //    {
-            //        var newRole = _roleRepository.Get(r => r.Key == role);
-            //        userRole = new UserRole() { 
-            //            Role = newRole, 
-            //            User = userFromRepo
-            //        };
-            //        addCollection.Add(userRole);
-            //    }
-            //}
-
-            //foreach (UserRole userRole in deleteCollection)
-            //{
-            //    _userRoleRepository.Delete(userRole);
-            //}
-
-            //foreach (UserRole userRole in addCollection)
-            //{
-            //    _userRoleRepository.Save(userRole);
-            //}
-        }
-
-        /// <summary>
-        ///  Handle the updating of facilities for an existing usser
-        /// </summary>
-        /// <param name="userForUpdate">The payload containing the list of facilities</param>
-        /// <param name="userFromRepo">The user entity that is being updated</param>
-        /// <returns></returns>
-        private async Task UpdateUserFacilitiesAsync(UserForUpdateDto userForUpdate, User userFromRepo)
-        {
-            var facilityNames = userForUpdate.Facilities.ToArray();
-
-            var facilities = _unitOfWork.Repository<Facility>().Queryable()
-                .Where(r => facilityNames.Contains(r.FacilityName))
-                .Select(rk => rk.FacilityName)
-                .ToArray();
-
-            // Determine what has been removed
-            ArrayList deleteCollection = new ArrayList();
-            ArrayList addCollection = new ArrayList();
-            var userFacilities = await _userFacilityRepository.ListAsync(r => r.User.Id == userFromRepo.Id, null, new string[] { "Facility" });
-
-            foreach (var userFacility in userFacilities)
-            {
-                if (!facilities.Contains(userFacility.Facility.FacilityName))
-                {
-                    deleteCollection.Add(userFacility);
-                }
-            }
-
-            // Determine what needs to be added
-            foreach (string facility in facilities)
-            {
-                UserFacility userFacility = _unitOfWork.Repository<UserFacility>().Queryable()
-                    .SingleOrDefault(uf => uf.User.Id == userFromRepo.Id && uf.Facility.FacilityName == facility);
-                if (userFacility == null)
-                {
-                    var newFacility = _facilityRepository.Get(r => r.FacilityName == facility);
-                    userFacility = new UserFacility(newFacility, userFromRepo);
-                    addCollection.Add(userFacility);
-                }
-            }
-
-            foreach (UserFacility userFacility in deleteCollection)
-            {
-                _userFacilityRepository.Delete(userFacility);
-            }
-            foreach (UserFacility userFacility in addCollection)
-            {
-                _userFacilityRepository.Save(userFacility);
-            }
+            return Ok();
         }
     }
 }
