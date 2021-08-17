@@ -89,13 +89,19 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             var patientIdentityNumberCustomAttribute = await _customAttributeRepository.GetAsync(ca => ca.AttributeKey == "Patient Identity Number");
 
             List<CustomAttributeParameter> parameters = new List<CustomAttributeParameter>();
-            if (attributes.ContainsKey(medicalRecordNumberCustomAttribute.Id))
+            if(medicalRecordNumberCustomAttribute != null)
             {
-                parameters.Add(new CustomAttributeParameter() { AttributeKey = "Medical Record Number", AttributeValue = attributes[medicalRecordNumberCustomAttribute.Id] });
+                if (attributes.ContainsKey(medicalRecordNumberCustomAttribute.Id))
+                {
+                    parameters.Add(new CustomAttributeParameter() { AttributeKey = "Medical Record Number", AttributeValue = attributes[medicalRecordNumberCustomAttribute.Id] });
+                }
             }
-            if (attributes.ContainsKey(patientIdentityNumberCustomAttribute.Id))
+            if (patientIdentityNumberCustomAttribute != null)
             {
-                parameters.Add(new CustomAttributeParameter() { AttributeKey = "Patient Identity Number", AttributeValue = attributes[patientIdentityNumberCustomAttribute.Id] });
+                if (attributes.ContainsKey(patientIdentityNumberCustomAttribute.Id))
+                {
+                    parameters.Add(new CustomAttributeParameter() { AttributeKey = "Patient Identity Number", AttributeValue = attributes[patientIdentityNumberCustomAttribute.Id] });
+                }
             }
 
             if (parameters.Count > 0)
