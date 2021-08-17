@@ -9,6 +9,7 @@ using PVIMS.Core.Repositories;
 using PVIMS.Infrastructure.Identity.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,7 +40,7 @@ namespace PVIMS.API.Application.Queries.UserAggregate
 
         public async Task<UserDetailDto> Handle(UserDetailQuery message, CancellationToken cancellationToken)
         {
-            var userFromRepo = await _userRepository.GetAsync(f => f.Id == message.UserId, new string[] { "Facilities" });
+            var userFromRepo = await _userRepository.GetAsync(f => f.Id == message.UserId, new string[] { "Facilities.Facility" });
 
             if (userFromRepo == null)
             {
@@ -62,7 +63,7 @@ namespace PVIMS.API.Application.Queries.UserAggregate
                 return;
             }
             var userRoles = await _userManager.GetRolesAsync(userFromManager);
-            dto.Roles = (string[])userRoles;
+            dto.Roles = userRoles.ToList().ToArray();
         }
 
         private void CreateLinks(UserDetailDto mappedUser)
