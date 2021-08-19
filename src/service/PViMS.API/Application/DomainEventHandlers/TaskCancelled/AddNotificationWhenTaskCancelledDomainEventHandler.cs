@@ -36,7 +36,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskCancelled
                 alertCount = Convert.ToInt32(config.ConfigValue);
             }
 
-            var summary = $"Task for report {domainEvent.Task.ReportInstance.Identifier} has been cancelled";
+            var summary = $"A task for a report for patient {domainEvent.Task.ReportInstance.PatientIdentifier} has been cancelled";
 
             var notificationType = NotificationType.FromName("Informational");
             var notificationClassification = NotificationClassification.FromName("CancelledTask");

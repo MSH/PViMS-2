@@ -36,7 +36,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
                 alertCount = Convert.ToInt32(config.ConfigValue);
             }
 
-            var summary = $"A new task has been added for report {domainEvent.Task.ReportInstance.Identifier}";
+            var summary = $"A new task has been added for a report for patient {domainEvent.Task.ReportInstance.PatientIdentifier}";
             var notificationType = NotificationType.FromName("Warning");
             var notificationClassification = NotificationClassification.FromName("NewTask");
             var contextRoute = "/clinical/feedbacksearch";

@@ -36,8 +36,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAttendedTo
                 alertCount = Convert.ToInt32(config.ConfigValue);
             }
 
-            var summary = $"Task for report {domainEvent.Task.ReportInstance.Identifier} has been attended to";
-
+            var summary = $"A task for a report for patient {domainEvent.Task.ReportInstance.PatientIdentifier} has been attended to";
             var notificationType = NotificationType.FromName("Informational");
             var notificationClassification = NotificationClassification.FromName("AttendedToTask");
             var contextRoute = $"/analytical/reporttask/{domainEvent.Task.ReportInstance.WorkFlow.WorkFlowGuid}/{domainEvent.Task.ReportInstance.Id}";

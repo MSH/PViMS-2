@@ -37,7 +37,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskCommentAdded
                 alertCount = Convert.ToInt32(config.ConfigValue);
             }
 
-            var summary = $"A new comment has been added to a task for report {domainEvent.Comment.ReportInstanceTask.ReportInstance.Identifier}";
+            var summary = $"A new comment has been added to a task for a report for patient {domainEvent.Comment.ReportInstanceTask.ReportInstance.PatientIdentifier}";
             var detail = domainEvent.Comment.Comment.Length > 100 ? $"{domainEvent.Comment.Comment.Substring(0, 100)} ..." : domainEvent.Comment.Comment;
 
             var notificationType = NotificationType.FromName("Informational");
