@@ -60,5 +60,5 @@ BEGIN
 		CROSS APPLY pc.CustomAttributesXmlSerialised.nodes('CustomAttributeSet/CustomStringAttribute') as X(Y)
 		WHERE p.Archived = 0
 			AND ((@CustomValue IS NOT NULL AND X.Y.value('(Key)[1]', 'VARCHAR(MAX)') = @CustomAttributeKey AND X.Y.value('(Value)[1]', 'VARCHAR(MAX)')  = @CustomValue) OR (@CustomValue IS NULL AND 1 = 1))
-
+	ORDER BY p.Id desc
 END

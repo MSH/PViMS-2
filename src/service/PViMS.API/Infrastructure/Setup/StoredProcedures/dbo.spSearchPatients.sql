@@ -78,6 +78,7 @@ BEGIN
 				AND ((@LastName IS NOT NULL AND p.Surname LIKE @LastName) OR (@LastName IS NULL AND 1 = 1))
 				AND ((@DateOfBirth IS NOT NULL AND p.DateOfBirth = @DateOfBirth) OR (@DateOfBirth IS NULL AND 1 = 1))
 				AND ((@CustomValue IS NOT NULL AND X.Y.value('(Key)[1]', 'VARCHAR(MAX)') = @CustomAttributeKey AND X.Y.value('(Value)[1]', 'VARCHAR(MAX)')  LIKE @CustomValue) OR (@CustomValue IS NULL AND 1 = 1))
+		ORDER BY p.Id desc
 	END 
 	ELSE BEGIN
 		SELECT	p.Id AS PatientId, 
@@ -96,6 +97,7 @@ BEGIN
 				AND ((@FirstName IS NOT NULL AND p.FirstName LIKE @FirstName) OR (@FirstName IS NULL AND 1 = 1))
 				AND ((@LastName IS NOT NULL AND p.Surname LIKE @LastName) OR (@LastName IS NULL AND 1 = 1))
 				AND ((@DateOfBirth IS NOT NULL AND p.DateOfBirth = @DateOfBirth) OR (@DateOfBirth IS NULL AND 1 = 1))
+		ORDER BY p.Id desc
 	END
 
 END
