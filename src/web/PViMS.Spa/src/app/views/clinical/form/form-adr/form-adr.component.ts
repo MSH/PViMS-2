@@ -103,9 +103,10 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       patientFirstName: [''],
       patientLastName: [''],
       gender: [''],
-      address: [''],
-      contactNumber: [''],
+      ethnicity: [''],
       dateOfBirth: [''],
+      age: [''],
+      ageGroup: [''],
       facilityName: [''],
       facilityRegion: [''],
     });
@@ -113,8 +114,8 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       dateOfOnset: ['', Validators.required],
       regimen: [null, Validators.required],
       sourceDescription: [null, [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
-      isSerious: [null],
-      seriousness: [null],
+      isSerious: [null, Validators.required],
+      seriousness: [null, Validators.required],
       classification: [null, Validators.required],
       weight: [null, [Validators.required, Validators.min(0), Validators.max(159)]],
       height: [null, [Validators.required, Validators.min(1), Validators.max(259)]],
@@ -232,8 +233,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.updateForm(self.firstFormGroup, {patientLastName: result.lastName});
           self.updateForm(self.firstFormGroup, {patientIdentifier: self.firstFormGroup.get('customAttributeValue').value});
           self.updateForm(self.firstFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Gender")});
-          self.updateForm(self.firstFormGroup, {contactNumber: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Contact Number")});
-          self.updateForm(self.firstFormGroup, {address: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Address")});
+          self.updateForm(self.firstFormGroup, {ethnicity: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Ethnic Group")});
 
           self.viewModel.medications = self.mapMedicationForUpdateModels(result.patientMedications);
           self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);

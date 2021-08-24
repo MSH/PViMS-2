@@ -56,7 +56,8 @@
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 5" class="mr-12">panorama_fish_eye</mat-icon>
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 5" class="mr-12">brightness_1</mat-icon>
-            <mat-icon color="accent" *ngIf="viewModel.currentStep > 5" class="mr-12">check_circle</mat-icon>
+            <mat-icon color="warn" *ngIf="viewModel.currentStep > 5 && sixthFormGroup.invalid" class="mr-12">error</mat-icon>
+            <mat-icon color="accent" *ngIf="viewModel.currentStep > 5 && sixthFormGroup.valid" class="mr-12">check_circle</mat-icon>
             <span [class.font-weight-bold]="viewModel.currentStep == 5">Reporter particulars</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
@@ -69,14 +70,14 @@
             <button mat-raised-button color="accent" (click)="nextStep()" [disabled]="viewModel.currentStep > 5 || !viewModel.patientFound" style="width: 120px;">Next</button>
           </div>
           <div fxLayout="row" fxLayoutGap="1.0%" fxLayoutAlign="center" class="p-2 mt-12">
-            <button mat-raised-button color="primary" class="mr-12" (click)="saveFormOnline()" *ngIf="viewModel.currentStep > 5 && viewModel.formId == 0 && viewModel.connected" [disabled]="firstFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || viewModel.isSynched" style="width: 120px;">{{'Save' | translate}}</button>
+            <button mat-raised-button color="primary" class="mr-12" (click)="saveFormOnline()" *ngIf="viewModel.currentStep > 5 && viewModel.formId == 0 && viewModel.connected" [disabled]="firstFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || sixthFormGroup.invalid || viewModel.isSynched" style="width: 120px;">{{'Save' | translate}}</button>
             <button mat-raised-button color="accent" class="mr-12" (click)="saveFormOffline()" *ngIf="(viewModel.formId == 0 && !viewModel.connected) || viewModel.formId > 0" [disabled]="viewModel.isSynched" style="width: 120px;">{{'Save' | translate}}</button>
-            <button mat-raised-button color="primary" (click)="completeFormOffline()" *ngIf="(viewModel.formId == 0 && !viewModel.connected) || (viewModel.formId > 0 && !viewModel?.isComplete)" [disabled]="firstFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || viewModel.isSynched" style="width: 120px;">{{'Complete' | translate}}</button>
+            <button mat-raised-button color="primary" (click)="completeFormOffline()" *ngIf="(viewModel.formId == 0 && !viewModel.connected) || (viewModel.formId > 0 && !viewModel?.isComplete)" [disabled]="firstFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid || sixthFormGroup.invalid || viewModel.isSynched" style="width: 120px;">{{'Complete' | translate}}</button>
           </div>
         </div>
       </div>
   
-      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 1">
+      <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 1">
         <form [formGroup]="firstFormGroup" [@fadeInOut2]="">
           <div class="p-24">
             <div *ngIf="viewModel?.formId == 0">
@@ -103,8 +104,8 @@
             </div>
             <div class="mt-12" *ngIf="viewModel?.patientFound">
               <span class="mat-title">Patient details</span>
-              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start start">
-                <div fxFlex="45" class="mr-05">
+              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.75%" fxLayoutAlign="start start">
+                <div fxFlex="45">
                   <mat-form-field class="p-8 full-width" appearance="fill">
                     <mat-label>{{'First name' | translate}}</mat-label>
                     <input matInput formControlName="patientFirstName" readonly>
@@ -117,9 +118,24 @@
                   </mat-form-field>
                 </div>
               </div>
-  
-              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start start">
-                <div fxFlex="45" class="mr-05">
+
+              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.75%" fxLayoutAlign="start start">
+                <div fxFlex="45">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Gender' | translate}}</mat-label>
+                    <input matInput formControlName="gender" readonly>
+                  </mat-form-field>
+                </div>
+                <div fxFlex="45">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Ethnic group' | translate}}</mat-label>
+                    <input matInput formControlName="ethnicity" readonly>
+                  </mat-form-field>
+                </div>
+              </div>
+              
+              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.75%" fxLayoutAlign="start start">
+                <div fxFlex="45">
                   <mat-form-field class="p-8 full-width" appearance="fill">
                     <mat-label>{{'Date of birth' | translate}}</mat-label>
                     <input matInput formControlName="dateOfBirth" readonly>
@@ -127,29 +143,23 @@
                 </div>
                 <div fxFlex="45">
                   <mat-form-field class="p-8 full-width" appearance="fill">
-                    <mat-label>{{'Gender' | translate}}</mat-label>
-                    <input matInput formControlName="gender" readonly>
+                    <mat-label>{{'Age' | translate}}</mat-label>
+                    <input matInput formControlName="age" readonly>
                   </mat-form-field>
                 </div>
               </div>
 
-              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start start">
-                <div fxFlex="45" class="mr-05">
+              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.75%" fxLayoutAlign="start start">
+                <div fxFlex="90">
                   <mat-form-field class="p-8 full-width" appearance="fill">
-                    <mat-label>{{'Address' | translate}}</mat-label>
-                    <input matInput formControlName="address" readonly>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="45">
-                  <mat-form-field class="p-8 full-width" appearance="fill">
-                    <mat-label>{{'Contact number' | translate}}</mat-label>
-                    <input matInput formControlName="contactNumber" readonly>
+                    <mat-label>{{'Age group' | translate}}</mat-label>
+                    <input matInput formControlName="ageGroup" readonly>
                   </mat-form-field>
                 </div>
               </div>
               
-              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start start">
-                <div fxFlex="45" class="mr-05">
+              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.75%" fxLayoutAlign="start start">
+                <div fxFlex="45">
                   <mat-form-field class="p-8 full-width" appearance="fill">
                     <mat-label>{{'Facility' | translate}}</mat-label>
                     <input matInput formControlName="facilityName" readonly>
@@ -167,7 +177,7 @@
         </form>
       </div>
   
-      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 2">
+      <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 2">
         <form [formGroup]="thirdFormGroup" [@fadeInOut2]="">
   
           <mat-tab-group>
@@ -190,15 +200,16 @@
                     <mat-form-field class="full-width" appearance="outline">
                       <mat-label>Regimen</mat-label>
                       <mat-select formControlName="regimen" required>
-                        <mat-option value="1">Conventional Treatment Regimen (CTR)</mat-option>
-                        <mat-option value="2">Standard Short Treatment Regimen (SSTR)</mat-option>
-                        <mat-option value="3">Standard Regimen Drug Resistant (SRDR)</mat-option>
-                        <mat-option value="4">9 Month Treatment Regimen (9MTR)</mat-option>
-                        <mat-option value="5">Individualized Treatment Regimen (ITR)</mat-option>
-                        <mat-option value="6">Standard Long Oral Regimen FQS</mat-option>
-                        <mat-option value="7">Standard Long Oral Regimen FQR</mat-option>
-                        <mat-option value="8">Standard Short Oral Regimen</mat-option>
-                        <mat-option value="9">BPaL</mat-option>
+                        <mat-option value="1">SSOR (3)</mat-option>
+                        <mat-option value="2">SLOR FQ-S (4)</mat-option>
+                        <mat-option value="3">SLOR FQ-R (5)</mat-option>
+                        <mat-option value="4">ITR</mat-option>
+                        <mat-option value="5">FQ susceptible MDR TB (6a)</mat-option>
+                        <mat-option value="6">FQ susceptible MDR TB (6b)</mat-option>
+                        <mat-option value="7">FQ susceptible MDR TB (6c)</mat-option>
+                        <mat-option value="8">FQ resistant MDR TB (7a)</mat-option>
+                        <mat-option value="9">FQ resistant MDR TB (7b)</mat-option>
+                        <mat-option value="10">FQ resistant MDR TB (7c)</mat-option>
                       </mat-select>
                       <mat-error *ngIf="thirdFormGroup.get('regimen').hasError('required')">
                         Field is required
@@ -230,18 +241,21 @@
                   <div fxFlex="50">
                     <mat-form-field class="full-width" appearance="outline">
                       <mat-label>Do you consider the reaction to be serious?</mat-label>
-                      <mat-select formControlName="isSerious">
+                      <mat-select formControlName="isSerious" required>
                         <mat-option value="0"></mat-option>
                         <mat-option value="1">Yes</mat-option>
                         <mat-option value="2">No</mat-option>
                         <mat-option value="3">Unknown</mat-option>
                       </mat-select>
+                      <mat-error *ngIf="thirdFormGroup.get('isSerious').hasError('required')">
+                        Field is required
+                      </mat-error>
                     </mat-form-field>
                   </div>
                   <div fxFlex="50">
                     <mat-form-field class="full-width" appearance="outline">
                       <mat-label>What is the seriousness of the event?</mat-label>
-                      <mat-select formControlName="seriousness">
+                      <mat-select formControlName="seriousness" required>
                         <mat-option value="0"></mat-option>
                         <mat-option value="1">A congenital anomaly or birth defect</mat-option>
                         <mat-option value="2">Persistent or significant disability or incapacity</mat-option>
@@ -251,6 +265,9 @@
                         <mat-option value="6">Life threatening</mat-option>
                         <mat-option value="7">A medically important event</mat-option>
                       </mat-select>
+                      <mat-error *ngIf="thirdFormGroup.get('seriousness').hasError('required')">
+                        Field is required
+                      </mat-error>
                     </mat-form-field>
                   </div>
                 </div>
@@ -409,7 +426,7 @@
         </form>
       </div>
   
-      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 3">
+      <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 3">
         <form [formGroup]="fourthFormGroup" [@fadeInOut2]="">
   
           <div class="p-24">
@@ -522,7 +539,7 @@
         </form>
       </div>
   
-      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 4">
+      <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 4">
         <form [formGroup]="fifthFormGroup" [@fadeInOut2]="">
   
           <div class="p-24">
@@ -593,7 +610,7 @@
         </form>
       </div>
   
-      <div fxFlex="50" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 5">
+      <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 5">
         <form [formGroup]="sixthFormGroup" [@fadeInOut2]="">
           <div class="p-24">
             <span class="mat-title">Reporter particulars</span>
@@ -666,7 +683,7 @@
         </form>
       </div>
   
-      <div fxFlex="80" *ngIf="viewModel.currentStep == 6">
+      <div fxFlex="70" *ngIf="viewModel.currentStep == 6">
         <div class="p-24">
           <span class="mat-title">Finish</span>
   
