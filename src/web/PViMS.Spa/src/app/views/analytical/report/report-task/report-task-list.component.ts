@@ -15,9 +15,9 @@ import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ReportTaskAddPopupComponent } from './report-task-add-popup/report-task-add.popup.component';
 import { ChangeTaskDetailsPopupComponent } from './change-task-details-popup/change-task-details.popup.component';
-import { ChangeTaskStatusPopupComponent } from './change-task-status-popup/change-task-status.popup.component';
 import { _routes } from 'app/config/routes';
 import { TaskCommentsPopupComponent } from 'app/shared/components/popup/task-comments-popup/task-comments.popup.component';
+import { ChangeTaskStatusPopupComponent } from 'app/shared/components/popup/change-task-status-popup/change-task-status.popup.component';
 
 @Component({
   templateUrl: './report-task-list.component.html',

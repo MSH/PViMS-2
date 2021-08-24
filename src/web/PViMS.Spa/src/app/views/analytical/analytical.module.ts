@@ -21,18 +21,18 @@ import { ActiveAnalyserComponent } from './analyser/active-analyser/active-analy
 import { ReportTaskListComponent } from './report/report-task/report-task-list.component';
 import { ReportTaskAddPopupComponent } from './report/report-task/report-task-add-popup/report-task-add.popup.component';
 import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-task-details-popup/change-task-details.popup.component';
-import { ChangeTaskStatusPopupComponent } from './report/report-task/change-task-status-popup/change-task-status.popup.component';
 import { SetClassificationPopupComponent } from './report/report-search/set-classification/set-classification.popup.component';
 import { MedicationListPopupComponent } from './report/report-search/medications-popup/medication-list.popup.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { ActiveFormPopupComponent } from './report/report-search/active-form-popup/active-form.popup.component';
 
 @NgModule({
   declarations: [
-    ActiveAnalyserComponent, 
+    ActiveAnalyserComponent,
+    ActiveFormPopupComponent,
     ActivityHistoryComponent,
     ActivityStatusChangePopupComponent,
     ChangeTaskDetailsPopupComponent,
-    ChangeTaskStatusPopupComponent,
     DatasetInstancePopupComponent,
     LandingComponent,
     MedicationListPopupComponent,
@@ -58,8 +58,8 @@ import { NgApexchartsModule } from 'ng-apexcharts';
   entryComponents:
   [
     ActivityStatusChangePopupComponent,
+    ActiveFormPopupComponent,
     ChangeTaskDetailsPopupComponent,
-    ChangeTaskStatusPopupComponent,
     DatasetInstancePopupComponent,
     MedicationListPopupComponent,
     NaranjoPopupComponent,

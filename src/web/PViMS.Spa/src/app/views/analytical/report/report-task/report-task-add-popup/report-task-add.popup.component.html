@@ -43,24 +43,36 @@
 
       <div fxFlex="100" class="pr-1" *ngIf="!displayHelp">
         <mat-form-field class="p-8 full-width">
-          <input matInput formControlName="source" placeholder="{{'source' | translate }}" required>
-          <mat-hint>{{'Describe the data element that the task is associated to' | translate}}</mat-hint>
+          <mat-label>{{'Form area' | translate}}</mat-label>
+          <mat-select formControlName="source" required>
+            <mat-option value="Patient Particulars">{{'Patient Particulars' | translate}}</mat-option>
+            <mat-option value="Adverse event details">{{'Adverse event details' | translate}}</mat-option>
+            <mat-option value="Management of the reaction">{{'Management of the reaction' | translate}}</mat-option>
+            <mat-option value="Suspected medication">{{'Suspected medication' | translate}}</mat-option>
+            <mat-option value="Reporter particulars">{{'Reporter particulars' | translate}}</mat-option>
+          </mat-select>               
           <mat-error *ngIf="itemForm.get('source').hasError('required')">
             {{'This is a required field' | translate}}
-          </mat-error>            
-          <mat-error *ngIf="itemForm.get('source').hasError('maxlength')">
-            {{'Maximum length exceeded' | translate}}
-          </mat-error>            
-          <mat-error *ngIf="itemForm.get('source').hasError('pattern')">
-            {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, space)
-          </mat-error>            
+          </mat-error>
         </mat-form-field>        
       </div>
 
       <div fxFlex="100" class="pr-1" *ngIf="!displayHelp">
+        <mat-form-field class="p-8 full-width">
+          <mat-label>{{'Type of task' | translate}}</mat-label>
+          <mat-select formControlName="taskType" required>
+            <mat-option value="Data Quality Assurance">{{'Data Quality Assurance' | translate}}</mat-option>
+            <mat-option value="Follow Up">{{'Follow Up' | translate}}</mat-option>
+          </mat-select>               
+        </mat-form-field>       
+      </div>
+
+      <div fxFlex="100" class="pr-1" *ngIf="!displayHelp">
         <mat-form-field class="p-8 full-width" appearance="outline">
-          <textarea matInput formControlName="description" placeholder="{{'Description of task' | translate }}" rows="4" required></textarea>
-          <mat-hint>{{'Describe in detail the requirement of the task' | translate}}</mat-hint>
+          <mat-label>{{'Details' | translate }}</mat-label>
+          <textarea matInput formControlName="description" rows="4" required></textarea>
+          <mat-hint *ngIf="itemForm.get('taskType').value == 'Data Quality Assurance'"> {{'Describe in detail the details of the data issue' | translate}}</mat-hint>
+          <mat-hint *ngIf="itemForm.get('taskType').value == 'Follow Up'"> {{'Describe in detail the details of the data query' | translate}}</mat-hint>
           <mat-error *ngIf="itemForm.get('description').hasError('required')">
             {{'This is a required field' | translate}}
           </mat-error>            
@@ -71,15 +83,6 @@
             {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, space, parenthesis, question mark, comma, period)
           </mat-error>            
         </mat-form-field>        
-      </div>
-
-      <div fxFlex="100" class="pr-1" *ngIf="!displayHelp">
-        <mat-form-field class="p-8 full-width">
-          <mat-select formControlName="taskType" placeholder="{{'Type' | translate}}" required>
-            <mat-option value="Data Quality Assurance">{{'Data Quality Assurance' | translate}}</mat-option>
-            <mat-option value="Follow Up">{{'Follow Up' | translate}}</mat-option>
-          </mat-select>               
-        </mat-form-field>       
       </div>
 
       <div fxFlex="100" class="mt-1">

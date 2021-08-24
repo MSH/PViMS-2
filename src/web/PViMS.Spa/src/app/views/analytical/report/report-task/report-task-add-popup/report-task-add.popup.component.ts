@@ -33,7 +33,7 @@ export class ReportTaskAddPopupComponent extends BasePopupComponent implements O
 
   ngOnInit(): void {
     this.itemForm = this._formBuilder.group({
-      source: ['', [Validators.required, Validators.maxLength(200), Validators.pattern('[a-zA-Z0-9 ]*')]],
+      source: ['', Validators.required],
       description: ['', [Validators.required, Validators.maxLength(500), Validators.pattern('[-a-zA-Z0-9()?,. ]*')]],
       taskType: ['', Validators.required],
     })
