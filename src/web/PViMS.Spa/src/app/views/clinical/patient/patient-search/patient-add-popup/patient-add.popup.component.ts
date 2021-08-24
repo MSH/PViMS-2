@@ -16,8 +16,16 @@ import { PriorityIdentifierModel } from 'app/shared/models/encounter/priority.id
 import { PriorityService } from 'app/shared/services/priority.service';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
-import { ConditionDetailModel, ConditionDetailWrapperModel } from 'app/shared/models/condition/condition.detail.model';
+import { ConditionDetailModel } from 'app/shared/models/condition/condition.detail.model';
 import { forkJoin } from 'rxjs';
+import { Moment } from 'moment';
+
+// Depending on whether rollup is used, moment needs to be imported differently.
+// Since Moment.js doesn't have a default export, we normally need to import using the `* as`
+// syntax. However, rollup creates a synthetic default module and we thus need to import it using
+// the `default as` syntax.
+import * as _moment from 'moment';
+const moment =  _moment;
 
 @Component({
   templateUrl: './patient-add.popup.component.html',
@@ -65,14 +73,14 @@ export class PatientAddPopupComponent extends BasePopupComponent implements OnIn
       attributes: this._formBuilder.group([]),
       conditionGroupId: ['', Validators.required],
       meddraTermId: ['', Validators.required],
-      cohortGroupId: [''],
-      enroledDate: [''],
+      cohortGroupId: ['', Validators.required],
+      enroledDate: ['', Validators.required],
       startDate: ['', Validators.required],
       outcomeDate: [''],
       comments: ['', [Validators.maxLength(100), Validators.pattern("[-a-zA-Z0-9 ']*")]],
-      encounterTypeId: ['', Validators.required],
-      priorityId: ['', Validators.required],
-      encounterDate: ['', Validators.required],
+      encounterTypeId: [1, Validators.required],
+      priorityId: [1, Validators.required],
+      encounterDate: [moment(), Validators.required],
     })
 
     self.getCustomAttributeList();

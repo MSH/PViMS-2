@@ -132,31 +132,37 @@
                           {{term.medDraTerm}}
                       </mat-option>
                     </mat-select>
-                    <mat-error>
+                    <mat-error *ngIf="viewModelForm.get('meddraTermId').hasError('required')">
                       {{'This is a required field' | translate}}
                     </mat-error>            
                   </mat-form-field>
                 </div>
                 <div fxFlex="50" class="pr-1" *ngIf="viewModel?.selectedCondition != null && viewModel?.selectedCondition.cohortGroups.length > 0">
                   <mat-form-field class="p-8 full-width">
-                    <mat-select formControlName="cohortGroupId" placeholder="{{'Cohorts' | translate}}">
+                    <mat-select formControlName="cohortGroupId" placeholder="{{'Cohorts' | translate}}" required>
                       <mat-option value="0"></mat-option>
                       <mat-option *ngFor="let cohort of viewModel?.selectedCondition.cohortGroups" [value]="cohort.id">
                           {{cohort.cohortName}}
                       </mat-option>
                     </mat-select>
+                    <mat-error *ngIf="viewModelForm.get('cohortGroupId').hasError('required')">
+                      {{'This is a required field' | translate}}
+                    </mat-error>
                   </mat-form-field>
                 </div>
                 <div fxFlex="50" class="pr-1" *ngIf="viewModel?.selectedCondition != null && viewModel?.selectedCondition.cohortGroups.length > 0">
                   <mat-form-field class="p-8 full-width">
-                    <input matInput formControlName="enroledDate" placeholder="{{'Enroled date' | translate}}" [matDatepicker]="enroledDatepicker">
+                    <input matInput formControlName="enroledDate" placeholder="{{'Cohort enroled date' | translate}}" [matDatepicker]="enroledDatepicker" required>
                     <mat-datepicker-toggle matSuffix [for]="enroledDatepicker"></mat-datepicker-toggle>
+                    <mat-error *ngIf="viewModelForm.get('enroledDate').hasError('required')">
+                      {{'This is a required field' | translate}}
+                    </mat-error>
                   </mat-form-field>
                   <mat-datepicker #enroledDatepicker></mat-datepicker>
                 </div>
                 <div fxFlex="50" class="pr-1" *ngIf="viewModel?.selectedCondition != null">
                   <mat-form-field class="p-8 full-width">
-                    <input matInput formControlName="startDate" placeholder="{{'Start date' | translate}}" [matDatepicker]="startDatepicker" required>
+                    <input matInput formControlName="startDate" placeholder="{{'Condition start date' | translate}}" [matDatepicker]="startDatepicker" required>
                     <mat-datepicker-toggle matSuffix [for]="startDatepicker"></mat-datepicker-toggle>
                     <mat-error *ngIf="viewModelForm.get('startDate').hasError('required')">
                       {{'This is a required field' | translate}}
@@ -166,7 +172,7 @@
                 </div>
                 <div fxFlex="50" class="pr-1" *ngIf="viewModel?.selectedCondition != null">
                   <mat-form-field class="p-8 full-width">
-                    <input matInput formControlName="outcomeDate" placeholder="{{'Outcome date' | translate}}" [matDatepicker]="outcomeDatepicker">
+                    <input matInput formControlName="outcomeDate" placeholder="{{'Condition outcome date' | translate}}" [matDatepicker]="outcomeDatepicker">
                     <mat-datepicker-toggle matSuffix [for]="outcomeDatepicker"></mat-datepicker-toggle>
                   </mat-form-field>
                   <mat-datepicker #outcomeDatepicker></mat-datepicker>
