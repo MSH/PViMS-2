@@ -22,13 +22,13 @@
                 <div fxFlex="100" class="pr-1">
                   <mat-chip-list #chipList>
                     <div>
-                      <mat-chip color="primary" [selected]="viewModelForm.get('qualifiedName').value == 'New reports'" (click)="selectActivity('New reports')" *ngIf="workFlow?.newReportInstanceCount > 0"> 
+                      <mat-chip color="primary" [selected]="viewModelForm.get('qualifiedName').value == 'New reports'" (click)="selectActivity('New reports')" *ngIf="workFlow?.newReportInstanceCount > 0" style="cursor: pointer;"> 
                         {{'New reports' | translate}}
                       </mat-chip>
                       <span class="mr-24" matBadge="{{workFlow?.newReportInstanceCount}}" matBadgePosition="above after" matBadgeColor="warn" matBadgeOverlap="true" *ngIf="workFlow?.newReportInstanceCount > 0"></span>
                     </div>
                     <div *ngFor="let activity of workFlow?.analysisActivity">
-                      <mat-chip color="primary" [selected]="activity.qualifiedName == viewModelForm.get('qualifiedName').value" (click)="selectActivity(activity.qualifiedName)"> 
+                      <mat-chip color="primary" [selected]="activity.qualifiedName == viewModelForm.get('qualifiedName').value" (click)="selectActivity(activity.qualifiedName)" style="cursor: pointer;"> 
                         {{activity.qualifiedName | translate}}
                       </mat-chip>
                       <span class="mr-24" matBadge="{{activity.reportInstanceCount}}" matBadgePosition="above after" matBadgeColor="warn" matBadgeOverlap="true"></span>
@@ -155,8 +155,8 @@
               <mat-header-cell *matHeaderCellDef>{{ 'Tasks' | translate }}</mat-header-cell>
               <mat-cell *matCellDef="let record">
                   <div class="text-center pt-12 pb-12 border-right-light">
-                    <mat-icon matBadge="{{record.taskCount}}" matBadgeOverlap="false" *ngIf="record.activeTaskCount == 0" matBadgeColor="accent">assignment</mat-icon>
-                    <mat-icon matBadge="{{record.taskCount}}" matBadgeOverlap="false" *ngIf="record.activeTaskCount > 0" matBadgeColor="warn">assignment</mat-icon>
+                    <mat-icon matBadge="{{record.activeTaskCount}}" matBadgeOverlap="false" *ngIf="record.activeTaskCount == 0" matBadgeColor="accent">assignment</mat-icon>
+                    <mat-icon matBadge="{{record.activeTaskCount}}" matBadgeOverlap="false" *ngIf="record.activeTaskCount > 0" matBadgeColor="warn">assignment</mat-icon>
                   </div>                
               </mat-cell>
             </ng-container>
@@ -268,10 +268,10 @@
                       </span>
                     </button>
                     <mat-divider></mat-divider>
-                    <button mat-menu-item *ngIf="hasLink(record, 'viewpatient')" (click)="detailPatient(record)">
+                    <button mat-menu-item *ngIf="hasLink(record, 'viewpatient')" (click)="openActiveFormPopUp(record.patientId, record.patientClinicalEventId)">
                         <mat-icon>person</mat-icon>
                         <span style="vertical-align: middle;">
-                          {{ 'View patient' | translate }}
+                          {{ 'View details' | translate }}
                         </span>
                     </button>
                     <button mat-menu-item (click)="downloadSummary(record)">

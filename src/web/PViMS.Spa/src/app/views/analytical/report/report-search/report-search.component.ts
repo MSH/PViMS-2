@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
 import { Subscription } from 'rxjs';
@@ -39,13 +39,19 @@ import { LinkModel } from 'app/shared/models/link.model';
 import { DatasetInstanceModel } from 'app/shared/models/dataset/dataset-instance-model';
 import { WhoPopupComponent } from './who-popup/who.popup.component';
 import { SetClassificationPopupComponent } from './set-classification/set-classification.popup.component';
+import { ActiveFormPopupComponent } from './active-form-popup/active-form.popup.component';
 
 const moment =  _moment;
 
 @Component({
   templateUrl: './report-search.component.html',
-  styleUrls: ['./report-search.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-identifier { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-patient { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-medication-summary { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-actions { flex: 0 0 5% !important; width: 5% !important; }
+  `],
   animations: egretAnimations
 })
 export class ReportSearchComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -463,6 +469,20 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
       })
   }
 
+  openActiveFormPopUp(patientId: number, patientClinicalEventId: number) {
+    let self = this;
+    let title = 'View Adverse Event';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(ActiveFormPopupComponent, {
+      width: '920px',
+      disableClose: true,
+      data: { patientId: patientId, clinicalEventId: patientClinicalEventId, title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        return;
+      })
+  }  
+
   createE2B(data: any = {}) {
     let self = this;
     self.setBusy(true);
@@ -532,6 +552,7 @@ class GridRecordModel {
   e2BInstance?: DatasetInstanceModel;
   spontaneousInstance?: DatasetInstanceModel;
   patientId: number;
+  patientClinicalEventId: number;
   activityExecutionStatusEventId: number;
   attachmentId: number;
   taskCount: number;
