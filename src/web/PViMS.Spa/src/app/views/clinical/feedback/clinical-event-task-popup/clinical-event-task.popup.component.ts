@@ -14,7 +14,6 @@ import { Router } from '@angular/router';
 import { GridModel } from 'app/shared/models/grid.model';
 import { TaskModel } from 'app/shared/models/report-instance/task.model';
 import { TaskCommentsPopupComponent } from 'app/shared/components/popup/task-comments-popup/task-comments.popup.component';
-import { ChangeTaskStatusPopupComponent } from '../change-task-status-popup/change-task-status.popup.component';
 import { forkJoin, of } from 'rxjs';
 import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
 import { PatientCustomAttributesForUpdateModel } from 'app/shared/models/patient/patient-custom-attributes-for-update.model';
@@ -32,6 +31,7 @@ import { PatientExpandedModel } from 'app/shared/models/patient/patient.expanded
 // syntax. However, rollup creates a synthetic default module and we thus need to import it using
 // the `default as` syntax.
 import * as _moment from 'moment';
+import { ChangeTaskStatusPopupComponent } from 'app/shared/components/popup/change-task-status-popup/change-task-status.popup.component';
 const moment =  _moment;
 
 @Component({
@@ -42,9 +42,10 @@ const moment =  _moment;
     .mat-column-execution-event { flex: 0 0 20% !important; width: 20% !important; }
     .mat-column-comments { flex: 0 0 20% !important; width: 20% !important; }
     .mat-column-source { flex: 0 0 18% !important; width: 18% !important; }
-    .mat-column-description { flex: 0 0 30% !important; width: 30% !important; }
-    .mat-column-task-type { flex: 0 0 25% !important; width: 25% !important; }
+    .mat-column-description { flex: 0 0 45% !important; width: 40% !important; }
+    .mat-column-task-type { flex: 0 0 20% !important; width: 20% !important; }
     .mat-column-task-status { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-task-age { flex: 0 0 10% !important; width: 10% !important; }
     .mat-column-file-name { flex: 0 0 85% !important; width: 85% !important; }
     .mat-column-actions { flex: 0 0 5% !important; width: 5% !important; }
   `],  
@@ -55,7 +56,6 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
   viewModel: ViewModel = new ViewModel();
 
   public firstFormGroup: FormGroup;
-  public secondFormGroup: FormGroup;
   public thirdFormGroup: FormGroup;
   public fourthFormGroup: FormGroup;
   public fifthFormGroup: FormGroup;
@@ -81,15 +81,12 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
 
     self.firstFormGroup = this._formBuilder.group({
     });
-    self.secondFormGroup = this._formBuilder.group({
-      ethnicGroup: [null, Validators.required],
-    });
     self.thirdFormGroup = this._formBuilder.group({
       onsetDate: ['', Validators.required],
       regimen: [null, Validators.required],
       sourceDescription: [null, [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
-      isSerious: [null],
-      seriousness: [null],
+      isSerious: [null, Validators.required],
+      seriousness: [null, Validators.required],
       classification: [null, Validators.required],
       weight: [null, [Validators.required, Validators.min(1), Validators.max(159)]],
       height: [null, [Validators.required, Validators.min(1), Validators.max(259)]],
@@ -109,9 +106,9 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
     self.fifthFormGroup = this._formBuilder.group({
     });
     self.sixthFormGroup = this._formBuilder.group({
-      reporterName: ['', [Validators.maxLength(100), Validators.pattern("[-a-zA-Z ']*")]],
+      reporterName: ['', [Validators.required, Validators.maxLength(100), Validators.pattern("[-a-zA-Z ']*")]],
       contactNumber: ['', [Validators.maxLength(30), Validators.pattern("[-0-9+']*")]],
-      emailAddress: ['', Validators.maxLength(100)],
+      emailAddress: ['', [Validators.required, Validators.maxLength(100)]],
       profession: [null]
     });
 
@@ -148,7 +145,6 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
 
           self.loadGrids(data[1] as PatientExpandedModel, data[0] as PatientClinicalEventExpandedModel);
 
-          self.loadDataForSecondForm(data[1] as PatientExpandedModel);
           self.loadDataForThirdForm(data[0] as PatientClinicalEventExpandedModel);
           self.loadDataForFourthForm(data[0] as PatientClinicalEventExpandedModel);
           self.loadDataForSixthForm(data[0] as PatientClinicalEventExpandedModel);
@@ -202,14 +198,6 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
     });
 
     return medications;
-  }
-
-  private loadDataForSecondForm(patientModel: PatientExpandedModel)
-  {
-    let self = this;
-    let ethnicGroupAttribute = patientModel.patientAttributes.find(pa => pa.key == 'Ethnic Group');
-
-    self.updateForm(self.secondFormGroup, { 'ethnicGroup': ethnicGroupAttribute.value })
   }
 
   private loadDataForThirdForm(clinicalEventModel: PatientClinicalEventExpandedModel) {
@@ -359,9 +347,6 @@ openMedicationPopup(data: any = {}, isNew?) {
 
     const requestArray = [];
 
-    var patientCustomAttributesForUpdate = self.preparePatientCustomAttributesForUpdateModel();
-    requestArray.push(this.patientService.updatePatientCustomAttributes(self.data.patientId, patientCustomAttributesForUpdate));
-
     var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel();
     requestArray.push(this.patientService.savePatientClinicalEvent(self.data.patientId, self.data.clinicalEventId, clinicalEventForUpdate));
 
@@ -379,7 +364,6 @@ openMedicationPopup(data: any = {}, isNew?) {
         self.setBusy(false);
         self.notify('Form updated successfully!', 'Success');
 
-        self.secondFormGroup.markAsPristine();
         self.thirdFormGroup.markAsPristine();
         self.fourthFormGroup.markAsPristine();
         self.fifthFormGroup.markAsPristine();
@@ -391,20 +375,6 @@ openMedicationPopup(data: any = {}, isNew?) {
         self.setBusy(false);        
         this.handleError(error, "Error updating form");
       });
-  }
-
-  private preparePatientCustomAttributesForUpdateModel(): PatientCustomAttributesForUpdateModel {
-    let self = this;
-
-    const attributesForUpdate: AttributeValueForPostModel[] = [];
-    attributesForUpdate.push(self.prepareAttributeValue('ethnic group', 'ethnicGroup', self.secondFormGroup));
-    
-    const patientCustomAttributesForUpdate: PatientCustomAttributesForUpdateModel = 
-    {
-      attributes: attributesForUpdate
-    };
-
-    return patientCustomAttributesForUpdate;
   }
 
   private prepareAttributeValue(attributeKey: string, formKey: string, sourceForm: FormGroup): AttributeValueForPostModel {
@@ -520,7 +490,7 @@ class ViewModel {
   
   taskGrid: GridModel<TaskModel> =
       new GridModel<TaskModel>
-          (['source', 'description', 'task-type', 'task-status', 'actions']);
+          (['source', 'description', 'task-status', 'task-age', 'actions']);
 
   attachmentGrid: GridModel<FormAttachmentModel> =
     new GridModel<FormAttachmentModel>

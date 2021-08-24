@@ -78,6 +78,15 @@
                   </mat-cell>
                 </ng-container>
 
+                <ng-container matColumnDef="task-age">
+                  <mat-header-cell *matHeaderCellDef>{{'Age in days' | translate}}</mat-header-cell>
+                  <mat-cell *matCellDef="let record">
+                    <div class="p-12">
+                      <span matBadge="{{record.taskAge}}" matBadgeColor="accent"></span>
+                    </div>
+                  </mat-cell>
+                </ng-container>
+
                 <ng-container matColumnDef="actions">
                   <mat-header-cell *matHeaderCellDef>
                     {{'Actions' | translate}}
@@ -115,60 +124,32 @@
               <div fxFlex="30" class="mt-4">
                 <div class="p-2">
                   <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(1)">
-                    <mat-icon color="warn" *ngIf="secondFormGroup.invalid" class="mr-12">error</mat-icon>
-                    <mat-icon color="accent" *ngIf="secondFormGroup.valid" class="mr-12">check_circle</mat-icon>
-                    <span [class.font-weight-bold]="viewModel.currentStep == 1">Patient particulars</span>
-                  </div>
-                  <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(2)">
                     <mat-icon color="warn" *ngIf="thirdFormGroup.invalid" class="mr-12">error</mat-icon>
                     <mat-icon color="accent" *ngIf="thirdFormGroup.valid" class="mr-12">check_circle</mat-icon>
-                    <span [class.font-weight-bold]="viewModel.currentStep == 2">Adverse event details</span>
+                    <span [class.font-weight-bold]="viewModel.currentStep == 1">Adverse event details</span>
                   </div>
-                  <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(3)">
+                  <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(2)">
                     <mat-icon color="warn" *ngIf="fourthFormGroup.invalid" class="mr-12">error</mat-icon>
                     <mat-icon color="accent" *ngIf="fourthFormGroup.valid" class="mr-12">check_circle</mat-icon>
-                    <span [class.font-weight-bold]="viewModel.currentStep == 3">Management of the reaction</span>
+                    <span [class.font-weight-bold]="viewModel.currentStep == 2">Management of the reaction</span>
                   </div>
-                  <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(4)">
+                  <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(3)">
                     <mat-icon color="warn" *ngIf="fifthFormGroup.invalid" class="mr-12">error</mat-icon>
                     <mat-icon color="accent" *ngIf="fifthFormGroup.valid" class="mr-12">check_circle</mat-icon>
-                    <span [class.font-weight-bold]="viewModel.currentStep == 4">Suspected medication</span>
+                    <span [class.font-weight-bold]="viewModel.currentStep == 3">Suspected medication</span>
                   </div>
-                  <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(5)">
+                  <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(4)">
                     <mat-icon color="warn" *ngIf="sixthFormGroup.invalid" class="mr-12">error</mat-icon>
                     <mat-icon color="accent" *ngIf="sixthFormGroup.valid" class="mr-12">check_circle</mat-icon>
-                    <span [class.font-weight-bold]="viewModel.currentStep == 5">Reporter particulars</span>
+                    <span [class.font-weight-bold]="viewModel.currentStep == 4">Reporter particulars</span>
                   </div>
                   <div fxLayout="row" fxLayoutGap="1.0%" fxLayoutAlign="center" class="p-12">
-                    <button mat-flat-button color="primary" (click)="submit()" [disabled]="secondFormGroup.invalid || thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid" *ngIf="firstFormGroup.dirty || secondFormGroup.dirty || thirdFormGroup.dirty || fourthFormGroup.dirty || fifthFormGroup.dirty || sixthFormGroup.dirty">Save</button>
+                    <button mat-flat-button color="primary" (click)="submit()" [disabled]="thirdFormGroup.invalid || fourthFormGroup.invalid || fifthFormGroup.invalid" *ngIf="firstFormGroup.dirty || thirdFormGroup.dirty || fourthFormGroup.dirty || fifthFormGroup.dirty || sixthFormGroup.dirty">Save</button>
                   </div>
                 </div>
               </div>
           
               <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 1">
-                <form [formGroup]="secondFormGroup" [@fadeInOut2]="">
-          
-                  <div class="p-2">
-                    <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start">
-                      <div fxFlex="95">
-                        <mat-form-field class="full-width pl-8 pr-8 mt-12" appearance="outline">
-                          <mat-label>Ethnic group</mat-label>
-                          <mat-select formControlName="ethnicGroup" required>
-                            <mat-option value="1">Filipino</mat-option>
-                            <mat-option value="2">Chinese</mat-option>
-                            <mat-option value="3">Caucasian</mat-option>
-                          </mat-select>
-                          <mat-error *ngIf="secondFormGroup.get('ethnicGroup').hasError('required')">
-                            Field is required
-                          </mat-error>
-                        </mat-form-field>
-                      </div>
-                    </div>                      
-                  </div>
-                </form>
-              </div>
-          
-              <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 2">
                 <form [formGroup]="thirdFormGroup" [@fadeInOut2]="">
                   <mat-tab-group>
                     <mat-tab label="{{'Adverse event details' | translate}}">
@@ -189,15 +170,16 @@
                             <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="outline">
                               <mat-label>Regimen</mat-label>
                               <mat-select formControlName="regimen" required>
-                                <mat-option value="1">Conventional Treatment Regimen (CTR)</mat-option>
-                                <mat-option value="2">Standard Short Treatment Regimen (SSTR)</mat-option>
-                                <mat-option value="3">Standard Regimen Drug Resistant (SRDR)</mat-option>
-                                <mat-option value="4">9 Month Treatment Regimen (9MTR)</mat-option>
-                                <mat-option value="5">Individualized Treatment Regimen (ITR)</mat-option>
-                                <mat-option value="6">Standard Long Oral Regimen FQS</mat-option>
-                                <mat-option value="7">Standard Long Oral Regimen FQR</mat-option>
-                                <mat-option value="8">Standard Short Oral Regimen</mat-option>
-                                <mat-option value="9">BPaL</mat-option>
+                                <mat-option value="1">SSOR (3)</mat-option>
+                                <mat-option value="2">SLOR FQ-S (4)</mat-option>
+                                <mat-option value="3">SLOR FQ-R (5)</mat-option>
+                                <mat-option value="4">ITR</mat-option>
+                                <mat-option value="5">FQ susceptible MDR TB (6a)</mat-option>
+                                <mat-option value="6">FQ susceptible MDR TB (6b)</mat-option>
+                                <mat-option value="7">FQ susceptible MDR TB (6c)</mat-option>
+                                <mat-option value="8">FQ resistant MDR TB (7a)</mat-option>
+                                <mat-option value="9">FQ resistant MDR TB (7b)</mat-option>
+                                <mat-option value="10">FQ resistant MDR TB (7c)</mat-option>
                               </mat-select>
                               <mat-error *ngIf="thirdFormGroup.get('regimen').hasError('required')">
                                 Field is required
@@ -228,12 +210,15 @@
                           <div fxFlex="95">
                             <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="outline">
                               <mat-label>Do you consider the reaction to be serious?</mat-label>
-                              <mat-select formControlName="isSerious">
+                              <mat-select formControlName="isSerious" required>
                                 <mat-option value="0"></mat-option>
                                 <mat-option value="1">Yes</mat-option>
                                 <mat-option value="2">No</mat-option>
                                 <mat-option value="3">Unknown</mat-option>
                               </mat-select>
+                              <mat-error *ngIf="thirdFormGroup.get('isSerious').hasError('required')">
+                                Field is required
+                              </mat-error>
                             </mat-form-field>
                           </div>
                         </div>
@@ -242,7 +227,7 @@
                           <div fxFlex="95">
                             <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="outline">
                               <mat-label>What is the seriousness of the event?</mat-label>
-                              <mat-select formControlName="seriousness">
+                              <mat-select formControlName="seriousness" required>
                                 <mat-option value="0"></mat-option>
                                 <mat-option value="1">A congenital anomaly or birth defect</mat-option>
                                 <mat-option value="2">Persistent or significant disability or incapacity</mat-option>
@@ -252,6 +237,9 @@
                                 <mat-option value="6">Life threatening</mat-option>
                                 <mat-option value="7">A medically important event</mat-option>
                               </mat-select>
+                              <mat-error *ngIf="thirdFormGroup.get('seriousness').hasError('required')">
+                                Field is required
+                              </mat-error>
                             </mat-form-field>
                           </div>
                         </div>
@@ -406,7 +394,7 @@
                 </form>
               </div>
           
-              <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 3">
+              <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 2">
                 <form [formGroup]="fourthFormGroup" [@fadeInOut2]="">
           
                   <div class="p-2">
@@ -513,7 +501,7 @@
                 </form>
               </div>
           
-              <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 4">
+              <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 3">
                 <form [formGroup]="fifthFormGroup" [@fadeInOut2]="">
           
                   <div class="p-2">
@@ -576,14 +564,17 @@
                 </form>
               </div>
           
-              <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 5">
+              <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 4">
                 <form [formGroup]="sixthFormGroup" [@fadeInOut2]="">
                   <div class="p-2">
                     <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start">
                       <div fxFlex="95">
                         <mat-form-field class="full-width pl-8 pr-8 mt-12" appearance="outline">
                           <mat-label>Name of the reporter</mat-label>
-                          <input matInput formControlName="reporterName">
+                          <input matInput formControlName="reporterName" required>
+                          <mat-error *ngIf="sixthFormGroup.get('reporterName').hasError('required')">
+                            Field is required
+                          </mat-error>
                           <mat-error *ngIf="sixthFormGroup.get('reporterName').hasError('maxlength')">
                             {{'Maximum length exceeded' | translate}}
                           </mat-error>
@@ -613,7 +604,10 @@
                       <div fxFlex="95">
                         <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="outline">
                           <mat-label>Email address</mat-label>
-                          <input matInput formControlName="emailAddress">
+                          <input matInput formControlName="emailAddress" required>
+                          <mat-error *ngIf="sixthFormGroup.get('emailAddress').hasError('required')">
+                            Field is required
+                          </mat-error>
                           <mat-error *ngIf="sixthFormGroup.get('emailAddress').hasError('maxlength')">
                             {{'Maximum length exceeded' | translate}}
                           </mat-error>            
