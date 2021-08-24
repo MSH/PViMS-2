@@ -96,7 +96,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                 return null;
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(p => p.Id == patientsFromRepo.First().PatientId, new string[] { "PatientClinicalEvents.SourceTerminologyMedDra", "PatientConditions.TerminologyMedDra", "PatientMedications.Concept.MedicationForm", "PatientMedications.Product" });
+            var patientFromRepo = await _patientRepository.GetAsync(p => p.Id == patientsFromRepo.First().PatientId, new string[] { "PatientFacilities.Facility", "PatientClinicalEvents.SourceTerminologyMedDra", "PatientConditions.TerminologyMedDra", "PatientMedications.Concept.MedicationForm", "PatientMedications.Product" });
             if (patientFromRepo == null)
             {
                 throw new KeyNotFoundException("Unable to locate patient");
