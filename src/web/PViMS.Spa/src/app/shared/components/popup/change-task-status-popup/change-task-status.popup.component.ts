@@ -58,10 +58,12 @@ export class ChangeTaskStatusPopupComponent extends BasePopupComponent implement
       });
   }
 
-  submit() {
+
+
+  changeTaskStatus(taskStatus: 'Acknowledged' | 'On Hold' | 'Completed' | 'Cancelled' | 'Done') {
     let self = this;
     self.setBusy(true);
-
+    self.updateForm(self.itemForm, {taskStatus});
     self.reportInstanceService.changeTaskStatusCommand(this.data.workFlowGuid, self.data.reportInstanceId, self.data.reportInstanceTaskId, self.itemForm.value)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
@@ -70,6 +72,47 @@ export class ChangeTaskStatusPopupComponent extends BasePopupComponent implement
       }, error => {
         self.handleError(error, "Error saving task status");
     });
+  }
+
+  allowStatusAcknowledge(): boolean {
+    if(this.accountService.hasRole('Clinician') || this.accountService.hasRole('DataCap')) {
+      if(this.task?.taskStatus == 'New')  {
+        return true
+      }
+    }
+    return false;
+  }
+
+  allowStatusDone(): boolean {
+    if(this.accountService.hasRole('Clinician') || this.accountService.hasRole('DataCap')) {
+      if(this.task?.taskStatus == 'Acknowledged')  {
+        return true
+      }
+    }
+    return false;
+  }  
+
+  allowStatusOnHold(): boolean {
+    if(this.accountService.hasRole('Analyst')) {
+      return true
+    }
+    return false;
+  }
+
+  allowStatusCancelled(): boolean {
+    if(this.accountService.hasRole('Analyst')) {
+      return true
+    }
+    return false;
+  }
+
+  allowStatusComplete(): boolean {
+    if(this.accountService.hasRole('Analyst')) {
+      if(this.task?.taskStatus == 'Done')  {
+        return true
+      }
+    }
+    return false;
   }
 }
 
