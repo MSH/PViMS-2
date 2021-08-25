@@ -24,9 +24,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
     public class PatientsDetailQueryHandler
         : IRequestHandler<PatientsDetailQuery, LinkedCollectionResourceWrapperDto<PatientDetailDto>>
     {
+        private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly IRepositoryInt<Patient> _patientRepository;
+        private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly PVIMSDbContext _context;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
@@ -35,9 +37,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private readonly ILogger<PatientsDetailQueryHandler> _logger;
 
         public PatientsDetailQueryHandler(
+            IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<Facility> facilityRepository,
             IRepositoryInt<Patient> patientRepository,
+            IRepositoryInt<PatientCondition> patientConditionRepository,
             IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
             PVIMSDbContext dbContext,
             ITypeExtensionHandler modelExtensionBuilder,
@@ -45,9 +49,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             IMapper mapper,
             ILogger<PatientsDetailQueryHandler> logger)
         {
+            _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
             _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
@@ -72,16 +78,18 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             var firstNameParm = new SqlParameter("@FirstName", !String.IsNullOrWhiteSpace(message.FirstName) ? (Object)message.FirstName : DBNull.Value);
             var lastNameParm = new SqlParameter("@LastName", !String.IsNullOrWhiteSpace(message.LastName) ? (Object)message.LastName : DBNull.Value);
             var dateOfBirthParm = new SqlParameter("@DateOfBirth", message.DateOfBirth > DateTime.MinValue ? (Object)message.DateOfBirth : DBNull.Value);
+            var caseNumberParm = new SqlParameter("@CaseNumber", !String.IsNullOrWhiteSpace(message.CaseNumber) ? (Object)message.CaseNumber : DBNull.Value);
             var customAttributeKeyParm = new SqlParameter("@CustomAttributeKey", !String.IsNullOrWhiteSpace(message.CustomAttributeValue) ? (Object)custom.attributeKey : DBNull.Value);
             var customPathParm = new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(message.CustomAttributeValue) ? (Object)custom.path : DBNull.Value);
             var customValueParm = new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(message.CustomAttributeValue) ? (Object)message.CustomAttributeValue : DBNull.Value);
 
             var patientsFromRepo = _context.PatientLists
-                .FromSqlRaw<PatientList>($"EXECUTE spSearchPatients @FacilityID, @PatientId, @FirstName, @LastName, @DateOfBirth, @CustomAttributeKey, @CustomPath, @CustomValue"
+                .FromSqlRaw<PatientList>($"EXECUTE spSearchPatients @FacilityID, @PatientId, @FirstName, @LastName, @CaseNumber, @DateOfBirth, @CustomAttributeKey, @CustomPath, @CustomValue"
                     , facilityIdParm
                     , patientIdParm
                     , firstNameParm
                     , lastNameParm
+                    , caseNumberParm
                     , dateOfBirthParm
                     , customAttributeKeyParm
                     , customPathParm
@@ -99,6 +107,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                     var mappedPatient = _mapper.Map<PatientDetailDto>(pagedPatient);
 
                     await CustomMapAsync(pagedPatient, mappedPatient);
+                    await MapCaseNumberAsync(mappedPatient);
                     CreateLinks(mappedPatient);
 
                     mappedPatientsWithLinks.Add(mappedPatient);
@@ -174,6 +183,30 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
             var attribute = patientExtended.GetAttributeValue("Medical Record Number");
             mappedPatient.MedicalRecordNumber = attribute != null ? attribute.ToString() : "";
+        }
+
+        private async Task MapCaseNumberAsync(PatientDetailDto mappedPatient)
+        {
+            int[] terms = _patientConditionRepository.List(pc => pc.Patient.Id == mappedPatient.Id && pc.TerminologyMedDra != null && !pc.Archived && !pc.Patient.Archived, null, new string[] { "Condition", "TerminologyMedDra" })
+                .Select(p => p.TerminologyMedDra.Id)
+                .ToArray();
+            var conditionMeddras = await _conditionMeddraRepository.ListAsync(cm => terms.Contains(cm.TerminologyMedDra.Id), null, new string[] { "Condition", "TerminologyMedDra" });
+            var patientFromRepo = await _patientRepository.GetAsync(p => p.Archived == false
+                    && p.Id == mappedPatient.Id,
+                new string[] { "PatientConditions.TerminologyMedDra", "PatientConditions.Outcome", "PatientConditions.TreatmentOutcome" });
+
+            List<PatientConditionGroupDto> groupArray = new List<PatientConditionGroupDto>();
+            foreach (var conditionMeddra in conditionMeddras)
+            {
+                var currentConditionGroup = conditionMeddra.GetConditionForPatient(patientFromRepo);
+                if (currentConditionGroup != null)
+                {
+                    if(!String.IsNullOrWhiteSpace(currentConditionGroup.CaseNumber))
+                    {
+                        mappedPatient.CaseNumber.Add(currentConditionGroup.CaseNumber);
+                    }
+                }
+            }
         }
 
         private string GetSelectionValue(CustomAttributeType attributeType, string attributeKey, string selectionKey)

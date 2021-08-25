@@ -8,9 +8,34 @@ namespace PVIMS.API.Application.Validations
     {
         public PatientsDetailQueryValidator(ILogger<PatientsDetailQueryValidator> logger)
         {
-            RuleFor(query => query.FirstName).Matches(@"[-a-zA-Z ']").When(v => !string.IsNullOrEmpty(v.FirstName));
-            RuleFor(query => query.LastName).Matches(@"[-a-zA-Z ']").When(v => !string.IsNullOrEmpty(v.LastName));
-            RuleFor(query => query.CustomAttributeValue).Matches(@"[-a-zA-Z0-9 ']").When(v => !string.IsNullOrEmpty(v.CustomAttributeValue));
+            RuleFor(query => query.FacilityName)
+                .Length(0, 100)
+                .Matches(@"[-a-zA-Z ']")
+                .When(c => !string.IsNullOrEmpty(c.FacilityName))
+                .WithMessage("Facility name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
+
+            RuleFor(query => query.FirstName)
+                .Length(0, 30)
+                .Matches(@"[-a-zA-Z ']")
+                .When(c => !string.IsNullOrEmpty(c.FirstName))
+                .WithMessage("First name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
+
+            RuleFor(query => query.LastName)
+                .Length(0, 30)
+                .Matches(@"[-a-zA-Z ']")
+                .When(c => !string.IsNullOrEmpty(c.LastName))
+                .WithMessage("Last name contains invalid characters (Enter A-Z, a-z, space, apostrophe)");
+
+            RuleFor(query => query.CaseNumber)
+                .Length(0, 50)
+                .Matches(@"[-a-zA-Z0-9 .()]")
+                .When(c => !string.IsNullOrEmpty(c.CaseNumber))
+                .WithMessage("Case number contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, space, period, parentheses)");
+
+            RuleFor(query => query.CustomAttributeValue)
+                .Matches(@"[-a-zA-Z0-9 ]")
+                .When(c => !string.IsNullOrEmpty(c.CustomAttributeValue))
+                .WithMessage("Custom attribute value contains invalid characters (Enter A-Z, a-z, space, hyphen)");
 
             logger.LogTrace("----- INSTANCE CREATED - {ClassName}", GetType().Name);
         }

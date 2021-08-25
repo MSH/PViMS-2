@@ -191,6 +191,7 @@ namespace PVIMS.API.Controllers
                 patientResourceParameters.DateOfBirth,
                 patientResourceParameters.FirstName,
                 patientResourceParameters.LastName,
+                patientResourceParameters.CaseNumber,
                 patientResourceParameters.PageNumber,
                 patientResourceParameters.PageSize);
 

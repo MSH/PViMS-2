@@ -76,6 +76,12 @@ namespace PVIMS.API.Models
         public string MedicalRecordNumber { get; set; }
 
         /// <summary>
+        /// Primary condition group case numbers for the patient
+        /// </summary>
+        [DataMember]
+        public List<string> CaseNumber { get; set; } = new List<string>();
+
+        /// <summary>
         /// Free format notes for the patient
         /// </summary>
         [DataMember]

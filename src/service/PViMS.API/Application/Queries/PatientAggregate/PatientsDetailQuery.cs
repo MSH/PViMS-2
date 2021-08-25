@@ -34,6 +34,9 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         public DateTime DateOfBirth { get; private set; }
 
         [DataMember]
+        public string CaseNumber { get; private set; }
+
+        [DataMember]
         public int PageNumber { get; private set; }
 
         [DataMember]
@@ -43,7 +46,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         {
         }
 
-        public PatientsDetailQuery(string orderBy, string facilityName, int customAttributeId, string customAttributeValue, int patientId, DateTime dateOfBirth, string firstName, string lastName, int pageNumber, int pageSize) : this()
+        public PatientsDetailQuery(string orderBy, string facilityName, int customAttributeId, string customAttributeValue, int patientId, DateTime dateOfBirth, string firstName, string lastName, string caseNumber, int pageNumber, int pageSize) : this()
         {
             OrderBy = orderBy;
             FacilityName = facilityName;
@@ -53,6 +56,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             DateOfBirth = dateOfBirth;
             FirstName = firstName;
             LastName = lastName;
+            CaseNumber = caseNumber;
             PageNumber = pageNumber;
             PageSize = pageSize;
         }
