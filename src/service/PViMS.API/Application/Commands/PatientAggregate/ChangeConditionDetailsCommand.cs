@@ -31,6 +31,9 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         public string TreatmentOutcome { get; private set; }
 
         [DataMember]
+        public string CaseNumber { get; private set; }
+
+        [DataMember]
         public string Comments { get; private set; }
 
         [DataMember]
@@ -40,7 +43,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         {
         }
 
-        public ChangeConditionDetailsCommand(int patientId, int patientConditionId, int sourceTerminologyMedDraId, DateTime startDate, DateTime? outcomeDate, string outcome, string treatmentOutcome, string comments, IDictionary<int, string> attributes) : this()
+        public ChangeConditionDetailsCommand(int patientId, int patientConditionId, int sourceTerminologyMedDraId, DateTime startDate, DateTime? outcomeDate, string outcome, string treatmentOutcome, string caseNumber, string comments, IDictionary<int, string> attributes) : this()
         {
             PatientId = patientId;
             PatientConditionId = patientConditionId;
@@ -49,6 +52,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             OutcomeDate = outcomeDate;
             Outcome = outcome;
             TreatmentOutcome = treatmentOutcome;
+            CaseNumber = caseNumber;
             Comments = comments;
             Attributes = attributes;
         }

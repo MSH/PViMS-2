@@ -28,15 +28,16 @@ import { ClinicalEventPopupComponent } from '../../shared/clinical-event-popup/c
 import { GenericDeletePopupComponent } from '../../shared/generic-delete-popup/generic-delete.popup.component';
 import { ConditionViewPopupComponent } from '../../shared/condition-view-popup/condition-view.popup.component';
 import { GenericArchivePopupComponent } from '../../shared/generic-archive-popup/generic-archive.popup.component';
-import { ClinicalEventViewPopupComponent } from '../../shared/clinical-event-view-popup/clinical-event-view.popup.component';
 import { MedicationPopupComponent } from '../../shared/medication-popup/medication.popup.component';
 import { LabTestPopupComponent } from '../../shared/lab-test-popup/lab-test.popup.component';
 import { EnrolmentIdentifierModel } from 'app/shared/models/cohort/enrolment.identifier.model';
+import { ClinicalEventViewPopupComponent } from '../../shared/clinical-event-view-popup/clinical-event-view.popup.component';
 
 @Component({
   templateUrl: './patient-view.component.html',
   styles: [`
     .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-case-number { flex: 0 0 15% !important; width: 15% !important; }
     .mat-column-encounter-date { flex: 0 0 20% !important; width: 20% !important; }
     .mat-column-effective-date { flex: 0 0 20% !important; width: 20% !important; }
     .mat-column-start-date { flex: 0 0 15% !important; width: 15% !important; }
@@ -585,7 +586,7 @@ class ViewGridModel {
 
   conditionGrid: GridModel<ConditionGridRecordModel> =
   new GridModel<ConditionGridRecordModel>
-      (['condition-name', 'start-date', 'outcome-date', 'outcome', 'actions']);
+      (['condition-name', 'case-number', 'start-date', 'outcome-date', 'outcome', 'actions']);
 
   clinicalEventGrid: GridModel<ClinicalEventGridRecordModel> =
   new GridModel<ClinicalEventGridRecordModel>

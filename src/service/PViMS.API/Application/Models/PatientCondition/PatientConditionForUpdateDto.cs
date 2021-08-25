@@ -41,6 +41,11 @@ namespace PVIMS.API.Models
         public string TreatmentOutcome { get; set; }
 
         /// <summary>
+        /// Case number associated to the condition
+        /// </summary>
+        public string CaseNumber { get; set; }
+
+        /// <summary>
         /// Comments associated to the condition
         /// </summary>
         [StringLength(500)]

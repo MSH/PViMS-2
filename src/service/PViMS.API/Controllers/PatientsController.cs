@@ -236,8 +236,7 @@ namespace PVIMS.API.Controllers
             [FromQuery] PatientByConditionResourceParameters patientByConditionResourceParameters)
         {
             var query = new PatientExpandedByConditionTermQuery(
-                patientByConditionResourceParameters.CustomAttributeKey,
-                patientByConditionResourceParameters.CustomAttributeValue);
+                patientByConditionResourceParameters.CaseNumber);
 
             _logger.LogInformation(
                 "----- Sending query: PatientExpandedByConditionTermQuery");
@@ -659,7 +658,7 @@ namespace PVIMS.API.Controllers
             }
 
             var command = new AddPatientCommand(patientForCreation.FirstName, patientForCreation.LastName, patientForCreation.MiddleName, patientForCreation.DateOfBirth, patientForCreation.FacilityName,
-                patientForCreation.ConditionGroupId, patientForCreation.MeddraTermId, patientForCreation.CohortGroupId, patientForCreation.EnroledDate, patientForCreation.StartDate, patientForCreation.OutcomeDate, patientForCreation.Comments,
+                patientForCreation.ConditionGroupId, patientForCreation.MeddraTermId, patientForCreation.CohortGroupId, patientForCreation.EnroledDate, patientForCreation.StartDate, patientForCreation.OutcomeDate, patientForCreation.CaseNumber, patientForCreation.Comments,
                 patientForCreation.EncounterTypeId, patientForCreation.PriorityId, patientForCreation.EncounterDate, patientForCreation.Attributes);
 
             _logger.LogInformation(

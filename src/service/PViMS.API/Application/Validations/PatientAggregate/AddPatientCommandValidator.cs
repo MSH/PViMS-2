@@ -68,6 +68,12 @@ namespace PVIMS.API.Application.Validations
                 .When(c => c.EnroledDate.HasValue && c.CohortGroupId.HasValue)
                 .WithMessage("Cohort Enrollment Date should be should be after Birth Date");
 
+            RuleFor(command => command.CaseNumber)
+                .Length(0, 50)
+                .Matches(@"[-a-zA-Z0-9 .()]")
+                .When(c => !string.IsNullOrEmpty(c.Comments))
+                .WithMessage("Case number contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, space, period, parentheses)");
+
             RuleFor(command => command.Comments)
                 .Length(0, 100)
                 .Matches(@"[-a-zA-Z0-9 .,()']")

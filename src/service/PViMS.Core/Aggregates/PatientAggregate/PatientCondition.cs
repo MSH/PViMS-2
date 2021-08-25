@@ -12,12 +12,13 @@ namespace PVIMS.Core.Entities
             PatientConditionGuid = Guid.NewGuid();
         }
 
-        public void ChangeConditionDetails(DateTime onsetDate, DateTime? outcomeDate, Outcome outcome, TreatmentOutcome treatmentOutcome, string comments)
+        public void ChangeConditionDetails(DateTime onsetDate, DateTime? outcomeDate, Outcome outcome, TreatmentOutcome treatmentOutcome, string caseNumber, string comments)
         {
             OnsetDate = onsetDate;
             OutcomeDate = outcomeDate;
             Outcome = outcome;
             TreatmentOutcome = treatmentOutcome;
+            CaseNumber = caseNumber;
             Comments = comments;
         }
 
@@ -35,6 +36,7 @@ namespace PVIMS.Core.Entities
         public int? OutcomeId { get; set; }
         public int? TreatmentOutcomeId { get; set; }
         public string ConditionSource { get; set; }
+        public string CaseNumber { get; set; }
 
         public virtual TerminologyMedDra TerminologyMedDra { get; set; }
         public virtual Outcome Outcome { get; set; }

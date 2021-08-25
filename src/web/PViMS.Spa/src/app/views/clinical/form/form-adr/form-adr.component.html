@@ -89,8 +89,8 @@
     
               <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
                 <mat-form-field class="p-8 full-width">
-                  <input matInput formControlName="customAttributeValue" placeholder="{{'TB case number' | translate}}" required>
-                  <mat-error *ngIf="firstFormGroup.get('customAttributeValue').hasError('required')">
+                  <input matInput formControlName="caseNumber" placeholder="{{'TB case number' | translate}}" required>
+                  <mat-error *ngIf="firstFormGroup.get('caseNumber').hasError('required')">
                     {{'This is a required field' | translate}}
                   </mat-error>
                 </mat-form-field>              

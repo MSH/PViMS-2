@@ -461,7 +461,14 @@
                                 {{record.sourceDescription}}
                             </mat-cell>
                         </ng-container>
-            
+
+                        <ng-container matColumnDef="case-number">
+                          <mat-header-cell *matHeaderCellDef>{{'Case number' | translate}}</mat-header-cell>
+                          <mat-cell *matCellDef="let record">
+                              {{record.caseNumber}}
+                          </mat-cell>
+                        </ng-container>
+                      
                         <ng-container matColumnDef="start-date">
                             <mat-header-cell *matHeaderCellDef>{{'Start date' | translate}}</mat-header-cell>
                             <mat-cell *matCellDef="let record">

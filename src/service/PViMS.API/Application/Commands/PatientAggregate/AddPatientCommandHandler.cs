@@ -30,7 +30,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IPatientService _patientService;
         private readonly IMapper _mapper;
-        private readonly ILogger<AddMedicationToPatientCommandHandler> _logger;
+        private readonly ILogger<AddPatientCommandHandler> _logger;
 
         public AddPatientCommandHandler(
             ITypeExtensionHandler modelExtensionBuilder,
@@ -43,7 +43,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             ILinkGeneratorService linkGeneratorService,
             IPatientService patientService,
             IMapper mapper,
-            ILogger<AddMedicationToPatientCommandHandler> logger)
+            ILogger<AddPatientCommandHandler> logger)
         {
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
@@ -172,7 +172,9 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                 MeddraTermId = sourceTermFromRepo.Id,
                 ConditionSource = sourceTermFromRepo.MedDraTerm,
                 OnsetDate = message.StartDate,
-                OutcomeDate = message.OutcomeDate
+                OutcomeDate = message.OutcomeDate,
+                Comments = message.Comments,
+                CaseNumber = message.CaseNumber
             };
 
             patientDetail.Conditions.Add(conditionDetail);

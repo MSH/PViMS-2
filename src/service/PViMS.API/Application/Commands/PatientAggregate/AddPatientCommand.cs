@@ -47,6 +47,9 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         public string Comments { get; set; }
 
         [DataMember]
+        public string CaseNumber { get; set; }
+
+        [DataMember]
         public int EncounterTypeId { get; set; }
 
         [DataMember]
@@ -58,7 +61,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         [DataMember]
         public IDictionary<int, string> Attributes { get; private set; }
 
-        public AddPatientCommand(string firstName, string lastName, string middleName, DateTime dateOfBirth, string facilityName, int conditionGroupId, int meddraTermId, int? cohortGroupId, DateTime? enroledDate, DateTime startDate, DateTime? outcomeDate, string comments, int encounterTypeId, int priorityId, DateTime encounterDate, IDictionary<int, string> attributes)
+        public AddPatientCommand(string firstName, string lastName, string middleName, DateTime dateOfBirth, string facilityName, int conditionGroupId, int meddraTermId, int? cohortGroupId, DateTime? enroledDate, DateTime startDate, DateTime? outcomeDate, string caseNumber, string comments, int encounterTypeId, int priorityId, DateTime encounterDate, IDictionary<int, string> attributes)
         {
             FirstName = firstName;
             LastName = lastName;
@@ -71,6 +74,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             EnroledDate = enroledDate;
             StartDate = startDate;
             OutcomeDate = outcomeDate;
+            CaseNumber = caseNumber;
             Comments = comments;
             EncounterTypeId = encounterTypeId;
             PriorityId = priorityId;

@@ -31,6 +31,12 @@ namespace PVIMS.API.Application.Validations
                 .Length(0, 50)
                 .When(c => !string.IsNullOrEmpty(c.TreatmentOutcome));
 
+            RuleFor(command => command.CaseNumber)
+                .Length(0, 50)
+                .Matches(@"[-a-zA-Z0-9 .()]")
+                .When(c => !string.IsNullOrEmpty(c.Comments))
+                .WithMessage("Case number contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, space, period, parentheses)");
+
             RuleFor(command => command.Comments)
                 .Length(0, 500)
                 .Matches(@"[-a-zA-Z0-9 .']")

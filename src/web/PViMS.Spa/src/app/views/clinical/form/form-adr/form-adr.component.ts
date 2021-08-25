@@ -96,8 +96,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       formCompleted: ['']
     });
     self.firstFormGroup = this._formBuilder.group({
-      customAttributeKey: [this.viewModel.customAttributeKey],
-      customAttributeValue: ['', Validators.required],
+      caseNumber: ['', Validators.required],
       patientId: [''],
       patientIdentifier: [''],
       patientFirstName: [''],
@@ -231,7 +230,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.updateForm(self.firstFormGroup, {patientId: result.id});
           self.updateForm(self.firstFormGroup, {patientFirstName: result.firstName});
           self.updateForm(self.firstFormGroup, {patientLastName: result.lastName});
-          self.updateForm(self.firstFormGroup, {patientIdentifier: self.firstFormGroup.get('customAttributeValue').value});
+          self.updateForm(self.firstFormGroup, {patientIdentifier: self.firstFormGroup.get('caseNumber').value});
           self.updateForm(self.firstFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Gender")});
           self.updateForm(self.firstFormGroup, {ethnicity: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Ethnic Group")});
 

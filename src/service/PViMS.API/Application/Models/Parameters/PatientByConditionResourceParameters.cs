@@ -3,13 +3,8 @@
     public class PatientByConditionResourceParameters : BaseResourceParameters
     {
         /// <summary>
-        /// Filter patients by custom attribute key
+        /// Filter patients by condition case number
         /// </summary>
-        public string CustomAttributeKey { get; set; } = "";
-
-        /// <summary>
-        /// Filter patients by custom attribute value
-        /// </summary>
-        public string CustomAttributeValue { get; set; } = "";
+        public string CaseNumber { get; set; } = "";
     }
 }

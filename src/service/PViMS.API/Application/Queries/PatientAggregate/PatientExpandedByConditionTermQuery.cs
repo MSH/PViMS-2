@@ -9,19 +9,15 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         : IRequest<PatientExpandedDto>
     {
         [DataMember]
-        public string CustomAttributeKey { get; private set; }
-
-        [DataMember]
-        public string CustomAttributeValue { get; private set; }
+        public string CaseNumber { get; private set; }
 
         public PatientExpandedByConditionTermQuery()
         {
         }
 
-        public PatientExpandedByConditionTermQuery(string customAttributeKey, string customAttributeValue) : this()
+        public PatientExpandedByConditionTermQuery(string caseNumber) : this()
         {
-            CustomAttributeKey = customAttributeKey;
-            CustomAttributeValue = customAttributeValue;
+            CaseNumber = caseNumber;
         }
     }
 }

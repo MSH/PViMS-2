@@ -100,7 +100,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                 conditionDetail.InvalidAttributes.ForEach(element => throw new DomainException(element));
             }
 
-            patientFromRepo.ChangeConditionDetails(message.PatientConditionId, message.SourceTerminologyMedDraId, message.StartDate, message.OutcomeDate, outcomeFromRepo, treatmentOutcomeFromRepo, message.Comments);
+            patientFromRepo.ChangeConditionDetails(message.PatientConditionId, message.SourceTerminologyMedDraId, message.StartDate, message.OutcomeDate, outcomeFromRepo, treatmentOutcomeFromRepo, message.CaseNumber, message.Comments);
             _modelExtensionBuilder.UpdateExtendable(patientFromRepo.PatientConditions.Single(pm => pm.Id == message.PatientConditionId), conditionDetail.CustomAttributes, "Admin");
 
             if (outcomeFromRepo?.Description == "Fatal" && patientFromRepo.GetCurrentStatus().PatientStatus.Description != "Died")

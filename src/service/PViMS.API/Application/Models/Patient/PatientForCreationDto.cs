@@ -61,7 +61,12 @@ namespace PVIMS.API.Models
         public DateTime? OutcomeDate { get; set; }
 
         /// <summary>
-        /// Any comments associated to th
+        /// The case number of the primary condition
+        /// </summary>
+        public string CaseNumber { get; set; }
+
+        /// <summary>
+        /// Any comments associated to the primary condition
         /// </summary>
         public string Comments { get; set; }
 

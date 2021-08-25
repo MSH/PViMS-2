@@ -27,6 +27,9 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.Property(e => e.ConditionSource)
                 .HasMaxLength(200);
 
+            configuration.Property(e => e.CaseNumber)
+                .HasMaxLength(50);
+
             configuration.Property(e => e.CustomAttributesXmlSerialised)
                 .HasColumnType("xml");
 

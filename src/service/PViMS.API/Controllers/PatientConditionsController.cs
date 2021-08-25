@@ -214,6 +214,7 @@ namespace PVIMS.API.Controllers
                                 conditionForUpdate.OutcomeDate, 
                                 outcomeFromRepo, 
                                 treatmentOutcomeFromRepo, 
+                                conditionForUpdate.CaseNumber,
                                 conditionForUpdate.Comments, 
                                 conditionForUpdate.SourceDescription,
                                 _patientStatusRepository.Get(ps => ps.Description == "Died"));
@@ -258,7 +259,7 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var command = new ChangeConditionDetailsCommand(patientId, id, conditionForUpdate.SourceTerminologyMedDraId, conditionForUpdate.StartDate, conditionForUpdate.OutcomeDate, conditionForUpdate.Outcome, conditionForUpdate.TreatmentOutcome, conditionForUpdate.Comments, conditionForUpdate.Attributes);
+            var command = new ChangeConditionDetailsCommand(patientId, id, conditionForUpdate.SourceTerminologyMedDraId, conditionForUpdate.StartDate, conditionForUpdate.OutcomeDate, conditionForUpdate.Outcome, conditionForUpdate.TreatmentOutcome, conditionForUpdate.CaseNumber, conditionForUpdate.Comments, conditionForUpdate.Attributes);
 
             _logger.LogInformation(
                 "----- Sending command: ChangeConditionDetailsCommand - {patientId}: {patientConditionId}",

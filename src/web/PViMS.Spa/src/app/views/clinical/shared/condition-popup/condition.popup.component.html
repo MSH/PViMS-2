@@ -11,7 +11,7 @@
       <div fxFlex="100" class="pr-1">
         <mat-tab-group>
           <mat-tab label="{{'Basic Information' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 300px;">
+            <mat-card-content class="m-1 p-5" style="height: 400px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
                 <div fxFlex="100" class="pr-1">
                   <mat-form-field class="p-8 full-width">
@@ -80,6 +80,19 @@
                   {{"L_TEXT_5" | translate }}
                 </div>
 
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width">
+                      <input matInput formControlName="caseNumber" placeholder="{{'Case number' | translate }}">
+                      <mat-hint>{{'Maximum length' | translate}} 50</mat-hint> 
+                      <mat-error *ngIf="viewModelForm.get('caseNumber').hasError('maxlength')">
+                        {{'Maximum length exceeded' | translate}}
+                      </mat-error>            
+                      <mat-error *ngIf="viewModelForm.get('caseNumber').hasError('pattern')">
+                        {{'Value contains invalid characters' | translate}} (Enter A-Z, a-z, 0-9, hyphen, space, period, parentheses)
+                      </mat-error>
+                  </mat-form-field>
+                </div>
+
                 <div fxFlex="100" class="pr-1">
                   <mat-form-field class="p-8 full-width">
                     <input matInput formControlName="comments" placeholder="{{'Comments' | translate }}">
@@ -97,7 +110,7 @@
             </mat-card-content>
           </mat-tab>
           <mat-tab label="{{'Detail Information' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 300px;">
+            <mat-card-content class="m-1 p-5" style="height: 400px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" formGroupName="attributes">
                 <div fxFlex="50" class="pr-1" *ngFor="let attribute of customAttributeList">
                   <mat-form-field class="p-8 full-width" *ngIf="attribute.customAttributeType == 'String'">

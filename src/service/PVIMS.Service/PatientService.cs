@@ -473,7 +473,9 @@ namespace PVIMS.Services
                     ConditionSource = condition.ConditionSource,
                     TerminologyMedDra = terminologyMedDra,
                     OnsetDate = Convert.ToDateTime(condition.OnsetDate),
-                    TreatmentOutcome = treatmentOutcome
+                    TreatmentOutcome = treatmentOutcome,
+                    CaseNumber = condition.CaseNumber,
+                    Comments = condition.Comments
                 };
 
                 // Custom Property handling

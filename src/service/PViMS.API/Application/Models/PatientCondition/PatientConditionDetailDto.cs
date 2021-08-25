@@ -52,6 +52,12 @@ namespace PVIMS.API.Models
         public string TreatmentOutcome { get; set; }
 
         /// <summary>
+        /// The case number of the condition episode
+        /// </summary>
+        [DataMember]
+        public string CaseNumber { get; set; }
+
+        /// <summary>
         /// A list of custom attributes associated to the patient condition
         /// </summary>
         [DataMember]

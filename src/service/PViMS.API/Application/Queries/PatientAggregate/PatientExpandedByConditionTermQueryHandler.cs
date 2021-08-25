@@ -26,7 +26,6 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
         private readonly IRepositoryInt<CohortGroupEnrolment> _cohortGroupEnrolmentRepository;
         private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
-        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
@@ -44,7 +43,6 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             IRepositoryInt<CohortGroup> cohortGroupRepository,
             IRepositoryInt<CohortGroupEnrolment> cohortGroupEnrolmentRepository,
             IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
-            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<PatientCondition> patientConditionRepository,
@@ -61,7 +59,6 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
             _cohortGroupEnrolmentRepository = cohortGroupEnrolmentRepository ?? throw new ArgumentNullException(nameof(cohortGroupEnrolmentRepository));
             _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
-            _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
@@ -78,17 +75,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
         public async Task<PatientExpandedDto> Handle(PatientExpandedByConditionTermQuery message, CancellationToken cancellationToken)
         {
-            var custom = await GetCustomAsync(message.CustomAttributeKey);
-
-            var customAttributeKeyParm = new SqlParameter("@CustomAttributeKey", !String.IsNullOrWhiteSpace(message.CustomAttributeValue) ? (Object)custom.attributeKey : DBNull.Value);
-            var customPathParm = new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(message.CustomAttributeValue) ? (Object)custom.path : DBNull.Value);
-            var customValueParm = new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(message.CustomAttributeValue) ? (Object)message.CustomAttributeValue : DBNull.Value);
+            var caseNumberParm = new SqlParameter("@CaseNumber", !String.IsNullOrWhiteSpace(message.CaseNumber) ? (Object)message.CaseNumber : DBNull.Value);
 
             var patientsFromRepo = _context.PatientLists
-                .FromSqlRaw<PatientList>($"EXECUTE spSearchPatientsByCondition @CustomAttributeKey, @CustomPath, @CustomValue"
-                    , customAttributeKeyParm
-                    , customPathParm
-                    , customValueParm)
+                .FromSqlRaw<PatientList>($"EXECUTE spSearchPatientsByConditionCaseNumber @CaseNumber"
+                    , caseNumberParm)
                 .AsEnumerable();
 
             if(patientsFromRepo.Count() != 1)
@@ -108,20 +99,6 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             CreateLinks(mappedPatient);
 
             return mappedPatient;
-        }
-
-        private async Task<(string path, string attributeKey)> GetCustomAsync(string customAttributeKey)
-        {
-            if (!String.IsNullOrEmpty(customAttributeKey))
-            {
-                var customAttribute = await _customAttributeRepository.GetAsync(ca => ca.AttributeKey == customAttributeKey && ca.ExtendableTypeName == "PatientCondition");
-                if (customAttribute != null)
-                {
-                    return (customAttribute.CustomAttributeType == CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute", customAttribute.AttributeKey);
-                }
-            }
-
-            return (string.Empty, string.Empty);
         }
 
         private async Task CustomMapAsync(Patient patientFromRepo, PatientExpandedDto mappedPatient)

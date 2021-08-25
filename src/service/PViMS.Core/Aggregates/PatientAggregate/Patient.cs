@@ -202,6 +202,7 @@ namespace PVIMS.Core.Entities
             DateTime? outComeDate, 
             Outcome outcome, 
             TreatmentOutcome treatmentOutcome, 
+            string caseNumber,
             string comments,
             string conditionSource,
             PatientStatus deceasedStatus)
@@ -218,6 +219,7 @@ namespace PVIMS.Core.Entities
                     OutcomeDate = outComeDate,
                     Outcome = outcome,
                     TreatmentOutcome = treatmentOutcome,
+                    CaseNumber = caseNumber,
                     Comments = comments
                 };
 
@@ -504,7 +506,7 @@ namespace PVIMS.Core.Entities
             patientClinicalEvent.ChangeClinicalEventDetails(onsetDate, resolutionDate, sourceTerminology, sourceDescription);
         }
 
-        public void ChangeConditionDetails(int patientConditionId, int sourceTerminologyMedDraId, DateTime startDate, DateTime? outcomeDate, Outcome outcome, TreatmentOutcome treatmentOutcome, string comments)
+        public void ChangeConditionDetails(int patientConditionId, int sourceTerminologyMedDraId, DateTime startDate, DateTime? outcomeDate, Outcome outcome, TreatmentOutcome treatmentOutcome, string caseNumber, string comments)
         {
             var patientCondition = PatientConditions.SingleOrDefault(t => t.Id == patientConditionId);
             if (patientCondition == null)
@@ -562,7 +564,7 @@ namespace PVIMS.Core.Entities
                 }
             }
 
-            patientCondition.ChangeConditionDetails(startDate, outcomeDate, outcome, treatmentOutcome, comments);
+            patientCondition.ChangeConditionDetails(startDate, outcomeDate, outcome, treatmentOutcome, caseNumber, comments);
         }
 
         public void ChangeMedicationDetails(int patientMedicationId, DateTime startDate, DateTime? endDate, string dose, string doseFrequency, string doseUnit)

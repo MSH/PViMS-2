@@ -4,18 +4,16 @@
 **			  where native support for the XML column type is non-existent
 **
 ***************************************************************************************************************************/
-CREATE Procedure [dbo].[spSearchPatientsByCondition]
+CREATE Procedure [dbo].[spSearchPatientsByConditionCaseNumber]
 (
-	@CustomAttributeKey varchar(MAX) = NULL,
-	@CustomPath varchar(25) = NULL,
-	@CustomValue varchar(MAX) = NULL
+	@CaseNumber varchar(50) = NULL
 )
 --WITH ENCRYPTION
 AS
 
 /******************************************************************************
 **	File: 
-**	Name: dbo.spSearchPatientsByCondition
+**	Name: dbo.spSearchPatientsByConditionCaseNumber
 **	Desc: 
 **
 **	This template can be customized:
@@ -42,10 +40,6 @@ AS
 BEGIN
 	SET NOCOUNT ON
 
-	SET @CustomValue = TRIM(@CustomValue)
-	SET @CustomAttributeKey = TRIM(@CustomAttributeKey)
-	SET @CustomPath = TRIM(@CustomPath)
-
 	SELECT	p.Id AS PatientId, 
 			p.FirstName, 
 			p.Surname, 
@@ -57,8 +51,7 @@ BEGIN
 			INNER JOIN PatientCondition pc ON p.Id = pc.Patient_Id
 			INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
 			INNER JOIN Facility f ON pf.Facility_Id = f.Id
-		CROSS APPLY pc.CustomAttributesXmlSerialised.nodes('CustomAttributeSet/CustomStringAttribute') as X(Y)
 		WHERE p.Archived = 0
-			AND ((@CustomValue IS NOT NULL AND X.Y.value('(Key)[1]', 'VARCHAR(MAX)') = @CustomAttributeKey AND X.Y.value('(Value)[1]', 'VARCHAR(MAX)')  = @CustomValue) OR (@CustomValue IS NULL AND 1 = 1))
+			AND ((@CaseNumber IS NOT NULL AND pc.CaseNumber = @CaseNumber) OR (@CaseNumber IS NULL AND 1 = 1))
 	ORDER BY p.Id desc
 END

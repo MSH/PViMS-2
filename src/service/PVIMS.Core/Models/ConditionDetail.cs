@@ -15,6 +15,8 @@ namespace PVIMS.Core.Models
 
         public string TreatmentOutcome { get; set; }
 
+        public string CaseNumber { get; set; }
+
         public string Comments { get; set; }
     }
 }
