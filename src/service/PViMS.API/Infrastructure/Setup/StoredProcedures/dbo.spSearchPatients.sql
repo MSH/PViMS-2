@@ -71,14 +71,13 @@ BEGIN
 			FROM Patient p
 				INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
 				INNER JOIN Facility f ON pf.Facility_Id = f.Id
-				LEFT JOIN PatientCondition pc ON p.Id = pc.Patient_Id
 			CROSS APPLY p.CustomAttributesXmlSerialised.nodes('CustomAttributeSet/CustomStringAttribute') as X(Y)
 			WHERE p.Archived = 0
 				AND ((@FacilityId > 0 AND pf.Facility_Id = @FacilityId) OR (@FacilityId = 0 AND 1 = 1))
 				AND ((@PatientId > 0 AND p.Id = @PatientId) OR (@PatientId = 0 AND 1 = 1))
 				AND ((@FirstName IS NOT NULL AND p.FirstName LIKE @FirstName) OR (@FirstName IS NULL AND 1 = 1))
 				AND ((@LastName IS NOT NULL AND p.Surname LIKE @LastName) OR (@LastName IS NULL AND 1 = 1))
-				AND ((@CaseNumber IS NOT NULL AND pc.CaseNumber = @LastName) OR (@CaseNumber IS NULL AND 1 = 1))
+				AND ((@CaseNumber IS NOT NULL AND EXISTS(SELECT Id FROM PatientCondition pc WHERE pc.Patient_Id = p.id AND pc.CaseNumber = @CaseNumber)) OR (@CaseNumber IS NULL AND 1 = 1))
 				AND ((@DateOfBirth IS NOT NULL AND p.DateOfBirth = @DateOfBirth) OR (@DateOfBirth IS NULL AND 1 = 1))
 				AND ((@CustomValue IS NOT NULL AND X.Y.value('(Key)[1]', 'VARCHAR(MAX)') = @CustomAttributeKey AND X.Y.value('(Value)[1]', 'VARCHAR(MAX)')  LIKE @CustomValue) OR (@CustomValue IS NULL AND 1 = 1))
 		ORDER BY p.Id desc
@@ -94,13 +93,12 @@ BEGIN
 			FROM Patient p
 				INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
 				INNER JOIN Facility f ON pf.Facility_Id = f.Id
-				LEFT JOIN PatientCondition pc ON p.Id = pc.Patient_Id
 			WHERE p.Archived = 0
 				AND ((@FacilityId > 0 AND pf.Facility_Id = @FacilityId) OR (@FacilityId = 0 AND 1 = 1))
 				AND ((@PatientId > 0 AND p.Id = @PatientId) OR (@PatientId = 0 AND 1 = 1))
 				AND ((@FirstName IS NOT NULL AND p.FirstName LIKE @FirstName) OR (@FirstName IS NULL AND 1 = 1))
 				AND ((@LastName IS NOT NULL AND p.Surname LIKE @LastName) OR (@LastName IS NULL AND 1 = 1))
-				AND ((@CaseNumber IS NOT NULL AND pc.CaseNumber = @LastName) OR (@CaseNumber IS NULL AND 1 = 1))
+				AND ((@CaseNumber IS NOT NULL AND EXISTS(SELECT Id FROM PatientCondition pc WHERE pc.Patient_Id = p.id AND pc.CaseNumber = @CaseNumber)) OR (@CaseNumber IS NULL AND 1 = 1))
 				AND ((@DateOfBirth IS NOT NULL AND p.DateOfBirth = @DateOfBirth) OR (@DateOfBirth IS NULL AND 1 = 1))
 		ORDER BY p.Id desc
 	END
