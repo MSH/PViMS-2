@@ -226,13 +226,16 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.viewModel.errorFindingPatient = false;
           self.viewModel.patientFound = true;
 
-          self.updateForm(self.firstFormGroup, result);
           self.updateForm(self.firstFormGroup, {patientId: result.id});
           self.updateForm(self.firstFormGroup, {patientFirstName: result.firstName});
           self.updateForm(self.firstFormGroup, {patientLastName: result.lastName});
+          self.updateForm(self.firstFormGroup, {dateOfBirth: result.dateOfBirth});
+          self.updateForm(self.firstFormGroup, {age: result.age});
+          self.updateForm(self.firstFormGroup, {ageGroup: result.ageGroup});
           self.updateForm(self.firstFormGroup, {patientIdentifier: self.firstFormGroup.get('caseNumber').value});
           self.updateForm(self.firstFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Gender")});
           self.updateForm(self.firstFormGroup, {ethnicity: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Ethnic Group")});
+          self.updateForm(self.firstFormGroup, {facilityName: result.facilityName});
 
           self.viewModel.medications = self.mapMedicationForUpdateModels(result.patientMedications);
           self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
