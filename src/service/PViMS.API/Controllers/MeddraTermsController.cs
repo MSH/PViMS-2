@@ -247,7 +247,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetMeddraTermAsync<T>(long id) where T : class
         {
-            var meddraTermFromRepo = await _termsRepository.GetAsync(t => t.Id == id);
+            var meddraTermFromRepo = await _termsRepository.GetAsync(t => t.Id == id, new string[] { "Children" });
 
             if (meddraTermFromRepo != null)
             {
