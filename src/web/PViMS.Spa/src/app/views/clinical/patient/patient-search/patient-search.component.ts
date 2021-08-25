@@ -83,6 +83,7 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
       firstName: [this.viewModel.firstName, [Validators.maxLength(30), Validators.pattern("[-a-zA-Z ']*")]],
       lastName: [this.viewModel.lastName, [Validators.maxLength(30), Validators.pattern("[-a-zA-Z ']*")]], 
       dateOfBirth: [this.viewModel.dateOfBirth],
+      caseNumber: [this.viewModel.caseNumber, [Validators.maxLength(50), Validators.pattern("[-a-zA-Z0-9 .()]*")]],
       customAttributeId: [this.viewModel.customAttributeId],
       customAttributeValue: [this.viewModel.customAttributeValue, [Validators.maxLength(150), Validators.pattern("[-a-zA-Z0-9/ ']*")]]
     });
@@ -121,9 +122,9 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-            self.viewModel.mainGrid.updateAdvance(result);
+          self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-            self.throwError(error, error.statusText);
+          self.handleError(error, "Error fetching patients");
         });
   }  
 
@@ -180,13 +181,14 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['id', 'first-name', 'last-name', 'facility', 'medical-record-number',
+          (['id', 'first-name', 'last-name', 'facility', 'case-number',
               'date-of-birth', 'last-encounter', 'actions']);
 
   facilityName: string;
   patientId: number;
   firstName: string;
   lastName: string;
+  caseNumber: string;
   dateOfBirth: Moment;
   customAttributeId: number;
   customAttributeValue: string;
