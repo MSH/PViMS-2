@@ -61,8 +61,8 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
     self.arrayAttributes = [];
     self.viewModelForm = this._formBuilder.group({
       sourceDescription: ['', [Validators.required, Validators.maxLength(250), Validators.pattern("[-a-zA-Z .,()']*")]],
-      sourceTerminologyMedDraId: ['', Validators.required],
-      medDraTerm: ['', Validators.required],
+      sourceTerminologyMedDraId: [''],
+      medDraTerm: [''],
       onsetDate: ['', Validators.required],
       resolutionDate: [''],
       attributes: this._formBuilder.group([])
@@ -198,7 +198,7 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
       onsetDate,
       resolutionDate,
       sourceDescription: self.viewModelForm.get('sourceDescription').value,
-      sourceTerminologyMedDraId: +self.viewModelForm.get('sourceTerminologyMedDraId').value,
+      sourceTerminologyMedDraId: self.viewModelForm.get('sourceTerminologyMedDraId').value != null ? +self.viewModelForm.get('sourceTerminologyMedDraId').value : null,
       attributes: this.prepareAttributeForUpdateModel()
     };
 

@@ -24,15 +24,6 @@
                       </mat-error>            
                   </mat-form-field>        
                 </div>
-                <div fxFlex="100" class="pr-1 mt-24">
-                  <mat-form-field class="full-width">
-                      <input matInput formControlName="medDraTerm" placeholder="{{'L_TEXT_6' | translate }}" required readonly>
-                  </mat-form-field>
-                </div>
-                <div fxFlex="100" class="pr-1" fxLayoutAlign="end">
-                  <button mat-mini-fab (click)="openMeddraPopup()"><mat-icon>search</mat-icon></button>
-                </div>
-
                 <div fxFlex="50" class="pr-1 mt-24">
                   <mat-form-field class="full-width">
                     <input matInput formControlName="onsetDate" placeholder="{{'Onset date' | translate}}" [matDatepicker]="onsetDateDatepicker" required>
@@ -50,7 +41,14 @@
                   </mat-form-field>
                   <mat-datepicker #resolutionDateDatepicker></mat-datepicker>
                 </div>
-
+                <div fxFlex="100" class="pr-1 mt-24">
+                  <mat-form-field class="full-width" appearance='fill'>
+                      <input matInput formControlName="medDraTerm" placeholder="{{'L_TEXT_6' | translate }}" readonly>
+                  </mat-form-field>
+                </div>
+                <div fxFlex="100" class="pr-1" fxLayoutAlign="end">
+                  <button mat-mini-fab (click)="openMeddraPopup()"><mat-icon>search</mat-icon></button>
+                </div>
               </div>
             </mat-card-content>
           </mat-tab>

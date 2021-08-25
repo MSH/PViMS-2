@@ -14,7 +14,7 @@
             <mat-card-content class="m-1 p-5" style="height: 400px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
                 <div fxFlex="100" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                  <mat-form-field class="full-width">
                       <input matInput formControlName="sourceDescription" placeholder="{{'Condition description (As stated by patient or reporter)' | translate }}" required>
                       <mat-hint>{{'Maximum length' | translate}} 200</mat-hint> 
                       <mat-error *ngIf="viewModelForm.get('sourceDescription').hasError('required')">
@@ -28,17 +28,17 @@
                       </mat-error>            
                   </mat-form-field>        
                 </div>
-                <div fxFlex="100" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="100" class="pr-1 mt-24">
+                  <mat-form-field class="full-width" appearance='fill'>
                       <input matInput formControlName="medDraTerm" placeholder="{{'MedDra term' | translate }}" required readonly>
                   </mat-form-field>
                 </div>
-                <div fxFlex="100" class="pr-1" fxLayoutAlign="end" *ngIf="data.conditionId == 0">
-                  <button mat-mini-fab (click)="openMeddraPopup()"><mat-icon>add</mat-icon></button>
+                <div fxFlex="100" class="pr-1 mt-24" fxLayoutAlign="end" *ngIf="data.conditionId == 0">
+                  <button mat-mini-fab (click)="openMeddraPopup()"><mat-icon>search</mat-icon></button>
                 </div>
 
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="50" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                     <input matInput formControlName="startDate" placeholder="{{'Start date' | translate}}" [matDatepicker]="startDateDatepicker" required>
                     <mat-datepicker-toggle matSuffix [for]="startDateDatepicker"></mat-datepicker-toggle>
                     <mat-error *ngIf="viewModelForm.get('startDate').hasError('required')">
@@ -47,16 +47,16 @@
                   </mat-form-field>
                   <mat-datepicker #startDateDatepicker></mat-datepicker>
                 </div>
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="50" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                     <input matInput formControlName="outcomeDate" placeholder="{{'Outcome date' | translate}}" [matDatepicker]="outcomeDateDatepicker">
                     <mat-datepicker-toggle matSuffix [for]="outcomeDateDatepicker"></mat-datepicker-toggle>
                   </mat-form-field>
                   <mat-datepicker #outcomeDateDatepicker></mat-datepicker>
                 </div>
 
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="50" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                     <mat-select formControlName="outcome" placeholder="{{'Outcome' | translate}}">
                       <mat-option value=""></mat-option>
                       <mat-option *ngFor="let outcome of outcomeList" [value]="outcome.outcomeName">
@@ -65,8 +65,8 @@
                     </mat-select>
                   </mat-form-field>
                 </div>
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="50" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                     <mat-select formControlName="treatmentOutcome" placeholder="{{'Treatment outcome' | translate}}">
                       <mat-option value=""></mat-option>
                       <mat-option *ngFor="let treatmentOutcome of treatmentOutcomeList" [value]="treatmentOutcome.treatmentOutcomeName">
@@ -80,8 +80,8 @@
                   {{"L_TEXT_5" | translate }}
                 </div>
 
-                <div fxFlex="50" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="50" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                       <input matInput formControlName="caseNumber" placeholder="{{'Case number' | translate }}">
                       <mat-hint>{{'Maximum length' | translate}} 50</mat-hint> 
                       <mat-error *ngIf="viewModelForm.get('caseNumber').hasError('maxlength')">
@@ -93,8 +93,8 @@
                   </mat-form-field>
                 </div>
 
-                <div fxFlex="100" class="pr-1">
-                  <mat-form-field class="p-8 full-width">
+                <div fxFlex="100" class="pr-1 mt-24">
+                  <mat-form-field class="full-width">
                     <input matInput formControlName="comments" placeholder="{{'Comments' | translate }}">
                     <mat-hint>{{'Maximum length' | translate}} 500</mat-hint>
                     <mat-error *ngIf="viewModelForm.get('comments').hasError('maxlength')">
@@ -112,27 +112,27 @@
           <mat-tab label="{{'Detail Information' | translate}}">
             <mat-card-content class="m-1 p-5" style="height: 400px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" formGroupName="attributes">
-                <div fxFlex="50" class="pr-1" *ngFor="let attribute of customAttributeList">
-                  <mat-form-field class="p-8 full-width" *ngIf="attribute.customAttributeType == 'String'">
+                <div fxFlex="50" class="pr-1 mt-24" *ngFor="let attribute of customAttributeList">
+                  <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'String'">
                     <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" [required]="attribute.required">
                     <mat-hint *ngIf="attribute.stringMaxLength != null">
                       {{'Maximum length' | translate}} {{attribute.stringMaxLength}}
                     </mat-hint>
                   </mat-form-field>
-                  <mat-form-field class="p-8 full-width" *ngIf="attribute.customAttributeType == 'Numeric'">
+                  <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'Numeric'">
                     <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" type="number" [required]="attribute.required">
                     <mat-hint *ngIf="attribute.numericMinValue != null && attribute.numericMaxValue != null">
                       {{'Valid between ' | translate}} {{attribute.numericMinValue}} {{'and ' | translate}} {{attribute.numericMaxValue}}
                     </mat-hint>
                   </mat-form-field>        
                   <span *ngIf="attribute.customAttributeType == 'DateTime'">
-                    <mat-form-field class="p-8 full-width">
+                    <mat-form-field class="full-width">
                       <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" [matDatepicker]="datepicker" [required]="attribute.required">
                       <mat-datepicker-toggle matSuffix [for]="datepicker"></mat-datepicker-toggle>
                     </mat-form-field>        
                     <mat-datepicker #datepicker startView="multi-year"></mat-datepicker>
                   </span>
-                  <mat-form-field class="p-8 full-width" *ngIf="attribute.customAttributeType == 'Selection'">
+                  <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'Selection'">
                     <mat-select formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" [required]="attribute.required">
                       <mat-option *ngFor="let item of attribute.selectionDataItems" value="{{item.selectionKey}}">
                         {{item.value | translate}}

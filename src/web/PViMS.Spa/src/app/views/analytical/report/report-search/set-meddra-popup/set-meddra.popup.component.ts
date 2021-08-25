@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -16,7 +16,10 @@ import { MeddraTermIdentifierModel } from 'app/shared/models/terminology/meddra-
 
 @Component({
   templateUrl: './set-meddra.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-meddra-term { flex: 0 0 75% !important; width: 75% !important; }
+    .mat-column-actions { flex: 0 0 20% !important; width: 20% !important; }  
+  `],   
   animations: egretAnimations
 })
 export class SetMeddraPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
