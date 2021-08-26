@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace PVIMS.API.Models
 {
@@ -13,8 +12,6 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The reason for the appointment
         /// </summary>
-        [Required]
-        [StringLength(250)]
         public string Reason { get; set; }
     }
 }

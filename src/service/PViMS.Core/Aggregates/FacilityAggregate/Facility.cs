@@ -59,7 +59,6 @@ namespace PVIMS.Core.Entities
             TelNumber = telNumber;
             MobileNumber = mobileNumber;
             FaxNumber = faxNumber;
-
         }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using LinqKit;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
@@ -12,6 +14,8 @@ using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
+using PVIMS.API.Application.Commands.AppointmentAggregate;
+using PVIMS.API.Application.Queries.AppointmentAggregate;
 using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Keyless;
@@ -22,7 +26,6 @@ using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -34,44 +37,45 @@ namespace PVIMS.API.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class AppointmentsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<Appointment> _appointmentRepository;
         private readonly IRepositoryInt<Facility> _facilityRepository;
-        private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IReportService _reportService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly PVIMSDbContext _context;
+        private readonly ILogger<AppointmentsController> _logger;
 
-        public AppointmentsController(ITypeHelperService typeHelperService,
+        public AppointmentsController(
+            IMediator mediator,
+            ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<Appointment> appointmentRepository,
             IRepositoryInt<Facility> facilityRepository,
-            IRepositoryInt<User> userRepository,
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IUnitOfWorkInt unitOfWork,
             IReportService reportService,
-            IHttpContextAccessor httpContextAccessor,
-            PVIMSDbContext dbContext)
+            PVIMSDbContext dbContext,
+            ILogger<AppointmentsController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _appointmentRepository = appointmentRepository ?? throw new ArgumentNullException(nameof(appointmentRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -140,21 +144,21 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public async Task<ActionResult<AppointmentIdentifierDto>> GetAppointmentByIdentifier(long patientId, long id)
+        public async Task<ActionResult<AppointmentIdentifierDto>> GetAppointmentByIdentifier(int patientId, int id)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var query = new AppointmentIdentifierQuery(patientId, id);
+
+            _logger.LogInformation(
+                $"----- Sending query: AppointmentIdentifierQuery - {patientId} - {id}");
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return BadRequest();
+                return BadRequest("Query not created");
             }
 
-            var mappedAppointment = await GetAppointmentAsync<AppointmentIdentifierDto>(patientFromRepo.Id, id);
-            if (mappedAppointment == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(CreateLinksForAppointment<AppointmentIdentifierDto>(patientFromRepo.Id, mappedAppointment));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -170,21 +174,21 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<AppointmentDetailDto>> GetAppointmentByDetail(long patientId, long id)
+        public async Task<ActionResult<AppointmentDetailDto>> GetAppointmentByDetail(int patientId, int id)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var query = new AppointmentDetailQuery(patientId, id);
+
+            _logger.LogInformation(
+                $"----- Sending query: AppointmentDetailQuery - {patientId} - {id}");
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return BadRequest();
+                return BadRequest("Query not created");
             }
 
-            var mappedAppointment = await GetAppointmentAsync<AppointmentDetailDto>(patientFromRepo.Id, id);
-            if (mappedAppointment == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(CreateLinksForAppointment<AppointmentDetailDto>(patientFromRepo.Id, mappedAppointment));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -231,7 +235,7 @@ namespace PVIMS.API.Controllers
         [HttpPost("patients/{patientId}/appointments", Name = "CreateAppointment")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [Consumes("application/json")]
-        public async Task<IActionResult> CreateAppointment(long patientId, 
+        public async Task<IActionResult> CreateAppointment(int patientId, 
             [FromBody] AppointmentForCreationDto appointmentForCreation)
         {
             if (appointmentForCreation == null)
@@ -240,64 +244,24 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var command = new AddAppointmentCommand(patientId, appointmentForCreation.AppointmentDate, appointmentForCreation.Reason);
+
+            _logger.LogInformation(
+                $"----- Sending command: AddAppointmentCommand - {command.PatientId} - {command.AppointmentDate}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                ModelState.AddModelError("Message", "Unable to locate patient");
+                return BadRequest("Command not created");
             }
 
-            var appointmentFromRepo = await _appointmentRepository.GetAsync(f => f.Patient.Id == patientId && f.AppointmentDate == appointmentForCreation.AppointmentDate);
-            if (appointmentFromRepo != null)
-            {
-                ModelState.AddModelError("Message", "Patient already has an appointment for this date");
-            }
-
-            if (appointmentForCreation.AppointmentDate > DateTime.Today.AddYears(2))
-            {
-                ModelState.AddModelError("Message", "Appointment Date should be within 2 years");
-            }
-
-            if (appointmentForCreation.AppointmentDate < DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Appointment Date should be after current date");
-            }
-
-            if (Regex.Matches(appointmentForCreation.Reason, @"[a-zA-Z0-9 ]").Count < appointmentForCreation.Reason.Length)
-            {
-                ModelState.AddModelError("Message", "Reason contains invalid characters (Enter A-Z, a-z, 0-9, space)");
-            }
-
-            long id = 0;
-
-            if (ModelState.IsValid)
-            {
-                var newAppointment = new Appointment(patientFromRepo)
+            return CreatedAtAction("GetAppointmentByIdentifier",
+                new
                 {
-                    AppointmentDate = appointmentForCreation.AppointmentDate,
-                    Reason = appointmentForCreation.Reason,
-                    Dna = false,
-                    Cancelled = false
-                };
-
-                // Do not use async here as async process does not stamp audited entity
-                _appointmentRepository.Save(newAppointment);
-                id = newAppointment.Id;
-
-                var mappedAppointment = await GetAppointmentAsync(id);
-                if (mappedAppointment == null)
-                {
-                    return StatusCode(500, "Unable to locate newly added appointment");
-                }
-
-                return CreatedAtAction("GetAppointmentByIdentifier",
-                    new
-                    {
-                        patientId,
-                        id = mappedAppointment.Id
-                    }, CreateLinksForAppointment<AppointmentIdentifierDto>(patientId, mappedAppointment));
-            }
-
-            return BadRequest(ModelState);
+                    patientId,
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -309,7 +273,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPut("patients/{patientId}/appointments/{id}", Name = "UpdateAppointment")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdateAppointment(long patientId, long id,
+        public async Task<IActionResult> UpdateAppointment(int patientId, int id,
             [FromBody] AppointmentForUpdateDto appointmentForUpdate)
         {
             if (appointmentForUpdate == null)
@@ -318,62 +282,19 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var appointmentFromRepo = await _appointmentRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (appointmentFromRepo == null)
+            var command = new ChangeAppointmentDetailsCommand(patientId, id, appointmentForUpdate.AppointmentDate, appointmentForUpdate.Reason, appointmentForUpdate.Cancelled == Models.ValueTypes.YesNoValueType.Yes, appointmentForUpdate.CancellationReason);
+
+            _logger.LogInformation(
+                $"----- Sending command: ChangeAppointmentDetailsCommand - {id}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate patient");
-            }
-
-            if (appointmentForUpdate.AppointmentDate > DateTime.Today.AddYears(2))
-            {
-                ModelState.AddModelError("Message", "Appointment Date should be within 2 years");
-            }
-
-            if (appointmentForUpdate.AppointmentDate < DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Appointment Date should be after current date");
-            }
-
-            if (Regex.Matches(appointmentForUpdate.Reason, @"[a-zA-Z0-9 ]").Count < appointmentForUpdate.Reason.Length)
-            {
-                ModelState.AddModelError("Message", "Reason contains invalid characters (Enter A-Z, a-z, 0-9, space)");
-            }
-
-            if(!string.IsNullOrWhiteSpace(appointmentForUpdate.CancellationReason))
-            {
-                if (Regex.Matches(appointmentForUpdate.CancellationReason, @"[a-zA-Z0-9 ]").Count < appointmentForUpdate.CancellationReason.Length)
-                {
-                    ModelState.AddModelError("Message", "Cancellation reason contains invalid characters (Enter A-Z, a-z, 0-9, space)");
-                }
-            }
-
-            if (_appointmentRepository.Queryable().
-                Where(a => a.Patient.Id == patientId && a.AppointmentDate == appointmentForUpdate.AppointmentDate && a.Id != id)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Patient already has an appointment for this date");
-            }
-
-            if (ModelState.IsValid)
-            {
-                appointmentFromRepo.AppointmentDate = appointmentForUpdate.AppointmentDate;
-                appointmentFromRepo.Reason = appointmentForUpdate.Reason;
-                appointmentFromRepo.Cancelled = appointmentForUpdate.Cancelled == Models.ValueTypes.YesNoValueType.Yes ? true : false;
-                appointmentFromRepo.CancellationReason = appointmentForUpdate.CancellationReason;
-
-                _appointmentRepository.Update(appointmentFromRepo);
-                await _unitOfWork.CompleteAsync();
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -387,7 +308,7 @@ namespace PVIMS.API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> UpdateAppointmentAsDNA(long patientId, long id)
         {
-            var appointmentFromRepo = await _appointmentRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
+            var appointmentFromRepo = await _appointmentRepository.GetAsync(f => f.PatientId == patientId && f.Id == id);
             if (appointmentFromRepo == null)
             {
                 return NotFound();
@@ -411,7 +332,7 @@ namespace PVIMS.API.Controllers
 
             if (ModelState.IsValid)
             {
-                appointmentFromRepo.Dna = true;
+                appointmentFromRepo.MarkAsDNA();
 
                 _appointmentRepository.Update(appointmentFromRepo);
                 await _unitOfWork.CompleteAsync();
@@ -430,50 +351,28 @@ namespace PVIMS.API.Controllers
         /// <param name="appointmentForDelete">The deletion payload</param>
         /// <returns></returns>
         [HttpPut("patients/{patientId}/appointments/{id}/archive", Name = "ArchiveAppointment")]
-        public async Task<IActionResult> ArchiveAppointment(long patientId, long id,
+        public async Task<IActionResult> ArchiveAppointment(int patientId, int id,
             [FromBody] ArchiveDto appointmentForDelete)
         {
-            var appointmentFromRepo = await _appointmentRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (appointmentFromRepo == null)
+            if (appointmentForDelete == null)
             {
-                return NotFound();
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
             }
 
-            if (appointmentFromRepo.Patient == null)
+            var command = new ArchiveAppointmentCommand(patientId, id, appointmentForDelete.Reason);
+
+            _logger.LogInformation(
+                $"----- Sending command: ArchiveAppointmentCommand - {id}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                ModelState.AddModelError("Message", "Unable to locate patient for appointment");
+                return BadRequest("Command not created");
             }
 
-            //if (appointmentFromRepo.AppointmentDate < DateTime.Today)
-            //{
-            //    ModelState.AddModelError("Message", "Unable to delete past appointment");
-            //}
-
-            if (Regex.Matches(appointmentForDelete.Reason, @"[-a-zA-Z0-9 .']").Count < appointmentForDelete.Reason.Length)
-            {
-                ModelState.AddModelError("Message", "Reason contains invalid characters (Enter A-Z, a-z, space, period, apostrophe)");
-            }
-
-            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var user = _userRepository.Get(u => u.UserName == userName);
-            if (user == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate user");
-            }
-
-            if (ModelState.IsValid)
-            {
-                appointmentFromRepo.Archived = true;
-                appointmentFromRepo.ArchivedDate = DateTime.Now;
-                appointmentFromRepo.ArchivedReason = appointmentForDelete.Reason;
-                appointmentFromRepo.AuditUser = user;
-                _appointmentRepository.Update(appointmentFromRepo);
-                await _unitOfWork.CompleteAsync();
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -540,35 +439,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Get single appointment from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="patientId">unique identifier of the patient </param>
-        /// <param name="id">Resource guid to search by</param>
-        /// <returns></returns>
-        private async Task<T> GetAppointmentAsync<T>(long patientId, long id) where T : class
-        {
-            var predicate = PredicateBuilder.New<Appointment>(true);
-
-            // Build remaining expressions
-            predicate = predicate.And(f => f.Patient.Id == patientId);
-            predicate = predicate.And(f => f.Archived == false);
-            predicate = predicate.And(f => f.Id == id);
-
-            var appointmentFromRepo = await _appointmentRepository.GetAsync(predicate);
-
-            if (appointmentFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedAppointment = _mapper.Map<T>(appointmentFromRepo);
-
-                return mappedAppointment;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Get patients from repository and auto map to Dto
         /// </summary>
         /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
@@ -608,29 +478,6 @@ namespace PVIMS.API.Controllers
                     JsonConvert.SerializeObject(paginationMetadata));
 
                 return mappedResults;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get single appointment from repository using primary key and auto map to Dto
-        /// </summary>
-        /// <param name="appointmentId">Primary key of the appointment</param>
-        /// <returns></returns>
-        private async Task<AppointmentIdentifierDto> GetAppointmentAsync(long appointmentId)
-        {
-            var predicate = PredicateBuilder.New<Appointment>(true);
-            predicate = predicate.And(f => f.Id == appointmentId);
-
-            var appointmentFromRepo = await _appointmentRepository.GetAsync(predicate);
-
-            if (appointmentFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedAppointment = _mapper.Map<AppointmentIdentifierDto>(appointmentFromRepo);
-
-                return mappedAppointment;
             }
 
             return null;

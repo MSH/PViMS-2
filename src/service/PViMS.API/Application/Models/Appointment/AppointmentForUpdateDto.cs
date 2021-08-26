@@ -1,7 +1,6 @@
 ﻿using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Models.ValueTypes;
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace PVIMS.API.Models
 {
@@ -15,8 +14,6 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The reason for the appointment
         /// </summary>
-        [Required]
-        [StringLength(250)]
         public string Reason { get; set; }
 
         /// <summary>
@@ -28,7 +25,6 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The reason for the cancellation if it has been cancelled
         /// </summary>
-        [StringLength(250)]
         public string CancellationReason { get; set; }
     }
 }

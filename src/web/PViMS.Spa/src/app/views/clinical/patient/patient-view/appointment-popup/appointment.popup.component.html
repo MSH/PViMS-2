@@ -6,7 +6,7 @@
     <div fxLayout="row wrap" fxLayout.lt-sm="column">
       <div fxFlex="50" class="pr-1">
           <mat-form-field class="p-8 full-width">
-              <input matInput formControlName="appointmentDate" placeholder="{{'Appointment date' | translate }}" [matDatepicker]="appDatepicker" required>
+              <input matInput formControlName="appointmentDate" [min]="minDate" [max]="maxDate" placeholder="{{'Appointment date' | translate }}" [matDatepicker]="appDatepicker" required>
               <mat-datepicker-toggle matSuffix [for]="appDatepicker"></mat-datepicker-toggle>
               <mat-error *ngIf="itemForm.get('appointmentDate').hasError('required')">
                 {{'This is a required field' | translate}}

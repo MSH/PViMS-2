@@ -67,11 +67,6 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasForeignKey(d => d.CreatedById)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            configuration.HasOne(d => d.Patient)
-                .WithMany(p => p.Appointments)
-                .HasForeignKey(d => d.PatientId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             configuration.HasOne(d => d.UpdatedBy)
                 .WithMany(p => p.AppointmentUpdates)
                 .HasForeignKey(d => d.UpdatedById)

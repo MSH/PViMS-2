@@ -14,10 +14,10 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.Patient_Id));
 
             CreateMap<Appointment, AppointmentIdentifierDto>()
-                .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.Patient.Id))
+                .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.PatientId))
                 .ForMember(dest => dest.AppointmentDate, opt => opt.MapFrom(src => src.AppointmentDate.ToString("yyyy-MM-dd")));
             CreateMap<Appointment, AppointmentDetailDto>()
-                .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.Patient.Id))
+                .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.PatientId))
                 .ForMember(dest => dest.AppointmentDate, opt => opt.MapFrom(src => src.AppointmentDate.ToString("yyyy-MM-dd")))
                 .ForMember(dest => dest.DidNotArrive, opt => opt.MapFrom(src => src.Dna))
                 .ForMember(dest => dest.CreatedDetail, opt => opt.MapFrom(src => src.Created))

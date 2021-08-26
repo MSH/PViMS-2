@@ -873,10 +873,7 @@ namespace PVIMS.API.Controllers
             {
                 foreach (var appointment in patientFromRepo.Appointments.Where(x => !x.Archived))
                 {
-                    appointment.Archived = true;
-                    appointment.ArchivedDate = DateTime.Now;
-                    appointment.ArchivedReason = patientForDelete.Reason;
-                    appointment.AuditUser = user;
+                    appointment.Archive(user, patientForDelete.Reason);
                     _appointmentRepository.Update(appointment);
                 }
 
