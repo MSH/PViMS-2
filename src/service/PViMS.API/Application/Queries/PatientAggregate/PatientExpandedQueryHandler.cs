@@ -81,7 +81,9 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                     "Attachments.AttachmentType", 
                     "PatientLabTests.LabTest", 
                     "PatientLabTests.TestUnit",
-                    "Appointments"
+                    "Appointments",
+                    "Encounters.EncounterType",
+                    "PatientStatusHistories.PatientStatus"
                 });
 
             if (patientFromRepo == null)
