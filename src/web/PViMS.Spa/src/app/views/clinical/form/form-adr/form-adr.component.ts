@@ -547,6 +547,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     {
       id: 0,
       index: 1,
+      patientIdentifier: self.firstFormGroup.get('patientIdentifier').value,
       onsetDate,
       sourceDescription: self.thirdFormGroup.get('sourceDescription').value,
       resolutionDate,

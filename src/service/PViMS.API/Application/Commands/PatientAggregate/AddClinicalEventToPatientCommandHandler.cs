@@ -57,7 +57,10 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
         public async Task<PatientClinicalEventIdentifierDto> Handle(AddClinicalEventToPatientCommand message, CancellationToken cancellationToken)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] { "PatientClinicalEvents.SourceTerminologyMedDra", "PatientMedications.Concept", "PatientFacilities.Facility" });
+            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] {
+                "PatientClinicalEvents.SourceTerminologyMedDra",
+                "PatientMedications.Concept",
+                "PatientFacilities.Facility" });
             if (patientFromRepo == null)
             {
                 throw new KeyNotFoundException("Unable to locate patient");
@@ -66,10 +69,13 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             TerminologyMedDra sourceTermFromRepo = null;
             if (message.SourceTerminologyMedDraId.HasValue)
             {
-                sourceTermFromRepo = await _terminologyMeddraRepository.GetAsync(message.SourceTerminologyMedDraId); ;
-                if (sourceTermFromRepo == null)
+                if(message.SourceTerminologyMedDraId > 0)
                 {
-                    throw new KeyNotFoundException("Unable to locate terminology for MedDRA");
+                    sourceTermFromRepo = await _terminologyMeddraRepository.GetAsync(message.SourceTerminologyMedDraId); ;
+                    if (sourceTermFromRepo == null)
+                    {
+                        throw new KeyNotFoundException("Unable to locate terminology for MedDRA");
+                    }
                 }
             }
 
@@ -88,7 +94,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             await _workFlowService.CreateWorkFlowInstanceAsync(
                 workFlowName: "New Active Surveilliance Report",
                 contextGuid: newPatientClinicalEvent.PatientClinicalEventGuid,
-                patientIdentifier: patientFromRepo.FullName,
+                patientIdentifier: String.IsNullOrWhiteSpace(message.PatientIdentifier) ? patientFromRepo.FullName : $"{patientFromRepo.FullName} ({message.PatientIdentifier})",
                 sourceIdentifier: newPatientClinicalEvent.SourceTerminologyMedDra?.DisplayName ?? newPatientClinicalEvent.SourceDescription,
                 facilityIdentifier: patientFromRepo.CurrentFacilityCode);
 

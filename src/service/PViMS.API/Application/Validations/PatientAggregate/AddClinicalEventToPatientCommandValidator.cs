@@ -9,6 +9,12 @@ namespace PVIMS.API.Application.Validations
     {
         public AddClinicalEventToPatientCommandValidator(ILogger<AddClinicalEventToPatientCommandValidator> logger)
         {
+            RuleFor(command => command.PatientIdentifier)
+                .Length(0, 50)
+                .Matches(@"[-a-zA-Z0-9()']")
+                .When(c => !string.IsNullOrEmpty(c.PatientIdentifier))
+                .WithMessage("Patient identifier contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, parentheses, apostrophe)");
+
             RuleFor(command => command.SourceDescription)
                 .Length(0, 500)
                 .Matches(@"[-a-zA-Z0-9 .,()']")

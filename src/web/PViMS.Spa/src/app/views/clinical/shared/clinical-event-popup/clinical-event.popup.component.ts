@@ -195,6 +195,7 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
     {
       id: self.data.clinicalEventId,
       index: 0,
+      patientIdentifier: '',
       onsetDate,
       resolutionDate,
       sourceDescription: self.viewModelForm.get('sourceDescription').value,

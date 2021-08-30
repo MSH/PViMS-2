@@ -144,7 +144,12 @@ namespace PVIMS.API.Controllers
             }
 
             var command = new AddClinicalEventToPatientCommand(patientId,
-                clinicalEventForUpdate.SourceDescription, clinicalEventForUpdate.SourceTerminologyMedDraId, clinicalEventForUpdate.OnsetDate, clinicalEventForUpdate.ResolutionDate, clinicalEventForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
+                clinicalEventForUpdate.PatientIdentifier,
+                clinicalEventForUpdate.SourceDescription, 
+                clinicalEventForUpdate.SourceTerminologyMedDraId, 
+                clinicalEventForUpdate.OnsetDate, 
+                clinicalEventForUpdate.ResolutionDate, 
+                clinicalEventForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
 
             _logger.LogInformation(
                 "----- Sending command: AddClinicalEventToPatientCommand - {sourceDescription}",

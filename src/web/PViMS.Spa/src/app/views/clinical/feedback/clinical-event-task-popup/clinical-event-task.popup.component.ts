@@ -435,6 +435,7 @@ openMedicationPopup(data: any = {}, isNew?) {
     {
       id: self.data.clinicalEventId,
       index: 1,
+      patientIdentifier: '',
       onsetDate,
       sourceDescription: self.thirdFormGroup.get('sourceDescription').value,
       resolutionDate,

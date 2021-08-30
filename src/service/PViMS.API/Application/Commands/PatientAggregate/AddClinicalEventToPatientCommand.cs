@@ -14,6 +14,9 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         public int PatientId { get; private set; }
 
         [DataMember]
+        public string PatientIdentifier { get; private set; }
+
+        [DataMember]
         public string SourceDescription { get; private set; }
 
         [DataMember]
@@ -32,9 +35,10 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         {
         }
 
-        public AddClinicalEventToPatientCommand(int patientId, string sourceDescription, int? sourceTerminologyMedDraId, DateTime onsetDate, DateTime? resolutionDate, IDictionary<int, string> attributes) : this()
+        public AddClinicalEventToPatientCommand(int patientId, string patientIdentifier, string sourceDescription, int? sourceTerminologyMedDraId, DateTime onsetDate, DateTime? resolutionDate, IDictionary<int, string> attributes) : this()
         {
             PatientId = patientId;
+            PatientIdentifier = patientIdentifier;
             SourceDescription = sourceDescription;
             SourceTerminologyMedDraId = sourceTerminologyMedDraId;
             OnsetDate = onsetDate;
