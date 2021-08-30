@@ -130,17 +130,17 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             var config = await _configRepository.GetAsync(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
             if (config == null)
             {
-                return (DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+                return (DateTime.Now.AddDays(-1).Date, DateTime.Now.Date.AddDays(1));
             }
 
             if (String.IsNullOrEmpty(config.ConfigValue))
             {
-                return (DateTime.Now.AddDays(-1).Date, DateTime.Now.Date);
+                return (DateTime.Now.AddDays(-1).Date, DateTime.Now.Date.AddDays(1));
             }
 
             var alertCount = Convert.ToInt32(config.ConfigValue);
 
-            return (DateTime.Now.AddDays(alertCount * -1), DateTime.Now.Date);
+            return (DateTime.Now.AddDays(alertCount * -1), DateTime.Now.Date.AddDays(1));
         }
 
         private async Task CustomMapAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto mappedReportInstanceDto)
