@@ -154,11 +154,11 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
   setupTable() {
     if (this.currentScreenWidth === 'xs') 
     { 
-      this.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'status', 'actions']);
+      this.viewModel.mainGrid.updateDisplayedColumns(['status', 'actions']);
     }
     if (this.currentScreenWidth === 'sm') 
     { 
-      this.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'patient', 'status', 'actions']);
+      this.viewModel.mainGrid.updateDisplayedColumns(['patient-identifier', 'status', 'actions']);
     }
   };
 
@@ -250,10 +250,10 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     self.updateForm(self.viewModelForm, {qualifiedName: qualifiedName});
 
     if(qualifiedName == "Confirm Report Data") {
-      self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'task-count', 'status', 'actions'])
+      self.viewModel.mainGrid.updateDisplayedColumns(['patient-identifier', 'created', 'adverse-event', 'task-count', 'status', 'actions'])
     }
     else {
-      self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'status', 'actions'])
+      self.viewModel.mainGrid.updateDisplayedColumns(['patient-identifier', 'created', 'medication-summary', 'adverse-event', 'meddra-term', 'status', 'actions'])
     }
 
     self.viewModel.searchContext = qualifiedName == "New reports" ? "New" : "Active";
@@ -531,7 +531,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['identifier', 'created', 'patient', 'medication-summary', 'adverse-event', 'meddra-term', 'task-count', 'status', 'actions']);
+          (['patient-identifier', 'created', 'medication-summary', 'adverse-event', 'meddra-term', 'task-count', 'status', 'actions']);
 
   searchContext: '' | 'New' | 'Active' | 'Date' | 'Term' = '';
 
