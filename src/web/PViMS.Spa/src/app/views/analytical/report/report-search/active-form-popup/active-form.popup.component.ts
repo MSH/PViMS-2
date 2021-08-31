@@ -286,14 +286,6 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
           this.handleError(error, "Error loading attributes");
         });    
   }
-
-  private getValueOrSelectedValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
-    let attribute = attributes.find(a => a.key == key);
-    if(attribute?.selectionValue != '') {
-      return attribute?.selectionValue;
-    }
-     return attribute?.value;
-  }  
 }
 
 class ViewModel {

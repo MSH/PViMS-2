@@ -7,6 +7,7 @@ import { Subject } from 'rxjs';
 import { Router } from '@angular/router';
 import { FormGroup, ValidationErrors } from '@angular/forms';
 import { Directive } from "@angular/core";
+import { AttributeValueModel } from '../models/attributevalue.model';
 
 @Directive()
 export class BaseComponent {
@@ -128,5 +129,13 @@ export class BaseComponent {
           this.markFormGroupTouched(control);
         }
       });
+    }
+
+    public getValueOrSelectedValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
+      let attribute = attributes.find(a => a.key == key);
+      if(attribute?.selectionValue != '') {
+        return attribute?.selectionValue;
+      }
+       return attribute?.value;
     }
 }

@@ -96,7 +96,67 @@
               </div>
             </mat-card-content>
           </mat-tab>
-          <mat-tab label="{{'Basic Information' | translate}}">
+          <mat-tab label="{{'Patient Information' | translate}}">
+            <mat-card-content class="m-1 p-5" style="height: 500px; overflow-y: auto;">
+              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutAlign="start start">
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'First name' | translate}}</mat-label>
+                    <input matInput formControlName="patientFirstName" readonly>
+                  </mat-form-field>
+                </div>
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Last name' | translate}}</mat-label>
+                    <input matInput formControlName="patientLastName" readonly>
+                  </mat-form-field>
+                </div>
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Gender' | translate}}</mat-label>
+                    <input matInput formControlName="gender" readonly>
+                  </mat-form-field>
+                </div>
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Ethnic group' | translate}}</mat-label>
+                    <input matInput formControlName="ethnicity" readonly>
+                  </mat-form-field>
+                </div>
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Date of birth' | translate}}</mat-label>
+                    <input matInput formControlName="dateOfBirth" readonly>
+                  </mat-form-field>
+                </div>
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Age' | translate}}</mat-label>
+                    <input matInput formControlName="age" readonly>
+                  </mat-form-field>
+                </div>
+                <div fxFlex="100" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Age group' | translate}}</mat-label>
+                    <input matInput formControlName="ageGroup" readonly>
+                  </mat-form-field>
+                </div>
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Facility' | translate}}</mat-label>
+                    <input matInput formControlName="facilityName" readonly>
+                  </mat-form-field>
+                </div>
+                <div fxFlex="50" class="pr-1">
+                  <mat-form-field class="p-8 full-width" appearance="fill">
+                    <mat-label>{{'Region' | translate}}</mat-label>
+                    <input matInput formControlName="facilityRegion" readonly>
+                  </mat-form-field>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-tab>
+          <mat-tab label="{{'Event Information' | translate}}">
             <mat-card-content class="m-1 p-5" style="height: 500px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
                 <div fxFlex="100" class="pr-1">
@@ -126,10 +186,6 @@
                 </div>
 
               </div>
-            </mat-card-content>
-          </mat-tab>
-          <mat-tab label="{{'Detail Information' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 500px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" formGroupName="attributes">
                 <div fxFlex="50" class="pr-1" *ngFor="let attribute of customAttributeList">
                   <mat-form-field class="p-8 full-width" appearance="fill">

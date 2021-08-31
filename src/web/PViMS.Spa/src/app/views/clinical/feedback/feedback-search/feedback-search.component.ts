@@ -17,17 +17,15 @@ import { Moment } from 'moment';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { TerminologyMedDraModel } from 'app/shared/models/terminologymeddra.model';
 import { _routes } from 'app/config/routes';
-
 import { PatientService } from 'app/shared/services/patient.service';
 import { WorkFlowService } from 'app/shared/services/work-flow.service';
-import { ClinicalEventViewPopupComponent } from '../../shared/clinical-event-view-popup/clinical-event-view.popup.component';
 import { WorkFlowDetailModel } from 'app/shared/models/work-flow/work-flow.detail.model';
 import { ClinicalEventTaskPopupComponent } from '../clinical-event-task-popup/clinical-event-task.popup.component';
 import { WorkFlowSummaryModel } from 'app/shared/models/work-flow/work-flow.summary.model';
-import { ClassificationSummaryModel } from 'app/shared/models/work-flow/classification-summary.model';
 import { SeriesValueListModel } from 'app/shared/models/dataset/series-value-list.model';
 import { SeriesValueListItemModel } from 'app/shared/models/dataset/series-value-list-item.model';
 import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexLegend, ApexPlotOptions, ApexStroke, ApexTooltip, ApexXAxis, ApexYAxis, ChartComponent } from 'ng-apexcharts';
+import { ClinicalEventViewPopupComponent } from '../../shared/clinical-event-view-popup/clinical-event-view.popup.component';
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
@@ -53,7 +51,7 @@ export type ChartOptions = {
     .mat-column-task-count { flex: 0 0 15% !important; width: 15% !important; }
     .mat-column-status { flex: 0 0 15% !important; width: 15% !important; }
     .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }
-  `],   
+  `],
   animations: egretAnimations
 })
 export class FeedbackSearchComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

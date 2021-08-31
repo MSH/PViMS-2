@@ -13,6 +13,9 @@ import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
 import { GridModel } from 'app/shared/models/grid.model';
+import { PatientExpandedModel } from 'app/shared/models/patient/patient.expanded.model';
+import { forkJoin } from 'rxjs';
+import { PatientClinicalEventExpandedModel } from 'app/shared/models/patient/patient-clinical-event.expanded.model';
 
 @Component({
   templateUrl: './clinical-event-view.popup.component.html',
@@ -63,6 +66,16 @@ export class ClinicalEventViewPopupComponent extends BasePopupComponent implemen
     self.viewModelForm = this._formBuilder.group({
       sourceDescription: ['', [Validators.required, Validators.maxLength(250), Validators.pattern("[-a-zA-Z ']*")]],
       sourceTerminologyMedDraId: ['', Validators.required],
+      patientId: [''],
+      patientFirstName: [''],
+      patientLastName: [''],
+      gender: [''],
+      ethnicity: [''],
+      dateOfBirth: [''],
+      age: [''],
+      ageGroup: [''],
+      facilityName: [''],
+      facilityRegion: [''],
       medDraTerm: ['', Validators.required],
       onsetDate: ['', Validators.required],
       resolutionDate: [''],
@@ -82,23 +95,38 @@ export class ClinicalEventViewPopupComponent extends BasePopupComponent implemen
   loadData(): void {
     let self = this;
     self.setBusy(true);
-    self.patientService.getPatientClinicalEventExpanded(self.data.patientId, self.data.clinicalEventId)
-      .pipe(finalize(() => self.setBusy(false)))
-      .subscribe(result => {
-        self.CLog(result, 'patient clinical event expanded');
-        self.updateForm(self.viewModelForm, result);
 
-        self.viewModel.mainGrid.updateBasic(result.activity);
-        self.viewModel.medicineGrid.updateBasic(result.medications);
+    const requestArray = [];
 
-        self.clinicalEventAttributes = result.clinicalEventAttributes;
-        self.viewModel.setMedDraTerm = result.setMedDraTerm;
-        self.viewModel.setClassification = result.setClassification;
+    requestArray.push(self.patientService.getPatientClinicalEventExpanded(self.data.patientId, self.data.clinicalEventId));
+    requestArray.push(self.patientService.getPatientExpanded(self.data.patientId));
 
-        self.getCustomAttributeList();
-      }, error => {
-        this.handleError(error, "Error fetching clinical event");
-      });
+    forkJoin(requestArray)
+      .subscribe(
+        data => {
+          self.CLog(data[0], 'get clinical event expanded')
+          self.CLog(data[1], 'get patient detail')
+
+          let patientClinicalEvent = data[0] as PatientClinicalEventExpandedModel;
+          let patient = data[1] as PatientExpandedModel;
+
+          self.updateForm(self.viewModelForm, patientClinicalEvent);
+
+          self.viewModel.mainGrid.updateBasic(patientClinicalEvent.activity);
+          self.viewModel.medicineGrid.updateBasic(patientClinicalEvent.medications);
+  
+          self.clinicalEventAttributes = patientClinicalEvent.clinicalEventAttributes;
+          self.viewModel.setMedDraTerm = patientClinicalEvent.setMedDraTerm;
+          self.viewModel.setClassification = patientClinicalEvent.setClassification;
+
+          self.loadPatientData(patient);
+          
+          self.getCustomAttributeList();
+          self.setBusy(false);
+        },
+        error => {
+          this.handleError(error, "Error preparing view");
+        });    
   }   
 
   getCustomAttributeList(): void {
@@ -146,6 +174,20 @@ export class ClinicalEventViewPopupComponent extends BasePopupComponent implemen
         }, error => {
           this.handleError(error, "Error fetching clinical event attributes");
         });
+  }
+
+  private loadPatientData(patientModel: PatientExpandedModel) {
+    let self = this;
+
+    self.updateForm(self.viewModelForm, {patientId: patientModel.id});
+    self.updateForm(self.viewModelForm, {patientFirstName: patientModel.firstName});
+    self.updateForm(self.viewModelForm, {patientLastName: patientModel.lastName});
+    self.updateForm(self.viewModelForm, {dateOfBirth: patientModel.dateOfBirth});
+    self.updateForm(self.viewModelForm, {age: patientModel.age});
+    self.updateForm(self.viewModelForm, {ageGroup: patientModel.ageGroup});
+    self.updateForm(self.viewModelForm, {gender: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Gender")});
+    self.updateForm(self.viewModelForm, {ethnicity: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Ethnic Group")});
+    self.updateForm(self.viewModelForm, {facilityName: patientModel.facilityName});
   }
 }
 

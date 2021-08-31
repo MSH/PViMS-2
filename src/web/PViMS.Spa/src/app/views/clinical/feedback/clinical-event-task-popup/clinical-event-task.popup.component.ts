@@ -55,6 +55,8 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
   
   viewModel: ViewModel = new ViewModel();
 
+  public patientFormGroup: FormGroup;
+
   public firstFormGroup: FormGroup;
   public thirdFormGroup: FormGroup;
   public fourthFormGroup: FormGroup;
@@ -79,6 +81,18 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
   ngOnInit(): void {
     const self = this;
 
+    self.patientFormGroup = this._formBuilder.group({
+      patientId: [''],
+      patientFirstName: [''],
+      patientLastName: [''],
+      gender: [''],
+      ethnicity: [''],
+      dateOfBirth: [''],
+      age: [''],
+      ageGroup: [''],
+      facilityName: [''],
+      facilityRegion: [''],
+    });
     self.firstFormGroup = this._formBuilder.group({
     });
     self.thirdFormGroup = this._formBuilder.group({
@@ -145,6 +159,8 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
 
           self.loadGrids(data[1] as PatientExpandedModel, data[0] as PatientClinicalEventExpandedModel);
 
+          self.loadPatientData(data[1] as PatientExpandedModel);
+
           self.loadDataForThirdForm(data[0] as PatientClinicalEventExpandedModel);
           self.loadDataForFourthForm(data[0] as PatientClinicalEventExpandedModel);
           self.loadDataForSixthForm(data[0] as PatientClinicalEventExpandedModel);
@@ -154,86 +170,6 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
         error => {
           this.handleError(error, "Error preparing view");
         });    
-  }
-
-  private loadGrids(patientModel: PatientExpandedModel, clinicalEventModel: PatientClinicalEventExpandedModel) {
-    let self = this;
-    self.viewModel.historyGrid.updateBasic(clinicalEventModel.activity);
-    self.viewModel.taskGrid.updateBasic(clinicalEventModel.tasks);
-
-    self.viewModel.medications = self.mapMedicationForUpdateModels(patientModel.patientMedications);
-    self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
-  }
-
-  private mapMedicationForUpdateModels(sourceMedications: PatientMedicationDetailModel[]): PatientMedicationForUpdateModel[] {
-    let medications: PatientMedicationForUpdateModel[] = [];
-
-    let index = 0;
-    sourceMedications.forEach(sourceMedication => {
-      index++;
-      let medication: PatientMedicationForUpdateModel = {
-        id: sourceMedication.id,
-        index,
-        medication: sourceMedication.medication,
-        sourceDescription: sourceMedication.sourceDescription,
-        conceptId: sourceMedication.conceptId,
-        productId: sourceMedication.productId,
-        startDate: sourceMedication.startDate,
-        endDate: sourceMedication.endDate,
-        dose: sourceMedication.dose,
-        doseFrequency: sourceMedication.doseFrequency,
-        doseUnit: sourceMedication.doseUnit,
-        attributes: []
-      };
-      
-      sourceMedication.medicationAttributes.forEach(sourceAttribute => {
-        let attribute: AttributeValueForPostModel = {
-          id: sourceAttribute.id,
-          value: sourceAttribute.value
-        };
-        medication.attributes.push(attribute);
-      });
-
-      medications.push(medication);
-    });
-
-    return medications;
-  }
-
-  private loadDataForThirdForm(clinicalEventModel: PatientClinicalEventExpandedModel) {
-    let self = this;
-
-    self.updateForm(self.thirdFormGroup, { 'onsetDate': clinicalEventModel.onsetDate })
-    self.updateForm(self.thirdFormGroup, { 'regimen': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'regimen')?.value })
-    self.updateForm(self.thirdFormGroup, { 'sourceDescription': clinicalEventModel.sourceDescription })
-    self.updateForm(self.thirdFormGroup, { 'isSerious': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'is the adverse event serious?')?.value })
-    self.updateForm(self.thirdFormGroup, { 'seriousness': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'seriousness')?.value })
-    self.updateForm(self.thirdFormGroup, { 'classification': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'classification')?.value })
-    self.updateForm(self.thirdFormGroup, { 'weight': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'weight (kg)')?.value })
-    self.updateForm(self.thirdFormGroup, { 'height': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'height (cm)')?.value })
-    self.updateForm(self.thirdFormGroup, { 'allergy': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'any known allergy')?.value })
-    self.updateForm(self.thirdFormGroup, { 'pregnancyStatus': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'pregnancy status')?.value })
-    self.updateForm(self.thirdFormGroup, { 'comorbidities': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'comorbidities')?.value })
-  }
-
-  private loadDataForFourthForm(clinicalEventModel: PatientClinicalEventExpandedModel) {
-    let self = this;
-
-    self.updateForm(self.fourthFormGroup, { 'treatmentGiven': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'was treatment given?')?.value })
-    self.updateForm(self.fourthFormGroup, { 'treatmentDetails': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'treatment details')?.value })
-    self.updateForm(self.fourthFormGroup, { 'outcome': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'outcome')?.value })
-    self.updateForm(self.fourthFormGroup, { 'dateOfRecovery': clinicalEventModel.resolutionDate })
-    self.updateForm(self.fourthFormGroup, { 'sequlae': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'sequlae details')?.value })
-    self.updateForm(self.fourthFormGroup, { 'interventions': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'interventions')?.value })
-  }
-
-  private loadDataForSixthForm(clinicalEventModel: PatientClinicalEventExpandedModel) {
-    let self = this;
-
-    self.updateForm(self.sixthFormGroup, { 'reporterName': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'name of reporter')?.value })
-    self.updateForm(self.sixthFormGroup, { 'contactNumber': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'contact number')?.value })
-    self.updateForm(self.sixthFormGroup, { 'emailAddress': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'email address')?.value })
-    self.updateForm(self.sixthFormGroup, { 'profession': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'profession')?.value })
   }
 
   openTaskCommentsPopUp(reportInstanceTaskId: number) {
@@ -294,7 +230,7 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
     this.notify("Attachment removed successfully!", "Success");
   }
 
-openMedicationPopup(data: any = {}, isNew?) {
+  openMedicationPopup(data: any = {}, isNew?) {
     let self = this;
     let title = isNew ? 'Add Medication' : 'Update Medication';
     let indexToUse = isNew ? self.viewModel.medications.length + 1 : data.index;
@@ -481,6 +417,100 @@ openMedicationPopup(data: any = {}, isNew?) {
   private makeSaveButtonVisible(): void {
     let self = this;
     self.firstFormGroup.markAsDirty();
+  }
+
+  private loadGrids(patientModel: PatientExpandedModel, clinicalEventModel: PatientClinicalEventExpandedModel) {
+    let self = this;
+    self.viewModel.historyGrid.updateBasic(clinicalEventModel.activity);
+    self.viewModel.taskGrid.updateBasic(clinicalEventModel.tasks);
+
+    self.viewModel.medications = self.mapMedicationForUpdateModels(patientModel.patientMedications);
+    self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
+  }
+
+  private loadPatientData(patientModel: PatientExpandedModel) {
+    let self = this;
+
+    self.updateForm(self.patientFormGroup, {patientId: patientModel.id});
+    self.updateForm(self.patientFormGroup, {patientFirstName: patientModel.firstName});
+    self.updateForm(self.patientFormGroup, {patientLastName: patientModel.lastName});
+    self.updateForm(self.patientFormGroup, {dateOfBirth: patientModel.dateOfBirth});
+    self.updateForm(self.patientFormGroup, {age: patientModel.age});
+    self.updateForm(self.patientFormGroup, {ageGroup: patientModel.ageGroup});
+    self.updateForm(self.patientFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Gender")});
+    self.updateForm(self.patientFormGroup, {ethnicity: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Ethnic Group")});
+    self.updateForm(self.patientFormGroup, {facilityName: patientModel.facilityName});
+  }
+
+  private mapMedicationForUpdateModels(sourceMedications: PatientMedicationDetailModel[]): PatientMedicationForUpdateModel[] {
+    let medications: PatientMedicationForUpdateModel[] = [];
+
+    let index = 0;
+    sourceMedications.forEach(sourceMedication => {
+      index++;
+      let medication: PatientMedicationForUpdateModel = {
+        id: sourceMedication.id,
+        index,
+        medication: sourceMedication.medication,
+        sourceDescription: sourceMedication.sourceDescription,
+        conceptId: sourceMedication.conceptId,
+        productId: sourceMedication.productId,
+        startDate: sourceMedication.startDate,
+        endDate: sourceMedication.endDate,
+        dose: sourceMedication.dose,
+        doseFrequency: sourceMedication.doseFrequency,
+        doseUnit: sourceMedication.doseUnit,
+        attributes: []
+      };
+      
+      sourceMedication.medicationAttributes.forEach(sourceAttribute => {
+        let attribute: AttributeValueForPostModel = {
+          id: sourceAttribute.id,
+          value: sourceAttribute.value
+        };
+        medication.attributes.push(attribute);
+      });
+
+      medications.push(medication);
+    });
+
+    return medications;
+  }
+
+  private loadDataForThirdForm(clinicalEventModel: PatientClinicalEventExpandedModel) {
+    let self = this;
+
+    self.updateForm(self.thirdFormGroup, { 'onsetDate': clinicalEventModel.onsetDate })
+    self.updateForm(self.thirdFormGroup, { 'regimen': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'regimen')?.value })
+    self.updateForm(self.thirdFormGroup, { 'sourceDescription': clinicalEventModel.sourceDescription })
+    self.updateForm(self.thirdFormGroup, { 'isSerious': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'is the adverse event serious?')?.value })
+    self.updateForm(self.thirdFormGroup, { 'seriousness': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'seriousness')?.value })
+    self.updateForm(self.thirdFormGroup, { 'classification': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'classification')?.value })
+    self.updateForm(self.thirdFormGroup, { 'weight': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'weight (kg)')?.value })
+    self.updateForm(self.thirdFormGroup, { 'height': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'height (cm)')?.value })
+    self.updateForm(self.thirdFormGroup, { 'allergy': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'any known allergy')?.value })
+    self.updateForm(self.thirdFormGroup, { 'pregnancyStatus': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'pregnancy status')?.value })
+    self.updateForm(self.thirdFormGroup, { 'comorbidities': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'comorbidities')?.value })
+  }
+
+  private loadDataForFourthForm(clinicalEventModel: PatientClinicalEventExpandedModel) {
+    let self = this;
+
+    self.updateForm(self.fourthFormGroup, { 'treatmentGiven': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'was treatment given?')?.value })
+    self.updateForm(self.fourthFormGroup, { 'treatmentDetails': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'treatment details')?.value })
+    self.updateForm(self.fourthFormGroup, { 'outcome': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'outcome')?.value })
+    self.updateForm(self.fourthFormGroup, { 'dateOfRecovery': clinicalEventModel.resolutionDate })
+    self.updateForm(self.fourthFormGroup, { 'sequlae': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'sequlae details')?.value })
+    self.updateForm(self.fourthFormGroup, { 'interventions': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'interventions')?.value })
+  }
+
+  private loadDataForSixthForm(clinicalEventModel: PatientClinicalEventExpandedModel) {
+    let self = this;
+
+    self.updateForm(self.sixthFormGroup, { 'reporterName': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'name of reporter')?.value })
+    self.updateForm(self.sixthFormGroup, { 'contactNumber': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'contact number')?.value })
+    self.updateForm(self.sixthFormGroup, { 'emailAddress': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'email address')?.value })
+    self.updateForm(self.sixthFormGroup, { 'profession': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'profession')?.value })
   }
 }
 

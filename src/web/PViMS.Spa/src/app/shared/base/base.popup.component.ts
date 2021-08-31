@@ -4,6 +4,7 @@ import { PopupService } from '../services/popup.service';
 import { AccountService } from '../services/account.service';
 import { FormGroup, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AttributeValueModel } from '../models/attributevalue.model';
 
 export class BasePopupComponent {
 
@@ -115,5 +116,13 @@ export class BasePopupComponent {
           this.markFormGroupTouched(control);
         }
       });
-    }      
+    } 
+    
+    public getValueOrSelectedValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
+      let attribute = attributes.find(a => a.key == key);
+      if(attribute?.selectionValue != '') {
+        return attribute?.selectionValue;
+      }
+       return attribute?.value;
+    }
 }
