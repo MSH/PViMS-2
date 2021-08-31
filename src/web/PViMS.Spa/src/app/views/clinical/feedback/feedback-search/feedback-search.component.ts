@@ -384,7 +384,6 @@ class ViewModel {
   searchTerm: string;
 
   mainSeries: SeriesValueListModel[] = [];
-
 }
 
 class GridRecordModel {

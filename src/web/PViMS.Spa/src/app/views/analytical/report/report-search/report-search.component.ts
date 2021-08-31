@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -40,8 +40,25 @@ import { DatasetInstanceModel } from 'app/shared/models/dataset/dataset-instance
 import { WhoPopupComponent } from './who-popup/who.popup.component';
 import { SetClassificationPopupComponent } from './set-classification/set-classification.popup.component';
 import { ActiveFormPopupComponent } from './active-form-popup/active-form.popup.component';
+import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexLegend, ApexPlotOptions, ApexStroke, ApexTooltip, ApexXAxis, ApexYAxis, ChartComponent } from 'ng-apexcharts';
+import { WorkFlowSummaryModel } from 'app/shared/models/work-flow/work-flow.summary.model';
+import { SeriesValueListModel } from 'app/shared/models/dataset/series-value-list.model';
+import { SeriesValueListItemModel } from 'app/shared/models/dataset/series-value-list-item.model';
 
 const moment =  _moment;
+
+export type ChartOptions = {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  dataLabels: ApexDataLabels;
+  plotOptions: ApexPlotOptions;
+  yaxis: ApexYAxis;
+  xaxis: ApexXAxis;
+  fill: ApexFill;
+  tooltip: ApexTooltip;
+  stroke: ApexStroke;
+  legend: ApexLegend;
+};
 
 @Component({
   templateUrl: './report-search.component.html',
@@ -55,6 +72,9 @@ const moment =  _moment;
   animations: egretAnimations
 })
 export class ReportSearchComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild("chart") chart: ChartComponent;
+  public classificationChartOptions: Partial<ChartOptions>;
+  public facilityChartOptions: Partial<ChartOptions>;
 
   constructor(
     protected _activatedRoute: ActivatedRoute,
@@ -231,33 +251,52 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
   loadData(): void {
     let self = this;
     self.setBusy(true);
-    self.workFlowService.getWorkFlowDetail(self.workflowId)
-      .pipe(takeUntil(self._unsubscribeAll))
-      .pipe(finalize(() => self.setBusy(false)))
-      .subscribe(result => {
-        self.workFlow = result;
-        if(self.qualifiedName != null) {
-          self.selectActivity(self.qualifiedName);
-        }
-      }, error => {
-        this.handleError(error, "Error fetching work flow");
-      });
+
+    const requestArray = [];
+
+    requestArray.push(self.workFlowService.getWorkFlowDetail(self.workflowId));
+    requestArray.push(self.workFlowService.getWorkFlowSummary(self.workflowId));
+
+    forkJoin(requestArray)
+      .subscribe(
+        data => {
+          self.CLog(data[0], 'get work flow detail')
+          self.CLog(data[1], 'get work flow summary')
+
+          self.workFlow = data[0] as WorkFlowDetailModel;
+          if(self.qualifiedName != null) {
+            self.selectActivity(self.qualifiedName);
+          }
+  
+          self.viewModel.workFlowSummary = data[1] as WorkFlowSummaryModel;
+
+          self.pepareChartSeries();
+          self.initClassificationChart();
+          self.CLog(self.viewModel.mainSeries, 'main series');
+
+          self.setBusy(false);
+        },
+        error => {
+          this.handleError(error, "Error preparing view");
+        }); 
   }  
 
-  selectActivity(qualifiedName: string): void {
+  selectActivity(activity: string): void {
     let self = this;
 
-    self.updateForm(self.viewModelForm, {qualifiedName: qualifiedName});
+    self.updateForm(self.viewModelForm, {qualifiedName: activity});
+    if(activity == 'Summary') {
+      return;
+    }
 
-    if(qualifiedName == "Confirm Report Data") {
+    if(activity == "Confirm Report Data") {
       self.viewModel.mainGrid.updateDisplayedColumns(['patient-identifier', 'created', 'adverse-event', 'task-count', 'status', 'actions'])
     }
     else {
       self.viewModel.mainGrid.updateDisplayedColumns(['patient-identifier', 'created', 'medication-summary', 'adverse-event', 'meddra-term', 'status', 'actions'])
     }
 
-    self.viewModel.searchContext = qualifiedName == "New reports" ? "New" : "Active";
-
+    self.viewModel.searchContext = activity == "New reports" ? "New" : "Active";
     self.loadGrid();
   }
 
@@ -524,8 +563,123 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         this.throwError('Error downloading file. Please try again.', 'Error downloading file. Please try again.');
         break;
     }
+  }
+
+  private pepareChartSeries() {
+    const self = this;
+
+    const aesi: SeriesValueListModel = 
+    {
+      name: 'AESI',
+      series: self.prepareSeriesItem(self.viewModel.workFlowSummary.classifications.find(c => c.classification == 'AESI'))
+    };
+    self.viewModel.mainSeries.push(aesi);
+    const sae: SeriesValueListModel = 
+    {
+      name: 'SAE',
+      series: self.prepareSeriesItem(self.viewModel.workFlowSummary.classifications.find(c => c.classification == 'SAE'))
+    };
+    self.viewModel.mainSeries.push(sae);
+    const significant: SeriesValueListModel = 
+    {
+      name: 'Clinically Significant',
+      series: self.prepareSeriesItem(self.viewModel.workFlowSummary.classifications.find(c => c.classification == 'Clinically Significant'))
+    };
+    self.viewModel.mainSeries.push(significant);
+  }
+
+  private prepareSeriesItem(classification: any): SeriesValueListItemModel[] {
+    const self = this;
+    let series: SeriesValueListItemModel[] = [];
+    if(classification == null) {
+      return series;
+    }
+    const classificationValueItem: SeriesValueListItemModel = {
+      name: 'Classifications',
+      value: classification.classificationCount
+    };
+    series.push(classificationValueItem);
+    const causalityValueItem: SeriesValueListItemModel = {
+      name: 'One drug causative',
+      value: classification.causativeCount
+    };
+    series.push(causalityValueItem);
+    const e2bValueItem: SeriesValueListItemModel = {
+      name: 'E2B',
+      value: classification.e2BCount
+    };
+    series.push(e2bValueItem);
+    return series;
   }  
 
+  private initClassificationChart() {
+    this.classificationChartOptions = {
+      series: [
+        {
+          name: "Submissions",
+          data: this.getValueFromSeries(0)
+        },
+        {
+          name: "Least one drug causative",
+          data: this.getValueFromSeries(1)
+        },
+        {
+          name: "E2B Submitted",
+          data: this.getValueFromSeries(2)
+        }
+      ],
+      chart: {
+        type: "bar",
+        height: 350
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: "45%"
+        }
+      },
+      dataLabels: {
+        enabled: true
+      },
+      stroke: {
+        show: true,
+        width: 2,
+        colors: ["transparent"]
+      },
+      xaxis: {
+        categories: ['SAE', 'AESI', 'Clinically Significant']
+      },
+      yaxis: {
+        title: {
+          text: ""
+        }
+      },
+      fill: {
+        opacity: 1
+      },
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return val + " reports";
+          }
+        }
+      }
+    };
+  }
+
+  private getValueFromSeries(valueItem: number): any[] {
+    let values: number[] = [];
+    if(this.viewModel.mainSeries[0]?.series.length > 0) {
+      values.push(this.viewModel.mainSeries[0]?.series[valueItem]?.value);
+    }
+    if(this.viewModel.mainSeries[1]?.series.length > 0) {
+      values.push(this.viewModel.mainSeries[1]?.series[valueItem]?.value);
+    }
+    if(this.viewModel.mainSeries[2]?.series.length > 0) {
+      values.push(this.viewModel.mainSeries[2]?.series[valueItem]?.value);
+    }
+    return values;
+  }  
 }
 
 class ViewModel {
@@ -535,10 +689,14 @@ class ViewModel {
 
   searchContext: '' | 'New' | 'Active' | 'Date' | 'Term' = '';
 
+  workFlowSummary: WorkFlowSummaryModel;
+
   qualifiedName: string;
   searchFrom: Moment;
   searchTo: Moment;
   searchTerm: string;
+
+  mainSeries: SeriesValueListModel[] = [];
 }
 
 class GridRecordModel {
