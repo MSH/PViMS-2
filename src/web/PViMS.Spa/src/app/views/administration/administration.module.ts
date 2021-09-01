@@ -48,10 +48,20 @@ import { GenericDeletePopupComponent } from './shared/generic-delete-popup/gener
 import { CareEventPopupComponent } from './work/care-event-list/care-event-popup/care-event.popup.component';
 import { HolidayDeletePopupComponent } from './system/holiday-list/holiday-delete-popup/holiday-delete.popup.component';
 import { HolidayPopupComponent } from './system/holiday-list/holiday-popup/holiday.popup.component';
+import { FacilityPopupComponent } from './system/facility-list/facility-popup/facility.popup.component';
+import { CareEventDeletePopupComponent } from './work/care-event-list/care-event-delete-popup/care-event-delete.popup.component';
+import { FacilityDeletePopupComponent } from './system/facility-list/facility-delete-popup/facility-delete.popup.component';
+import { DatasetElementDeletePopupComponent } from './work/dataset-element-list/dataset-element-delete-popup/dataset-element-delete.popup.component';
+import { UserRolePopupComponent } from './user/user-list/user-role-popup/user-role.popup.component';
+import { PasswordResetPopupComponent } from './user/user-list/password-reset-popup/password-reset.popup.component';
+import { UserAddPopupComponent } from './user/user-list/user-add-popup/user-add.popup.component';
+import { UserDeletePopupComponent } from './user/user-list/user-delete-popup/user-delete.popup.component';
+import { UserUpdatePopupComponent } from './user/user-list/user-update-popup/user-update.popup.component';
 
 @NgModule({
   declarations: [
     AuditLogListComponent,
+    CareEventDeletePopupComponent,
     CareEventListComponent,
     CareEventPopupComponent,
     ConceptListComponent,
@@ -67,30 +77,38 @@ import { HolidayPopupComponent } from './system/holiday-list/holiday-popup/holid
     DatasetCategoryElementListComponent,
     DatasetCategoryElementDeletePopupComponent,
     DatasetListComponent,
+    DatasetElementDeletePopupComponent,
     DatasetElementListComponent,
     DatasetElementSelectPopupComponent,
+    EncounterTypeListComponent,
     FacilityListComponent, 
+    FacilityPopupComponent,
+    FacilityDeletePopupComponent,
     FormListComponent,
     FormDeletePopupComponent,
     FormPopupComponent,
+    GenericDeletePopupComponent,
     HolidayListComponent,
     HolidayDeletePopupComponent,
     HolidayPopupComponent,
+    ImportMeddraPopupComponent,
     LabResultListComponent,
     LabTestListComponent,
     LabTestSelectPopupComponent,
+    LandingComponent,
     MeddraListComponent,
-    ImportMeddraPopupComponent,
     MedicineListComponent,
     MedicationPopupComponent,
     MedicationDeletePopupComponent,
-    RoleListComponent,
-    UserListComponent, 
-    WorkPlanListComponent,
     ReportMetaViewComponent,
-    EncounterTypeListComponent,
-    LandingComponent,
-    GenericDeletePopupComponent
+    RoleListComponent,
+    PasswordResetPopupComponent,
+    UserAddPopupComponent,
+    UserDeletePopupComponent,
+    UserListComponent,
+    UserRolePopupComponent,
+    UserUpdatePopupComponent,
+    WorkPlanListComponent
   ],
   imports: [
     CommonModule,
@@ -104,6 +122,7 @@ import { HolidayPopupComponent } from './system/holiday-list/holiday-popup/holid
   entryComponents:
   [
     CareEventPopupComponent,
+    CareEventDeletePopupComponent,
     ConceptPopupComponent,
     ConditionPopupComponent,
     ConditionDeletePopupComponent,
@@ -111,13 +130,21 @@ import { HolidayPopupComponent } from './system/holiday-list/holiday-popup/holid
     DatasetCategoryElementPopupComponent,
     DatasetCategoryElementDeletePopupComponent,
     DatasetElementSelectPopupComponent,
+    DatasetElementDeletePopupComponent,
+    FacilityPopupComponent,
+    FacilityDeletePopupComponent,
     GenericDeletePopupComponent,
     HolidayDeletePopupComponent,
     HolidayPopupComponent,
     ImportMeddraPopupComponent,
     LabTestSelectPopupComponent,
     MedicationPopupComponent,
-    MedicationDeletePopupComponent
+    MedicationDeletePopupComponent,
+    PasswordResetPopupComponent,
+    UserAddPopupComponent,
+    UserDeletePopupComponent,
+    UserRolePopupComponent,
+    UserUpdatePopupComponent
   ]  
 })
 export class AdministrationModule { }

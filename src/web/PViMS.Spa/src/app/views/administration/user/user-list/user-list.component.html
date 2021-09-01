@@ -7,7 +7,7 @@
   <mat-card-title class="">
     <div class="card-title-text">
       {{'Users' | translate}}
-      <div class="addButton">
+      <div fxLayout="row" fxLayoutAlign="end">
         <button mat-raised-button class="mb-05" color="accent" (click)="openAddPopUp({})">{{'Add User' | translate }}</button>
       </div>
     </div>
@@ -68,6 +68,10 @@
                   </button>
                   <button mat-icon-button color="primary" matTooltip="{{'Reset Password' | translate }}"
                           (click)="openResetPopUp(record)">
+                      <mat-icon>lock</mat-icon>
+                  </button>
+                  <button mat-icon-button color="primary" matTooltip="{{'Manage Roles' | translate }}"
+                          (click)="openRolePopUp(record)">
                       <mat-icon>security</mat-icon>
                   </button>
                   <button mat-icon-button color="warn" matTooltip="{{'Delete User' | translate }}"

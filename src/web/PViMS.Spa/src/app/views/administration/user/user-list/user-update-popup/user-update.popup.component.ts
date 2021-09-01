@@ -1,11 +1,10 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
-import { RoleIdentifierModel } from 'app/shared/models/user/role.identifier.model';
 import { FacilityIdentifierModel } from 'app/shared/models/facility/facility.identifier.model';
 import { UserService } from 'app/shared/services/user.service';
 import { FacilityService } from 'app/shared/services/facility.service';
@@ -15,14 +14,12 @@ import { AccountService } from 'app/shared/services/account.service';
 
 @Component({
   templateUrl: './user-update.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class UserUpdatePopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
   
   public itemForm: FormGroup;
 
-  roleList: RoleIdentifierModel[] = [];
   facilityList: FacilityIdentifierModel[] = [];
 
   constructor(
@@ -50,7 +47,6 @@ export class UserUpdatePopupComponent extends BasePopupComponent implements OnIn
       email: ['', [Validators.maxLength(150), Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$")]],
       allowDatasetDownload: ['', Validators.required],
       active: ['', Validators.required],
-      roles: ['', Validators.required],
       facilities: ['', Validators.required],
     })
   }
@@ -65,7 +61,6 @@ export class UserUpdatePopupComponent extends BasePopupComponent implements OnIn
   loadDropDowns(): void {
     let self = this;
     self.getFacilityList();
-    self.getRoleList();
   }
 
   getFacilityList(): void {
@@ -78,22 +73,13 @@ export class UserUpdatePopupComponent extends BasePopupComponent implements OnIn
         });
   }
 
-  getRoleList(): void {
-    let self = this;
-    self.userService.getRoleList()
-        .subscribe(result => {
-            self.roleList = result.value;
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
-  }  
-
   loadData(): void {
     let self = this;
     self.setBusy(true);
     self.userService.getUserDetail(self.data.userId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
+        self.CLog(result, 'user detail');
         self.updateForm(self.itemForm, (self.data.payload = result));
       }, error => {
         self.handleError(error, "Error fetching user");

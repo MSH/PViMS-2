@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using PVIMS.Core.Aggregates.UserAggregate;
-using PVIMS.Core.Entities;
 using PVIMS.Core.Exceptions;
 using PVIMS.Core.Repositories;
 using PVIMS.Infrastructure.Identity.Entities;
@@ -13,24 +12,24 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Commands.UserAggregate
 {
-    public class ChangeUserRolesCommandHandler
-        : IRequestHandler<ChangeUserRolesCommand, bool>
+    public class AddRoleToUserCommandHandler
+        : IRequestHandler<AddRoleToUserCommand, bool>
     {
         private readonly IRepositoryInt<User> _userRepository;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ILogger<ChangeUserRolesCommandHandler> _logger;
+        private readonly ILogger<AddRoleToUserCommandHandler> _logger;
 
-        public ChangeUserRolesCommandHandler(
+        public AddRoleToUserCommandHandler(
             IRepositoryInt<User> userRepository,
             UserManager<ApplicationUser> userManager,
-            ILogger<ChangeUserRolesCommandHandler> logger)
+            ILogger<AddRoleToUserCommandHandler> logger)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<bool> Handle(ChangeUserRolesCommand message, CancellationToken cancellationToken)
+        public async Task<bool> Handle(AddRoleToUserCommand message, CancellationToken cancellationToken)
         {
             var userFromRepo = await _userRepository.GetAsync(u => u.Id == message.UserId,
                     new string[] { "" });
@@ -41,7 +40,7 @@ namespace PVIMS.API.Application.Commands.UserAggregate
             }
 
             var userFromManager = await _userManager.FindByNameAsync(userFromRepo.UserName);
-            var result = await _userManager.AddToRolesAsync(userFromManager, message.Roles);
+            var result = await _userManager.AddToRoleAsync(userFromManager, message.Role);
             if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)

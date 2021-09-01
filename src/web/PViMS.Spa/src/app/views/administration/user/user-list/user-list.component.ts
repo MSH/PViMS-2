@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -18,11 +18,14 @@ import { UserDeletePopupComponent } from './user-delete-popup/user-delete.popup.
 import { UserAddPopupComponent } from './user-add-popup/user-add.popup.component';
 import { UserUpdatePopupComponent } from './user-update-popup/user-update.popup.component';
 import { PasswordResetPopupComponent } from './password-reset-popup/password-reset.popup.component';
+import { UserRolePopupComponent } from './user-role-popup/user-role.popup.component';
 
 @Component({
   templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-actions { flex: 0 0 15% !important; width: 15% !important; }
+  `],  
   animations: egretAnimations
 })
 export class UserListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -165,7 +168,25 @@ export class UserListComponent extends BaseComponent implements OnInit, AfterVie
         }
         self.loadGrid();
       })
-  }   
+  }
+
+  openRolePopUp(data: any = {}) {
+    let self = this;
+    let title = 'Manage Roles';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(UserRolePopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { userId: data.id, title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+      })
+  }  
 }
 
 class ViewModel {

@@ -285,14 +285,14 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Update an existing user's roles access
+        /// Add a role to a user
         /// </summary>
         /// <param name="id">The unique id of the user</param>
         /// <param name="userRolesForUpdate">The user payload</param>
         /// <returns></returns>
-        [HttpPut("{id}/roles", Name = "UpdateUserRoles")]
+        [HttpPost("{id}/roles", Name = "CreateUserRole")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdateUserRoles(int id,
+        public async Task<IActionResult> CreateUserRole(int id,
             [FromBody] UserRolesForUpdateDto userRolesForUpdate)
         {
             if (userRolesForUpdate == null)
@@ -301,11 +301,41 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var command = new ChangeUserRolesCommand(id, userRolesForUpdate.Roles);
+            var command = new AddRoleToUserCommand(id, userRolesForUpdate.Role);
 
             _logger.LogInformation(
-                "----- Sending command: ChangeUserRolesCommand - {userId}",
-                command.UserId);
+                $"----- Sending command: AddRoleToUserCommand - {command.UserId}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Remove a role from a user
+        /// </summary>
+        /// <param name="id">The unique id of the user</param>
+        /// <param name="role">The role to remove</param>
+        /// <returns></returns>
+        [HttpDelete("{id}/roles/{role}", Name = "RemoveUserRole")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> RemoveUserRole(int id, string role)
+        {
+            if (String.IsNullOrWhiteSpace(role))
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
+            }
+
+            var command = new RemoveRoleFromUserCommand(id, role);
+
+            _logger.LogInformation(
+                $"----- Sending command: RemoveRoleFromUserCommand - {command.UserId}");
 
             var commandResult = await _mediator.Send(command);
 

@@ -1,27 +1,26 @@
 ﻿using MediatR;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace PVIMS.API.Application.Commands.UserAggregate
 {
     [DataContract]
-    public class ChangeUserRolesCommand
+    public class RemoveRoleFromUserCommand
         : IRequest<bool>
     {
         [DataMember]
         public int UserId { get; private set; }
 
         [DataMember]
-        public List<string> Roles { get; set; }
+        public string Role { get; set; }
 
-        public ChangeUserRolesCommand()
+        public RemoveRoleFromUserCommand()
         {
         }
 
-        public ChangeUserRolesCommand(int userId, List<string> roles) : this()
+        public RemoveRoleFromUserCommand(int userId, string role) : this()
         {
             UserId = userId;
-            Roles = roles;
+            Role = role;
         }
     }
 }

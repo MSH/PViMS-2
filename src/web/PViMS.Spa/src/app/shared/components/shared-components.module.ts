@@ -43,11 +43,7 @@ import { DatasetElementPopupComponent } from 'app/views/administration/work/data
 import { DatasetPopupComponent } from 'app/views/administration/work/dataset-list/dataset-popup/dataset.popup.component';
 import { EncounterTypePopupComponent } from 'app/views/administration/work/encounter-type-list/encounter-type-popup/encounter-type.popup.component';
 import { EncounterTypeDeletePopupComponent } from 'app/views/administration/work/encounter-type-list/encounter-type-delete-popup/encounter-type-delete.popup.component';
-import { UserDeletePopupComponent } from 'app/views/administration/user/user-list/user-delete-popup/user-delete.popup.component';
-import { UserAddPopupComponent } from 'app/views/administration/user/user-list/user-add-popup/user-add.popup.component';
-import { UserUpdatePopupComponent } from 'app/views/administration/user/user-list/user-update-popup/user-update.popup.component';
 import { DatasetDeletePopupComponent } from 'app/views/administration/work/dataset-list/dataset-delete-popup/dataset-delete.popup.component';
-import { PasswordResetPopupComponent } from 'app/views/administration/user/user-list/password-reset-popup/password-reset.popup.component';
 import { FormAConditionsPopupComponent } from 'app/views/clinical/form/form-a/form-a-conditions-popup/form-a-conditions.popup.component';
 import { FormALabsPopupComponent } from 'app/views/clinical/form/form-a/form-a-labs-popup/form-a-labs.popup.component';
 import { FormAMedicationsPopupComponent } from 'app/views/clinical/form/form-a/form-a-medications-popup/form-a-medications.popup.component';
@@ -121,10 +117,6 @@ const components = [
   LabDeletePopupComponent,
   LabResultPopupComponent,
   LabResultDeletePopupComponent,
-  PasswordResetPopupComponent,
-  UserAddPopupComponent,
-  UserDeletePopupComponent,
-  UserUpdatePopupComponent,
 
   AboutPopupComponent,
   ChangeTaskStatusPopupComponent,
@@ -192,10 +184,6 @@ const components = [
     LabDeletePopupComponent,
     LabResultPopupComponent,
     LabResultDeletePopupComponent,
-    PasswordResetPopupComponent,
-    UserAddPopupComponent,
-    UserDeletePopupComponent,
-    UserUpdatePopupComponent,
 
     AboutPopupComponent,
     ConceptSelectPopupComponent,

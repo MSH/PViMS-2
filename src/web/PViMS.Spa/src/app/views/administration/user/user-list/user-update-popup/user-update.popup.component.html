@@ -94,19 +94,6 @@
 
       <div fxFlex="100" class="pr-1">
         <mat-form-field class="p-8 full-width">
-          <mat-select formControlName="roles" placeholder="{{'Roles' | translate}}" multiple>
-            <mat-option *ngFor="let role of roleList" [value]="role.name">
-                {{role.name}}
-            </mat-option>
-          </mat-select>               
-          <mat-error *ngIf="itemForm.get('roles').hasError('required')">
-            {{'This is a required field' | translate}}
-          </mat-error>            
-        </mat-form-field>
-      </div>
-      
-      <div fxFlex="100" class="pr-1">
-        <mat-form-field class="p-8 full-width">
           <mat-select formControlName="facilities" placeholder="{{'Facilities' | translate}}" multiple>
             <mat-option *ngFor="let facility of facilityList" [value]="facility.facilityName">
                 {{facility.facilityName}}

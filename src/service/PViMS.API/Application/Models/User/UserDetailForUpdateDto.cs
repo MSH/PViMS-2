@@ -41,11 +41,6 @@ namespace PVIMS.API.Models
         public YesNoValueType Active { get; set; }
 
         /// <summary>
-        /// Roles the user has been allocated to
-        /// </summary>
-        public List<string> Roles { get; set; }
-
-        /// <summary>
         /// Facilities the user has been allocated to
         /// </summary>
         public List<string> Facilities { get; set; }
