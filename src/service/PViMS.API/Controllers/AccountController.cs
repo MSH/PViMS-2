@@ -104,7 +104,7 @@ namespace PVIMS.API.Controllers
             {
                 if (await _userManager.CheckPasswordAsync(userFromManager, request.Password))
                 {
-                    if (userFromManager.Active)
+                    if (userFromRepo.Active)
                     {
 
                         var audit = new AuditLog()
