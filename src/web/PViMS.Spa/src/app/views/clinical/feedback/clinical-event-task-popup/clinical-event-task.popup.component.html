@@ -188,7 +188,7 @@
                   <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(1)">
                     <mat-icon color="warn" *ngIf="thirdFormGroup.invalid" class="mr-12">error</mat-icon>
                     <mat-icon color="accent" *ngIf="thirdFormGroup.valid" class="mr-12">check_circle</mat-icon>
-                    <span [class.font-weight-bold]="viewModel.currentStep == 1">Adverse event details</span>
+                    <span [class.font-weight-bold]="viewModel.currentStep == 1">Adverse event</span>
                   </div>
                   <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(2)">
                     <mat-icon color="warn" *ngIf="fourthFormGroup.invalid" class="mr-12">error</mat-icon>

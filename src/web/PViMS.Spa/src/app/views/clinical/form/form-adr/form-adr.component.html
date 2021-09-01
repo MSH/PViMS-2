@@ -37,7 +37,7 @@
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 2" class="mr-12">brightness_1</mat-icon>
             <mat-icon color="warn" *ngIf="viewModel.currentStep > 2 && thirdFormGroup.invalid" class="mr-12">error</mat-icon>
             <mat-icon color="accent" *ngIf="viewModel.currentStep > 2 && thirdFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <span [class.font-weight-bold]="viewModel.currentStep == 2">Adverse event details</span>
+            <span [class.font-weight-bold]="viewModel.currentStep == 2">Adverse event</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 3" class="mr-12">panorama_fish_eye</mat-icon>
