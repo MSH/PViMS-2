@@ -82,8 +82,11 @@
 
                 <div fxFlex="50" class="pr-1 mt-24">
                   <mat-form-field class="full-width">
-                      <input matInput formControlName="caseNumber" placeholder="{{'Case number' | translate }}">
+                      <input matInput formControlName="caseNumber" placeholder="{{'Case number' | translate }}" required>
                       <mat-hint>{{'Maximum length' | translate}} 50</mat-hint> 
+                      <mat-error *ngIf="viewModelForm.get('caseNumber').hasError('required')">
+                        {{'This is a required field' | translate}}
+                      </mat-error>
                       <mat-error *ngIf="viewModelForm.get('caseNumber').hasError('maxlength')">
                         {{'Maximum length exceeded' | translate}}
                       </mat-error>            

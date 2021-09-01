@@ -77,7 +77,7 @@ export class PatientAddPopupComponent extends BasePopupComponent implements OnIn
       enroledDate: ['', Validators.required],
       startDate: ['', Validators.required],
       outcomeDate: [''],
-      caseNumber: ['', [Validators.maxLength(50), Validators.pattern("[-a-zA-Z0-9 .()]*")]],
+      caseNumber: ['', [Validators.required, Validators.maxLength(50), Validators.pattern("[-a-zA-Z0-9 .()]*")]],
       comments: ['', [Validators.maxLength(100), Validators.pattern("[-a-zA-Z0-9 .,()']*")]],
       encounterTypeId: [1, Validators.required],
       priorityId: [1, Validators.required],

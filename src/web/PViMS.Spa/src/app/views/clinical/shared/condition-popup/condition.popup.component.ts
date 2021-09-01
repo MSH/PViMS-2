@@ -65,7 +65,7 @@ export class ConditionPopupComponent extends BasePopupComponent implements OnIni
       outcomeDate: [''],
       outcome: [''],
       treatmentOutcome: [''],
-      caseNumber: ['', [Validators.maxLength(50), Validators.pattern("[-a-zA-Z0-9 .()]*")]],
+      caseNumber: ['', [Validators.required, Validators.maxLength(50), Validators.pattern("[-a-zA-Z0-9 .()]*")]],
       comments: ['', [Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9 ']*")]],
       attributes: this._formBuilder.group([])
     })
