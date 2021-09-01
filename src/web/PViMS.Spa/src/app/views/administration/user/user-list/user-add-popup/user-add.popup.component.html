@@ -54,7 +54,7 @@
 
       <div fxFlex="100" class="pr-1">
         <mat-form-field class="p-8 full-width">
-          <input matInput formControlName="email" placeholder="{{'Email' | translate }}">
+          <input matInput formControlName="email" placeholder="{{'Email' | translate }}" required>
           <mat-hint>{{'L_TEXT_9' | translate}}</mat-hint>
           <mat-error *ngIf="itemForm.get('email').hasError('required')">
             {{'This is a required field' | translate}}

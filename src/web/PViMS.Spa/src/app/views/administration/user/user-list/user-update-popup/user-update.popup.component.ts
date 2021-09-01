@@ -44,7 +44,7 @@ export class UserUpdatePopupComponent extends BasePopupComponent implements OnIn
       firstName: [this.data.payload.firstName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z ]*')]],
       lastName: [this.data.payload.lastName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z ]*')]],
       userName: [this.data.payload.userName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z0-9 ]*')]],
-      email: ['', [Validators.maxLength(150), Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$")]],
+      email: ['', [Validators.required, Validators.maxLength(150), Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$")]],
       allowDatasetDownload: ['', Validators.required],
       active: ['', Validators.required],
       facilities: ['', Validators.required],
