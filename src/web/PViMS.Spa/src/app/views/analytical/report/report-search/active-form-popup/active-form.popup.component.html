@@ -91,7 +91,7 @@
         <mat-expansion-panel [expanded]="viewModel.step === 1" (opened)="setStep(1)" hideToggle>
           <mat-expansion-panel-header>
             <mat-panel-title>
-              {{'Adverse event details' | translate}}
+              {{'Adverse event' | translate}}
             </mat-panel-title>
           </mat-expansion-panel-header>          
 
@@ -131,12 +131,7 @@
                       <div fxFlex="95">
                         <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="fill">
                           <mat-label>Do you consider the reaction to be serious?</mat-label>
-                          <mat-select formControlName="isSerious" readonly>
-                            <mat-option value="0"></mat-option>
-                            <mat-option value="1">Yes</mat-option>
-                            <mat-option value="2">No</mat-option>
-                            <mat-option value="3">Unknown</mat-option>
-                          </mat-select>
+                          <input matInput formControlName="isSerious" readonly>
                         </mat-form-field>
                       </div>
                     </div>
@@ -145,16 +140,7 @@
                       <div fxFlex="95">
                         <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="fill">
                           <mat-label>What is the seriousness of the event?</mat-label>
-                          <mat-select formControlName="seriousness" readonly>
-                            <mat-option value="0"></mat-option>
-                            <mat-option value="1">A congenital anomaly or birth defect</mat-option>
-                            <mat-option value="2">Persistent or significant disability or incapacity</mat-option>
-                            <mat-option value="3">Death</mat-option>
-                            <mat-option value="4">Hospitalisation</mat-option>
-                            <mat-option value="5">Prolonged hospitalisation</mat-option>
-                            <mat-option value="6">Life threatening</mat-option>
-                            <mat-option value="7">A medically important event</mat-option>
-                          </mat-select>
+                          <input matInput formControlName="seriousness" readonly>
                         </mat-form-field>
                       </div>
                     </div>
@@ -163,11 +149,7 @@
                       <div fxFlex="95">
                         <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="fill">
                           <mat-label>Event classification</mat-label>
-                          <mat-select formControlName="classification" readonly>
-                            <mat-option value="1">AESI</mat-option>
-                            <mat-option value="2">SAE</mat-option>
-                            <mat-option value="3">Clinically Significant</mat-option>
-                          </mat-select>
+                          <input matInput formControlName="classification" readonly>
                         </mat-form-field>
                       </div>
                     </div>                
@@ -207,14 +189,7 @@
                       <div fxFlex="95">
                         <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="fill">
                           <mat-label>Pregnancy status</mat-label>
-                          <mat-select formControlName="pregnancyStatus" readonly>
-                            <mat-option value=""></mat-option>
-                            <mat-option value="0">No</mat-option>
-                            <mat-option value="1">1st trimester</mat-option>
-                            <mat-option value="2">2nd trimester</mat-option>
-                            <mat-option value="3">3rd trimester</mat-option>
-                            <mat-option value="4">Unknown</mat-option>
-                          </mat-select>
+                          <input matInput formControlName="pregnancyStatus" readonly>
                         </mat-form-field>
                       </div>
                     </div>
@@ -248,12 +223,7 @@
                   <div fxFlex="95">
                     <mat-form-field class="full-width pl-8 pr-8 mt-12" appearance="fill">
                       <mat-label>Was treatment given?</mat-label>
-                      <mat-select formControlName="treatmentGiven" readonly>
-                        <mat-option value="0"></mat-option>
-                        <mat-option value="1">Yes</mat-option>
-                        <mat-option value="2">No</mat-option>
-                        <mat-option value="3">Unknown</mat-option>
-                      </mat-select>
+                      <input matInput formControlName="treatmentGiven" readonly>
                     </mat-form-field>
                   </div>
                 </div>                      
@@ -271,14 +241,7 @@
                   <div fxFlex="95">
                     <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="fill">
                       <mat-label>Outcome of the adverse event</mat-label>
-                      <mat-select formControlName="outcome" readonly>
-                        <mat-option value="1">Resolved</mat-option>
-                        <mat-option value="2">Resolved with sequelae</mat-option>
-                        <mat-option value="3">Fatal</mat-option>
-                        <mat-option value="4">Resolving</mat-option>
-                        <mat-option value="5">Not resolved</mat-option>
-                        <mat-option value="6">Unknown</mat-option>
-                      </mat-select>                        
+                      <input matInput formControlName="outcome" readonly>
                     </mat-form-field>
                   </div>
                 </div>

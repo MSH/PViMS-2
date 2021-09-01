@@ -223,24 +223,24 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
     let self = this;
 
     self.updateForm(self.thirdFormGroup, { 'onsetDate': clinicalEventModel.onsetDate })
-    self.updateForm(self.thirdFormGroup, { 'regimen': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'regimen')?.value })
+    self.updateForm(self.thirdFormGroup, { 'regimen': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Regimen") })
     self.updateForm(self.thirdFormGroup, { 'sourceDescription': clinicalEventModel.sourceDescription })
-    self.updateForm(self.thirdFormGroup, { 'isSerious': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'is the adverse event serious?')?.value })
-    self.updateForm(self.thirdFormGroup, { 'seriousness': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'seriousness')?.value })
-    self.updateForm(self.thirdFormGroup, { 'classification': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'classification')?.value })
+    self.updateForm(self.thirdFormGroup, { 'isSerious': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Is the adverse event serious?") })
+    self.updateForm(self.thirdFormGroup, { 'seriousness': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Seriousness") })
+    self.updateForm(self.thirdFormGroup, { 'classification': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Classification") })
     self.updateForm(self.thirdFormGroup, { 'weight': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'weight (kg)')?.value })
     self.updateForm(self.thirdFormGroup, { 'height': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'height (cm)')?.value })
     self.updateForm(self.thirdFormGroup, { 'allergy': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'any known allergy')?.value })
-    self.updateForm(self.thirdFormGroup, { 'pregnancyStatus': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'pregnancy status')?.value })
+    self.updateForm(self.thirdFormGroup, { 'pregnancyStatus': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Pregnancy status") })
     self.updateForm(self.thirdFormGroup, { 'comorbidities': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'comorbidities')?.value })
   }
 
   private loadDataForFourthForm(clinicalEventModel: PatientClinicalEventExpandedModel) {
     let self = this;
 
-    self.updateForm(self.fourthFormGroup, { 'treatmentGiven': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'was treatment given?')?.value })
+    self.updateForm(self.fourthFormGroup, { 'treatmentGiven': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Was treatment given?") })
     self.updateForm(self.fourthFormGroup, { 'treatmentDetails': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'treatment details')?.value })
-    self.updateForm(self.fourthFormGroup, { 'outcome': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'outcome')?.value })
+    self.updateForm(self.fourthFormGroup, { 'outcome': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Outcome") })
     self.updateForm(self.fourthFormGroup, { 'dateOfRecovery': clinicalEventModel.resolutionDate })
     self.updateForm(self.fourthFormGroup, { 'sequlae': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'sequlae details')?.value })
     self.updateForm(self.fourthFormGroup, { 'interventions': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'interventions')?.value })
