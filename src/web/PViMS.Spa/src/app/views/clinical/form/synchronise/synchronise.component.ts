@@ -8,7 +8,7 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MetaFormService } from 'app/shared/services/meta-form.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
-import { forkJoin, of, Subscription } from 'rxjs';
+import { forkJoin, from, of, Subscription } from 'rxjs';
 import { GridModel } from 'app/shared/models/grid.model';
 import { _routes } from 'app/config/routes';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
@@ -16,7 +16,7 @@ import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { ViewErrorPopupComponent } from './viewerror-popup/viewerror.popup.component';
 import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
 import { CustomAttributeService } from 'app/shared/services/custom-attribute.service';
-import { switchMap } from 'rxjs/operators';
+import { concatMap, finalize, switchMap } from 'rxjs/operators';
 import { CustomAttributeDetailModel } from 'app/shared/models/custom-attribute/custom-attribute.detail.model';
 import { Form } from 'app/shared/indexed-db/appdb';
 import { PatientService } from 'app/shared/services/patient.service';
@@ -204,7 +204,6 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
 
   submitForm(record: GridRecordModel): void {
     const self = this;
-    const requestArray = [];
 
     self.metaFormService.getForm(record.id).then(result => {
         let form = result as Form;
@@ -214,48 +213,63 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
         
         var firstForm = JSON.parse(form.formValues[1].formControlValue);
 
-        var thirdForm = JSON.parse(form.formValues[2].formControlValue);
-        var fourthForm = JSON.parse(form.formValues[3].formControlValue);
-        var sixthForm = JSON.parse(form.formValues[5].formControlValue);
-
-        var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel(thirdForm, fourthForm, sixthForm);
-        requestArray.push(this.patientService.savePatientClinicalEvent(firstForm.patientId, 0, clinicalEventForUpdate));
-    
         var medications: PatientMedicationForUpdateModel[] = JSON.parse(form.formValues[4].formControlValue);
-        medications.forEach(medicationForUpdate => {
-          requestArray.push(this.patientService.savePatientMedication(firstForm.patientId, medicationForUpdate.id, medicationForUpdate));
-        });
-
-        var attachments: FormAttachmentModel[] = [];
-        form.formAttachments.forEach(attachment => {
-          attachments.push({ description: attachment.description, file: attachment.file })  
-        });
-        attachments.forEach(attachmentForUpdate => {
-          requestArray.push(this.patientService.saveAttachment(firstForm.patientId, attachmentForUpdate.file, attachmentForUpdate.description));
-        });
-
-        forkJoin(requestArray)
-        .subscribe(
+        from(medications).pipe(
+          concatMap(medicationForUpdate => self.patientService.savePatientMedication(firstForm.patientId, medicationForUpdate.id, medicationForUpdate))
+        ).pipe(
+          finalize(() => self.saveOnlineMedicationsComplete(record, form)),
+        ).subscribe(
           data => {
-            self.CLog('success', 'Form Submission')
-            record.submissionStatus = "Successful";
-            record.selected = false;
-            self.metaFormService.markFormAsSynched(form.id);
+            self.CLog('subscription to save meds');
           },
           error => {
-            self.CLog(error, 'error saving form to API')
-            record.submissionStatus = "Error";
-            let messages = [];
-            messages.push(self.extractError(error));
-            record.synchMessages = error.message;
-          });
-    
+            this.handleError(error, "Error saving medications");
+          }); 
     }, error => {
           self.throwError(error, error.statusText);
     });
-  }  
+  }
 
-  private prepareClinicalEventForUpdateModel(thirdForm: any, fourthForm: any, sixthForm: any): PatientClinicalEventForUpdateModel {
+  private saveOnlineMedicationsComplete(record: GridRecordModel, form: Form): void {
+    const self = this;
+    const requestArray = [];
+
+    var firstForm = JSON.parse(form.formValues[1].formControlValue);
+
+    var thirdForm = JSON.parse(form.formValues[2].formControlValue);
+    var fourthForm = JSON.parse(form.formValues[3].formControlValue);
+    var sixthForm = JSON.parse(form.formValues[5].formControlValue);
+
+    self.CLog('saving meds complete');
+    var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel(firstForm, thirdForm, fourthForm, sixthForm);
+    requestArray.push(this.patientService.savePatientClinicalEvent(firstForm.patientId, 0, clinicalEventForUpdate));
+
+    var attachments: FormAttachmentModel[] = [];
+    form.formAttachments.forEach(attachment => {
+      attachments.push({ description: attachment.description, file: attachment.file })  
+    });
+    attachments.forEach(attachmentForUpdate => {
+      requestArray.push(this.patientService.saveAttachment(firstForm.patientId, attachmentForUpdate.file, attachmentForUpdate.description));
+    });
+
+    forkJoin(requestArray)
+    .subscribe(
+      data => {
+        self.CLog('success', 'Form Submission')
+        record.submissionStatus = "Successful";
+        record.selected = false;
+        self.metaFormService.markFormAsSynched(form.id);        
+      },
+      error => {
+        self.CLog(error, 'error saving form to API')
+        record.submissionStatus = "Error";
+        let messages = [];
+        messages.push(self.extractError(error));
+        record.synchMessages = error.message;
+      });
+  }
+
+  private prepareClinicalEventForUpdateModel(firstForm: any, thirdForm: any, fourthForm: any, sixthForm: any): PatientClinicalEventForUpdateModel {
     let self = this;
     self.CLog(thirdForm['dateOfOnset'], 'onsetDate');
     let onsetDate = '';
@@ -308,6 +322,7 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
     {
       id: 0,
       index: 1,
+      patientIdentifier: firstForm['patientIdentifier'],
       onsetDate,
       sourceDescription: thirdForm['sourceDescription'],
       resolutionDate,

@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { EventService } from 'app/shared/services/event.service';
 import { PatientService } from 'app/shared/services/patient.service';
-import { finalize, switchMap, takeUntil } from 'rxjs/operators';
+import { concatMap, finalize, switchMap, takeUntil } from 'rxjs/operators';
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AttachmentAddPopupComponent } from '../../shared/attachment-add-popup/attachment-add.popup.component';
@@ -16,7 +16,7 @@ import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.mode
 import { GridModel } from 'app/shared/models/grid.model';
 import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
 import { PatientClinicalEventForUpdateModel } from 'app/shared/models/patient/patient-clinical-event-for-update.model';
-import { forkJoin, Observable, of } from 'rxjs';
+import { forkJoin, from, Observable, of } from 'rxjs';
 import { CustomAttributeDetailModel } from 'app/shared/models/custom-attribute/custom-attribute.detail.model';
 import { CustomAttributeService } from 'app/shared/services/custom-attribute.service';
 import { _routes } from 'app/config/routes';
@@ -355,39 +355,19 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
   saveFormOnline(): void {
     const self = this;
 
-    const requestArray = [];
-
-    var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel();
-    requestArray.push(this.patientService.savePatientClinicalEvent(self.viewModel.patientId, 0, clinicalEventForUpdate));
-
-    self.viewModel.medications.forEach(medicationForUpdate => {
-      requestArray.push(this.patientService.savePatientMedication(self.viewModel.patientId, medicationForUpdate.id, medicationForUpdate));
-    });
-
-    self.viewModel.attachments.forEach(attachmentForUpdate => {
-      requestArray.push(this.patientService.saveAttachment(self.viewModel.patientId, attachmentForUpdate.file, attachmentForUpdate.description));
-    });
-
-    forkJoin(requestArray)
-    .subscribe(
+    from(self.viewModel.medications).pipe(
+      concatMap(medicationForUpdate => self.patientService.savePatientMedication(self.viewModel.patientId, medicationForUpdate.id, medicationForUpdate))
+    ).pipe(
+      finalize(() => self.saveOnlineMedicationsComplete()),
+    ).subscribe(
       data => {
-        self.setBusy(false);
-        self.notify('Form added successfully!', 'Success');
-
-        self.firstFormGroup.markAsPristine();
-        self.thirdFormGroup.markAsPristine();
-        self.fourthFormGroup.markAsPristine();
-        self.fifthFormGroup.markAsPristine();
-        self.sixthFormGroup.markAsPristine();
-
-        self._router.navigate([_routes.clinical.forms.landing]);
+        self.CLog('subscription to save meds');
       },
       error => {
-        this.handleError(error, "Error adding form");
-      });
-
+        this.handleError(error, "Error saving medications");
+      });    
   }
-
+  
   saveFormOffline(): void {
     const self = this;
     let otherModels:any[]; 
@@ -480,7 +460,38 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           });
       }
   } 
-  
+
+  private saveOnlineMedicationsComplete(): void {
+    const self = this;
+    const requestArray = [];
+
+    self.CLog('saving meds complete');
+    var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel();
+    requestArray.push(this.patientService.savePatientClinicalEvent(self.viewModel.patientId, 0, clinicalEventForUpdate));
+
+    self.viewModel.attachments.forEach(attachmentForUpdate => {
+      requestArray.push(this.patientService.saveAttachment(self.viewModel.patientId, attachmentForUpdate.file, attachmentForUpdate.description));
+    });
+
+    forkJoin(requestArray)
+    .subscribe(
+      data => {
+        self.setBusy(false);
+        self.notify('Form added successfully!', 'Success');
+
+        self.firstFormGroup.markAsPristine();
+        self.thirdFormGroup.markAsPristine();
+        self.fourthFormGroup.markAsPristine();
+        self.fifthFormGroup.markAsPristine();
+        self.sixthFormGroup.markAsPristine();
+
+        self._router.navigate([_routes.clinical.forms.landing]);
+      },
+      error => {
+        this.handleError(error, "Error adding form");
+      });
+  }
+    
   private openCompletePopup(formId: number) {
     let self = this;
     let title = "Form Completed";
@@ -498,14 +509,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
         self._router.navigate([_routes.clinical.forms.landing]);        
       })
   }    
-
-  private getValueOrSelectedValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
-    let attribute = attributes.find(a => a.key == key);
-    if(attribute?.selectionValue != '') {
-      return attribute?.selectionValue;
-    }
-     return attribute?.value;
-  }
 
   private prepareClinicalEventForUpdateModel(): PatientClinicalEventForUpdateModel {
     let self = this;

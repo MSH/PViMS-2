@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
@@ -24,7 +24,6 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './form-adr-medication.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class FormADRMedicationPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
