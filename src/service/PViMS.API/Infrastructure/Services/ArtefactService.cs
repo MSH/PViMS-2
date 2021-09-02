@@ -47,6 +47,7 @@ namespace PVIMS.API.Infrastructure.Services
         public async Task<ArtefactInfoModel> CreatePatientSummaryForActiveReportAsync(Guid contextGuid)
         {
             var patientClinicalEvent = await GetPatientClinicalEventAsync(contextGuid);
+            var reportInstance = await GetReportInstanceForPatientClinicalEventAsync(contextGuid);
 
             var isSerious = await CheckIfSeriousAsync(patientClinicalEvent);
             var model = PrepareFileModelForActive(patientClinicalEvent, isSerious);
@@ -60,22 +61,22 @@ namespace PVIMS.API.Infrastructure.Services
             _wordDocumentService.AddTableHeader("B. PRE-EXISITING CONDITIONS");
             _wordDocumentService.AddTwoColumnTable(PrepareConditionsForActiveReport(patientClinicalEvent));
             _wordDocumentService.AddTableHeader("C. ADVERSE EVENT INFORMATION");
-            _wordDocumentService.AddFourColumnTable(await PrepareAdverseEventForActiveReportAsync(patientClinicalEvent, isSerious));
+            _wordDocumentService.AddFourColumnTable(await PrepareAdverseEventForActiveReportAsync(patientClinicalEvent, reportInstance, isSerious));
             _wordDocumentService.AddTwoColumnTable(PrepareNotes(""));
             _wordDocumentService.AddTableHeader("D. MEDICATIONS");
 
-            await PrepareMedicationsForActiveReportAsync(patientClinicalEvent);
+            await PrepareMedicationsForActiveReportAsync(reportInstance);
 
             _wordDocumentService.AddTableHeader("E. CLINICAL EVALUATIONS");
 
             PrepareEvaluationsForActiveReport(patientClinicalEvent);
 
             _wordDocumentService.AddTwoColumnTable(PrepareNotes(""));
-            _wordDocumentService.AddTableHeader("F. WEIGHT HISTORY");
+            
+            //_wordDocumentService.AddTableHeader("F. WEIGHT HISTORY");
+            //PrepareWeightForActiveReport(patientClinicalEvent);
 
-            PrepareWeightForActiveReport(patientClinicalEvent);
-
-            _wordDocumentService.AddTwoColumnTable(PrepareNotes(""));
+            //_wordDocumentService.AddTwoColumnTable(PrepareNotes(""));
 
             return model;
         }
@@ -155,6 +156,19 @@ namespace PVIMS.API.Infrastructure.Services
             return patientClinicalEvent;
         }
 
+        private async Task<ReportInstance> GetReportInstanceForPatientClinicalEventAsync(Guid contextGuid)
+        {
+            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid, new string[] { "Medications", 
+                "TerminologyMedDra" });
+
+            if (reportInstance == null)
+            {
+                throw new KeyNotFoundException(nameof(reportInstance));
+            }
+
+            return reportInstance;
+        }
+
         private async Task<DatasetInstance> GetDatasetInstanceAsync(Guid contextGuid)
         {
             var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.DatasetInstanceGuid == contextGuid, new string[] { "DatasetInstanceValues.DatasetElement", "DatasetInstanceValues.DatasetInstanceSubValues.DatasetElementSub" });
@@ -169,11 +183,12 @@ namespace PVIMS.API.Infrastructure.Services
         private async Task<List<KeyValuePair<string, string>>> PrepareBasicInformationForActiveReportAsync(PatientClinicalEvent patientClinicalEvent)
         {
             var extendable = (IExtendable)patientClinicalEvent;
+            var patientExtendable = (IExtendable)patientClinicalEvent.Patient;
             List<KeyValuePair<string, string>> rows = new();
 
             rows.Add(new KeyValuePair<string, string>("Patient Name", patientClinicalEvent.Patient.FullName));
             rows.Add(new KeyValuePair<string, string>("Date of Birth", patientClinicalEvent.Patient.DateOfBirth.HasValue ? patientClinicalEvent.Patient.DateOfBirth.Value.ToString("yyyy-MM-dd") : ""));
-            rows.Add(new KeyValuePair<string, string>("Age Group", GetAttributeValue(extendable, "Age Group")));
+            rows.Add(new KeyValuePair<string, string>("Age Group", patientClinicalEvent.Patient.AgeGroup));
 
             if (patientClinicalEvent.OnsetDate.HasValue && patientClinicalEvent.Patient.DateOfBirth.HasValue)
             {
@@ -184,10 +199,12 @@ namespace PVIMS.API.Infrastructure.Services
                 rows.Add(new KeyValuePair<string, string>("Age at time of onset", string.Empty));
             }
 
-            rows.Add(new KeyValuePair<string, string>("Gender", await _attributeService.GetCustomAttributeValueAsync("Patient", "Gender", extendable)));
+            rows.Add(new KeyValuePair<string, string>("Gender", await _attributeService.GetCustomAttributeValueAsync("Patient", "Gender", patientExtendable)));
+            rows.Add(new KeyValuePair<string, string>("Ethnic Group", await _attributeService.GetCustomAttributeValueAsync("Patient", "Ethnic Group", patientExtendable)));
             rows.Add(new KeyValuePair<string, string>("Facility", patientClinicalEvent.Patient.CurrentFacility.Facility.FacilityName));
-            rows.Add(new KeyValuePair<string, string>("Medical Record Number", await _attributeService.GetCustomAttributeValueAsync("Patient", "Medical Record Number", extendable)));
-            rows.Add(new KeyValuePair<string, string>("Identity Number", await _attributeService.GetCustomAttributeValueAsync("Patient", "Patient Identity Number", extendable)));
+            rows.Add(new KeyValuePair<string, string>("Region", ""));
+            //rows.Add(new KeyValuePair<string, string>("Medical Record Number", await _attributeService.GetCustomAttributeValueAsync("Patient", "Medical Record Number", extendable)));
+            //rows.Add(new KeyValuePair<string, string>("Identity Number", await _attributeService.GetCustomAttributeValueAsync("Patient", "Patient Identity Number", extendable)));
 
             rows.Add(new KeyValuePair<string, string>("Weight (kg)", await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Weight (kg)", extendable)));
             rows.Add(new KeyValuePair<string, string>("Height (cm)", await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Height (cm)", extendable)));
@@ -200,7 +217,7 @@ namespace PVIMS.API.Infrastructure.Services
             List<KeyValuePair<string, string>> rows = new();
 
             rows.Add(new KeyValuePair<string, string>("Patient Name", datasetInstance.GetInstanceValue("Initials")));
-            rows.Add(new KeyValuePair<string, string>("Date of Birth", DateTime.TryParse(datasetInstance.GetInstanceValue("Date of Birth"), out var dateOfBirthValue) ? dateOfBirthValue.ToString("yyyy-MM-dd") : ""));
+            rows.Add(new KeyValuePair<string, string>("Date of Birth (yyyy-mm-dd)", DateTime.TryParse(datasetInstance.GetInstanceValue("Date of Birth"), out var dateOfBirthValue) ? dateOfBirthValue.ToString("yyyy-MM-dd") : ""));
             rows.Add(new KeyValuePair<string, string>("Age Group", string.Empty));
             rows.Add(new KeyValuePair<string, string>("Age at time of onset", $"{datasetInstance.GetInstanceValue("Age")} {datasetInstance.GetInstanceValue("Age Unit")}"));
             rows.Add(new KeyValuePair<string, string>("Gender", datasetInstance.GetInstanceValue("Sex")));
@@ -228,23 +245,23 @@ namespace PVIMS.API.Infrastructure.Services
             foreach (PatientCondition patientCondition in patientClinicalEvent.Patient.PatientConditions.Where(pc => pc.OnsetDate <= patientClinicalEvent.OnsetDate).OrderByDescending(c => c.OnsetDate))
             {
                 i += 1;
-                rows.Add(new KeyValuePair<string, string>($"Condition {i}", patientCondition.TerminologyMedDra.MedDraTerm));
-                rows.Add(new KeyValuePair<string, string>("Start Date", patientCondition.OnsetDate.ToString("yyyy-MM-dd")));
-                rows.Add(new KeyValuePair<string, string>("End Date", patientCondition.OutcomeDate.HasValue ? patientCondition.OutcomeDate.Value.ToString("yyyy-MM-dd") : ""));
+                rows.Add(new KeyValuePair<string, string>("Condition", patientCondition.TerminologyMedDra.MedDraTerm));
+                rows.Add(new KeyValuePair<string, string>("Start Date (yyyy-mm-dd)", patientCondition.OnsetDate.ToString("yyyy-MM-dd")));
+                rows.Add(new KeyValuePair<string, string>("End Date (yyyy-mm-dd)", patientCondition.OutcomeDate.HasValue ? patientCondition.OutcomeDate.Value.ToString("yyyy-MM-dd") : ""));
             }
 
             return rows;
         }
 
-        private async Task<List<KeyValuePair<string, string>>> PrepareAdverseEventForActiveReportAsync(PatientClinicalEvent patientClinicalEvent, bool isSerious)
+        private async Task<List<KeyValuePair<string, string>>> PrepareAdverseEventForActiveReportAsync(PatientClinicalEvent patientClinicalEvent, ReportInstance reportInstance, bool isSerious)
         {
             var extendable = (IExtendable)patientClinicalEvent;
             List<KeyValuePair<string, string>> rows = new();
 
             rows.Add(new KeyValuePair<string, string>("Source Description", patientClinicalEvent.SourceDescription));
-            rows.Add(new KeyValuePair<string, string>("MedDRA Term", patientClinicalEvent.SourceTerminologyMedDra?.MedDraTerm));
-            rows.Add(new KeyValuePair<string, string>("Onset Date", patientClinicalEvent.OnsetDate.HasValue ? patientClinicalEvent.OnsetDate.Value.ToString("yyyy-MM-dd") : ""));
-            rows.Add(new KeyValuePair<string, string>("Resolution Date", patientClinicalEvent.ResolutionDate.HasValue ? patientClinicalEvent.ResolutionDate.Value.ToString("yyyy-MM-dd") : ""));
+            rows.Add(new KeyValuePair<string, string>("MedDRA Term", reportInstance.TerminologyMedDra?.MedDraTerm));
+            rows.Add(new KeyValuePair<string, string>("Onset Date (yyyy-mm-dd)", patientClinicalEvent.OnsetDate.HasValue ? patientClinicalEvent.OnsetDate.Value.ToString("yyyy-MM-dd") : ""));
+            rows.Add(new KeyValuePair<string, string>("Resolution Date (yyyy-mm-dd)", patientClinicalEvent.ResolutionDate.HasValue ? patientClinicalEvent.ResolutionDate.Value.ToString("yyyy-MM-dd") : ""));
 
             if (patientClinicalEvent.OnsetDate.HasValue && patientClinicalEvent.ResolutionDate.HasValue)
             {
@@ -260,7 +277,7 @@ namespace PVIMS.API.Infrastructure.Services
             if (isSerious)
             {
                 rows.Add(new KeyValuePair<string, string>("Seriousness", await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Seriousness", extendable)));
-                rows.Add(new KeyValuePair<string, string>("Grading Scale", await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Severity Grading Scale", extendable)));
+                rows.Add(new KeyValuePair<string, string>("Classification", ReportClassification.From(reportInstance.ReportClassificationId).Name));
                 rows.Add(new KeyValuePair<string, string>("Severity Grade", await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Severity Grade", extendable)));
                 rows.Add(new KeyValuePair<string, string>("SAE Number", await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "FDA SAE Number", extendable)));
             }
@@ -304,15 +321,12 @@ namespace PVIMS.API.Infrastructure.Services
             return rows;
         }
 
-        private async Task PrepareMedicationsForActiveReportAsync(PatientClinicalEvent patientClinicalEvent)
+        private async Task PrepareMedicationsForActiveReportAsync(ReportInstance reportInstance)
         {
-            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == patientClinicalEvent.PatientClinicalEventGuid, new string[] { "Medications" });
-            if (reportInstance == null) { return; };
-
             var i = 0;
-            foreach (ReportInstanceMedication med in reportInstance.Medications)
+            foreach (ReportInstanceMedication reportMedication in reportInstance.Medications)
             {
-                var patientMedication = await _patientMedicationRepository.GetAsync(pm => pm.PatientMedicationGuid == med.ReportInstanceMedicationGuid);
+                var patientMedication = await _patientMedicationRepository.GetAsync(pm => pm.PatientMedicationGuid == reportMedication.ReportInstanceMedicationGuid);
                 if (patientMedication != null)
                 {
                     i += 1;
@@ -320,12 +334,12 @@ namespace PVIMS.API.Infrastructure.Services
                     List<string[]> rows = new();
                     List<string> cells = new();
 
-                    cells.Add($"Drug {i}");
+                    cells.Add("Drug");
                     cells.Add("Start Date");
                     cells.Add("End Date");
                     cells.Add("Dose");
                     cells.Add("Route");
-                    cells.Add("Indication");
+                    cells.Add("Causality");
 
                     rows.Add(cells.ToArray());
 
@@ -335,9 +349,9 @@ namespace PVIMS.API.Infrastructure.Services
                     cells.Add(patientMedication.DisplayName);
                     cells.Add(patientMedication.StartDate.ToString("yyyy-MM-dd"));
                     cells.Add(patientMedication.EndDate.HasValue ? patientMedication.EndDate.Value.ToString("yyyy-MM-dd") : "");
-                    cells.Add(patientMedication.Dose);
+                    cells.Add($"{patientMedication.Dose} {patientMedication.DoseUnit}");
                     cells.Add(await _attributeService.GetCustomAttributeValueAsync("PatientMedication", "Route", extendable));
-                    cells.Add(await _attributeService.GetCustomAttributeValueAsync("PatientMedication", "Indication", extendable));
+                    cells.Add($"{reportMedication.WhoCausality} {reportMedication.NaranjoCausality}");
 
                     rows.Add(cells.ToArray());
 
@@ -490,16 +504,6 @@ namespace PVIMS.API.Infrastructure.Services
             }
 
             _wordDocumentService.AddRowTable(rows, new int[] { 2500, 8852 });
-        }
-
-        private string GetAttributeValue(IExtendable extendable, string attributeKey)
-        {
-            var extendableValue = extendable.GetAttributeValue(attributeKey);
-            if (extendableValue != null)
-            {
-                return extendableValue.ToString();
-            }
-            return string.Empty;
         }
 
         private int CalculateAge(DateTime birthDate, DateTime onsetDate)

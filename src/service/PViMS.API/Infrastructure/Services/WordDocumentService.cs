@@ -41,7 +41,7 @@ namespace PVIMS.API.Infrastructure.Services
                 body.Append(sectionProps);
 
                 mainPart.Document.AppendChild(body);
-                PrepareLogo(document);
+                //PrepareLogo(document);
             };
         }
 
