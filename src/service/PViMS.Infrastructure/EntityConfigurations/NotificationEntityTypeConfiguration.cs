@@ -29,7 +29,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasColumnName("DestinationUser_Id");
 
             configuration.Property(b => b.Summary)
-                .HasMaxLength(75)
+                .HasMaxLength(100)
                 .IsRequired();
 
             configuration
