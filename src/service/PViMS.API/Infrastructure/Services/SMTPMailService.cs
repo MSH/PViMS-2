@@ -1,6 +1,6 @@
 ﻿using MailKit.Net.Smtp;
 using MimeKit;
-using PVIMS.Core.Exceptions;
+using System.Collections.Generic;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -46,14 +46,14 @@ namespace PVIMS.API.Infrastructure.Services
             _mailboxAddress = mailboxAddress;
         }
 
-        public async Task SendEmailAsync(string subject, string body, string destinationMailboxName, string destinationMailboxAddress)
+        public async Task SendEmailAsync(string subject, string body, List<MailboxAddress> destinationAddresses)
         {
-            ValidateSendDetails(subject, body, destinationMailboxName, destinationMailboxAddress);
+            ValidateSendDetails(subject, body, destinationAddresses);
 
             var mailMessage = new MimeMessage();
 
             mailMessage.From.Add(new MailboxAddress(_mailboxAddress, _mailboxAddress));
-            mailMessage.To.Add(new MailboxAddress(destinationMailboxName, destinationMailboxAddress));
+            mailMessage.To.AddRange(destinationAddresses);
             mailMessage.Subject = subject;
             mailMessage.Body = new TextPart("html")
             {
@@ -72,26 +72,26 @@ namespace PVIMS.API.Infrastructure.Services
             }
         }
 
-        private void ValidateSendDetails(string subject, string body, string destinationMailboxName, string destinationMailboxAddress)
+        private void ValidateSendDetails(string subject, string body, List<MailboxAddress> destinationAddresses)
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new System.ArgumentException($"'{nameof(subject)}' cannot be null or empty.", nameof(subject));
+                throw new System.ArgumentException($"{nameof(subject)} cannot be null or empty.");
             }
 
             if (string.IsNullOrEmpty(body))
             {
-                throw new System.ArgumentException($"'{nameof(body)}' cannot be null or empty.", nameof(body));
+                throw new System.ArgumentException($"{nameof(body)} cannot be null or empty.");
             }
 
-            if (string.IsNullOrEmpty(destinationMailboxName))
+            if (destinationAddresses == null)
             {
-                throw new System.ArgumentException($"'{nameof(destinationMailboxName)}' cannot be null or empty.", nameof(destinationMailboxName));
+                throw new System.ArgumentNullException($"{nameof(destinationAddresses)} cannot be null.");
             }
 
-            if (string.IsNullOrEmpty(destinationMailboxAddress))
+            if (destinationAddresses.Count == 0)
             {
-                throw new System.ArgumentException($"'{nameof(destinationMailboxAddress)}' cannot be null or empty.", nameof(destinationMailboxAddress));
+                throw new System.ArgumentException($"{nameof(destinationAddresses)} cannot be empty.");
             }
         }
 

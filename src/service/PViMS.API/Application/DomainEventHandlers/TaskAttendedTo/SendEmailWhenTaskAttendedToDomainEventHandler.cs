@@ -1,7 +1,9 @@
 ﻿using MediatR;
+using MimeKit;
 using PViMS.Core.Events;
 using PVIMS.API.Infrastructure.Services;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,7 +40,17 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAttendedTo
             sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Status</b></td><td style='padding: 10px; border: 1px solid black;'>{Core.Aggregates.ReportInstanceAggregate.TaskStatus.From(domainEvent.Task.TaskStatusId).Name}</td></tr>");
             sb.Append("</table>");
 
-            await _smtpMailService.SendEmailAsync(subject, sb.ToString(), domainEvent.Task.CreatedBy.FullName, domainEvent.Task.CreatedBy.Email );
+            await _smtpMailService.SendEmailAsync(subject, sb.ToString(), PrepareDestinationMailBoxes(domainEvent));
+        }
+
+        private List<MailboxAddress> PrepareDestinationMailBoxes(TaskAttendedToDomainEvent domainEvent)
+        {
+            var destinationAddresses = new List<MailboxAddress>
+            {
+                new MailboxAddress(domainEvent.Task.CreatedBy.FullName, domainEvent.Task.CreatedBy.Email)
+            };
+
+            return destinationAddresses;
         }
     }
 }

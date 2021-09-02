@@ -1,8 +1,10 @@
 ﻿using MediatR;
+using MimeKit;
 using PViMS.Core.Events;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.Core.Aggregates.UserAggregate;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,7 +47,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskCommentAdded
 
             var destinationUser = GetDestinationUser(domainEvent);
 
-            await _smtpMailService.SendEmailAsync(subject, sb.ToString(), destinationUser.FullName, destinationUser.Email );
+            await _smtpMailService.SendEmailAsync(subject, sb.ToString(), PrepareDestinationMailBoxes(destinationUser));
         }
         private User GetDestinationUser(TaskCommentAddedDomainEvent domainEvent)
         {
@@ -62,6 +64,16 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskCommentAdded
             }
 
             return destinationUser;
+        }
+
+        private List<MailboxAddress> PrepareDestinationMailBoxes(User destinationUser)
+        {
+            var destinationAddresses = new List<MailboxAddress>
+            {
+                new MailboxAddress(destinationUser.FullName, destinationUser.Email)
+            };
+
+            return destinationAddresses;
         }
     }
 }
