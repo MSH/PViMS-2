@@ -204,6 +204,54 @@
                     </div>
                   </div>    
                 </mat-tab>
+
+                <mat-tab label="{{'Attachments' | translate}}">
+                  <mat-card-content class="m-1 p-5">
+                    <div class="ml-05 mr-05 mt-05 pb-1" style="overflow-y: auto">
+                      <div class="table-container">
+                        <mat-table [dataSource]="viewModel?.attachmentGrid?.records"
+                                  [@animate]="{value:'50'}">
+              
+                          <ng-container matColumnDef="type">
+                              <mat-header-cell *matHeaderCellDef>{{"Type" | translate }}</mat-header-cell>
+                              <mat-cell *matCellDef="let record">
+                                  <p>{{record.attachmentType | translate }}</p>
+                              </mat-cell> 
+                          </ng-container>
+              
+                          <ng-container matColumnDef="name">
+                              <mat-header-cell *matHeaderCellDef>{{"Name" | translate }}</mat-header-cell>
+                              <mat-cell *matCellDef="let record">
+                                  <p>{{record.fileName}}</p>
+                              </mat-cell>
+                          </ng-container>
+  
+                          <ng-container matColumnDef="description">
+                            <mat-header-cell *matHeaderCellDef>{{"Description" | translate }}</mat-header-cell>
+                            <mat-cell *matCellDef="let record">
+                                <p>{{record.description}}</p>
+                            </mat-cell>
+                          </ng-container>
+  
+                          <ng-container matColumnDef="actions">
+                            <mat-header-cell *matHeaderCellDef>
+                              {{'Actions' | translate }}
+                            </mat-header-cell>
+                            <mat-cell *matCellDef="let record">
+                                <button mat-icon-button color="primary" matTooltip="{{'Download Attachment' | translate }}"
+                                        (click)="downloadAttachment(record)">
+                                    <mat-icon>cloud_download</mat-icon>
+                                </button>
+                            </mat-cell>
+                          </ng-container>            
+                          
+                          <mat-header-row *matHeaderRowDef="viewModel?.attachmentGrid?.displayedColumns; sticky:true"></mat-header-row>
+                          <mat-row *matRowDef="let record; columns: viewModel?.attachmentGrid?.displayedColumns;"></mat-row>
+                        </mat-table>
+                      </div>
+                    </div>
+                  </mat-card-content>
+                </mat-tab>
               </mat-tab-group>
             </form>
           </mat-card-content>

@@ -25,6 +25,8 @@ import { PatientExpandedModel } from 'app/shared/models/patient/patient.expanded
 // the `default as` syntax.
 import * as _moment from 'moment';
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
+import { ProgressStatus, ProgressStatusEnum } from 'app/shared/models/program-status.model';
+import { HttpEventType } from '@angular/common/http';
 const moment =  _moment;
 
 @Component({
@@ -52,7 +54,10 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
   public thirdFormGroup: FormGroup;
   public fourthFormGroup: FormGroup;
   public fifthFormGroup: FormGroup;
-  public sixthFormGroup: FormGroup;  
+  public sixthFormGroup: FormGroup; 
+
+  percentage: number;
+  showProgress: boolean;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: PopupData,
@@ -116,6 +121,9 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
       profession: [null]
     });
 
+    self.viewModel.attachmentGrid.setupBasic(null, null, null);
+    self.viewModel.medicationGrid.setupBasic(null, null, null);
+
     self.getCustomAttributeList();    
   }
 
@@ -167,10 +175,69 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
         });    
   }
 
+  downloadAttachment(model: AttachmentGridRecordModel = null): void {
+    this.downloadStatus( {status: ProgressStatusEnum.START});
+
+    this.patientService.downloadAttachment(this.data.patientId, model.id).subscribe(
+      data => {
+        switch (data.type) {
+          case HttpEventType.DownloadProgress:
+            this.downloadStatus( {status: ProgressStatusEnum.IN_PROGRESS, percentage: Math.round((data.loaded / data.total) * 100)});
+            break;
+
+          case HttpEventType.Response:
+            this.downloadStatus( {status: ProgressStatusEnum.COMPLETE});
+            
+            const downloadedFile = new Blob([data.body], { type: data.body.type });
+            const a = document.createElement('a');
+
+            a.setAttribute('style', 'display:none;');
+            document.body.appendChild(a);
+            a.download = '';
+            a.href = URL.createObjectURL(downloadedFile);
+            a.target = '_blank';
+            a.click();
+            document.body.removeChild(a);
+
+            this.notify("Attachment downloaded successfully!", "Success");            
+            break;
+        }
+      },
+      error => {
+        this.downloadStatus( {status: ProgressStatusEnum.ERROR} );
+      }
+    );
+  }
+
+  downloadStatus(event: ProgressStatus) {
+    switch (event.status) {
+      case ProgressStatusEnum.START:
+        this.setBusy(true);
+        break;
+
+      case ProgressStatusEnum.IN_PROGRESS:
+        this.showProgress = true;
+        this.percentage = event.percentage;
+        break;
+
+      case ProgressStatusEnum.COMPLETE:
+        this.showProgress = false;
+        this.setBusy(false);
+        break;
+
+      case ProgressStatusEnum.ERROR:
+        this.showProgress = false;
+        this.setBusy(false);
+        this.throwError('Error downloading file. Please try again.', 'Error downloading file. Please try again.');
+        break;
+    }
+  }
+
   private loadGrids(patientModel: PatientExpandedModel, clinicalEventModel: PatientClinicalEventExpandedModel) {
     let self = this;
     self.viewModel.medications = self.mapMedicationForUpdateModels(patientModel.patientMedications);
     self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
+    self.viewModel.attachmentGrid.updateBasic(patientModel.attachments);    
   }
 
   private mapMedicationForUpdateModels(sourceMedications: PatientMedicationDetailModel[]): PatientMedicationForUpdateModel[] {
@@ -294,6 +361,10 @@ class ViewModel {
       (['medication', 'start-date', 'dose']);
   medications: PatientMedicationForUpdateModel[] = [];
 
+  attachmentGrid: GridModel<AttachmentGridRecordModel> =
+    new GridModel<AttachmentGridRecordModel>
+        (['type', 'name', 'description', 'actions']);
+
   workFlowId = '892F3305-7819-4F18-8A87-11CBA3AEE219';
   step = 0;
 
@@ -315,4 +386,13 @@ class MedicationGridRecordModel {
   doseUnit: string;
   startDate: string;
   endDate: string;
+}
+
+class AttachmentGridRecordModel {
+  id: number;
+  fileName: string;
+  description: string;
+  attachmentTyoe: string;
+  createdDetail: string;
+  updatedDetail: string;
 }
