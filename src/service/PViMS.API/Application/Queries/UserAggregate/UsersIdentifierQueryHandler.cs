@@ -55,7 +55,7 @@ namespace PVIMS.API.Application.Queries.UserAggregate
             }
 
 
-            var pagedUsersFromRepo = await _userRepository.ListAsync(pagingInfo, null, orderby, "");
+            var pagedUsersFromRepo = await _userRepository.ListAsync(pagingInfo, predicate, orderby, "");
             if (pagedUsersFromRepo != null)
             {
                 // Map EF entity to Dto
