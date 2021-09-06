@@ -252,39 +252,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Update an existing user's facility access
-        /// </summary>
-        /// <param name="id">The unique id of the user</param>
-        /// <param name="userFacilitiesForUpdate">The user payload</param>
-        /// <returns></returns>
-        [HttpPut("{id}/facilities", Name = "UpdateUserFacilities")]
-        [Consumes("application/json")]
-        public async Task<IActionResult> UpdateUserFacilities(int id,
-            [FromBody] UserFacilitiesForUpdateDto userFacilitiesForUpdate)
-        {
-            if (userFacilitiesForUpdate == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate payload for new request");
-                return BadRequest(ModelState);
-            }
-
-            var command = new ChangeUserFacilitiesCommand(id, userFacilitiesForUpdate.Facilities);
-
-            _logger.LogInformation(
-                "----- Sending command: ChangeUserFacilitiesCommand - {userId}",
-                command.UserId);
-
-            var commandResult = await _mediator.Send(command);
-
-            if (!commandResult)
-            {
-                return BadRequest("Command not created");
-            }
-
-            return Ok();
-        }
-
-        /// <summary>
         /// Add a role to a user
         /// </summary>
         /// <param name="id">The unique id of the user</param>
@@ -336,6 +303,63 @@ namespace PVIMS.API.Controllers
 
             _logger.LogInformation(
                 $"----- Sending command: RemoveRoleFromUserCommand - {command.UserId}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Add a facility to a user
+        /// </summary>
+        /// <param name="id">The unique id of the user</param>
+        /// <param name="userFacilitiesForUpdate">The user payload</param>
+        /// <returns></returns>
+        [HttpPost("{id}/facilities", Name = "CreateUserFacility")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> CreateUserFacility(int id,
+            [FromBody] UserFacilitiesForUpdateDto userFacilitiesForUpdate)
+        {
+            if (userFacilitiesForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
+            }
+
+            var command = new AddFacilityToUserCommand(id, userFacilitiesForUpdate.FacilityId);
+
+            _logger.LogInformation(
+                $"----- Sending command: AddFacilityToUserCommand - {command.UserId}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Remove a facility from a user
+        /// </summary>
+        /// <param name="id">The unique id of the user</param>
+        /// <param name="facilityId">The facility to remove</param>
+        /// <returns></returns>
+        [HttpDelete("{id}/facilities/{facilityId}", Name = "RemoveUserFacility")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> RemoveUserFacility(int id, int facilityId)
+        {
+            var command = new RemoveFacilityFromUserCommand(id, facilityId);
+
+            _logger.LogInformation(
+                $"----- Sending command: RemoveFacilityFromUserCommand - {command.UserId}");
 
             var commandResult = await _mediator.Send(command);
 

@@ -57,6 +57,7 @@ import { PasswordResetPopupComponent } from './user/user-list/password-reset-pop
 import { UserAddPopupComponent } from './user/user-list/user-add-popup/user-add.popup.component';
 import { UserDeletePopupComponent } from './user/user-list/user-delete-popup/user-delete.popup.component';
 import { UserUpdatePopupComponent } from './user/user-list/user-update-popup/user-update.popup.component';
+import { UserFacilityPopupComponent } from './user/user-list/user-facility-popup/user-facility.popup.component';
 
 @NgModule({
   declarations: [
@@ -106,6 +107,7 @@ import { UserUpdatePopupComponent } from './user/user-list/user-update-popup/use
     UserAddPopupComponent,
     UserDeletePopupComponent,
     UserListComponent,
+    UserFacilityPopupComponent,
     UserRolePopupComponent,
     UserUpdatePopupComponent,
     WorkPlanListComponent
@@ -143,6 +145,7 @@ import { UserUpdatePopupComponent } from './user/user-list/user-update-popup/use
     PasswordResetPopupComponent,
     UserAddPopupComponent,
     UserDeletePopupComponent,
+    UserFacilityPopupComponent,
     UserRolePopupComponent,
     UserUpdatePopupComponent
   ]  

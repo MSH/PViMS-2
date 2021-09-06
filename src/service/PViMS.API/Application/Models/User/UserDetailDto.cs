@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace PVIMS.API.Models
 {
@@ -27,15 +28,15 @@ namespace PVIMS.API.Models
         public string Active { get; set; }
 
         /// <summary>
-        /// The roles the user has been allocated
+        /// The roles the user has been allocated to
         /// </summary>
         [DataMember]
         public string[] Roles { get; set; }
 
         /// <summary>
-        /// The facilities the user has been allocated
+        /// The facilities the user has been allocated to
         /// </summary>
         [DataMember]
-        public string[] Facilities { get; set; }
+        public ICollection<UserFacilityDto> Facilities { get; set; } = new List<UserFacilityDto>();
     }
 }

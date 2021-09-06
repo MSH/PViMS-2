@@ -165,6 +165,29 @@ namespace PVIMS.Core.Aggregates.UserAggregate
             EulaAcceptanceDate = DateTime.Now;
         }
 
+        public UserFacility AddFacility(Facility facility)
+        {
+            if(Facilities.Any(f => f.Facility.Id == facility.Id))
+            {
+                throw new DomainException("Facility has already been added to user");
+            }
+
+            var newUserFacility = new UserFacility(facility, this);
+            Facilities.Add(newUserFacility);
+            return newUserFacility;
+        }
+
+        public void RemoveFacility(Facility facility)
+        {
+            var userFacility = Facilities.SingleOrDefault(f => f.Facility.Id == facility.Id);
+            if (userFacility == null)
+            {
+                throw new DomainException("Unable to locate Facility for removal");
+            }
+
+            Facilities.Remove(userFacility);
+        }
+
         public string FullName => $"{FirstName} {LastName}";
 
         public bool HasFacility(int id) =>

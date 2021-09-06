@@ -1,3 +1,5 @@
+import { UserFacilityModel } from "./user-facility.model";
+
 export interface UserDetailModel {
     id: number;
     userName: string;
@@ -7,5 +9,5 @@ export interface UserDetailModel {
     allowDatasetDownload: string;
     active: string;
     roles: string[];
-    facilities: string[];
+    facilities: UserFacilityModel[];
 }

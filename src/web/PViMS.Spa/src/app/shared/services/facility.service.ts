@@ -28,12 +28,12 @@ export class FacilityService extends BaseService {
       return this.getFacilities(filter)
         .pipe( 
           expand(response => {
-            let typedResponse = response as FacilityIdentifierWrapperModel;
+            let typedResponse = response as FacilityDetailWrapperModel;
             let next = typedResponse.links.find(l => l.rel == 'nextPage');
-            return next ? this.GetByAddress<FacilityIdentifierWrapperModel>(next.href, 'application/vnd.pvims.identifier.v1+json') : EMPTY;
+            return next ? this.GetByAddress<FacilityDetailWrapperModel>(next.href, 'application/vnd.pvims.detail.v1+json') : EMPTY;
           }),
           map(response => {
-            let typedResponse = response as FacilityIdentifierWrapperModel;
+            let typedResponse = response as FacilityDetailWrapperModel;
             return typedResponse.value;
           }),
           reduce((accData, data) => accData.concat(data), [])

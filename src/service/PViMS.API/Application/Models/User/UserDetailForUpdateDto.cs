@@ -39,10 +39,5 @@ namespace PVIMS.API.Models
         /// </summary>
         [ValidEnumValue]
         public YesNoValueType Active { get; set; }
-
-        /// <summary>
-        /// Facilities the user has been allocated to
-        /// </summary>
-        public List<string> Facilities { get; set; }
     }
 }

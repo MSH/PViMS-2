@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-
-namespace PVIMS.API.Models
+﻿namespace PVIMS.API.Models
 {
     public class UserFacilitiesForUpdateDto
     {
         /// <summary>
-        /// Facilities the user has been allocated to
+        /// The unique identifier of the facility that is been added or removed from the user
         /// </summary>
-        public List<string> Facilities { get; set; }
+        public int FacilityId { get; set; }
     }
 }

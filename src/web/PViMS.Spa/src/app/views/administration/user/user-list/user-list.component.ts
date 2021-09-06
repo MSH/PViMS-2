@@ -19,6 +19,7 @@ import { UserAddPopupComponent } from './user-add-popup/user-add.popup.component
 import { UserUpdatePopupComponent } from './user-update-popup/user-update.popup.component';
 import { PasswordResetPopupComponent } from './password-reset-popup/password-reset.popup.component';
 import { UserRolePopupComponent } from './user-role-popup/user-role.popup.component';
+import { UserFacilityPopupComponent } from './user-facility-popup/user-facility.popup.component';
 
 @Component({
   templateUrl: './user-list.component.html',
@@ -186,7 +187,25 @@ export class UserListComponent extends BaseComponent implements OnInit, AfterVie
         }
         self.loadGrid();
       })
-  }  
+  }
+
+  openFacilityPopUp(data: any = {}) {
+    let self = this;
+    let title = 'Manage Facilities';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(UserFacilityPopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { userId: data.id, title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+      })
+  }
 }
 
 class ViewModel {

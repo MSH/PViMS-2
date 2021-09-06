@@ -22,11 +22,10 @@ namespace PVIMS.API.MapperProfiles
             CreateMap<User, UserIdentifierDto>();
             CreateMap<User, UserDetailDto>()
                 .ForMember(dest => dest.AllowDatasetDownload, opt => opt.MapFrom(src => src.AllowDatasetDownload ? "Yes" : "No"))
-                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active ? "Yes" : "No"))
-                .ForMember(dest => dest.Facilities, opt => opt.MapFrom(src => src.Facilities.Select(f => f.Facility.FacilityName).ToArray()));
+                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active ? "Yes" : "No"));
 
-            //CreateMap<UserRole, UserRoleDto>()
-            //    .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Role.Name));
+            CreateMap<UserFacility, UserFacilityDto>()
+                .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.Facility.FacilityName));
         }
     }
 }
