@@ -25,7 +25,7 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
             {
                 connection.Open();
 
-				var facilityCodeList = string.Join(", ", userFacilityCodes.Select(fc => "'" + fc + "'"));
+				var facilityCodeList = userFacilityCodes.Count > 0 ? string.Join(", ", userFacilityCodes.Select(fc => "'" + fc + "'")) : "''";
 
 				var workFlowSummary = await connection.QuerySingleAsync<WorkFlowSummaryDto>(
                     @$"SELECT	wf.Id,
