@@ -31,6 +31,12 @@ namespace PVIMS.API.Infrastructure.Services
                { "DrugName", new PropertyMappingValue(new List<string>() { "DrugName" }) },
            };
 
+        private Dictionary<string, PropertyMappingValue> _orgUnitIdentifierPropertyMapping =
+           new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
+           {
+               { "Name", new PropertyMappingValue(new List<string>() { "OrgUnitName" } ) },
+           };
+
         private Dictionary<string, PropertyMappingValue> _patientDetailPropertyMapping =
            new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
            {
@@ -72,6 +78,7 @@ namespace PVIMS.API.Infrastructure.Services
             propertyMappings.Add(new PropertyMapping<LabResultIdentifierDto, LabResult>(_descriptionPropertyMapping));
             propertyMappings.Add(new PropertyMapping<LabTestUnitIdentifierDto, LabTestUnit>(_descriptionPropertyMapping));
             propertyMappings.Add(new PropertyMapping<MedicationFormIdentifierDto, MedicationForm>(_descriptionPropertyMapping));
+            propertyMappings.Add(new PropertyMapping<OrgUnitIdentifierDto, OrgUnit>(_orgUnitIdentifierPropertyMapping));
             propertyMappings.Add(new PropertyMapping<PatientDetailDto, Patient>(_patientDetailPropertyMapping));
             propertyMappings.Add(new PropertyMapping<ReportInstanceDetailDto, ReportInstance>(_reportInstanceDetailPropertyMapping));
         }
