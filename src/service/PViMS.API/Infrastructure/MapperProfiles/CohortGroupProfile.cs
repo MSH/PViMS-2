@@ -36,7 +36,7 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.Patient.CurrentFacilityName))
                 .ForMember(dest => dest.Age, opt => opt.MapFrom(src => src.Patient.Age))
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.Patient.DateOfBirth == null ? "" : Convert.ToDateTime(src.Patient.DateOfBirth).ToString("yyyy-MM-dd")))
-                .ForMember(dest => dest.LatestEncounterDate, opt => opt.MapFrom(src => src.Patient.LatestEncounterDate == null ? "" : Convert.ToDateTime(src.Patient.LatestEncounterDate).ToString("yyyy-MM-dd")));
+                .ForMember(dest => dest.LatestEncounterDate, opt => opt.MapFrom(src => src.Patient.LatestEncounterDate.HasValue ? src.Patient.LatestEncounterDate.Value.ToString("yyyy-MM-dd") : ""));
         }
     }
 }

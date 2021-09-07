@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,8 +20,10 @@ import { _routes } from 'app/config/routes';
 
 @Component({
   templateUrl: './cohort-search.component.html',
-  styleUrls: ['./cohort-search.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-actions { flex: 0 0 15% !important; width: 15% !important; }
+  `],  
   animations: egretAnimations
 })
 export class CohortSearchComponent extends BaseComponent implements OnInit, OnDestroy {

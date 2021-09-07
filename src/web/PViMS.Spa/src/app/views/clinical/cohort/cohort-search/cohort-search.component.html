@@ -7,7 +7,7 @@
   <mat-card-title class="">
     <div class="card-title-text">
       {{'Cohorts' | translate}}
-      <div class="addButton" *ngIf="accountService.hasRole('Admin')">
+      <div fxLayout="row" fxLayoutAlign="end" *ngIf="accountService.hasRole('Admin')">
         <button mat-raised-button class="mb-05" color="accent" (click)="openPopUp({}, true)">{{'Add Cohort' | translate }}</button>
       </div>
     </div>

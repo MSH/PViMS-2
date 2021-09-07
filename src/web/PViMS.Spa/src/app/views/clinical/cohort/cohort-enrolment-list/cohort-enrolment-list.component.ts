@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -18,8 +18,10 @@ import { _routes } from 'app/config/routes';
 
 @Component({
   templateUrl: './cohort-enrolment-list.component.html',
-  styleUrls: ['./cohort-enrolment-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-actions { flex: 0 0 15% !important; width: 15% !important; }
+  `],  
   animations: egretAnimations
 })
 export class CohortEnrolmentListComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -107,6 +109,7 @@ export class CohortEnrolmentListComponent extends BaseComponent implements OnIni
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
+        self.CLog(result, 'enrolments')
         self.viewGridModel.mainGrid.updateAdvance(result);
 
         const nonSeriousCountSum = result.value.reduce((nonSeriousCountSum, current) => nonSeriousCountSum + current.nonSeriousEventCount, 0);
