@@ -31,5 +31,10 @@
         /// The fax number for the facility
         /// </summary>
         public string FaxNumber { get; set; }
+
+        /// <summary>
+        /// The organisation unit the facility has been allocated to
+        /// </summary>
+        public int? OrgUnitId { get; set; }
     }
 }

@@ -11,7 +11,7 @@ namespace PVIMS.Core.Entities
             UserFacilities = new HashSet<UserFacility>();
         }
 
-        public Facility(string facilityName, string facilityCode, FacilityType facilityType, string telNumber, string mobileNumber, string faxNumber)
+        public Facility(string facilityName, string facilityCode, FacilityType facilityType, string telNumber, string mobileNumber, string faxNumber, OrgUnit orgUnit)
         {
             FacilityName = facilityName;
             FacilityCode = facilityCode;
@@ -22,6 +22,9 @@ namespace PVIMS.Core.Entities
             TelNumber = telNumber;
             MobileNumber = mobileNumber;
             FaxNumber = faxNumber;
+
+            OrgUnitId = orgUnit?.Id;
+            OrgUnit = orgUnit;
         }
 
         public string FacilityCode { get; private set; }
@@ -48,7 +51,7 @@ namespace PVIMS.Core.Entities
             }
         }
 
-        public void ChangeDetails(string facilityName, string facilityCode, FacilityType facilityType, string telNumber, string mobileNumber, string faxNumber)
+        public void ChangeDetails(string facilityName, string facilityCode, FacilityType facilityType, string telNumber, string mobileNumber, string faxNumber, OrgUnit orgUnit)
         {
             FacilityName = facilityName;
             FacilityCode = facilityCode;
@@ -59,6 +62,9 @@ namespace PVIMS.Core.Entities
             TelNumber = telNumber;
             MobileNumber = mobileNumber;
             FaxNumber = faxNumber;
+
+            OrgUnitId = orgUnit?.Id;
+            OrgUnit = orgUnit;
         }
     }
 }

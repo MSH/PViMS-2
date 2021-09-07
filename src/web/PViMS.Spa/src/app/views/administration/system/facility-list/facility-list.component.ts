@@ -10,7 +10,6 @@ import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
@@ -20,8 +19,13 @@ import { FacilityDeletePopupComponent } from './facility-delete-popup/facility-d
 
 @Component({
   templateUrl: './facility-list.component.html',
-  styleUrls: ['./facility-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-facility-name { flex: 0 0 45% !important; width: 45% !important; }
+    .mat-column-code { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-type { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }
+  `],  
   animations: egretAnimations
 })
 export class FacilityListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -55,7 +59,6 @@ export class FacilityListComponent extends BaseComponent implements OnInit, Afte
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridSort') mainGridSort: MatSort;
   @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
@@ -68,7 +71,7 @@ export class FacilityListComponent extends BaseComponent implements OnInit, Afte
   ngAfterViewInit(): void {
     let self = this;
     self.viewModel.mainGrid.setupAdvance(
-       null, self.mainGridSort, self.mainGridPaginator)
+       null, null, self.mainGridPaginator)
        .subscribe(() => { self.loadGrid(); });
     self.loadGrid();
   }  
@@ -136,7 +139,7 @@ export class FacilityListComponent extends BaseComponent implements OnInit, Afte
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['id', 'facility name', 'code', 'type', 'actions']);
+          (['id', 'facility-name', 'code', 'type', 'actions']);
 }
 
 class GridRecordModel {

@@ -439,6 +439,7 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
     self.updateForm(self.patientFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Gender")});
     self.updateForm(self.patientFormGroup, {ethnicity: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Ethnic Group")});
     self.updateForm(self.patientFormGroup, {facilityName: patientModel.facilityName});
+    self.updateForm(self.patientFormGroup, {facilityRegion: patientModel.organisationUnit});
   }
 
   private mapMedicationForUpdateModels(sourceMedications: PatientMedicationDetailModel[]): PatientMedicationForUpdateModel[] {

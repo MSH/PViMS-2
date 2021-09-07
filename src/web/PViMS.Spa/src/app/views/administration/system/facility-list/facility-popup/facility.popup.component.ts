@@ -1,44 +1,57 @@
-import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { PopupService } from 'app/shared/services/popup.service';
 import { FacilityService } from 'app/shared/services/facility.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
-import { FacilityTypeIdentifierModel } from 'app/shared/models/facility/facilitytype.identifier.model';
+import { FacilityTypeIdentifierModel, FacilityTypeIdentifierWrapperModel } from 'app/shared/models/facility/facility-type.identifier.model';
+import { BasePopupComponent } from 'app/shared/base/base.popup.component';
+import { Router } from '@angular/router';
+import { AccountService } from 'app/shared/services/account.service';
+import { forkJoin } from 'rxjs';
+import { OrgUnitService } from 'app/shared/services/org-unit.service';
+import { OrgUnitIdentifierModel } from 'app/shared/models/org-unit/org-unit.identifier.model';
 
 @Component({
-  selector: 'facility-popup',
   templateUrl: './facility.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
-export class FacilityPopupComponent implements OnInit, AfterViewInit {
+export class FacilityPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
   
   public itemForm: FormGroup;
-  protected busy: boolean = false;
 
   typeList: FacilityTypeIdentifierModel[] = [];
+  orgUnitList: OrgUnitIdentifierModel[] = [];
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: FacilityPopupData,
     public dialogRef: MatDialogRef<FacilityPopupComponent>,
+    protected _router: Router,
+    protected _location: Location,
+    protected _formBuilder: FormBuilder,
     protected facilityService: FacilityService,
+    protected orgUnitService: OrgUnitService,
     protected popupService: PopupService,
+    protected accountService: AccountService,
     protected formBuilder: FormBuilder,
-  ) { }
+  ) { 
+    super(_router, _location, popupService, accountService);
+  }
 
   ngOnInit(): void {
     const self = this;
     self.loadDropDowns();
 
     self.itemForm = this.formBuilder.group({
-        facilityName: [this.data.payload.facilityName || '', [Validators.required, Validators.maxLength(100), Validators.pattern("[-a-zA-Z0-9. '()]*")]],
-        facilityCode: [this.data.payload.facilityCode || '', [Validators.required, Validators.maxLength(10), Validators.pattern("[-a-zA-Z0-9]*")]],
-        facilityType: [this.data.payload.facilityType || '', Validators.required],
-        contactNumber: [this.data.payload.contactNumber || '', [Validators.maxLength(30), Validators.pattern("[-a-zA-Z0-9]*")]],
-        mobileNumber: [this.data.payload.mobileNumber || '', [Validators.maxLength(30), Validators.pattern("[-a-zA-Z0-9]*")]],
-        faxNumber: [this.data.payload.faxNumber || '', [Validators.maxLength(30), Validators.pattern("[-a-zA-Z0-9]*")]],
+      facilityName: [this.data.payload.facilityName || '', [Validators.required, Validators.maxLength(100), Validators.pattern("[-a-zA-Z0-9. '()]*")]],
+      facilityCode: [this.data.payload.facilityCode || '', [Validators.required, Validators.maxLength(10), Validators.pattern("[-a-zA-Z0-9]*")]],
+      facilityType: [this.data.payload.facilityType || '', Validators.required],
+      contactNumber: [this.data.payload.contactNumber || '', [Validators.maxLength(30), Validators.pattern("[-a-zA-Z0-9]*")]],
+      mobileNumber: [this.data.payload.mobileNumber || '', [Validators.maxLength(30), Validators.pattern("[-a-zA-Z0-9]*")]],
+      faxNumber: [this.data.payload.faxNumber || '', [Validators.maxLength(30), Validators.pattern("[-a-zA-Z0-9]*")]],
+      orgUnitId: [this.data.payload.orgUnitId || ''],
     })
   }
 
@@ -49,54 +62,47 @@ export class FacilityPopupComponent implements OnInit, AfterViewInit {
     }
   }
   
-  loadDropDowns(): void {
+  submit() {
     let self = this;
-    self.getFacilityTypeList();
+    self.setBusy(true);
+
+    self.facilityService.saveFacility(self.data.facilityId, self.itemForm.value)
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.notify("Facility successfully saved!", "Success");
+        this.dialogRef.close(this.itemForm.value);
+    }, error => {
+      self.handleError(error, "Error saving facility");        
+    });
   }
 
-  getFacilityTypeList(): void {
+  private loadDropDowns(): void {
     let self = this;
-    self.facilityService.getFacilityTypeList()
-        .subscribe(result => {
-            self.typeList = result.value;
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
-  }    
 
-  public setBusy(value: boolean): void {
-    setTimeout(() => { this.busy = value; });
+    const requestArray = [];
+
+    requestArray.push(self.facilityService.getFacilityTypeList());
+    requestArray.push(self.orgUnitService.getAllOrgUnits());
+
+    forkJoin(requestArray)
+      .subscribe(
+        data => {
+          self.CLog(data[0], 'get facility types')
+          self.CLog(data[1], 'get org units')
+
+          let facilityTypes = data[0] as FacilityTypeIdentifierWrapperModel;
+          self.typeList = facilityTypes.value;
+
+          self.orgUnitList = data[1] as OrgUnitIdentifierModel[];
+
+          self.setBusy(false);
+        },
+        error => {
+          this.handleError(error, "Error preparing view");
+        });    
   }
 
-  public isBusy(): boolean {
-    return this.busy;
-  }
-
-  protected notify(message: string, action: string) {
-    return this.popupService.notify(message, action);
-  }
-
-  protected showError(errorMessage: any, title: string = "Error") {
-    this.popupService.showErrorMessage(errorMessage, title);
-  }
-
-  protected showInfo(message: string, title: string = "Info") {
-    this.popupService.showInfoMessage(message, title);
-  }
-
-  protected updateForm(form: FormGroup, value: any): void {
-    form.patchValue(value);
-  }    
-
-  protected throwError(errorObject: any, title: string = "Exception") {
-    if (errorObject.status == 401) {
-        this.showError(errorObject.error.message, errorObject.error.statusCodeType);
-    } else {
-        this.showError(errorObject.message, title);
-    }
-  }
-
-  loadData(): void {
+  private loadData(): void {
     let self = this;
     self.setBusy(true);
     self.facilityService.getFacilityDetail(self.data.facilityId)
@@ -104,43 +110,9 @@ export class FacilityPopupComponent implements OnInit, AfterViewInit {
       .subscribe(result => {
         self.updateForm(self.itemForm, (self.data.payload = result));
       }, error => {
-        self.throwError(error, error.statusText);
+        self.handleError(error, 'error fetching facility detail');
       });
   }   
-
-  submit() {
-    let self = this;
-    self.setBusy(true);
-
-    if(self.data.facilityId == 0) {
-      self.facilityService.saveFacility(self.itemForm.value)
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-          self.notify("Facility successfully saved!", "Success");
-          this.dialogRef.close(this.itemForm.value);
-      }, error => {
-          if(error.status == 400) {
-            self.showInfo(error.error.message[0], error.statusText);
-          } else {
-            self.throwError(error, error.statusText);
-          }
-      });
-    }
-    else {
-      self.facilityService.updateFacility(self.data.facilityId, self.itemForm.value)
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-          self.notify("Facility successfully updated!", "Success");
-          this.dialogRef.close(this.itemForm.value);
-      }, error => {
-          if(error.status == 400) {
-            self.showInfo(error.error.message[0], error.statusText);
-          } else {
-            self.throwError(error, error.statusText);
-          }
-      });      
-    }
-  }
 }
 
 export interface FacilityPopupData {

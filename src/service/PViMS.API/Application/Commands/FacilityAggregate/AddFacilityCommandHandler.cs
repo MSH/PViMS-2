@@ -18,6 +18,7 @@ namespace PVIMS.API.Application.Commands.FacilityAggregate
     {
         private readonly IRepositoryInt<Facility> _facilityRepository;
         private readonly IRepositoryInt<FacilityType> _facilityTypeRepository;
+        private readonly IRepositoryInt<OrgUnit> _orgUnitRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
         private readonly ILogger<AddFacilityCommandHandler> _logger;
@@ -25,12 +26,14 @@ namespace PVIMS.API.Application.Commands.FacilityAggregate
         public AddFacilityCommandHandler(
             IRepositoryInt<Facility> facilityRepository,
             IRepositoryInt<FacilityType> facilityTypeRepository,
+            IRepositoryInt<OrgUnit> orgUnitRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
             ILogger<AddFacilityCommandHandler> logger)
         {
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
             _facilityTypeRepository = facilityTypeRepository ?? throw new ArgumentNullException(nameof(facilityTypeRepository));
+            _orgUnitRepository = orgUnitRepository ?? throw new ArgumentNullException(nameof(orgUnitRepository));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -50,7 +53,20 @@ namespace PVIMS.API.Application.Commands.FacilityAggregate
                 throw new DomainException("Facility with same name or code already exists");
             }
 
-            var newFacility = new Facility(message.FacilityName, message.FacilityCode, facilityTypeFromRepo, message.TelNumber, message.MobileNumber, message.FaxNumber);
+            OrgUnit orgUnitFromRepo = null;
+            if(message.OrgUnitId.HasValue)
+            {
+                if(message.OrgUnitId > 0 )
+                {
+                    orgUnitFromRepo = await _orgUnitRepository.GetAsync(message.OrgUnitId);
+                    if (orgUnitFromRepo == null)
+                    {
+                        throw new KeyNotFoundException($"Unable to locate organisation unit {message.OrgUnitId}");
+                    }
+                }
+            }
+
+            var newFacility = new Facility(message.FacilityName, message.FacilityCode, facilityTypeFromRepo, message.TelNumber, message.MobileNumber, message.FaxNumber, orgUnitFromRepo);
 
             await _facilityRepository.SaveAsync(newFacility);
 

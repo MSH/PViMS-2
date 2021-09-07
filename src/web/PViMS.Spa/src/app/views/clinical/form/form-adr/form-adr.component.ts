@@ -236,6 +236,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.updateForm(self.firstFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Gender")});
           self.updateForm(self.firstFormGroup, {ethnicity: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Ethnic Group")});
           self.updateForm(self.firstFormGroup, {facilityName: result.facilityName});
+          self.updateForm(self.firstFormGroup, {facilityRegion: result.organisationUnit});
 
           self.viewModel.medications = self.mapMedicationForUpdateModels(result.patientMedications);
           self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
@@ -355,6 +356,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
   saveFormOnline(): void {
     const self = this;
 
+    self.CLog('starting');
     from(self.viewModel.medications).pipe(
       concatMap(medicationForUpdate => self.patientService.savePatientMedication(self.viewModel.patientId, medicationForUpdate.id, medicationForUpdate))
     ).pipe(

@@ -26,11 +26,14 @@ namespace PVIMS.API.Application.Commands.FacilityAggregate
         [DataMember]
         public string FaxNumber { get; private set; }
 
+        [DataMember]
+        public int? OrgUnitId { get; private set; }
+
         public AddFacilityCommand()
         {
         }
 
-        public AddFacilityCommand(string facilityName, string facilityCode, string facilityType, string telNumber, string mobileNumber, string faxNumber) : this()
+        public AddFacilityCommand(string facilityName, string facilityCode, string facilityType, string telNumber, string mobileNumber, string faxNumber, int? orgUnitId) : this()
         {
             FacilityName = facilityName;
             FacilityCode = facilityCode;
@@ -38,6 +41,7 @@ namespace PVIMS.API.Application.Commands.FacilityAggregate
             TelNumber = telNumber;
             MobileNumber = mobileNumber;
             FaxNumber = faxNumber;
+            OrgUnitId = orgUnitId;
         }
     }
 }

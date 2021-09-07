@@ -260,7 +260,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var command = new AddFacilityCommand(facilityForUpdate.FacilityName, facilityForUpdate.FacilityCode, facilityForUpdate.FacilityType, facilityForUpdate.TelNumber, facilityForUpdate.MobileNumber, facilityForUpdate.FaxNumber);
+            var command = new AddFacilityCommand(facilityForUpdate.FacilityName, facilityForUpdate.FacilityCode, facilityForUpdate.FacilityType, facilityForUpdate.TelNumber, facilityForUpdate.MobileNumber, facilityForUpdate.FaxNumber, facilityForUpdate.OrgUnitId);
 
             _logger.LogInformation(
                 "----- Sending command: AddFacilityCommand - {facilityName}",
@@ -297,7 +297,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var command = new ChangeFacilityDetailsCommand(id, facilityForUpdate.FacilityName, facilityForUpdate.FacilityCode, facilityForUpdate.FacilityType, facilityForUpdate.TelNumber, facilityForUpdate.MobileNumber, facilityForUpdate.FaxNumber);
+            var command = new ChangeFacilityDetailsCommand(id, facilityForUpdate.FacilityName, facilityForUpdate.FacilityCode, facilityForUpdate.FacilityType, facilityForUpdate.TelNumber, facilityForUpdate.MobileNumber, facilityForUpdate.FaxNumber, facilityForUpdate.OrgUnitId);
 
             _logger.LogInformation(
                 "----- Sending command: ChangeFacilityDetailsCommand - {Id}",

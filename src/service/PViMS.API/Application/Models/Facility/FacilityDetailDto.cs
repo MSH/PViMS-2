@@ -37,5 +37,11 @@ namespace PVIMS.API.Models
         /// </summary>
         [DataMember]
         public string FaxNumber { get; set; }
+
+        /// <summary>
+        /// The organisation unit the facility has been allocated to
+        /// </summary>
+        [DataMember]
+        public int? OrgUnitId { get; set; }
     }
 }

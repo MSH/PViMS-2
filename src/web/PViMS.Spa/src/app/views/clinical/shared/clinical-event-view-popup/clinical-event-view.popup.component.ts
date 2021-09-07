@@ -188,6 +188,7 @@ export class ClinicalEventViewPopupComponent extends BasePopupComponent implemen
     self.updateForm(self.viewModelForm, {gender: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Gender")});
     self.updateForm(self.viewModelForm, {ethnicity: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Ethnic Group")});
     self.updateForm(self.viewModelForm, {facilityName: patientModel.facilityName});
+    self.updateForm(self.viewModelForm, {facilityRegion: patientModel.organisationUnit});
   }
 }
 

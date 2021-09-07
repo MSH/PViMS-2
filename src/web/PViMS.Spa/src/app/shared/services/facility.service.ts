@@ -3,11 +3,10 @@ import { HttpClient } from "@angular/common/http";
 import { BaseService } from '../base/base.service';
 import { EventService } from './event.service';
 import { ParameterKeyValueModel } from '../models/parameter.keyvalue.model';
-import { FacilityTypeIdentifierWrapperModel } from '../models/facility/facilitytype.identifier.model';
+import { FacilityTypeIdentifierWrapperModel } from '../models/facility/facility-type.identifier.model';
 import { FacilityDetailWrapperModel, FacilityDetailModel } from '../models/facility/facility.detail.model';
 import { EMPTY } from 'rxjs';
 import { expand, map, reduce } from 'rxjs/operators';
-import { FacilityIdentifierWrapperModel, FacilityIdentifierModel } from '../models/facility/facility.identifier.model';
 import { FilterModel } from '../models/grid.model';
 
 @Injectable({ providedIn: 'root' })
@@ -65,12 +64,13 @@ export class FacilityService extends BaseService {
       return this.Get<FacilityDetailModel>('/facilities', 'application/vnd.pvims.detail.v1+json', parameters);
     }     
 
-    saveFacility(model: any): any {
-      return this.Post(`facilities`, model);
-    }
-
-    updateFacility(id: number, model: any): any {
+    saveFacility(id: number, model: any): any {
+      if(id == 0) {
+        return this.Post(`facilities`, model);
+      }
+      else {
         return this.Put(`facilities/${id}`, model);
+      }
     }
 
     deleteFacility(id: number): any {
