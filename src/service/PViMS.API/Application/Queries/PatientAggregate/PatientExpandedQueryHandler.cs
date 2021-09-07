@@ -71,7 +71,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             var patientFromRepo = await _patientRepository.GetAsync(p => p.Archived == false
                     && p.Id == message.PatientId, 
                 new string[] { 
-                    "PatientFacilities.Facility", 
+                    "PatientFacilities.Facility.OrgUnit", 
                     "PatientClinicalEvents.SourceTerminologyMedDra", 
                     "PatientConditions.TerminologyMedDra", 
                     "PatientConditions.Outcome", 
