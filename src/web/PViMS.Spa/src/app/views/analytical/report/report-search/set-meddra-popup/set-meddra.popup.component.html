@@ -102,6 +102,9 @@
         </div>
       </div>
       <div fxFlex="100" class="pr-1">
+        <div class="text-red text-center mt-12 font-weight-bold" *ngIf="viewModel?.mainGrid?.records?.data?.length == 0 && viewModel?.searched">
+          No records found ...
+        </div>
         <div class="table-container">
           <mat-table [dataSource]="viewModel?.mainGrid?.records"
                     [@animate]="{value:'50'}">

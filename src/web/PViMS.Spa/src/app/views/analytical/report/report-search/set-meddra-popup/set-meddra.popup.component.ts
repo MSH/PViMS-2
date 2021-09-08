@@ -112,6 +112,8 @@ export class SetMeddraPopupComponent extends BasePopupComponent implements OnIni
     let self = this;
     self.setBusy(true);
 
+    self.viewModel.searched = true;
+
     switch (self.itemForm.value.searchOption) {
       case "Common":
         self.meddraTermService.getCommonTerms(self.viewModel.mainGrid.customFilterModel(self.itemForm.value))
@@ -218,6 +220,7 @@ class ViewModel {
           (['meddra-term', 'actions']);
   
   terminologyMedDraId: number;
+  searched: boolean = false;
 }
 
 class GridRecordModel {

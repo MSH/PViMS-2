@@ -98,8 +98,8 @@
               <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="end" class="p-2">
                 <button mat-raised-button color="accent" class="mr-12" (click)="getPatient()" [disabled]="firstFormGroup.invalid">Search for Patient</button>
               </div>
-              <div class="p-24 mat-bg-warn rounded mt-12" *ngIf="viewModel.errorFindingPatient">
-                Unable to locate the patient using the case number specified ...
+              <div class="text-red mt-12 font-weight-bold" *ngIf="viewModel.errorFindingPatient">
+                Unable to locate patient using the case number specified ...
               </div>
             </div>
             <div class="mt-12" *ngIf="viewModel?.patientFound">

@@ -60,12 +60,13 @@ export class MeddraSelectPopupComponent extends BasePopupComponent implements On
     self.setBusy(true);
 
     self.meddraTermService.searchTerms(self.viewModel.mainGrid.customFilterModel(self.itemForm.value))
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-          self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-          self.throwError(error, error.statusText);
-        });
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.viewModel.mainGrid.updateAdvance(result);
+        self.viewModel.searched = true;
+      }, error => {
+        self.handleError(error, 'error fetching meddra terms');
+      });
   }
 
   selectTerm(data: any) {
@@ -77,6 +78,8 @@ class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
           (['meddra-term', 'actions']);
+  
+  searched: boolean = false;          
 }
 
 class GridRecordModel {
