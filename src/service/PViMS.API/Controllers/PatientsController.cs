@@ -258,15 +258,22 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public async Task<ActionResult<PatientIdentifierDto>> GetPatientByIdentifier(long id)
+        public async Task<ActionResult<PatientIdentifierDto>> GetPatientByIdentifier(int id)
         {
-            var mappedPatient = await GetPatientAsync<PatientIdentifierDto>(id);
-            if (mappedPatient == null)
+            var query = new PatientIdentifierQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: PatientIdentifierQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForPatient<PatientIdentifierDto>(mappedPatient));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -286,7 +293,7 @@ namespace PVIMS.API.Controllers
             var query = new PatientDetailQuery(id);
 
             _logger.LogInformation(
-                "----- Sending query: GetPatientDetailQuery - {id}",
+                "----- Sending query: PatientDetailQuery - {id}",
                 id);
 
             var queryResult = await _mediator.Send(query);
@@ -316,7 +323,7 @@ namespace PVIMS.API.Controllers
             var query = new PatientExpandedQuery(id);
 
             _logger.LogInformation(
-                "----- Sending query: GetPatientExpandedQuery - {id}",
+                "----- Sending query: PatientExpandedQuery - {id}",
                 id);
 
             var queryResult = await _mediator.Send(query);
@@ -1032,27 +1039,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Get single Patient from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private async Task<T> GetPatientAsync<T>(long id) where T : class
-        {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == id);
-
-            if (patientFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedPatient = _mapper.Map<T>(patientFromRepo);
-
-                return mappedPatient;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Get single attachment from repository and auto map to Dto
         /// </summary>
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
@@ -1257,22 +1243,6 @@ namespace PVIMS.API.Controllers
             }
 
             return wrapper;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private PatientIdentifierDto CreateLinksForPatient<T>(T dto)
-        {
-            PatientIdentifierDto identifier = (PatientIdentifierDto)(object)dto;
-
-            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Patient", identifier.Id), "self", "GET"));
-            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateNewAppointmentForPatientResourceUri(identifier.Id), "newAppointment", "POST"));
-            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateNewEnrolmentForPatientResourceUri(identifier.Id), "newEnrolment", "POST"));
-
-            return identifier;
         }
 
         /// <summary>
