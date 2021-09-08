@@ -124,9 +124,9 @@ namespace PVIMS.Services
             return seriesValueArray.ToArray();
         }
 
-        public SeriesValueListItem GetCurrentElementValueForPatient(long patientId, string elementName)
+        public async Task<SeriesValueListItem> GetCurrentElementValueForPatientAsync(long patientId, string elementName)
         {
-            var patientFromRepo = _patientRepository.Get(p => p.Id == patientId);
+            var patientFromRepo = await _patientRepository.GetAsync(p => p.Id == patientId, new string[] { "Encounters" });
             if (patientFromRepo == null)
             {
                 throw new ArgumentException(nameof(patientId));
@@ -139,7 +139,9 @@ namespace PVIMS.Services
             var encounter = patientFromRepo.GetCurrentEncounter();
             if (encounter == null) return null;
 
-            var datasetInstance = _datasetInstanceRepository.Get(di => di.ContextId == encounter.Id && di.Dataset.ContextType.Id == (int)ContextTypes.Encounter);
+            var datasetInstance = await _datasetInstanceRepository.GetAsync(di => di.ContextId == encounter.Id && di.Dataset.ContextType.Id == (int)ContextTypes.Encounter, new string[] { 
+                "DatasetInstanceValues.DatasetElement" 
+            });
             if (datasetInstance == null) return null;
 
             var value = datasetInstance.GetInstanceValue(elementName);

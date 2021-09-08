@@ -8,7 +8,7 @@ namespace PVIMS.Core.Services
     public interface IPatientService
     {
         SeriesValueList[] GetElementValues(long patientId, string elementName, int records);
-        SeriesValueListItem GetCurrentElementValueForPatient(long patientId, string elementName);
+        Task<SeriesValueListItem> GetCurrentElementValueForPatientAsync(long patientId, string elementName);
 
         bool isUnique(List<CustomAttributeParameter> parameters, int patientId = 0);
         bool Exists(List<CustomAttributeParameter> parameters);
