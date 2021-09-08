@@ -42,7 +42,7 @@ namespace PVIMS.API.Application.Queries.OrgUnitAggregate
                 PageSize = message.PageSize
             };
 
-            var orderby = Extensions.GetOrderBy<OrgUnit>("Name", "asc");
+            var orderby = Extensions.GetOrderBy<OrgUnit>("Id", "asc");
 
             var pagedOrgUnitsFromRepo = await _orgUnitRepository.ListAsync(pagingInfo, null, orderby, new string[] { "OrgUnitType" });
             if (pagedOrgUnitsFromRepo != null)
