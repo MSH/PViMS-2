@@ -35,7 +35,7 @@ export class UserAddPopupComponent extends BasePopupComponent implements OnInit,
     protected userService: UserService,
     protected facilityService: FacilityService,
   ) { 
-    super(_router, _location, popupService, accountService);        
+    super(_router, _location, popupService, accountService);
   }
 
   ngOnInit(): void {

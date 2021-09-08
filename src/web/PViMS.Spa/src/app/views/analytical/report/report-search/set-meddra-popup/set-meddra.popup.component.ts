@@ -81,6 +81,7 @@ export class SetMeddraPopupComponent extends BasePopupComponent implements OnIni
     self.meddraTermService.getAllSOCTerms(self.viewModel.mainGrid.customFilterModel(self.itemForm.value))
         .subscribe(result => {
           self.termSOCList = result;
+          self.updateForm(self.itemForm, {termType: 'LLT'});
         }, error => {
             self.handleError(error, "Error fetching SOC list");
         });

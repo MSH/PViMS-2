@@ -242,7 +242,6 @@
                     <mat-form-field class="full-width" appearance="outline">
                       <mat-label>Do you consider the reaction to be serious?</mat-label>
                       <mat-select formControlName="isSerious" required>
-                        <mat-option value="0"></mat-option>
                         <mat-option value="1">Yes</mat-option>
                         <mat-option value="2">No</mat-option>
                         <mat-option value="3">Unknown</mat-option>
@@ -256,7 +255,7 @@
                     <mat-form-field class="full-width" appearance="outline">
                       <mat-label>What is the seriousness of the event?</mat-label>
                       <mat-select formControlName="seriousness" required>
-                        <mat-option value="0"></mat-option>
+                        <mat-option value="0">N/A</mat-option>
                         <mat-option value="1">A congenital anomaly or birth defect</mat-option>
                         <mat-option value="2">Persistent or significant disability or incapacity</mat-option>
                         <mat-option value="3">Death</mat-option>
@@ -338,8 +337,11 @@
                   <div fxFlex="100">
                     <mat-form-field class="full-width" appearance="outline">
                       <mat-label>Any known allergies</mat-label>
-                      <textarea matInput formControlName="allergy" rows="3"></textarea>
+                      <textarea matInput formControlName="allergy" rows="3" required></textarea>
                       <mat-hint>Maximum length 500</mat-hint> 
+                      <mat-error *ngIf="thirdFormGroup.get('allergy').hasError('required')">
+                        Field is required
+                      </mat-error>
                       <mat-error *ngIf="thirdFormGroup.get('allergy').hasError('maxlength')">
                         Maximum length exceeded
                       </mat-error>
@@ -354,7 +356,7 @@
                   <div fxFlex="50">
                     <mat-form-field class="full-width" appearance="outline">
                       <mat-label>Pregnancy status</mat-label>
-                      <mat-select formControlName="pregnancyStatus">
+                      <mat-select formControlName="pregnancyStatus" required>
                         <mat-option value=""></mat-option>
                         <mat-option value="0">No</mat-option>
                         <mat-option value="1">1st trimester</mat-option>
@@ -362,6 +364,9 @@
                         <mat-option value="3">3rd trimester</mat-option>
                         <mat-option value="4">Unknown</mat-option>
                       </mat-select>
+                      <mat-error *ngIf="thirdFormGroup.get('pregnancyStatus').hasError('required')">
+                        Field is required
+                      </mat-error>
                     </mat-form-field>
                   </div>
                 </div>
@@ -370,8 +375,11 @@
                   <div fxFlex="100">
                     <mat-form-field class="full-width" appearance="outline">
                       <mat-label>Comorbidities</mat-label>
-                      <textarea matInput formControlName="comorbidities" rows="3"></textarea>
+                      <textarea matInput formControlName="comorbidities" rows="3" required></textarea>
                       <mat-hint>Maximum length 500</mat-hint> 
+                      <mat-error *ngIf="thirdFormGroup.get('comorbidities').hasError('required')">
+                        Field is required
+                      </mat-error>
                       <mat-error *ngIf="thirdFormGroup.get('comorbidities').hasError('maxlength')">
                         Maximum length exceeded
                       </mat-error>

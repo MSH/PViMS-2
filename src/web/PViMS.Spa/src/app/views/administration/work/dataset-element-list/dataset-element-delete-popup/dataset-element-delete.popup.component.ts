@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
@@ -8,7 +8,6 @@ import { DatasetElementService } from 'app/shared/services/dataset-element.servi
 
 @Component({
   templateUrl: './dataset-element-delete.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class DatasetElementDeletePopupComponent implements OnInit {

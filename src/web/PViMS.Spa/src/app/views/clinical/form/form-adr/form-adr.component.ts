@@ -118,9 +118,9 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       classification: [null, Validators.required],
       weight: [null, [Validators.required, Validators.min(0), Validators.max(159)]],
       height: [null, [Validators.required, Validators.min(1), Validators.max(259)]],
-      allergy: ['', [Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
-      pregnancyStatus: [null],
-      comorbidities: ['', [Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
+      allergy: ['', [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
+      pregnancyStatus: [null, Validators.required],
+      comorbidities: ['', [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
     });
     self.fourthFormGroup = this._formBuilder.group({
       treatmentGiven: [null],

@@ -72,8 +72,8 @@ export class UserListComponent extends BaseComponent implements OnInit, AfterVie
   ngAfterViewInit(): void {
     let self = this;
     self.viewModel.mainGrid.setupAdvance(
-       null, null, self.mainGridPaginator)
-       .subscribe(() => { self.loadGrid(); });
+      null, null, self.mainGridPaginator)
+      .subscribe(() => { self.loadGrid(); });
     self.loadGrid();
   }  
 
@@ -90,13 +90,13 @@ export class UserListComponent extends BaseComponent implements OnInit, AfterVie
     self.setBusy(true);
 
     self.userService.getUsers(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
-        .pipe(takeUntil(self._unsubscribeAll))
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-            self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
+      .pipe(takeUntil(self._unsubscribeAll))
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.viewModel.mainGrid.updateAdvance(result);
+      }, error => {
+        self.handleError(error, 'Error fetching users');
+      });
   }    
 
   openAddPopUp(data: any = {}) {

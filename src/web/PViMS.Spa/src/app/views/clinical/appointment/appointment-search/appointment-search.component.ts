@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,7 +28,6 @@ const moment =  _moment;
 @Component({
   templateUrl: './appointment-search.component.html',
   styleUrls: ['./appointment-search.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class AppointmentSearchComponent extends BaseComponent implements OnInit, OnDestroy {

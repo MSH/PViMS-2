@@ -20,7 +20,7 @@
       </div>
       <div fxFlex="50" class="pr-1">
         <mat-form-field class="full-width">
-          <mat-select formControlName="searchOption" placeholder="{{'Search option' | translate}}" required (selectionChange)="viewModel.mainGrid.clearDataSource();">
+          <mat-select formControlName="searchOption" placeholder="{{'Search option' | translate}}" required (selectionChange)="viewModel.mainGrid.clearDataSource()">
               <mat-option value="Term">{{'MedDRA term' | translate}}</mat-option>
               <mat-option value="Code">{{'MedDRA code' | translate}}</mat-option>
               <mat-option value="List">{{'MedDRA list' | translate}}</mat-option>

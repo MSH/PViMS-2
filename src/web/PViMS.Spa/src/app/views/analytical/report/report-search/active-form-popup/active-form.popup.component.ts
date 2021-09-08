@@ -319,7 +319,7 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
     self.updateForm(self.sixthFormGroup, { 'reporterName': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'name of reporter')?.value })
     self.updateForm(self.sixthFormGroup, { 'contactNumber': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'contact number')?.value })
     self.updateForm(self.sixthFormGroup, { 'emailAddress': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'email address')?.value })
-    self.updateForm(self.sixthFormGroup, { 'profession': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'profession')?.value })
+    self.updateForm(self.sixthFormGroup, { 'profession': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Profession") })
   }
 
   private getCustomAttributeList(): void {

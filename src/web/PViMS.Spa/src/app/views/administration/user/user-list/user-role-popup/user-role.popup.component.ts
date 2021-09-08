@@ -7,7 +7,6 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { RoleIdentifierModel, RoleIdentifierWrapperModel } from 'app/shared/models/user/role.identifier.model';
 import { UserService } from 'app/shared/services/user.service';
-import { FacilityService } from 'app/shared/services/facility.service';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
 import { AccountService } from 'app/shared/services/account.service';
@@ -39,8 +38,7 @@ export class UserRolePopupComponent extends BasePopupComponent implements OnInit
     protected _formBuilder: FormBuilder,
     protected popupService: PopupService,
     protected accountService: AccountService,
-    protected userService: UserService,
-    protected facilityService: FacilityService,
+    protected userService: UserService
   ) { 
     super(_router, _location, popupService, accountService);        
   }
@@ -79,8 +77,7 @@ export class UserRolePopupComponent extends BasePopupComponent implements OnInit
     let self = this;
     self.setBusy(true);
 
-    const roleForUpdate: UserRoleForUpdateModel = { role };
-    self.userService.deleteUserRole(self.data.userId, roleForUpdate)
+    self.userService.deleteUserRole(self.data.userId, role)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.notify("User role removed successfully", "Users");
