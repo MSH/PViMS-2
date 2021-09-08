@@ -64,13 +64,9 @@ namespace PVIMS.API.Infrastructure.Services
             _wordDocumentService.AddFourColumnTable(await PrepareAdverseEventForActiveReportAsync(patientClinicalEvent, reportInstance, isSerious));
             _wordDocumentService.AddTwoColumnTable(PrepareNotes(""));
             _wordDocumentService.AddTableHeader("D. MEDICATIONS");
-
             await PrepareMedicationsForActiveReportAsync(reportInstance);
-
             _wordDocumentService.AddTableHeader("E. CLINICAL EVALUATIONS");
-
             PrepareEvaluationsForActiveReport(patientClinicalEvent);
-
             _wordDocumentService.AddTwoColumnTable(PrepareNotes(""));
             
             //_wordDocumentService.AddTableHeader("F. WEIGHT HISTORY");
@@ -187,7 +183,7 @@ namespace PVIMS.API.Infrastructure.Services
             List<KeyValuePair<string, string>> rows = new();
 
             rows.Add(new KeyValuePair<string, string>("Patient Name", patientClinicalEvent.Patient.FullName));
-            rows.Add(new KeyValuePair<string, string>("Date of Birth", patientClinicalEvent.Patient.DateOfBirth.HasValue ? patientClinicalEvent.Patient.DateOfBirth.Value.ToString("yyyy-MM-dd") : ""));
+            rows.Add(new KeyValuePair<string, string>("Date of Birth (yyyy-mm-dd)", patientClinicalEvent.Patient.DateOfBirth.HasValue ? patientClinicalEvent.Patient.DateOfBirth.Value.ToString("yyyy-MM-dd") : ""));
             rows.Add(new KeyValuePair<string, string>("Age Group", patientClinicalEvent.Patient.AgeGroup));
 
             if (patientClinicalEvent.OnsetDate.HasValue && patientClinicalEvent.Patient.DateOfBirth.HasValue)
@@ -217,7 +213,7 @@ namespace PVIMS.API.Infrastructure.Services
             List<KeyValuePair<string, string>> rows = new();
 
             rows.Add(new KeyValuePair<string, string>("Patient Name", datasetInstance.GetInstanceValue("Initials")));
-            rows.Add(new KeyValuePair<string, string>("Date of Birth (yyyy-mm-dd)", DateTime.TryParse(datasetInstance.GetInstanceValue("Date of Birth"), out var dateOfBirthValue) ? dateOfBirthValue.ToString("yyyy-MM-dd") : ""));
+            rows.Add(new KeyValuePair<string, string>("Date of Birth", DateTime.TryParse(datasetInstance.GetInstanceValue("Date of Birth"), out var dateOfBirthValue) ? dateOfBirthValue.ToString("yyyy-MM-dd") : ""));
             rows.Add(new KeyValuePair<string, string>("Age Group", string.Empty));
             rows.Add(new KeyValuePair<string, string>("Age at time of onset", $"{datasetInstance.GetInstanceValue("Age")} {datasetInstance.GetInstanceValue("Age Unit")}"));
             rows.Add(new KeyValuePair<string, string>("Gender", datasetInstance.GetInstanceValue("Sex")));
@@ -335,8 +331,8 @@ namespace PVIMS.API.Infrastructure.Services
                     List<string> cells = new();
 
                     cells.Add("Drug");
-                    cells.Add("Start Date");
-                    cells.Add("End Date");
+                    cells.Add("Start Date (yyyy-mm-dd)");
+                    cells.Add("End Date (yyyy-mm-dd)");
                     cells.Add("Dose");
                     cells.Add("Route");
                     cells.Add("Causality");
@@ -426,7 +422,7 @@ namespace PVIMS.API.Infrastructure.Services
             List<string> cells = new();
 
             cells.Add("Test");
-            cells.Add("Test Date");
+            cells.Add("Test Date (yyyy-mm-dd)");
             cells.Add("Test Result");
 
             rows.Add(cells.ToArray());
