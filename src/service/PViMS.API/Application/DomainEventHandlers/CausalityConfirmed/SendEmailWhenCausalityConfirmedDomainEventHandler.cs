@@ -33,7 +33,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
 
         public async Task Handle(CausalityConfirmedDomainEvent domainEvent, CancellationToken cancellationToken)
         {
-            var subject = $"Report task: {domainEvent.ReportInstance.Identifier}";
+            var subject = $"Report: {domainEvent.ReportInstance.PatientIdentifier}";
 
             var sb = new StringBuilder();
             sb.Append($"Causality and terminology has been set for this report. Please note the following details pertaining to the report: ");
@@ -70,7 +70,10 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
 
             var destinationAddresses = new List<MailboxAddress>();
             destinationAddresses.Add(new MailboxAddress(domainEvent.ReportInstance.CreatedBy.FullName, domainEvent.ReportInstance.CreatedBy.Email));
-            destinationAddresses.Add(new MailboxAddress(reporterName, reporterEmail));
+            if (!String.IsNullOrEmpty(reporterName) && !String.IsNullOrEmpty(reporterEmail))
+            {
+                destinationAddresses.Add(new MailboxAddress(reporterName, reporterEmail));
+            }
             return destinationAddresses;
         }
     }

@@ -70,7 +70,10 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
 
             var destinationAddresses = new List<MailboxAddress>();
             destinationAddresses.Add(new MailboxAddress(domainEvent.Task.ReportInstance.CreatedBy.FullName, domainEvent.Task.ReportInstance.CreatedBy.Email));
-            destinationAddresses.Add(new MailboxAddress(reporterName, reporterEmail));
+            if (!String.IsNullOrEmpty(reporterName) && !String.IsNullOrEmpty(reporterEmail))
+            {
+                destinationAddresses.Add(new MailboxAddress(reporterName, reporterEmail));
+            }
             return destinationAddresses;
         }
     }
