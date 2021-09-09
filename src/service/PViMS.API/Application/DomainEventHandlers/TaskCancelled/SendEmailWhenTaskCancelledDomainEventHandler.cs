@@ -49,6 +49,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskCancelled
             sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Description</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.TaskDetail.Description}</td></tr>");
             sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Status</b></td><td style='padding: 10px; border: 1px solid black;'>{Core.Aggregates.ReportInstanceAggregate.TaskStatus.From(domainEvent.Task.TaskStatusId).Name}</td></tr>");
             sb.Append("</table>");
+            sb.Append("<p><b>*** This is system generated. Please do not reply to this message ***</b></p>");
 
             await _smtpMailService.SendEmailAsync(subject, sb.ToString(), await PrepareDestinationMailBoxesAsync(domainEvent));
         }

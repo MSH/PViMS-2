@@ -50,6 +50,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
             sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Classification</b></td><td style='padding: 10px; border: 1px solid black;'>{ReportClassification.From(domainEvent.ReportInstance.ReportClassificationId)}</td></tr>");
             sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Causality</b></td><td style='padding: 10px; border: 1px solid black;'>Please browse PV feedback for more details</td></tr>");
             sb.Append("</table>");
+            sb.Append("<p><b>*** This is system generated. Please do not reply to this message ***</b></p>");
 
             await _smtpMailService.SendEmailAsync(subject, sb.ToString(), await PrepareDestinationMailBoxesAsync(domainEvent));
         }

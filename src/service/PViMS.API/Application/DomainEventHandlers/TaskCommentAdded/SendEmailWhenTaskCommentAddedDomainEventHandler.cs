@@ -44,6 +44,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskCommentAdded
             sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Description</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Comment.ReportInstanceTask.TaskDetail.Description}</td></tr>");
             sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Status</b></td><td style='padding: 10px; border: 1px solid black;'>{Core.Aggregates.ReportInstanceAggregate.TaskStatus.From(domainEvent.Comment.ReportInstanceTask.TaskStatusId).Name}</td></tr>");
             sb.Append("</table>");
+            sb.Append("<p><b>*** This is system generated. Please do not reply to this message ***</b></p>");
 
             var destinationUser = GetDestinationUser(domainEvent);
 
