@@ -37,7 +37,9 @@ namespace PVIMS.API.Infrastructure
                         await context.SaveEntitiesAsync();
 
                         context.WorkFlows.AddRange(PrepareWorkFlows(context));
+                        await context.SaveEntitiesAsync();
                         context.Activities.AddRange(PrepareActivities(context));
+                        await context.SaveEntitiesAsync();
                         context.ActivityExecutionStatuses.AddRange(PrepareActivityExecutionStatusesForActiveSurveillance(context));
                         context.ActivityExecutionStatuses.AddRange(PrepareActivityExecutionStatusesForSpontaneousSurveilliance(context));
                         await context.SaveEntitiesAsync();
@@ -54,6 +56,7 @@ namespace PVIMS.API.Infrastructure
                         context.MetaColumnTypes.AddRange(PrepareMetaColumnTypes(context));
                         context.MetaTableTypes.AddRange(PrepareMetaTableTypes(context));
                         context.MetaWidgetTypes.AddRange(PrepareMetaWidgetTypes(context));
+                        context.OrgUnitTypes.AddRange(PrepareOrgUnitTypes(context));
                         context.Outcomes.AddRange(PrepareOutcomes(context));
                         context.PatientStatuses.AddRange(PreparePatientStatus(context));
                         context.Priorities.AddRange(PreparePriorities(context));
@@ -72,14 +75,6 @@ namespace PVIMS.API.Infrastructure
             if (!context.Users.Any(ce => ce.UserName == "Admin"))
             {
                 users.Add(new User("Admin", "Admin", "Admin", "admin@mail.com", Guid.Empty, null));
-            }
-            if (!context.Users.Any(ce => ce.UserName == "chesad"))
-            {
-                users.Add(new User("Chesa", "Desano", "chesad", "cdesano@mtapsprogram.org", Guid.Empty, null));
-            }
-            if (!context.Users.Any(ce => ce.UserName == "rhear"))
-            {
-                users.Add(new User("Rhea", "Romero", "rhear", "rromero@mtapsprogram.org", Guid.Empty, null));
             }
 
             return users;
@@ -717,6 +712,16 @@ namespace PVIMS.API.Infrastructure
                 metaWidgetTypes.Add(new MetaWidgetType { MetaWidgetTypeGuid = new Guid("7179F12D-668E-4A5D-A676-D9C1FEBDC6A4"), Description = "ItemList" });
 
             return metaWidgetTypes;
+        }
+
+        private static IEnumerable<OrgUnitType> PrepareOrgUnitTypes(PVIMSDbContext context)
+        {
+            List<OrgUnitType> orgUnitTypes = new List<OrgUnitType>();
+
+            if (!context.OrgUnitTypes.Any(ou => ou.Description == "Region"))
+                orgUnitTypes.Add(new OrgUnitType("Region", null));
+
+            return orgUnitTypes;
         }
 
         private static IEnumerable<Outcome> PrepareOutcomes(PVIMSDbContext context)

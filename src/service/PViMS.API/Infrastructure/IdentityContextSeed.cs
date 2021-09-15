@@ -39,7 +39,6 @@ namespace PVIMS.API.Infrastructure
 
                         await CreateRolesAsync(context);
                         await CreateAdminUserAsync(context);
-                        await CreateMSHUserAsync(context);
                     }
                 }
             });
@@ -112,66 +111,6 @@ namespace PVIMS.API.Infrastructure
 
                 await context.SaveChangesAsync();
             }
-        }
-
-        private async Task CreateMSHUserAsync(IdentityDbContext context)
-        {
-            if (!context.Users.Any(ce => ce.UserName == "chesad"))
-            {
-                var mshUser = new ApplicationUser
-                {
-                    Email = "cdesano@mtapsprogram.org",
-                    Id = Guid.NewGuid(),
-                    LastName = "Desano",
-                    FirstName = "Chesa",
-                    PhoneNumber = "",
-                    UserName = "chesad",
-                    NormalizedEmail = "CDESANO@MTAPSPROGRAM.ORG",
-                    NormalizedUserName = "CHESAD",
-                    SecurityStamp = Guid.NewGuid().ToString("D"),
-                    Active = true
-                };
-
-                mshUser.PasswordHash = _passwordHasher.HashPassword(mshUser, "Chesa123#");
-
-                context.Users.Add(mshUser);
-                await context.SaveChangesAsync();
-
-                List<IdentityUserRole<Guid>> userRoles = new List<IdentityUserRole<Guid>>();
-                userRoles.Add(new IdentityUserRole<Guid> { RoleId = context.Roles.SingleOrDefault(r => r.Name == "Admin").Id, UserId = mshUser.Id });
-                context.UserRoles.AddRange(userRoles);
-
-                await context.SaveChangesAsync();
-            }
-
-            if (!context.Users.Any(ce => ce.UserName == "rhear"))
-            {
-                var mshUser = new ApplicationUser
-                {
-                    Email = "rromero@mtapsprogram.org",
-                    Id = Guid.NewGuid(),
-                    LastName = "Romero",
-                    FirstName = "Rhea",
-                    PhoneNumber = "",
-                    UserName = "rhear",
-                    NormalizedEmail = "RROMERO@MTAPSPROGRAM.ORG",
-                    NormalizedUserName = "RHEAR",
-                    SecurityStamp = Guid.NewGuid().ToString("D"),
-                    Active = true
-                };
-
-                mshUser.PasswordHash = _passwordHasher.HashPassword(mshUser, "P@55w0rd99");
-
-                context.Users.Add(mshUser);
-                await context.SaveChangesAsync();
-
-                List<IdentityUserRole<Guid>> userRoles = new List<IdentityUserRole<Guid>>();
-                userRoles.Add(new IdentityUserRole<Guid> { RoleId = context.Roles.SingleOrDefault(r => r.Name == "Admin").Id, UserId = mshUser.Id });
-                context.UserRoles.AddRange(userRoles);
-
-                await context.SaveChangesAsync();
-            }
-
         }
 
         private AsyncRetryPolicy CreatePolicy(ILogger<IdentityContextSeed> logger, string prefix, int retries = 3)
