@@ -10,18 +10,18 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         : Enumeration
     {
         public static TaskStatus New = new TaskStatus(1, "New");
-        public static TaskStatus UnderInvestigation = new TaskStatus(2, "Under Investigation");
+        public static TaskStatus Acknowledged = new TaskStatus(2, "Acknowledged");
         public static TaskStatus OnHold = new TaskStatus(3, "On Hold");
         public static TaskStatus Completed = new TaskStatus(4, "Completed");
         public static TaskStatus Cancelled = new TaskStatus(5, "Cancelled");
-        public static TaskStatus AttendedTo = new TaskStatus(6, "Attended To");
+        public static TaskStatus Done = new TaskStatus(6, "Done");
         public TaskStatus(int id, string name)
             : base(id, name)
         {
         }
 
         public static IEnumerable<TaskStatus> List() =>
-            new[] { New, UnderInvestigation, OnHold, Completed, Cancelled, AttendedTo };
+            new[] { New, Acknowledged, OnHold, Completed, Cancelled, Done };
 
         public static TaskStatus FromName(string name)
         {

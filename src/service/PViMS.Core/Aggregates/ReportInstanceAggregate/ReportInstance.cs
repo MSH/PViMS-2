@@ -90,6 +90,10 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                     AddE2BGeneratedDomainEvent();
                     break;
 
+                case "E2BSUBMITTED":
+                    AddE2BSubmittedDomainEvent();
+                    break;
+
                 default:
                     break;
             }
@@ -174,7 +178,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             task.ChangeDetails(taskDetail);
         }
 
-        public void ChangeTaskStatusToUnderInvestigation(int taskId)
+        public void ChangeTaskStatusToAcknowledged(int taskId)
         {
             var task = _tasks.SingleOrDefault(t => t.Id == taskId);
             if (task == null)
@@ -188,7 +192,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                 throw new DomainException("Cannot change status of task that is cancelled or completed");
             }
 
-            task.ChangeTaskStatusToUnderInvestigation();
+            task.ChangeTaskStatusToAcknowledged();
         }
 
         public void ChangeTaskStatusToOnHold(int taskId)
@@ -208,7 +212,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             task.ChangeTaskStatusToOnHold();
         }
 
-        public void ChangeTaskStatusToAttendedTo(int taskId)
+        public void ChangeTaskStatusToDone(int taskId)
         {
             var task = _tasks.SingleOrDefault(t => t.Id == taskId);
             if (task == null)
@@ -222,7 +226,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                 throw new DomainException("Cannot change status of task that is cancelled or completed");
             }
 
-            task.ChangeTaskStatusToAttendedTo();
+            task.ChangeTaskStatusToDone();
             AddTaskAttendedToDomainEvent(task);
         }
 
@@ -412,6 +416,13 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         private void AddE2BGeneratedDomainEvent()
         {
             var domainEvent = new E2BGeneratedDomainEvent(this);
+
+            this.AddDomainEvent(domainEvent);
+        }
+
+        private void AddE2BSubmittedDomainEvent()
+        {
+            var domainEvent = new E2BSubmittedDomainEvent(this);
 
             this.AddDomainEvent(domainEvent);
         }

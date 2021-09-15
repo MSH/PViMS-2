@@ -49,13 +49,13 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             {
                 reportInstanceFromRepo.ChangeTaskStatusToOnHold(message.ReportInstanceTaskId);
             }
-            if (message.TaskStatus.Id == Core.Aggregates.ReportInstanceAggregate.TaskStatus.UnderInvestigation.Id)
+            if (message.TaskStatus.Id == Core.Aggregates.ReportInstanceAggregate.TaskStatus.Acknowledged.Id)
             {
-                reportInstanceFromRepo.ChangeTaskStatusToUnderInvestigation(message.ReportInstanceTaskId);
+                reportInstanceFromRepo.ChangeTaskStatusToAcknowledged(message.ReportInstanceTaskId);
             }
-            if (message.TaskStatus.Id == Core.Aggregates.ReportInstanceAggregate.TaskStatus.AttendedTo.Id)
+            if (message.TaskStatus.Id == Core.Aggregates.ReportInstanceAggregate.TaskStatus.Done.Id)
             {
-                reportInstanceFromRepo.ChangeTaskStatusToAttendedTo(message.ReportInstanceTaskId);
+                reportInstanceFromRepo.ChangeTaskStatusToDone(message.ReportInstanceTaskId);
             }
 
             _reportInstanceRepository.Update(reportInstanceFromRepo);

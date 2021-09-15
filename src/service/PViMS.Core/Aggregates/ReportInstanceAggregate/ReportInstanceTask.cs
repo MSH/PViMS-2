@@ -43,9 +43,9 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             TaskDetail = taskDetail;
         }
 
-        public void ChangeTaskStatusToUnderInvestigation()
+        public void ChangeTaskStatusToAcknowledged()
         {
-            TaskStatusId = TaskStatus.UnderInvestigation.Id;
+            TaskStatusId = TaskStatus.Acknowledged.Id;
         }
 
         public void ChangeTaskStatusToOnHold()
@@ -53,10 +53,11 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             TaskStatusId = TaskStatus.OnHold.Id;
         }
 
-        public void ChangeTaskStatusToAttendedTo()
+        public void ChangeTaskStatusToDone()
         {
-            TaskStatusId = TaskStatus.AttendedTo.Id;
+            TaskStatusId = TaskStatus.Done.Id;
         }
+
         public void ChangeTaskStatusToCompleted()
         {
             TaskStatusId = TaskStatus.Completed.Id;
