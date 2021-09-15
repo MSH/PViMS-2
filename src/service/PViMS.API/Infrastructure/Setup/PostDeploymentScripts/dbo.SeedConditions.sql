@@ -6,9 +6,9 @@
                
 -- ***************** CONDITIONS
 SET IDENTITY_INSERT [dbo].[Condition] ON
-INSERT [dbo].[Condition] ([Id], [Description], [Chronic]) VALUES (1, N'TB', 1)
-INSERT [dbo].[Condition] ([Id], [Description], [Chronic]) VALUES (2, N'HIV', 1)
-INSERT [dbo].[Condition] ([Id], [Description], [Chronic]) VALUES (3, N'Malaria', 1)
+INSERT [dbo].[Condition] ([Id], [Description], [Chronic], [Active]) VALUES (1, N'TB', 1, 1)
+INSERT [dbo].[Condition] ([Id], [Description], [Chronic], [Active]) VALUES (2, N'HIV', 1, 1)
+INSERT [dbo].[Condition] ([Id], [Description], [Chronic], [Active]) VALUES (3, N'Malaria', 1, 1)
 SET IDENTITY_INSERT [dbo].[Condition] OFF
 
 SET IDENTITY_INSERT [dbo].[ConditionMedDra] ON 
