@@ -40,6 +40,9 @@ export class PatientService extends BaseService {
       if (filterModel.lastName != null) {
           parameters.push(<ParameterKeyValueModel> { key: 'lastName', value: filterModel.lastName });
       }
+      if (filterModel.caseNumber != null) {
+        parameters.push(<ParameterKeyValueModel> { key: 'caseNumber', value: filterModel.caseNumber });
+      }
       if (filterModel.dateOfBirth != null) {
           parameters.push(<ParameterKeyValueModel> { key: 'dateOfBirth', value: filterModel.dateOfBirth.format("YYYY-MM-DD") });
       }
@@ -56,8 +59,7 @@ export class PatientService extends BaseService {
     getPatientByCondition(filterModel: any): any {
       let parameters: ParameterKeyValueModel[] = [];
 
-      parameters.push(<ParameterKeyValueModel> { key: 'customAttributeKey', value: filterModel.customAttributeKey });
-      parameters.push(<ParameterKeyValueModel> { key: 'customAttributeValue', value: filterModel.customAttributeValue });
+      parameters.push(<ParameterKeyValueModel> { key: 'caseNumber', value: filterModel.caseNumber });
       parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: '1'});
       parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: '10'});
 
