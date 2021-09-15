@@ -301,6 +301,20 @@ export class NavigationService {
       this.clinicalMenu.push(newMenu);
     }
 
+    if(this.accountService.hasRole('DataCap'))
+    {
+      let newMenu: IMenuItem = {
+        name: "Forms",
+        type: "link",
+        tooltip: "View Forms for Capture",
+        icon: "content_copy",
+        state: "clinical/form-landing"
+      };      
+      this.clinicalMenu.push(newMenu);
+
+      this.menuItems.next(this.clinicalMenu);
+    }
+
     if(this.accountService.hasRole('Clinician'))
     {
       let newMenu: IMenuItem = {
@@ -341,20 +355,6 @@ export class NavigationService {
         state: "clinical/appointmentsearch"
       };      
       this.clinicalMenu.push(newMenu);
-    }
-
-    if(this.accountService.hasRole('DataCap'))
-    {
-      let newMenu: IMenuItem = {
-        name: "Forms",
-        type: "link",
-        tooltip: "View Forms for Capture",
-        icon: "content_copy",
-        state: "clinical/form-landing"
-      };      
-      this.clinicalMenu.push(newMenu);
-
-      this.menuItems.next(this.clinicalMenu);
     }
   }
 
