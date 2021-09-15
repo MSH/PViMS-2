@@ -102,7 +102,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       patientFirstName: [''],
       patientLastName: [''],
       gender: [''],
-      ethnicity: [''],
+      race: [''],
       dateOfBirth: [''],
       age: [''],
       ageGroup: [''],
@@ -111,11 +111,9 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     });
     self.thirdFormGroup = this._formBuilder.group({
       dateOfOnset: ['', Validators.required],
-      regimen: [null, Validators.required],
       sourceDescription: [null, [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
       isSerious: [null, Validators.required],
       seriousness: [null, Validators.required],
-      classification: [null, Validators.required],
       weight: [null, [Validators.required, Validators.min(0), Validators.max(159)]],
       height: [null, [Validators.required, Validators.min(1), Validators.max(259)]],
       allergy: ['', [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
@@ -234,7 +232,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           self.updateForm(self.firstFormGroup, {ageGroup: result.ageGroup});
           self.updateForm(self.firstFormGroup, {patientIdentifier: self.firstFormGroup.get('caseNumber').value});
           self.updateForm(self.firstFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Gender")});
-          self.updateForm(self.firstFormGroup, {ethnicity: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Ethnic Group")});
+          self.updateForm(self.firstFormGroup, {race: self.getValueOrSelectedValueFromAttribute(result.patientAttributes, "Race")});
           self.updateForm(self.firstFormGroup, {facilityName: result.facilityName});
           self.updateForm(self.firstFormGroup, {facilityRegion: result.organisationUnit});
 
@@ -527,10 +525,8 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
     const attributesForUpdate: AttributeValueForPostModel[] = [];
 
-    attributesForUpdate.push(self.prepareAttributeValue('regimen', 'regimen', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('is the adverse event serious?', 'isSerious', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('seriousness', 'seriousness', self.thirdFormGroup));
-    attributesForUpdate.push(self.prepareAttributeValue('classification', 'classification', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('weight (kg)', 'weight', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('height (cm)', 'height', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('any known allergy', 'allergy', self.thirdFormGroup));

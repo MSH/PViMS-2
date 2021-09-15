@@ -51,7 +51,7 @@
             <mat-icon color="primary" *ngIf="viewModel.currentStep == 4" class="mr-12">brightness_1</mat-icon>
             <mat-icon color="warn" *ngIf="viewModel.currentStep > 4 && fifthFormGroup.invalid" class="mr-12">error</mat-icon>
             <mat-icon color="accent" *ngIf="viewModel.currentStep > 4 && fifthFormGroup.valid" class="mr-12">check_circle</mat-icon>
-            <span [class.font-weight-bold]="viewModel.currentStep == 4">Suspected medication</span>
+            <span [class.font-weight-bold]="viewModel.currentStep == 4">Medication</span>
           </div>
           <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
             <mat-icon color="primary" *ngIf="viewModel.currentStep < 5" class="mr-12">panorama_fish_eye</mat-icon>
@@ -128,8 +128,8 @@
                 </div>
                 <div fxFlex="45">
                   <mat-form-field class="p-8 full-width" appearance="fill">
-                    <mat-label>{{'Ethnic group' | translate}}</mat-label>
-                    <input matInput formControlName="ethnicity" readonly>
+                    <mat-label>{{'Race' | translate}}</mat-label>
+                    <input matInput formControlName="race" readonly>
                   </mat-form-field>
                 </div>
               </div>
@@ -196,26 +196,6 @@
                     </mat-form-field>
                     <mat-datepicker #onsetDatepicker></mat-datepicker>
                   </div>
-                  <div fxFlex="50">
-                    <mat-form-field class="full-width" appearance="outline">
-                      <mat-label>Regimen</mat-label>
-                      <mat-select formControlName="regimen" required>
-                        <mat-option value="1">SSOR (3)</mat-option>
-                        <mat-option value="2">SLOR FQ-S (4)</mat-option>
-                        <mat-option value="3">SLOR FQ-R (5)</mat-option>
-                        <mat-option value="4">ITR</mat-option>
-                        <mat-option value="5">FQ susceptible MDR TB (6a)</mat-option>
-                        <mat-option value="6">FQ susceptible MDR TB (6b)</mat-option>
-                        <mat-option value="7">FQ susceptible MDR TB (6c)</mat-option>
-                        <mat-option value="8">FQ resistant MDR TB (7a)</mat-option>
-                        <mat-option value="9">FQ resistant MDR TB (7b)</mat-option>
-                        <mat-option value="10">FQ resistant MDR TB (7c)</mat-option>
-                      </mat-select>
-                      <mat-error *ngIf="thirdFormGroup.get('regimen').hasError('required')">
-                        Field is required
-                      </mat-error>
-                    </mat-form-field>
-                  </div>
                 </div>
     
                 <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
@@ -270,22 +250,6 @@
                     </mat-form-field>
                   </div>
                 </div>
-
-                <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
-                  <div fxFlex="50">
-                    <mat-form-field class="full-width" appearance="outline">
-                      <mat-label>Event classification</mat-label>
-                      <mat-select formControlName="classification" required>
-                        <mat-option value="1">AESI</mat-option>
-                        <mat-option value="2">SAE</mat-option>
-                        <mat-option value="3">Clinically Significant</mat-option>
-                      </mat-select>
-                      <mat-error *ngIf="thirdFormGroup.get('classification').hasError('required')">
-                        Field is required
-                      </mat-error>
-                    </mat-form-field>
-                  </div>
-                </div>                
               </div>
             </mat-tab>
             <mat-tab label="{{'Other clinical details' | translate}}">
@@ -551,10 +515,10 @@
         <form [formGroup]="fifthFormGroup" [@fadeInOut2]="">
   
           <div class="p-24">
-            <span class="mat-title">Suspected medication</span>
+            <span class="mat-title">Medication</span>
   
             <div class="p-24 light-gray rounded">
-              Please add any suspected medications to any existing medications the patient is on
+              Please add any medications the patient has been exposed too
             </div>
  
             <div class="ml-05 mr-05 mt-05 pb-1">
@@ -682,7 +646,7 @@
                     <mat-option value="2">RPh</mat-option>
                     <mat-option value="3">RN</mat-option>
                     <mat-option value="4">Patient</mat-option>
-                    <mat-option value="5">Dentist</mat-option>
+                    <mat-option value="5">Other</mat-option>
                   </mat-select>                        
                 </mat-form-field>
               </div>              

@@ -29,8 +29,8 @@
                 </div>
                 <div fxFlex="50" class="pr-1">
                   <mat-form-field class="p-8 full-width" appearance="fill">
-                    <mat-label>{{'Ethnic group' | translate}}</mat-label>
-                    <input matInput formControlName="ethnicity" readonly>
+                    <mat-label>{{'Race' | translate}}</mat-label>
+                    <input matInput formControlName="race" readonly>
                   </mat-form-field>
                 </div>
                 <div fxFlex="50" class="pr-1">
@@ -198,7 +198,7 @@
                   <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(3)">
                     <mat-icon color="warn" *ngIf="fifthFormGroup.invalid" class="mr-12">error</mat-icon>
                     <mat-icon color="accent" *ngIf="fifthFormGroup.valid" class="mr-12">check_circle</mat-icon>
-                    <span [class.font-weight-bold]="viewModel.currentStep == 3">Suspected medication</span>
+                    <span [class.font-weight-bold]="viewModel.currentStep == 3">Medication</span>
                   </div>
                   <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05" style="cursor: pointer;" (click)="setStep(4)">
                     <mat-icon color="warn" *ngIf="sixthFormGroup.invalid" class="mr-12">error</mat-icon>
@@ -224,29 +224,6 @@
                               <mat-datepicker-toggle matSuffix [for]="onsetDatepicker"></mat-datepicker-toggle>
                             </mat-form-field>
                             <mat-datepicker #onsetDatepicker></mat-datepicker>
-                          </div>
-                        </div>
-
-                        <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start">
-                          <div fxFlex="95">
-                            <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="outline">
-                              <mat-label>Regimen</mat-label>
-                              <mat-select formControlName="regimen" required>
-                                <mat-option value="1">SSOR (3)</mat-option>
-                                <mat-option value="2">SLOR FQ-S (4)</mat-option>
-                                <mat-option value="3">SLOR FQ-R (5)</mat-option>
-                                <mat-option value="4">ITR</mat-option>
-                                <mat-option value="5">FQ susceptible MDR TB (6a)</mat-option>
-                                <mat-option value="6">FQ susceptible MDR TB (6b)</mat-option>
-                                <mat-option value="7">FQ susceptible MDR TB (6c)</mat-option>
-                                <mat-option value="8">FQ resistant MDR TB (7a)</mat-option>
-                                <mat-option value="9">FQ resistant MDR TB (7b)</mat-option>
-                                <mat-option value="10">FQ resistant MDR TB (7c)</mat-option>
-                              </mat-select>
-                              <mat-error *ngIf="thirdFormGroup.get('regimen').hasError('required')">
-                                Field is required
-                              </mat-error>
-                            </mat-form-field>
                           </div>
                         </div>
 
@@ -304,22 +281,6 @@
                             </mat-form-field>
                           </div>
                         </div>
-
-                        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-2">
-                          <div fxFlex="95">
-                            <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="outline">
-                              <mat-label>Event classification</mat-label>
-                              <mat-select formControlName="classification" required>
-                                <mat-option value="1">AESI</mat-option>
-                                <mat-option value="2">SAE</mat-option>
-                                <mat-option value="3">Clinically Significant</mat-option>
-                              </mat-select>
-                              <mat-error *ngIf="thirdFormGroup.get('classification').hasError('required')">
-                                Field is required
-                              </mat-error>
-                            </mat-form-field>
-                          </div>
-                        </div>                
                       </div>
                     </mat-tab>
 
@@ -695,7 +656,7 @@
                             <mat-option value="2">RPh</mat-option>
                             <mat-option value="3">RN</mat-option>
                             <mat-option value="4">Patient</mat-option>
-                            <mat-option value="5">Dentist</mat-option>
+                            <mat-option value="5">Other</mat-option>
                           </mat-select>                        
                         </mat-form-field>
                       </div>              

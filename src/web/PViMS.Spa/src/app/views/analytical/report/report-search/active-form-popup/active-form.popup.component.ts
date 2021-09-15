@@ -83,7 +83,7 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
       patientFirstName: [''],
       patientLastName: [''],
       gender: [''],
-      ethnicity: [''],
+      race: [''],
       dateOfBirth: [''],
       age: [''],
       ageGroup: [''],
@@ -92,11 +92,9 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
     });
     self.thirdFormGroup = this._formBuilder.group({
       onsetDate: ['', Validators.required],
-      regimen: [null, Validators.required],
       sourceDescription: [null, [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
       isSerious: [null],
       seriousness: [null],
-      classification: [null, Validators.required],
       weight: [null, [Validators.required, Validators.min(1), Validators.max(159)]],
       height: [null, [Validators.required, Validators.min(1), Validators.max(259)]],
       allergy: ['', [Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
@@ -283,18 +281,16 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
     self.updateForm(self.firstFormGroup, {patientFirstName: patientModel.firstName});
     self.updateForm(self.firstFormGroup, {patientLastName: patientModel.lastName});
     self.updateForm(self.firstFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Gender")});
-    self.updateForm(self.firstFormGroup, {ethnicity: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Ethnic Group")});
+    self.updateForm(self.firstFormGroup, {race: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Race")});
   }
 
   private loadDataForThirdForm(clinicalEventModel: PatientClinicalEventExpandedModel) {
     let self = this;
 
     self.updateForm(self.thirdFormGroup, { 'onsetDate': clinicalEventModel.onsetDate })
-    self.updateForm(self.thirdFormGroup, { 'regimen': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Regimen") })
     self.updateForm(self.thirdFormGroup, { 'sourceDescription': clinicalEventModel.sourceDescription })
     self.updateForm(self.thirdFormGroup, { 'isSerious': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Is the adverse event serious?") })
     self.updateForm(self.thirdFormGroup, { 'seriousness': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Seriousness") })
-    self.updateForm(self.thirdFormGroup, { 'classification': self.getValueOrSelectedValueFromAttribute(clinicalEventModel.clinicalEventAttributes, "Classification") })
     self.updateForm(self.thirdFormGroup, { 'weight': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'weight (kg)')?.value })
     self.updateForm(self.thirdFormGroup, { 'height': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'height (cm)')?.value })
     self.updateForm(self.thirdFormGroup, { 'allergy': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'any known allergy')?.value })

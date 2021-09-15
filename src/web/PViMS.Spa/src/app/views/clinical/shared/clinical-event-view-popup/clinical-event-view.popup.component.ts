@@ -70,7 +70,7 @@ export class ClinicalEventViewPopupComponent extends BasePopupComponent implemen
       patientFirstName: [''],
       patientLastName: [''],
       gender: [''],
-      ethnicity: [''],
+      race: [''],
       dateOfBirth: [''],
       age: [''],
       ageGroup: [''],
@@ -186,7 +186,7 @@ export class ClinicalEventViewPopupComponent extends BasePopupComponent implemen
     self.updateForm(self.viewModelForm, {age: patientModel.age});
     self.updateForm(self.viewModelForm, {ageGroup: patientModel.ageGroup});
     self.updateForm(self.viewModelForm, {gender: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Gender")});
-    self.updateForm(self.viewModelForm, {ethnicity: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Ethnic Group")});
+    self.updateForm(self.viewModelForm, {race: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Race")});
     self.updateForm(self.viewModelForm, {facilityName: patientModel.facilityName});
     self.updateForm(self.viewModelForm, {facilityRegion: patientModel.organisationUnit});
   }

@@ -39,8 +39,8 @@
                   </div>
                   <div fxFlex="45">
                     <mat-form-field class="p-8 full-width" appearance="fill">
-                      <mat-label>{{'Ethnic group' | translate}}</mat-label>
-                      <input matInput formControlName="ethnicity" readonly>
+                      <mat-label>{{'Race' | translate}}</mat-label>
+                      <input matInput formControlName="race" readonly>
                     </mat-form-field>
                   </div>
                 </div>
@@ -112,15 +112,6 @@
                     <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start">
                       <div fxFlex="95">
                         <mat-form-field class="p-8 full-width" appearance="fill">
-                          <mat-label>{{'Regimen' | translate}}</mat-label>
-                          <input matInput formControlName="regimen" readonly>
-                        </mat-form-field>                         
-                      </div>
-                    </div>
-
-                    <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start">
-                      <div fxFlex="95">
-                        <mat-form-field class="p-8 full-width" appearance="fill">
                           <mat-label>{{'Event description' | translate}}</mat-label>
                           <input matInput formControlName="sourceDescription" readonly>
                         </mat-form-field>                         
@@ -144,15 +135,6 @@
                         </mat-form-field>
                       </div>
                     </div>
-
-                    <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-2">
-                      <div fxFlex="95">
-                        <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="fill">
-                          <mat-label>Event classification</mat-label>
-                          <input matInput formControlName="classification" readonly>
-                        </mat-form-field>
-                      </div>
-                    </div>                
                   </div>
                 </mat-tab>
 
@@ -337,7 +319,7 @@
         <mat-expansion-panel [expanded]="viewModel.step === 3" (opened)="setStep(3)" hideToggle>
           <mat-expansion-panel-header>
             <mat-panel-title>
-              {{'Suspected medication' | translate}}
+              {{'Medication' | translate}}
             </mat-panel-title>
           </mat-expansion-panel-header>
 

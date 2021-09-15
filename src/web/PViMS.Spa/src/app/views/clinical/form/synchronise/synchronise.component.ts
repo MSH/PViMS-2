@@ -296,10 +296,8 @@ export class SynchroniseComponent extends BaseComponent implements OnInit, After
 
     const attributesForUpdate: AttributeValueForPostModel[] = [];
 
-    attributesForUpdate.push(self.prepareAttributeValue('regimen', 'regimen', thirdForm));
     attributesForUpdate.push(self.prepareAttributeValue('is the adverse event serious?', 'isSerious', thirdForm));
     attributesForUpdate.push(self.prepareAttributeValue('seriousness', 'seriousness', thirdForm));
-    attributesForUpdate.push(self.prepareAttributeValue('classification', 'classification', thirdForm));
     attributesForUpdate.push(self.prepareAttributeValue('weight (kg)', 'weight', thirdForm));
     attributesForUpdate.push(self.prepareAttributeValue('height (cm)', 'height', thirdForm));
     attributesForUpdate.push(self.prepareAttributeValue('any known allergy', 'allergy', thirdForm));

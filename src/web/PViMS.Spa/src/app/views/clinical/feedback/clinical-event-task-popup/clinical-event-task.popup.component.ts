@@ -85,7 +85,7 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
       patientFirstName: [''],
       patientLastName: [''],
       gender: [''],
-      ethnicity: [''],
+      race: [''],
       dateOfBirth: [''],
       age: [''],
       ageGroup: [''],
@@ -96,11 +96,9 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
     });
     self.thirdFormGroup = this._formBuilder.group({
       onsetDate: ['', Validators.required],
-      regimen: [null, Validators.required],
       sourceDescription: [null, [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
       isSerious: [null, Validators.required],
       seriousness: [null, Validators.required],
-      classification: [null, Validators.required],
       weight: [null, [Validators.required, Validators.min(1), Validators.max(159)]],
       height: [null, [Validators.required, Validators.min(1), Validators.max(259)]],
       allergy: ['', [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
@@ -345,10 +343,8 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
 
     const attributesForUpdate: AttributeValueForPostModel[] = [];
 
-    attributesForUpdate.push(self.prepareAttributeValue('regimen', 'regimen', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('is the adverse event serious?', 'isSerious', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('seriousness', 'seriousness', self.thirdFormGroup));
-    attributesForUpdate.push(self.prepareAttributeValue('classification', 'classification', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('weight (kg)', 'weight', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('height (cm)', 'height', self.thirdFormGroup));
     attributesForUpdate.push(self.prepareAttributeValue('any known allergy', 'allergy', self.thirdFormGroup));
@@ -437,7 +433,7 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
     self.updateForm(self.patientFormGroup, {age: patientModel.age});
     self.updateForm(self.patientFormGroup, {ageGroup: patientModel.ageGroup});
     self.updateForm(self.patientFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Gender")});
-    self.updateForm(self.patientFormGroup, {ethnicity: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Ethnic Group")});
+    self.updateForm(self.patientFormGroup, {race: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Race")});
     self.updateForm(self.patientFormGroup, {facilityName: patientModel.facilityName});
     self.updateForm(self.patientFormGroup, {facilityRegion: patientModel.organisationUnit});
   }
@@ -481,11 +477,9 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
     let self = this;
 
     self.updateForm(self.thirdFormGroup, { 'onsetDate': clinicalEventModel.onsetDate })
-    self.updateForm(self.thirdFormGroup, { 'regimen': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'regimen')?.value })
     self.updateForm(self.thirdFormGroup, { 'sourceDescription': clinicalEventModel.sourceDescription })
     self.updateForm(self.thirdFormGroup, { 'isSerious': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'is the adverse event serious?')?.value })
     self.updateForm(self.thirdFormGroup, { 'seriousness': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'seriousness')?.value })
-    self.updateForm(self.thirdFormGroup, { 'classification': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'classification')?.value })
     self.updateForm(self.thirdFormGroup, { 'weight': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'weight (kg)')?.value })
     self.updateForm(self.thirdFormGroup, { 'height': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'height (cm)')?.value })
     self.updateForm(self.thirdFormGroup, { 'allergy': clinicalEventModel.clinicalEventAttributes.find(pa => pa.key.toLowerCase() == 'any known allergy')?.value })
