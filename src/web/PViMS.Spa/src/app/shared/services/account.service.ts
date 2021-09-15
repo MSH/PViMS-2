@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { BaseService } from '../base/base.service';
 import { EventService } from './event.service';
-import { UserRoleModel } from '../models/user/user.role.model';
 import { ParameterKeyValueModel } from '../models/parameter.keyvalue.model';
 import { NotificationModel } from '../models/user/notification.model';
 import { BehaviorSubject } from 'rxjs';
@@ -13,14 +12,10 @@ export class AccountService extends BaseService {
     connected$ = new BehaviorSubject<boolean>(true);
     forcedOffline$ = new BehaviorSubject<boolean>(false);
 
-    private userRoles: UserRoleModel[] = [];
-
     constructor(
         protected httpClient: HttpClient, protected eventService: EventService) {
         super(httpClient, eventService);
         this.apiController = "/accounts";
-
-        this.userRoles = this.getUserRoles();
     }
 
     login(model: any) {
@@ -37,17 +32,6 @@ export class AccountService extends BaseService {
 
     resetPassword(model: any) {
         return this.Post(`ResetPassword`, model);
-    }
-
-    getUserRoles(): any {
-      let parameters: ParameterKeyValueModel[] = [];
-  
-      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: '1'});
-      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: '999'});
-  
-      let id = this.getUniquename();
-
-      return this.Get<UserRoleModel[]>(`/users/${id}/roles`, 'application/vnd.pvims.identifier.v1+json', parameters);
     }
 
     getNotifications(): any {
