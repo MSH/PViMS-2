@@ -4,6 +4,8 @@ export interface PatientClinicalEventDetailModel {
     id: number;
     patientClinicalEventGuid: string;
     sourceDescription: string;
+    sourceTerminologyMedDraId?: number;
+    medDraTerm: string;
     onsetDate: any;
     reportDate: any;
     resolutionDate: any;

@@ -7,6 +7,8 @@ export interface PatientClinicalEventExpandedModel {
     id: number;
     patientClinicalEventGuid: string;
     sourceDescription: string;
+    sourceTerminologyMedDraId?: number;
+    medDraTerm: string;
     onsetDate: any;
     reportDate: any;
     resolutionDate: any;
