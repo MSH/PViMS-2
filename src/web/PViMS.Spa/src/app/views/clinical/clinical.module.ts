@@ -33,7 +33,6 @@ import { ConditionPopupComponent } from './shared/condition-popup/condition.popu
 import { GenericDeletePopupComponent } from './shared/generic-delete-popup/generic-delete.popup.component';
 import { ConditionViewPopupComponent } from './shared/condition-view-popup/condition-view.popup.component';
 import { GenericArchivePopupComponent } from './shared/generic-archive-popup/generic-archive.popup.component';
-import { ClinicalEventViewPopupComponent } from './shared/clinical-event-view-popup/clinical-event-view.popup.component';
 import { FormDeletePopupComponent } from './form/form-list/form-delete-popup/form-delete.popup.component';
 import { MedicationPopupComponent } from './shared/medication-popup/medication.popup.component';
 import { LabTestPopupComponent } from './shared/lab-test-popup/lab-test.popup.component';
@@ -46,10 +45,11 @@ import { FormADRComponent } from './form/form-adr/form-adr.component';
 import { LandingComponent } from './form/landing/landing.component';
 import { AttachmentAddPopupComponent } from './shared/attachment-add-popup/attachment-add.popup.component';
 import { ClinicalEventTaskPopupComponent } from './feedback/clinical-event-task-popup/clinical-event-task.popup.component';
-import { ChangeTaskStatusPopupComponent } from './feedback/change-task-status-popup/change-task-status.popup.component';
 import { FormADRMedicationPopupComponent } from './shared/form-adr-medication-popup/form-adr-medication.popup.component';
 import { FormListComponent } from './form/form-list/form-list.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { ClinicalEventViewPopupComponent } from './shared/clinical-event-view-popup/clinical-event-view.popup.component';
+import { AppointmentPopupComponent } from './patient/patient-view/appointment-popup/appointment.popup.component';
 
 @NgModule({
   imports: [
@@ -67,10 +67,10 @@ import { NgApexchartsModule } from 'ng-apexcharts';
   declarations: 
   [
     AppointmentSearchComponent,
+    AppointmentPopupComponent,
     AttachmentAddPopupComponent,
     AttachmentCapturePopupComponent,
     AttachmentViewPopupComponent,
-    ChangeTaskStatusPopupComponent,
     ClinicalEventPopupComponent,
     ClinicalEventTaskPopupComponent,
     ClinicalEventViewPopupComponent,
@@ -107,10 +107,10 @@ import { NgApexchartsModule } from 'ng-apexcharts';
   ],
   entryComponents:
   [
+    AppointmentPopupComponent,
     AttachmentAddPopupComponent,
     AttachmentCapturePopupComponent,
     AttachmentViewPopupComponent,
-    ChangeTaskStatusPopupComponent,
     ClinicalEventPopupComponent,
     ClinicalEventTaskPopupComponent,
     ClinicalEventViewPopupComponent,
