@@ -6,6 +6,7 @@ export interface TaskModel {
   description: string;
   taskType: string;
   taskStatus: string;
+  taskAge: string;
   createdDetail: string;
   updatedDetail: string;
   comments: TaskCommentModel[];

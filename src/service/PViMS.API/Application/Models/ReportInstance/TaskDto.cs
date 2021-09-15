@@ -40,6 +40,12 @@ namespace PVIMS.API.Models
         public string TaskStatus { get; set; }
 
         /// <summary>
+        /// The age of the task in days
+        /// </summary>
+        [DataMember]
+        public string TaskAge { get; set; }
+
+        /// <summary>
         /// Details of the task creation
         /// </summary>
         [DataMember]
