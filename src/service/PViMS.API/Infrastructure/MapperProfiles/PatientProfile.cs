@@ -13,15 +13,18 @@ namespace PVIMS.API.MapperProfiles
         public PatientProfile()
         {
             CreateMap<Patient, PatientIdentifierDto>()
-                .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.CurrentFacilityName));
+                .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.CurrentFacilityName))
+                .ForMember(dest => dest.OrganisationUnit, opt => opt.MapFrom(src => src.CurrentFacilityOrganisationUnit));
             CreateMap<Patient, PatientDetailDto>()
                 .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.CurrentFacilityName))
+                .ForMember(dest => dest.OrganisationUnit, opt => opt.MapFrom(src => src.CurrentFacilityOrganisationUnit))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Surname))
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth == null ? "" : Convert.ToDateTime(src.DateOfBirth).ToString("yyyy-MM-dd")))
                 .ForMember(dest => dest.CreatedDetail, opt => opt.MapFrom(src => src.Created))
                 .ForMember(dest => dest.UpdatedDetail, opt => opt.MapFrom(src => src.LastUpdated));
             CreateMap<Patient, PatientExpandedDto>()
                 .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.CurrentFacilityName))
+                .ForMember(dest => dest.OrganisationUnit, opt => opt.MapFrom(src => src.CurrentFacilityOrganisationUnit))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Surname))
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth == null ? "" : Convert.ToDateTime(src.DateOfBirth).ToString("yyyy-MM-dd")))
                 .ForMember(dest => dest.CreatedDetail, opt => opt.MapFrom(src => src.Created))
