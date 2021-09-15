@@ -19,7 +19,7 @@ namespace PVIMS.API.Models
         /// The unqiue identifier of the source meddra term
         /// </summary>
         [DataMember]
-        public long SourceTerminologyMedDraId { get; set; }
+        public int? SourceTerminologyMedDraId { get; set; }
 
         /// <summary>
         /// The source meddra term of the clinical event

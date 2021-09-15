@@ -45,6 +45,7 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.TaskDetail.Description))
                 .ForMember(dest => dest.TaskType, opt => opt.MapFrom(src => TaskType.From(src.TaskTypeId).Name))
                 .ForMember(dest => dest.TaskStatus, opt => opt.MapFrom(src => TaskStatus.From(src.TaskStatusId).Name))
+                .ForMember(dest => dest.TaskAge, opt => opt.MapFrom(src => (DateTime.UtcNow.Date - src.Created.Date).TotalDays))
                 .ForMember(dest => dest.CreatedDetail, opt => opt.MapFrom(src => src.Created))
                 .ForMember(dest => dest.UpdatedDetail, opt => opt.MapFrom(src => src.LastUpdated))
                 .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.Comments.OrderByDescending(c => c.Created)));

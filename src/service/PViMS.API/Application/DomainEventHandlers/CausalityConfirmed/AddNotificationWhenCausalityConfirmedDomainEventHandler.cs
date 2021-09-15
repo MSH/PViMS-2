@@ -36,7 +36,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
                 alertCount = Convert.ToInt32(config.ConfigValue);
             }
 
-            var summary = $"Causality and terminology set for report {domainEvent.ReportInstance.Identifier}";
+            var summary = $"Causality and terminology set for report {domainEvent.ReportInstance.PatientIdentifier}";
             var notificationType = NotificationType.FromName("Informational");
             var notificationClassification = NotificationClassification.FromName("CausalityAndTerminologySet");
             var contextRoute = "/clinical/feedbacksearch";

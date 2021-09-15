@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace PVIMS.API.Models.Parameters
 {
@@ -16,7 +15,6 @@ namespace PVIMS.API.Models.Parameters
         /// <summary>
         /// Filter patients by facility name
         /// </summary>
-        [StringLength(100)]
         public string FacilityName { get; set; } = "";
 
         /// <summary>
@@ -27,19 +25,22 @@ namespace PVIMS.API.Models.Parameters
         /// <summary>
         /// Filter patients by patient first name
         /// </summary>
-        [StringLength(30)]
         public string FirstName { get; set; } = "";
 
         /// <summary>
         /// Filter patients by patient last name
         /// </summary>
-        [StringLength(30)]
         public string LastName { get; set; } = "";
 
         /// <summary>
         /// Filter patients by patient date of birth
         /// </summary>
         public DateTime DateOfBirth { get; set; } = DateTime.MinValue;
+
+        /// <summary>
+        /// Filter patients by condition case number
+        /// </summary>
+        public string CaseNumber { get; set; } = "";
 
         /// <summary>
         /// Filter patients by custom attribute

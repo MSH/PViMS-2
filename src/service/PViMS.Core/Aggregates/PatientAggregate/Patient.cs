@@ -94,8 +94,9 @@ namespace PVIMS.Core.Entities
         }
 
         public string FullName => FirstName.Trim() + ' ' + Surname.Trim();
-        public string CurrentFacilityName => CurrentFacility == null ? "** Not set **" : CurrentFacility.Facility.FacilityName;
-        public string CurrentFacilityCode => CurrentFacility == null ? "** Not set **" : CurrentFacility.Facility.FacilityCode;
+        public string CurrentFacilityName => CurrentFacility?.Facility?.FacilityName;
+        public string CurrentFacilityCode => CurrentFacility?.Facility?.FacilityCode;
+        public string CurrentFacilityOrganisationUnit => CurrentFacility?.Facility?.OrgUnit?.Name;
 
         public DateTime? LatestEncounterDate
         {
