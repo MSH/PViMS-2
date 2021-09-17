@@ -665,9 +665,23 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var command = new AddPatientCommand(patientForCreation.FirstName, patientForCreation.LastName, patientForCreation.MiddleName, patientForCreation.DateOfBirth, patientForCreation.FacilityName,
-                patientForCreation.ConditionGroupId, patientForCreation.MeddraTermId, patientForCreation.CohortGroupId, patientForCreation.EnroledDate, patientForCreation.StartDate, patientForCreation.OutcomeDate, patientForCreation.CaseNumber, patientForCreation.Comments,
-                patientForCreation.EncounterTypeId, patientForCreation.PriorityId, patientForCreation.EncounterDate, patientForCreation.Attributes);
+            var command = new AddPatientCommand(patientForCreation.FirstName, 
+                patientForCreation.LastName, 
+                patientForCreation.MiddleName, 
+                patientForCreation.DateOfBirth, 
+                patientForCreation.FacilityName,
+                patientForCreation.ConditionGroupId, 
+                patientForCreation.MeddraTermId, 
+                patientForCreation.CohortGroupId, 
+                patientForCreation.EnroledDate, 
+                patientForCreation.StartDate, 
+                patientForCreation.OutcomeDate, 
+                patientForCreation.CaseNumber, 
+                patientForCreation.Comments,
+                patientForCreation.EncounterTypeId, 
+                patientForCreation.PriorityId, 
+                patientForCreation.EncounterDate, 
+                patientForCreation.Attributes.ToDictionary(x => x.Id, x => x.Value));
 
             _logger.LogInformation(
                 "----- Sending command: AddPatientCommand - {lastName}",
