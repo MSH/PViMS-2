@@ -139,18 +139,6 @@ export class FormListComponent extends BaseComponent implements OnInit, AfterVie
     const self = this;
     console.log(model);
     switch(model.formType) { 
-      case 'FormA': { 
-        self._router.navigate([_routes.clinical.forms.viewFormA(model.id)]);
-         break; 
-      } 
-      case 'FormB': { 
-        self._router.navigate([_routes.clinical.forms.viewFormB(model.id)]);
-         break; 
-      } 
-      case 'FormC': { 
-        self._router.navigate([_routes.clinical.forms.viewFormC(model.id)]);
-         break; 
-      } 
       case 'FormADR': { 
         self._router.navigate([_routes.clinical.forms.viewFormADR(model.id)]);
          break; 
