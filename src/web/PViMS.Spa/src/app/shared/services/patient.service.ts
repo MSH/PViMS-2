@@ -18,6 +18,7 @@ import { PatientDateOfBirthForUpdateModel } from '../models/patient/patient-date
 import { PatientFacilityForUpdateModel } from '../models/patient/patient-facility-for-update.model';
 import { PatientNotesForUpdateModel } from '../models/patient/patient-notes-for-update.model';
 import { PatientNameForUpdateModel } from '../models/patient/patient-name-for-update.model';
+import { PatientForCreationModel } from '../models/patient/patient-for-creation.model';
 
 @Injectable({ providedIn: 'root' })
 export class PatientService extends BaseService {
@@ -185,7 +186,7 @@ export class PatientService extends BaseService {
       return this.Download(`/patients/${patientId}/attachments`, 'application/vnd.pvims.attachment.v1+xml', parameters);
     }
 
-    savePatient(model: any): any {
+    savePatient(model: PatientForCreationModel): any {
       let shallowModel = this.transformModelForDate(model);
       return this.Post('', shallowModel);
     }

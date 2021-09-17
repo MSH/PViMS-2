@@ -3,9 +3,6 @@ import { Routes } from '@angular/router';
 import { EncounterSearchComponent } from './encounter/encounter-search/encounter-search.component';
 import { AppointmentSearchComponent } from './appointment/appointment-search/appointment-search.component';
 import { EncounterViewComponent } from './encounter/encounter-view/encounter-view.component';
-import { FormAComponent } from './form/form-a/form-a.component';
-import { FormBComponent } from './form/form-b/form-b.component';
-import { FormCComponent } from './form/form-c/form-c.component';
 import { SynchroniseComponent } from './form/synchronise/synchronise.component';
 import { PatientSearchComponent } from './patient/patient-search/patient-search.component';
 import { PatientViewComponent } from './patient/patient-view/patient-view.component';
@@ -16,6 +13,7 @@ import { FormADRComponent } from './form/form-adr/form-adr.component';
 import { LandingComponent } from './form/landing/landing.component';
 import { PendingChangesGuard } from 'app/shared/guards/component-can-deactive';
 import { FormListComponent } from './form/form-list/form-list.component';
+import { FormPXComponent } from './form/form-px/form-px.component';
 
 export const ClinicalRoutes: Routes = [
   {
@@ -76,25 +74,16 @@ export const ClinicalRoutes: Routes = [
       data: { title: 'Synchronise', breadcrumb: 'Synchronise' }
     },
     {
-      path: 'forma/:id',
-      component: FormAComponent,
-      data: { title: 'Baseline Form A', breadcrumb: 'Baseline Form A' }
-    },
-    {
-      path: 'formb/:id',
-      component: FormBComponent,
-      data: { title: 'Follow-Up Form B', breadcrumb: 'Follow-Up Form B' }
-    },
-    {
-      path: 'formc/:id',
-      component: FormCComponent,
-      data: { title: 'Pregnancy Form C', breadcrumb: 'Pregnancy Form C' }
-    },
-    {
       path: 'formadr/:id',
       component: FormADRComponent,
       canDeactivate: [PendingChangesGuard],
       data: { title: 'Adverse Drug Reaction Form', breadcrumb: 'Adverse Drug Reaction Form' }
+    },
+    {
+      path: 'form-px/:id',
+      component: FormPXComponent,
+      canDeactivate: [PendingChangesGuard],
+      data: { title: 'Patient Form', breadcrumb: 'Patient Form' }
     }
   ]
   }

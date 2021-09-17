@@ -10,9 +10,11 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { PopupService } from 'app/shared/services/popup.service';
 import { _routes } from 'app/config/routes';
+import { egretAnimations } from 'app/shared/animations/egret-animations';
 
 @Component({
-  templateUrl: './landing.component.html'
+  templateUrl: './landing.component.html',
+  animations: egretAnimations
 })
 export class LandingComponent extends BaseComponent implements OnInit {
 
@@ -52,7 +54,7 @@ export class LandingComponent extends BaseComponent implements OnInit {
                 value.synchedCount = result.value.filter(v => v.synchStatus == 'Synched').length;
               }, error => {
                 self.throwError(error, error.statusText);
-              });              
+              });
             })
 
             return result;
@@ -70,16 +72,8 @@ export class LandingComponent extends BaseComponent implements OnInit {
   addForm(selectedOption: string): void {
     let self = this;
     switch (selectedOption) {
-      case 'Form A':
-        self._router.navigate([_routes.clinical.forms.viewFormA(0)]);
-        break;
-
-      case 'Form B':
-        self._router.navigate([_routes.clinical.forms.viewFormB(0)]);
-        break;
-
-      case 'Form C':
-        self._router.navigate([_routes.clinical.forms.viewFormC(0)]);
+      case 'Px Form':
+        self._router.navigate([_routes.clinical.forms.viewFormPx(0)]);
         break;
 
       case 'ADR Form':

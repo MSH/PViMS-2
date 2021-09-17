@@ -37,10 +37,8 @@ export const _paths = {
           list: `form-list/:type`,
           synchronise: `synchronise/:type`,
           landing: `form-landing`,
-          forma: `forma/:formId`,
-          formb: `formb/:formId`,
-          formc: `formc/:formId`,
           formadr: `formadr/:formId`,
+          formpx: `form-px/:formId`
       }
   },
   analytical: `analytical`,

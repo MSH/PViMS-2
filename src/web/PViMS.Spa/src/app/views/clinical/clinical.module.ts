@@ -13,9 +13,6 @@ import { EncounterSearchComponent } from './encounter/encounter-search/encounter
 import { AppointmentSearchComponent } from './appointment/appointment-search/appointment-search.component';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { EncounterViewComponent } from './encounter/encounter-view/encounter-view.component';
-import { FormAComponent } from './form/form-a/form-a.component';
-import { FormBComponent } from './form/form-b/form-b.component';
-import { FormCComponent } from './form/form-c/form-c.component';
 import { SynchroniseComponent } from './form/synchronise/synchronise.component';
 import { WebcamModule } from 'ngx-webcam';
 import { AttachmentCapturePopupComponent } from './form/form-list/attachment-capture-popup/attachment-capture.popup.component';
@@ -50,6 +47,7 @@ import { FormListComponent } from './form/form-list/form-list.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { ClinicalEventViewPopupComponent } from './shared/clinical-event-view-popup/clinical-event-view.popup.component';
 import { AppointmentPopupComponent } from './patient/patient-view/appointment-popup/appointment.popup.component';
+import { FormPXComponent } from './form/form-px/form-px.component';
 
 @NgModule({
   imports: [
@@ -87,13 +85,11 @@ import { AppointmentPopupComponent } from './patient/patient-view/appointment-po
     EncounterUpdatePopupComponent,
     EncounterViewComponent,
     FeedbackSearchComponent,
-    FormAComponent,
     FormADRComponent,
     FormADRMedicationPopupComponent,
-    FormBComponent,
-    FormCComponent,
     FormDeletePopupComponent,
     FormListComponent,
+    FormPXComponent,
     GenericArchivePopupComponent,
     GenericDeletePopupComponent,
     LabTestPopupComponent,

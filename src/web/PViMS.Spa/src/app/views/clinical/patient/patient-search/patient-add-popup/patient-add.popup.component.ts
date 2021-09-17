@@ -25,6 +25,8 @@ import { Moment } from 'moment';
 // syntax. However, rollup creates a synthetic default module and we thus need to import it using
 // the `default as` syntax.
 import * as _moment from 'moment';
+import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
+import { PatientForCreationModel } from 'app/shared/models/patient/patient-for-creation.model';
 const moment =  _moment;
 
 @Component({
@@ -87,26 +89,23 @@ export class PatientAddPopupComponent extends BasePopupComponent implements OnIn
     self.getCustomAttributeList();
   }
 
-  public onConditionSelected(event) {
+  onConditionSelected(event) {
     const value = event.value;
-    var selections = this.viewModel.conditionList.filter(c => c.id == value);
     this.viewModel.selectedCondition = this.viewModel.conditionList.filter(c => c.id == value)[0];
   }
 
-  public submit() {
+  submit() {
     let self = this;
     self.setBusy(true);
 
-    if(self.data.patientId == 0) {
-      self.patientService.savePatient(self.viewModelForm.value)
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-          self.notify("Patient successfully saved!", "Success");
-          this.dialogRef.close(this.viewModelForm.value);
-      }, error => {
-        this.handleError(error, "Error saving patient");
-      });
-    }
+    self.patientService.savePatient(self.preparePatientForCreationModel())
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.notify("Patient successfully saved!", "Success");
+        this.dialogRef.close(this.viewModelForm.value);
+    }, error => {
+      this.handleError(error, "Error saving patient");
+    });
   }
 
   private loadDropDowns(): void {
@@ -173,6 +172,63 @@ export class PatientAddPopupComponent extends BasePopupComponent implements OnIn
         }, error => {
             self.throwError(error, error.statusText);
         });
+  }
+
+  private preparePatientForCreationModel(): PatientForCreationModel {
+    let self = this;
+    let outcomeDate = '';
+    if(moment.isMoment(self.viewModelForm.get('outcomeDate').value)) {
+      outcomeDate = self.viewModelForm.get('outcomeDate').value.format('YYYY-MM-DD');
+    }
+    else {
+      if (self.viewModelForm.get('outcomeDate').value != '') {
+        outcomeDate = self.viewModelForm.get('outcomeDate').value;
+      }
+    }
+
+    const attributesForUpdate: AttributeValueForPostModel[] = [];
+    self.viewModel.customAttributeList.forEach(attribute => {
+      attributesForUpdate.push(self.prepareAttributeValue(attribute.attributeKey, attribute.id.toString()));
+    })
+
+    const patientForCreationModel: PatientForCreationModel = 
+    {
+      firstName: self.viewModelForm.get('firstName').value,
+      lastName: self.viewModelForm.get('lastName').value,
+      middleName: self.viewModelForm.get('middleName').value,
+      dateOfBirth: self.viewModelForm.get('dateOfBirth').value.format('YYYY-MM-DD'),
+      facilityName: self.viewModelForm.get('facilityName').value,
+      conditionGroupId: +self.viewModelForm.get('conditionGroupId').value,
+      meddraTermId: +self.viewModelForm.get('meddraTermId').value,
+      cohortGroupId: +self.viewModelForm.get('cohortGroupId').value,
+      enroledDate: self.viewModelForm.get('enroledDate').value.format('YYYY-MM-DD'),
+      startDate: self.viewModelForm.get('startDate').value.format('YYYY-MM-DD'),
+      outcomeDate: outcomeDate,
+      caseNumber: self.viewModelForm.get('caseNumber').value,
+      comments: self.viewModelForm.get('comments').value,
+      encounterTypeId: +self.viewModelForm.get('encounterTypeId').value,
+      priorityId: +self.viewModelForm.get('priorityId').value,
+      encounterDate: self.viewModelForm.get('encounterDate').value.format('YYYY-MM-DD'),
+      attributes: attributesForUpdate
+    };
+
+    return patientForCreationModel;
+  }
+
+  private prepareAttributeValue(attributeKey: string, formKey: string): AttributeValueForPostModel {
+    const self = this;
+    let customAttribute = self.viewModel.customAttributeList.find(ca => ca.attributeKey.toLowerCase() == attributeKey.toLowerCase());
+    if(customAttribute == null) {
+      return null;
+    }
+
+    let attributes = self.viewModelForm.get('attributes') as FormGroup;
+    const attributeForPost: AttributeValueForPostModel = {
+      id: customAttribute.id,
+      value: attributes.value[formKey]
+    }
+    self.CLog(attributeForPost, 'attributeForPost');
+    return attributeForPost;
   }
 }
 
