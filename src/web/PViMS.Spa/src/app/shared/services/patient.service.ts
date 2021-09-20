@@ -57,10 +57,10 @@ export class PatientService extends BaseService {
       return this.Get<PatientDetailWrapperModel>('', 'application/vnd.pvims.detail.v1+json', parameters);
     }
 
-    getPatientByCondition(filterModel: any): any {
+    getPatientByUniqueIdentifier(filterModel: any): any {
       let parameters: ParameterKeyValueModel[] = [];
 
-      parameters.push(<ParameterKeyValueModel> { key: 'caseNumber', value: filterModel.caseNumber });
+      parameters.push(<ParameterKeyValueModel> { key: 'searchTerm', value: filterModel.searchTerm });
       parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: '1'});
       parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: '10'});
 

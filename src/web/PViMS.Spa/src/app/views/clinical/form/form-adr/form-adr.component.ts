@@ -96,7 +96,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       formCompleted: ['']
     });
     self.firstFormGroup = this._formBuilder.group({
-      caseNumber: ['', Validators.required],
+      searchTerm: ['', Validators.required],
       patientId: [''],
       patientIdentifier: [''],
       patientFirstName: [''],
@@ -210,11 +210,11 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
   getPatient(): void {
     let self = this;
     self.setBusy(true);
-    self.patientService.getPatientByCondition(self.firstFormGroup.value)
+    self.patientService.getPatientByUniqueIdentifier(self.firstFormGroup.value)
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        this.CLog(result, 'patient by condition');
+        this.CLog(result, 'patient by unique identifier');
         if(result == null) {
           self.viewModel.errorFindingPatient = true;
           self.viewModel.patientFound = false;

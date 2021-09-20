@@ -221,26 +221,26 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Get a single patient by searching for a matching concomitant condition
+        /// Get a single patient by searching for a matching identifier
         /// </summary>
-        /// <param name="patientByConditionResourceParameters">
+        /// <param name="patientByIdentifierResourceParameters">
         /// Specify condition search term
         /// </param>
         /// <returns>An ActionResult of type PatientExpandedDto</returns>
-        [HttpGet(Name = "GetPatientByCondition")]
+        [HttpGet(Name = "GetPatientByUniqueIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<PatientExpandedDto>> GetPatientByCondition(
-            [FromQuery] PatientByConditionResourceParameters patientByConditionResourceParameters)
+        public async Task<ActionResult<PatientExpandedDto>> GetPatientByUniqueIdentifier(
+            [FromQuery] PatientByIdentifierResourceParameters patientByIdentifierResourceParameters)
         {
-            var query = new PatientExpandedByConditionTermQuery(
-                patientByConditionResourceParameters.CaseNumber);
+            var query = new PatientExpandedByIdentifierQuery(
+                patientByIdentifierResourceParameters.SearchTerm);
 
             _logger.LogInformation(
-                "----- Sending query: PatientExpandedByConditionTermQuery");
+                "----- Sending query: PatientExpandedByIdentifierQuery");
 
             var queryResult = await _mediator.Send(query);
 
