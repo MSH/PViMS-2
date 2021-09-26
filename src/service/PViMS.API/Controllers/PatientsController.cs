@@ -29,6 +29,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ImageMagick;
 
 namespace PVIMS.API.Controllers
 {
@@ -58,6 +59,7 @@ namespace PVIMS.API.Controllers
         private readonly IReportService _reportService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<PatientsController> _logger;
+        private readonly IPatientQueries _patientQueries;
 
         public PatientsController(IMediator mediator, 
             IPropertyMappingService propertyMappingService, 
@@ -79,7 +81,8 @@ namespace PVIMS.API.Controllers
             IReportService reportService,
             IUnitOfWorkInt unitOfWork,
             IHttpContextAccessor httpContextAccessor,
-            ILogger<PatientsController> logger)
+            ILogger<PatientsController> logger,
+            IPatientQueries patientQueries)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
@@ -102,6 +105,7 @@ namespace PVIMS.API.Controllers
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _patientQueries = patientQueries ?? throw new ArgumentNullException(nameof(patientQueries));
         }
 
         /// <summary>
@@ -641,6 +645,72 @@ namespace PVIMS.API.Controllers
             var destFile = $"{Path.GetTempPath()}Patient_{patientId.ToString()}_Attachments_{generatedDate.ToString("yyyyMMddhhmmss")}.zip";
 
             using (var zip = new ZipFile())
+            {
+                zip.AddFiles(attachmentFileNames.Select(f => $"{Path.GetTempPath()}{f}").ToList(), string.Empty);
+                zip.Save(destFile);
+            }
+
+            return PhysicalFile(destFile, "application/zip");
+        }
+
+        /// <summary>
+        /// Download all file attachments
+        /// </summary>
+        /// <param name="patientId">The unique identifier for the patient</param>
+        /// <returns>An ActionResult of type AuditLogIdentifierDto</returns>
+        [HttpGet(Name = "DownloadAllAttachmentForQuery")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Produces("application/vnd.pvims.attachment.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.attachment.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult> DownloadAllAttachmentForQuery(int patientId)
+        {
+            var patients = await _patientQueries.GetPatientsWithMissingTLDAsync();
+
+            FileStream fs;
+            var attachmentFileNames = new List<string>();
+            var generatedDate = DateTime.Now;
+
+            foreach (var patient in patients)
+            {
+                var attachmentsFromRepo = await _attachmentRepository.ListAsync(a => a.Patient.Id == patient.Id, null, new string[] { "AttachmentType" });
+                foreach (var attachment in attachmentsFromRepo)
+                {
+                    byte[] buffer = (byte[])attachment.Content;
+                    var attachmentFile = $"{Path.GetTempPath()}{patient.Id}-{attachment.Description.Trim()}-{attachment.Id}.jpg";
+                    var attachmentFileCompressed = $"{Path.GetTempPath()}{patient.Id}-{attachment.Description.Trim()}-{attachment.Id}-c.jpg";
+                    fs = new FileStream(attachmentFile, FileMode.Create, FileAccess.Write);
+
+                    // Writes a block of bytes to this stream using data from // a byte array.
+                    fs.Write(buffer, 0, attachment.Content.Length);
+
+                    // close file stream
+                    fs.Close();
+                    try
+                    {
+                        using (MagickImage image = new MagickImage(attachmentFile))
+                        {
+                            image.Format = image.Format; // Get or Set the format of the image.
+                            image.Quality = 80; // This is the Compression level.
+                            image.Write(attachmentFileCompressed);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        attachmentFileNames.Add($"{patient.Id}-{attachment.Description.Trim()}-{attachment.Id}.jpg");
+                    }
+                    finally
+                    {
+                        attachmentFileNames.Add($"{patient.Id}-{attachment.Description.Trim()}-{attachment.Id}-c.jpg");
+                    }
+                }
+            }
+
+            var destFile = $"{Path.GetTempPath()}Patient_Attachments_{generatedDate.ToString("yyyyMMddhhmmss")}.zip";
+
+            using ( var zip = new ZipFile())
             {
                 zip.AddFiles(attachmentFileNames.Select(f => $"{Path.GetTempPath()}{f}").ToList(), string.Empty);
                 zip.Save(destFile);
