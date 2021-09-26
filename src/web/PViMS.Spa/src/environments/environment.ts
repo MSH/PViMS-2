@@ -8,6 +8,7 @@ export const environment = {
   apiURL: 'http://localhost:5000/api',
   //apiURL: 'https://localhost:44380/api',
   //apiURL: 'https://pvims-training-api.doh.gov.ph/api',
+  apiURLBase: 'http://localhost:5000',
   appVersion: '2.1.0',
   appName: 'PViMS Training',
   installationDate: '2020-06-24'
