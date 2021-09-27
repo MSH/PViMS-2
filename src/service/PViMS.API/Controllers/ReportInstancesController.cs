@@ -388,8 +388,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.feedback.v1+json", "application/vnd.pvims.feedback.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        [Authorize(Roles = "Analyst")]
-        [Authorize(Roles = "Clinician")]
+        [Authorize(Roles = "Analyst,Clinician")]
         public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>>> GetFeedbackReportInstancesByDetail(Guid workFlowGuid,
             [FromQuery] ReportInstanceActivityResourceParameters reportInstanceResourceParameters)
         {
