@@ -4,5 +4,6 @@ export const environment = {
   apiURLBase: 'https://pvimstest-api.msh.org',
   appVersion: '2.1.0',
   appName: 'PViMS',
-  installationDate: '2021-03-31'
+  installationDate: '2021-03-31',
+  countryISOCode: 'msh'
 };

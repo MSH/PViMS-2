@@ -13,5 +13,6 @@ export const environment = {
   apiURLBase: 'https://pvims-api.doh.gov.ph',
   appVersion: '2.1.0',
   appName: 'PViMS',
-  installationDate: '2021-09-26'
+  installationDate: '2021-09-26',
+  countryISOCode: 'ph'
 };
