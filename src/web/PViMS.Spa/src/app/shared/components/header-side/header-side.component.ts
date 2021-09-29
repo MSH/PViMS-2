@@ -22,10 +22,16 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
     name: 'EN',
     code: 'en',
     flag: 'flag-icon-us'
-  }, {
+  }, 
+  {
     name: 'Mz',
     code: 'mz',
     flag: 'flag-icon-mz'
+  },
+  {
+    name: 'Fr',
+    code: 'fr',
+    flag: 'flag-icon-fr'
   }]
   currentLang = this.availableLangs[0];
 
