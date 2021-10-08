@@ -11,15 +11,12 @@ using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Keyless;
-using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
@@ -47,9 +44,7 @@ namespace PVIMS.API.Controllers
         private readonly IMapper _mapper;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IArtefactService _artefactService;
-        private readonly IReportService _reportService;
         private readonly IWorkFlowService _workFlowService;
-        private readonly IInfrastructureService _infrastructureService;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<ReportInstancesController> _logger;
@@ -66,8 +61,6 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<User> userRepository,
             IRepositoryInt<WorkFlow> workFlowRepository,
             IArtefactService artefactService,
-            IReportService reportService,
-            IInfrastructureService infrastructureService,
             IWorkFlowService workFlowService,
             IUnitOfWorkInt unitOfWork,
             IHttpContextAccessor httpContextAccessor,
@@ -83,10 +76,8 @@ namespace PVIMS.API.Controllers
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
             _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
-            _infrastructureService = infrastructureService ?? throw new ArgumentNullException(nameof(infrastructureService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -543,13 +534,36 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var mappedResults = GetCausalityResults<CausalityReportDto>(causalityReportResourceParameters);
+            var query = new CausalityReportQuery(workFlowGuid,
+                causalityReportResourceParameters.PageNumber,
+                causalityReportResourceParameters.PageSize,
+                causalityReportResourceParameters.SearchFrom,
+                causalityReportResourceParameters.SearchTo,
+                causalityReportResourceParameters.FacilityId,
+                causalityReportResourceParameters.CausalityCriteria);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<CausalityReportDto>(mappedResults.TotalCount, mappedResults);
-            var wrapperWithLinks = CreateLinksForCausalityReport(wrapper, workFlowGuid, causalityReportResourceParameters,
-                mappedResults.HasNext, mappedResults.HasPrevious);
+            _logger.LogInformation("----- Sending query: CausalityReportQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            //var paginationMetadata = new
+            //{
+            //    totalCount = pagedResults.TotalCount,
+            //    pageSize = pagedResults.PageSize,
+            //    currentPage = pagedResults.CurrentPage,
+            //    totalPages = pagedResults.TotalPages,
+            //};
+
+            //Response.Headers.Add("X-Pagination",
+            //    JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -1130,96 +1144,6 @@ namespace PVIMS.API.Controllers
             }
 
             return identifier;
-        }
-
-        /// <summary>
-        /// Get results from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="causalityReportResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetCausalityResults<T>(CausalityReportResourceParameters causalityReportResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = causalityReportResourceParameters.PageNumber,
-                PageSize = causalityReportResourceParameters.PageSize
-            };
-
-            // Determine causality configuration
-            var config = _infrastructureService.GetOrCreateConfig(ConfigType.AssessmentScale);
-            var configValue = (CausalityConfigType)Enum.Parse(typeof(CausalityConfigType), config.ConfigValue.Replace(" ", ""));
-
-            var resultsFromService = PagedCollection<CausalityNotSetList>.Create(_reportService.GetCausalityNotSetItems(
-                causalityReportResourceParameters.SearchFrom,
-                causalityReportResourceParameters.SearchTo,
-                configValue,
-                causalityReportResourceParameters.FacilityId,
-                causalityReportResourceParameters.CausalityCriteria), pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (resultsFromService != null)
-            {
-                // Map EF entity to Dto
-                var mappedResults = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(resultsFromService),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    resultsFromService.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedResults.TotalCount,
-                    pageSize = mappedResults.PageSize,
-                    currentPage = mappedResults.CurrentPage,
-                    totalPages = mappedResults.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                return mappedResults;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="workFlowGuid">The unique identifier of the work flow that report instances are associated to</param>
-        /// <param name="causalityReportResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForCausalityReport(
-            LinkedResourceBaseDto wrapper,
-            Guid workFlowGuid,
-            CausalityReportResourceParameters causalityReportResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateCausalityReportResourceUri(workFlowGuid, ResourceUriType.Current, causalityReportResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateCausalityReportResourceUri(workFlowGuid, ResourceUriType.NextPage, causalityReportResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateCausalityReportResourceUri(workFlowGuid, ResourceUriType.PreviousPage, causalityReportResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
         }
     }
 }
