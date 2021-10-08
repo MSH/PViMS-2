@@ -102,8 +102,6 @@ namespace PVIMS.API.MapperProfiles
             CreateMap<AdverseEventAnnualList, AdverseEventFrequencyReportDto>()
                 .ForMember(dest => dest.PeriodDisplay, opt => opt.MapFrom(src => src.PeriodYear != null ? $"Year {src.PeriodYear}" : ""))
                 .ForMember(dest => dest.SystemOrganClass, opt => opt.MapFrom(src => src.MedDraTerm)); ;
-            CreateMap<PatientOnStudyList, PatientTreatmentReportDto>()
-                .ForMember(dest => dest.EventPercentage, opt => opt.MapFrom(src => src.PatientCount > 0 ? Math.Round(((decimal)(src.PatientWithEventCount * 100.00) / (decimal)src.PatientCount), 2) : 0));
             CreateMap<DrugList, PatientMedicationReportDto>();
 
             CreateMap<PatientStatusHistory, PatientStatusDto>()

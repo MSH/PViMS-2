@@ -9,6 +9,12 @@ namespace PVIMS.API.Models
     public class CausalityReportDto : LinkedResourceBaseDto
     {
         /// <summary>
+        /// The unique id of the patient with the causality status
+        /// </summary>
+        [DataMember]
+        public string PatientId { get; set; }
+
+        /// <summary>
         /// The first name of the patient with the causality status
         /// </summary>
         [DataMember]

@@ -1,4 +1,6 @@
 ﻿using Autofac;
+using PVIMS.API.Application.Queries.AppointmentAggregate;
+using PVIMS.API.Application.Queries.PatientAggregate;
 using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Application.Queries.WorkFlowAggregate;
 using PVIMS.Core.Repositories;
@@ -23,6 +25,14 @@ namespace PVIMS.API.Infrastructure.AutofacModules
         {
             builder.RegisterType<TypeExtensionHandler>()
                 .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
+
+            builder.Register(c => new AppointmentQueries(QueriesConnectionString))
+                .As<IAppointmentQueries>()
+                .InstancePerLifetimeScope();
+
+            builder.Register(c => new PatientQueries(QueriesConnectionString))
+                .As<IPatientQueries>()
                 .InstancePerLifetimeScope();
 
             builder.Register(c => new ReportInstanceQueries(QueriesConnectionString))

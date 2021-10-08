@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Routing;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models.Parameters;
 using PVIMS.API.Models.ValueTypes;
+using PVIMS.Core.ValueTypes;
 using System;
 
 namespace PVIMS.API.Infrastructure.Services
@@ -326,7 +327,10 @@ namespace PVIMS.API.Infrastructure.Services
 
         public string CreateCausalityReportResourceUri(Guid workFlowGuid, 
             ResourceUriType type,
-            CausalityReportResourceParameters causalityReportResourceParameters)
+            int pageNumber,
+            int pageSize,
+            int facilityId,
+            CausalityCriteria causalityCriteria)
         {
             switch (type)
             {
@@ -335,20 +339,20 @@ namespace PVIMS.API.Infrastructure.Services
                       new
                       {
                           workFlowGuid,
-                          pageNumber = causalityReportResourceParameters.PageNumber - 1,
-                          pageSize = causalityReportResourceParameters.PageSize,
-                          FacilityId = causalityReportResourceParameters.FacilityId,
-                          CausalityCriteria = causalityReportResourceParameters.CausalityCriteria
+                          pageNumber = pageNumber - 1,
+                          pageSize = pageSize,
+                          FacilityId = facilityId,
+                          CausalityCriteria = causalityCriteria
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetCausalityReport",
                       new
                       {
                           workFlowGuid,
-                          pageNumber = causalityReportResourceParameters.PageNumber + 1,
-                          pageSize = causalityReportResourceParameters.PageSize,
-                          FacilityId = causalityReportResourceParameters.FacilityId,
-                          CausalityCriteria = causalityReportResourceParameters.CausalityCriteria
+                          pageNumber = pageNumber + 1,
+                          pageSize = pageSize,
+                          FacilityId = facilityId,
+                          CausalityCriteria = causalityCriteria
                       });
                 case ResourceUriType.Current:
                 default:
@@ -356,10 +360,10 @@ namespace PVIMS.API.Infrastructure.Services
                       new
                       {
                           workFlowGuid,
-                          pageNumber = causalityReportResourceParameters.PageNumber,
-                          pageSize = causalityReportResourceParameters.PageSize,
-                          FacilityId = causalityReportResourceParameters.FacilityId,
-                          CausalityCriteria = causalityReportResourceParameters.CausalityCriteria
+                          pageNumber = pageNumber,
+                          pageSize = pageSize,
+                          FacilityId = facilityId,
+                          CausalityCriteria = causalityCriteria
                       });
             }
         }
@@ -573,7 +577,8 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreateOutstandingVisitReportResourceUri(ResourceUriType type,
-           OutstandingVisitResourceParameters outstandingVisitResourceParameters)
+            int pageNumber,
+            int pageSize)
         {
             switch (type)
             {
@@ -581,23 +586,23 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetOutstandingVisitReport",
                       new
                       {
-                          pageNumber = outstandingVisitResourceParameters.PageNumber - 1,
-                          pageSize = outstandingVisitResourceParameters.PageSize
+                          pageNumber = pageNumber - 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetOutstandingVisitReport",
                       new
                       {
-                          pageNumber = outstandingVisitResourceParameters.PageNumber + 1,
-                          pageSize = outstandingVisitResourceParameters.PageSize
+                          pageNumber = pageNumber + 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetOutstandingVisitReport",
                       new
                       {
-                          pageNumber = outstandingVisitResourceParameters.PageNumber,
-                          pageSize = outstandingVisitResourceParameters.PageSize
+                          pageNumber = pageNumber,
+                          pageSize = pageSize
                       });
             }
         }
@@ -681,7 +686,9 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreatePatientTreatmentReportResourceUri(ResourceUriType type,
-           PatientTreatmentReportResourceParameters patientTreatmentReportResourceParameters)
+            int pageNumber,
+            int pageSize,
+            PatientOnStudyCriteria patientOnStudyCriteria)
         {
             switch (type)
             {
@@ -689,26 +696,26 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetPatientTreatmentReport",
                       new
                       {
-                          pageNumber = patientTreatmentReportResourceParameters.PageNumber - 1,
-                          pageSize = patientTreatmentReportResourceParameters.PageSize,
-                          PatientOnStudyCriteria = patientTreatmentReportResourceParameters.PatientOnStudyCriteria
+                          pageNumber = pageNumber - 1,
+                          pageSize = pageSize,
+                          PatientOnStudyCriteria = patientOnStudyCriteria
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetPatientTreatmentReport",
                       new
                       {
-                          pageNumber = patientTreatmentReportResourceParameters.PageNumber + 1,
-                          pageSize = patientTreatmentReportResourceParameters.PageSize,
-                          PatientOnStudyCriteria = patientTreatmentReportResourceParameters.PatientOnStudyCriteria
+                          pageNumber = pageNumber + 1,
+                          pageSize = pageSize,
+                          PatientOnStudyCriteria = patientOnStudyCriteria
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetPatientTreatmentReport",
                       new
                       {
-                          pageNumber = patientTreatmentReportResourceParameters.PageNumber,
-                          pageSize = patientTreatmentReportResourceParameters.PageSize,
-                          PatientOnStudyCriteria = patientTreatmentReportResourceParameters.PatientOnStudyCriteria
+                          pageNumber = pageNumber,
+                          pageSize = pageSize,
+                          PatientOnStudyCriteria = patientOnStudyCriteria
                       });
             }
         }

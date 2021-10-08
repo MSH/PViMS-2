@@ -4,13 +4,13 @@ using System.Runtime.Serialization;
 namespace PVIMS.API.Models
 {
     /// <summary>
-    /// A dto representing the output for a patient on treatment report
+    /// A activity history value representation containing audit details of all activities
     /// </summary>
     [DataContract()]
-    public class PatientTreatmentReportDto : LinkedResourceBaseDto
+    public class PatientsOnTreatmentDto : LinkedResourceBaseDto
     {
         /// <summary>
-        /// The unique identifier for the facility
+        /// The unique id of the facility
         /// </summary>
         [DataMember]
         public int FacilityId { get; set; }
@@ -22,25 +22,25 @@ namespace PVIMS.API.Models
         public string FacilityName { get; set; }
 
         /// <summary>
-        /// The total number of patients
+        /// Number of patients enrolled at this facility
         /// </summary>
         [DataMember]
         public int PatientCount { get; set; }
 
         /// <summary>
-        /// The total number of patients with a non serious event
+        /// Number of patients with a non serious event
         /// </summary>
         [DataMember]
         public int PatientWithNonSeriousEventCount { get; set; }
 
         /// <summary>
-        /// The total number of patients with a serious event
+        /// Number of patients with a serious event
         /// </summary>
         [DataMember]
         public int PatientWithSeriousEventCount { get; set; }
 
         /// <summary>
-        /// The total number of patients with an event
+        /// Number of patients with an event
         /// </summary>
         [DataMember]
         public int PatientWithEventCount { get; set; }
@@ -57,5 +57,4 @@ namespace PVIMS.API.Models
         [DataMember]
         public List<PatientListDto> Patients { get; set; }
     }
-
 }

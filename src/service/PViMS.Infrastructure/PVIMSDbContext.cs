@@ -127,14 +127,12 @@ namespace PVIMS.Infrastructure
         public DbSet<AdverseEventAnnualList> AdverseEventAnnualLists { get; set; }
         public DbSet<AdverseEventQuarterlyList> AdverseEventQuarterlyLists { get; set; }
         public DbSet<AppointmentList> AppointmentLists { get; set; }
-        public DbSet<CausalityNotSetList> CausalityNotSetLists { get; set; }
         public DbSet<ContingencyAnalysisItem> ContingencyAnalysisItems { get; set; }
         public DbSet<ContingencyAnalysisList> ContingencyAnalysisLists { get; set; }
         public DbSet<ContingencyAnalysisPatient> ContingencyAnalysisPatients { get; set; }
         public DbSet<DrugList> DrugLists { get; set; }
         public DbSet<EncounterList> EncounterLists { get; set; }
         public DbSet<MetaPatientList> MetaPatientLists { get; set; }
-        public DbSet<OutstandingVisitList> OutstandingVisitLists { get; set; }
         public DbSet<PatientIdList> PatientIdLists { get; set; }
         public DbSet<PatientList> PatientLists { get; set; }
         public DbSet<PatientOnStudyList> PatientOnStudyLists { get; set; }
@@ -165,7 +163,6 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new AttachmentTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AuditLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CareEventEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new CausalityNotSetListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CohortGroupEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CohortGroupEnrolmentEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ConceptEntityTypeConfiguration());
@@ -231,7 +228,6 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new OrgUnitEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new OrgUnitTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new OutcomeEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new OutstandingVisitListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientClinicalEventEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientConditionEntityTypeConfiguration());
@@ -289,7 +285,7 @@ namespace PVIMS.Infrastructure
                     {
                         User currentUser = null;
 
-                        var userName = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier).Value;
+                        var userName = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                         currentUser = String.IsNullOrWhiteSpace(userName) ? Users.SingleOrDefault(u => u.UserName == "Admin") : Users.SingleOrDefault(u => u.UserName == userName);
 
                         changedAuditedEntity.AuditStamp(currentUser);

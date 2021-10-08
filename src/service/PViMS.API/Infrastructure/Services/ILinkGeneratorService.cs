@@ -1,6 +1,7 @@
 ﻿using PVIMS.API.Helpers;
 using PVIMS.API.Models.Parameters;
 using PVIMS.API.Models.ValueTypes;
+using PVIMS.Core.ValueTypes;
 using System;
 
 namespace PVIMS.API.Infrastructure.Services
@@ -27,7 +28,7 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateAuditLogsResourceUri(ResourceUriType type, AuditLogResourceParameters auditLogResourceParameters);
 
-        string CreateCausalityReportResourceUri(Guid workFlowGuid, ResourceUriType type, CausalityReportResourceParameters causalityReportResourceParameters);
+        string CreateCausalityReportResourceUri(Guid workFlowGuid, ResourceUriType type, int pageNumber, int pageSize, int facilityId, CausalityCriteria causalityCriteria);
 
         string CreateConceptsResourceUri(ResourceUriType type, string orderBy, string searchTerm, YesNoBothValueType active, int pageNumber, int pageSize);
 
@@ -53,7 +54,7 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateNewEnrolmentForPatientResourceUri(long patientId);
 
-        string CreateOutstandingVisitReportResourceUri(ResourceUriType type, OutstandingVisitResourceParameters outstandingVisitResourceParameters);
+        string CreateOutstandingVisitReportResourceUri(ResourceUriType type, int pageNumber, int pageSize);
 
         string CreatePatientAppointmentResourceUri(long patientId, long resourceId);
 
@@ -61,7 +62,7 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreatePatientMedicationReportResourceUri(ResourceUriType type, PatientMedicationReportResourceParameters patientMedicationReportResourceParameters);
 
-        string CreatePatientTreatmentReportResourceUri(ResourceUriType type, PatientTreatmentReportResourceParameters patientTreatmentReportResourceParameters);
+        string CreatePatientTreatmentReportResourceUri(ResourceUriType type, int pageNumber, int pageSize, PatientOnStudyCriteria patientOnStudyCriteria);
 
         string CreateProductsResourceUri(ResourceUriType type, ProductResourceParameters productResourceParameters);
 

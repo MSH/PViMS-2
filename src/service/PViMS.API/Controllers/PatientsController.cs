@@ -446,7 +446,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.patienttreatmentreport.v1+json", "application/vnd.pvims.patienttreatmentreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<PatientTreatmentReportDto>> GetPatientTreatmentReport(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<PatientsOnTreatmentDto>>> GetPatientTreatmentReport(
                         [FromQuery] PatientTreatmentReportResourceParameters patientTreatmentReportResourceParameters)
         {
             if (patientTreatmentReportResourceParameters == null)
@@ -455,16 +455,34 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var mappedResults = GetPatientTreatmentResults<PatientTreatmentReportDto>(patientTreatmentReportResourceParameters);
+            var query = new PatientTreatmentReportQuery(patientTreatmentReportResourceParameters.PageNumber, 
+                patientTreatmentReportResourceParameters.PageSize, 
+                patientTreatmentReportResourceParameters.SearchFrom, 
+                patientTreatmentReportResourceParameters.SearchTo,
+                patientTreatmentReportResourceParameters.PatientOnStudyCriteria);
 
-            // Add custom mappings to patients
-            mappedResults.ForEach(dto => CustomPatientTreatmentReportMap(dto, patientTreatmentReportResourceParameters));
+            _logger.LogInformation("----- Sending query: PatientTreatmentReportQuery");
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<PatientTreatmentReportDto>(mappedResults.TotalCount, mappedResults);
-            var wrapperWithLinks = CreateLinksForPatientTreatmentReport(wrapper, patientTreatmentReportResourceParameters,
-                mappedResults.HasNext, mappedResults.HasPrevious);
+            var queryResult = await _mediator.Send(query);
 
-            return Ok(wrapperWithLinks);
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            //var paginationMetadata = new
+            //{
+            //    totalCount = pagedResults.TotalCount,
+            //    pageSize = pagedResults.PageSize,
+            //    currentPage = pagedResults.CurrentPage,
+            //    totalPages = pagedResults.TotalPages,
+            //};
+
+            //Response.Headers.Add("X-Pagination",
+            //    JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -1101,43 +1119,6 @@ namespace PVIMS.API.Controllers
         /// Prepare HATEOAS links for a identifier based collection resource
         /// </summary>
         /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="patientTreatmentReportResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForPatientTreatmentReport(
-            LinkedResourceBaseDto wrapper,
-            PatientTreatmentReportResourceParameters patientTreatmentReportResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreatePatientTreatmentReportResourceUri(ResourceUriType.Current, patientTreatmentReportResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreatePatientTreatmentReportResourceUri(ResourceUriType.NextPage, patientTreatmentReportResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreatePatientTreatmentReportResourceUri(ResourceUriType.PreviousPage, patientTreatmentReportResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
         /// <param name="adverseEventReportResourceParameters">Standard parameters for representing resource</param>
         /// <param name="hasNext">Are there additional pages</param>
         /// <param name="hasPrevious">Are there previous pages</param>
@@ -1273,19 +1254,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <param name="patientTreatmentReportResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PatientTreatmentReportDto CustomPatientTreatmentReportMap(PatientTreatmentReportDto dto, PatientTreatmentReportResourceParameters patientTreatmentReportResourceParameters)
-        {
-            dto.Patients = _mapper.Map<List<PatientListDto>>(_reportService.GetPatientListOnStudyItems(patientTreatmentReportResourceParameters.SearchFrom, patientTreatmentReportResourceParameters.SearchTo, patientTreatmentReportResourceParameters.PatientOnStudyCriteria, dto.FacilityId));
-
-            return dto;
-        }
-
-        /// <summary>
         /// Get results from repository and auto map to Dto
         /// </summary>
         /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
@@ -1392,51 +1360,6 @@ namespace PVIMS.API.Controllers
             var resultsFromService = PagedCollection<AdverseEventAnnualList>.Create(_reportService.GetAdverseEventAnnualItems(
                 baseReportResourceParameters.SearchFrom,
                 baseReportResourceParameters.SearchTo), pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (resultsFromService != null)
-            {
-                // Map EF entity to Dto
-                var mappedResults = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(resultsFromService),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    resultsFromService.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedResults.TotalCount,
-                    pageSize = mappedResults.PageSize,
-                    currentPage = mappedResults.CurrentPage,
-                    totalPages = mappedResults.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                return mappedResults;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get results from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="patientTreatmentReportResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetPatientTreatmentResults<T>(PatientTreatmentReportResourceParameters patientTreatmentReportResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = patientTreatmentReportResourceParameters.PageNumber,
-                PageSize = patientTreatmentReportResourceParameters.PageSize
-            };
-
-            var resultsFromService = PagedCollection<PatientOnStudyList>.Create(_reportService.GetPatientOnStudyItems(
-                patientTreatmentReportResourceParameters.SearchFrom,
-                patientTreatmentReportResourceParameters.SearchTo,
-                patientTreatmentReportResourceParameters.PatientOnStudyCriteria), pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (resultsFromService != null)
             {
