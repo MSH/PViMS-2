@@ -12,9 +12,6 @@ namespace PVIMS.API.MapperProfiles
     {
         public ReportInstanceProfile()
         {
-            CreateMap<CausalityNotSetList, CausalityReportDto>()
-                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Surname));
-
             CreateMap<ReportInstance, ReportInstanceIdentifierDto>();
             CreateMap<ReportInstance, ReportInstanceDetailDto>()
                 .ForMember(dest => dest.CreatedDetail, opt => opt.MapFrom(src => src.Created))

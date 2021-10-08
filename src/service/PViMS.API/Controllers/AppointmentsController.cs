@@ -205,7 +205,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.outstandingvisitreport.v1+json", "application/vnd.pvims.outstandingvisitreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<OutstandingVisitReportDto>> GetOutstandingVisitReport(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<OutstandingVisitReportDto>>> GetOutstandingVisitReport(
                         [FromQuery] OutstandingVisitResourceParameters outstandingVisitResourceParameters)
         {
             if (outstandingVisitResourceParameters == null)
@@ -214,16 +214,34 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var mappedResults = GetOutstandingVisitResults<OutstandingVisitReportDto>(outstandingVisitResourceParameters);
+            var query = new OutstandingVisitReportQuery(outstandingVisitResourceParameters.PageNumber,
+                outstandingVisitResourceParameters.PageSize,
+                outstandingVisitResourceParameters.SearchFrom,
+                outstandingVisitResourceParameters.SearchTo,
+                outstandingVisitResourceParameters.FacilityId);
 
-            // Add custom mappings to appointments
-            mappedResults.ForEach(dto => CustomAppointmentMap(dto));
+            _logger.LogInformation("----- Sending query: OutstandingVisitReportQuery");
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<OutstandingVisitReportDto>(mappedResults.TotalCount, mappedResults);
-            var wrapperWithLinks = CreateLinksForOutstandingVisitReport(wrapper, outstandingVisitResourceParameters,
-                mappedResults.HasNext, mappedResults.HasPrevious);
+            var queryResult = await _mediator.Send(query);
 
-            return Ok(wrapperWithLinks);
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            //var paginationMetadata = new
+            //{
+            //    totalCount = pagedResults.TotalCount,
+            //    pageSize = pagedResults.PageSize,
+            //    currentPage = pagedResults.CurrentPage,
+            //    totalPages = pagedResults.TotalPages,
+            //};
+
+            //Response.Headers.Add("X-Pagination",
+            //    JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -439,51 +457,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Get patients from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="outstandingVisitResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetOutstandingVisitResults<T>(OutstandingVisitResourceParameters outstandingVisitResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = outstandingVisitResourceParameters.PageNumber,
-                PageSize = outstandingVisitResourceParameters.PageSize
-            };
-
-            var resultsFromService = PagedCollection<OutstandingVisitList>.Create(_reportService.GetOutstandingVisitItems(
-                outstandingVisitResourceParameters.SearchFrom, 
-                outstandingVisitResourceParameters.SearchTo, 
-                outstandingVisitResourceParameters.FacilityId), pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (resultsFromService != null)
-            {
-                // Map EF entity to Dto
-                var mappedResults = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(resultsFromService),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    resultsFromService.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedResults.TotalCount,
-                    pageSize = mappedResults.PageSize,
-                    currentPage = mappedResults.CurrentPage,
-                    totalPages = mappedResults.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                return mappedResults;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Prepare HATEOAS links for a identifier based collection resource
         /// </summary>
         /// <param name="wrapper">The linked dto wrapper that will host each link</param>
@@ -552,43 +525,6 @@ namespace PVIMS.API.Controllers
             dto.Facility = patient.CurrentFacility?.Facility.DisplayName;
 
             return dto;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="outstandingVisitResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForOutstandingVisitReport(
-            LinkedResourceBaseDto wrapper,
-            OutstandingVisitResourceParameters outstandingVisitResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateOutstandingVisitReportResourceUri(ResourceUriType.Current, outstandingVisitResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateOutstandingVisitReportResourceUri(ResourceUriType.NextPage, outstandingVisitResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateOutstandingVisitReportResourceUri(ResourceUriType.PreviousPage, outstandingVisitResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
         }
     }
 }

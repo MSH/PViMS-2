@@ -9,10 +9,6 @@ namespace PVIMS.API.MapperProfiles
     {
         public AppointmentProfile()
         {
-            CreateMap<OutstandingVisitList, OutstandingVisitReportDto>()
-                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Surname))
-                .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.Patient_Id));
-
             CreateMap<Appointment, AppointmentIdentifierDto>()
                 .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.PatientId))
                 .ForMember(dest => dest.AppointmentDate, opt => opt.MapFrom(src => src.AppointmentDate.ToString("yyyy-MM-dd")));
