@@ -230,16 +230,16 @@ namespace PVIMS.API.Controllers
             }
 
             // Prepare pagination data for response
-            //var paginationMetadata = new
-            //{
-            //    totalCount = pagedResults.TotalCount,
-            //    pageSize = pagedResults.PageSize,
-            //    currentPage = pagedResults.CurrentPage,
-            //    totalPages = pagedResults.TotalPages,
-            //};
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = outstandingVisitResourceParameters.PageSize,
+                currentPage = outstandingVisitResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
 
-            //Response.Headers.Add("X-Pagination",
-            //    JsonConvert.SerializeObject(paginationMetadata));
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
 
             return Ok(queryResult);
         }
