@@ -4,12 +4,8 @@
 
 <mat-card class="p-0">
   <mat-card-title class="">
-      <div class="card-title-text" *ngIf="frequencyType=='Quarterly'">
-        {{'Quarterly Adverse Event Report' | translate}} | 
-        <small>({{'Meta data last refreshed' | translate }} : {{metaDate}})</small>
-      </div>
-      <div class="card-title-text" *ngIf="frequencyType=='Annual'">
-        {{'Annual Adverse Event Report' | translate}} | 
+      <div class="card-title-text">
+        {{'Adverse Event By System Organ Class Report' | translate}} | 
         <small>({{'Meta data last refreshed' | translate }} : {{metaDate}})</small>
       </div>
   </mat-card-title>
@@ -18,7 +14,15 @@
     <form [formGroup]="viewModelForm">
       <div class="p-0 default-light-bg rounded">
         <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start">
-          <div fxFlex="24" class="pr-1">
+          <div fxFlex="30" class="pr-1">
+            <mat-form-field class="p-8 full-width">
+              <mat-select formControlName="criteriaId" placeholder="{{'Frequency' | translate}}" required>
+                <mat-option value="1">{{'Annual' | translate}}</mat-option>
+                <mat-option value="2">{{'Quarterly' | translate}}</mat-option>
+              </mat-select>                        
+            </mat-form-field>
+          </div>
+          <div fxFlex="30" class="pr-1">
             <mat-form-field class="p-8 full-width">
               <input matInput formControlName="searchFrom" placeholder="{{'Search from' | translate }}" [matDatepicker]="searchFromDatepicker" required>
               <mat-datepicker-toggle matSuffix [for]="searchFromDatepicker"></mat-datepicker-toggle>
@@ -28,7 +32,7 @@
             </mat-form-field>
             <mat-datepicker #searchFromDatepicker></mat-datepicker>
           </div>
-          <div fxFlex="24" class="pr-1">
+          <div fxFlex="30" class="pr-1">
             <mat-form-field class="p-8 full-width">
               <input matInput formControlName="searchTo" placeholder="{{'Search to' | translate }}" [matDatepicker]="searchToDatepicker" required>
               <mat-datepicker-toggle matSuffix [for]="searchToDatepicker"></mat-datepicker-toggle>

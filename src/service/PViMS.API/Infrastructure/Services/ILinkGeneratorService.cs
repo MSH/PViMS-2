@@ -10,7 +10,7 @@ namespace PVIMS.API.Infrastructure.Services
     {
         string CreateIdResourceUriForWrapper(ResourceUriType type, string actionName, string orderBy, int pageNumber, int pageSize);
 
-        string CreateReportResourceUriForWrapper(ResourceUriType type, string actionName, BaseReportResourceParameters baseReportResourceParameters);
+        string CreateReportResourceUriForWrapper(ResourceUriType type, string actionName, int pageNumber, int pageSize);
 
         string CreateResourceUri(string resourceName, long resourceId);
 

@@ -59,7 +59,8 @@ namespace PVIMS.API.Infrastructure.Services
 
         public string CreateReportResourceUriForWrapper(ResourceUriType type,
             string actionName,
-           BaseReportResourceParameters baseReportResourceParameters)
+            int pageNumber,
+            int pageSize)
         {
             switch (type)
             {
@@ -67,23 +68,23 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, actionName,
                       new
                       {
-                          pageNumber = baseReportResourceParameters.PageNumber - 1,
-                          pageSize = baseReportResourceParameters.PageSize
+                          pageNumber = pageNumber - 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, actionName,
                       new
                       {
-                          pageNumber = baseReportResourceParameters.PageNumber + 1,
-                          pageSize = baseReportResourceParameters.PageSize
+                          pageNumber = pageNumber + 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, actionName,
                       new
                       {
-                          pageNumber = baseReportResourceParameters.PageNumber,
-                          pageSize = baseReportResourceParameters.PageSize
+                          pageNumber = pageNumber,
+                          pageSize = pageSize
                       });
             }
         }

@@ -37,10 +37,9 @@ export const ReportRoutes: Routes = [
       data: { title: 'Patients by Drug Report', breadcrumb: 'Patients by Drug Report' }
     },
     {
-      path: 'system/adverseeventfrequency/:frequency',
+      path: 'system/adverseeventfrequency',
       component: AdverseEventFrequencyComponent,
-      data: { title: 'Adverse Event Frequency Report', breadcrumb: 'Reports' },
-      runGuardsAndResolvers: 'always'
+      data: { title: 'Adverse Event By Class Report', breadcrumb: 'Adverse Event By Class Report' },
     },
     {
       path: 'reportlist',

@@ -124,8 +124,6 @@ namespace PVIMS.Infrastructure
 
         // Database keyless entities
         public DbSet<AdverseEventList> AdverseEventLists { get; set; }
-        public DbSet<AdverseEventAnnualList> AdverseEventAnnualLists { get; set; }
-        public DbSet<AdverseEventQuarterlyList> AdverseEventQuarterlyLists { get; set; }
         public DbSet<AppointmentList> AppointmentLists { get; set; }
         public DbSet<ContingencyAnalysisItem> ContingencyAnalysisItems { get; set; }
         public DbSet<ContingencyAnalysisList> ContingencyAnalysisLists { get; set; }
@@ -154,9 +152,7 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new ActivityExecutionStatusEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ActivityExecutionStatusEventEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ActivityInstanceEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new AdverseEventAnnualListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AdverseEventListViewTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new AdverseEventQuarterlyListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AppointmentEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AppointmentListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AttachmentEntityTypeConfiguration());

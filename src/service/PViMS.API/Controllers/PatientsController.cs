@@ -369,67 +369,56 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Quarterly adverse event report
+        /// Adverse event frequency report
         /// </summary>
-        /// <param name="baseReportResourceParameters">
+        /// <param name="adverseEventFrequencyReportResourceParameters">
         /// Specify paging and filtering information (including requested page number and page size)
         /// </param>
         /// <returns>An ActionResult of type AdverseEventFrequencyReportDto</returns>
-        [HttpGet(Name = "GetAdverseEventQuarterlyReport")]
+        [HttpGet(Name = "GetAdverseEventFrequencyReport")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Produces("application/vnd.pvims.quarterlyadverseventreport.v1+json", "application/vnd.pvims.quarterlyadverseventreport.v1+xml")]
+        [Produces("application/vnd.pvims.adverseventfrequencyreport.v1+json", "application/vnd.pvims.adverseventfrequencyreport.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
-            "application/vnd.pvims.quarterlyadverseventreport.v1+json", "application/vnd.pvims.quarterlyadverseventreport.v1+xml")]
+            "application/vnd.pvims.adverseventfrequencyreport.v1+json", "application/vnd.pvims.adverseventfrequencyreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<AdverseEventFrequencyReportDto>> GetAdverseEventQuarterlyReport(
-                        [FromQuery] BaseReportResourceParameters baseReportResourceParameters)
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<AdverseEventFrequencyReportDto>>> GetAdverseEventFrequencyReport(
+                        [FromQuery] AdverseEventFrequencyReportResourceParameters adverseEventFrequencyReportResourceParameters)
         {
-            if (baseReportResourceParameters == null)
+            if (adverseEventFrequencyReportResourceParameters == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate filter parameters payload");
                 return BadRequest(ModelState);
             }
 
-            var mappedResults = GetQuarterlyAdverseEventResults<AdverseEventFrequencyReportDto>(baseReportResourceParameters);
+            var query = new AdverseEventFrequencyReportQuery(adverseEventFrequencyReportResourceParameters.PageNumber,
+                adverseEventFrequencyReportResourceParameters.PageSize,
+                adverseEventFrequencyReportResourceParameters.SearchFrom,
+                adverseEventFrequencyReportResourceParameters.SearchTo,
+                adverseEventFrequencyReportResourceParameters.FrequencyCriteria);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<AdverseEventFrequencyReportDto>(mappedResults.TotalCount, mappedResults);
-            var wrapperWithLinks = CreateLinksForQuarterlyAdverseEventReport(wrapper, baseReportResourceParameters,
-                mappedResults.HasNext, mappedResults.HasPrevious);
+            _logger.LogInformation("----- Sending query: AdverseEventFrequencyReportQuery");
 
-            return Ok(wrapperWithLinks);
-        }
+            var queryResult = await _mediator.Send(query);
 
-        /// <summary>
-        /// Annual adverse event report
-        /// </summary>
-        /// <param name="baseReportResourceParameters">
-        /// Specify paging and filtering information (including requested page number and page size)
-        /// </param>
-        /// <returns>An ActionResult of type AdverseEventFrequencyReportDto</returns>
-        [HttpGet(Name = "GetAdverseEventAnnualReport")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Produces("application/vnd.pvims.annualadverseventreport.v1+json", "application/vnd.pvims.annualadverseventreport.v1+xml")]
-        [RequestHeaderMatchesMediaType("Accept",
-            "application/vnd.pvims.annualadverseventreport.v1+json", "application/vnd.pvims.annualadverseventreport.v1+xml")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<AdverseEventFrequencyReportDto>> GetAdverseEventAnnualReport(
-                        [FromQuery] BaseReportResourceParameters baseReportResourceParameters)
-        {
-            if (baseReportResourceParameters == null)
+            if (queryResult == null)
             {
-                ModelState.AddModelError("Message", "Unable to locate filter parameters payload");
-                return BadRequest(ModelState);
+                return BadRequest("Query not created");
             }
 
-            var mappedResults = GetAnnualAdverseEventResults<AdverseEventFrequencyReportDto>(baseReportResourceParameters);
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = adverseEventFrequencyReportResourceParameters.PageSize,
+                currentPage = adverseEventFrequencyReportResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<AdverseEventFrequencyReportDto>(mappedResults.TotalCount, mappedResults);
-            var wrapperWithLinks = CreateLinksForAnnualAdverseEventReport(wrapper, baseReportResourceParameters,
-                mappedResults.HasNext, mappedResults.HasPrevious);
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
 
-            return Ok(wrapperWithLinks);
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -471,16 +460,16 @@ namespace PVIMS.API.Controllers
             }
 
             // Prepare pagination data for response
-            //var paginationMetadata = new
-            //{
-            //    totalCount = pagedResults.TotalCount,
-            //    pageSize = pagedResults.PageSize,
-            //    currentPage = pagedResults.CurrentPage,
-            //    totalPages = pagedResults.TotalPages,
-            //};
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = patientTreatmentReportResourceParameters.PageSize,
+                currentPage = patientTreatmentReportResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
 
-            //Response.Headers.Add("X-Pagination",
-            //    JsonConvert.SerializeObject(paginationMetadata));
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
 
             return Ok(queryResult);
         }
@@ -1153,80 +1142,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="baseReportResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForQuarterlyAdverseEventReport(
-            LinkedResourceBaseDto wrapper,
-            BaseReportResourceParameters baseReportResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.Current, "GetAdverseEventQuarterlyReport", baseReportResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.NextPage, "GetAdverseEventQuarterlyReport", baseReportResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.PreviousPage, "GetAdverseEventQuarterlyReport", baseReportResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="baseReportResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForAnnualAdverseEventReport(
-            LinkedResourceBaseDto wrapper,
-            BaseReportResourceParameters baseReportResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.Current, "GetAdverseEventAnnualReport", baseReportResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.NextPage, "GetAdverseEventAnnualReport", baseReportResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateReportResourceUriForWrapper(ResourceUriType.PreviousPage, "GetAdverseEventAnnualReport", baseReportResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        /// <summary>
         ///  Prepare HATEOAS links for a single resource
         /// </summary>
         /// <param name="patientId">The unique identifier of the parent resource</param>
@@ -1272,94 +1187,6 @@ namespace PVIMS.API.Controllers
                 adverseEventReportResourceParameters.SearchTo, 
                 adverseEventReportResourceParameters.AdverseEventCriteria,
                 adverseEventReportResourceParameters.AdverseEventStratifyCriteria), pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (resultsFromService != null)
-            {
-                // Map EF entity to Dto
-                var mappedResults = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(resultsFromService),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    resultsFromService.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedResults.TotalCount,
-                    pageSize = mappedResults.PageSize,
-                    currentPage = mappedResults.CurrentPage,
-                    totalPages = mappedResults.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                return mappedResults;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get results from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="baseReportResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetQuarterlyAdverseEventResults<T>(BaseReportResourceParameters baseReportResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = baseReportResourceParameters.PageNumber,
-                PageSize = baseReportResourceParameters.PageSize
-            };
-
-            var resultsFromService = PagedCollection<AdverseEventQuarterlyList>.Create(_reportService.GetAdverseEventQuarterlyItems(
-                baseReportResourceParameters.SearchFrom,
-                baseReportResourceParameters.SearchTo), pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (resultsFromService != null)
-            {
-                // Map EF entity to Dto
-                var mappedResults = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(resultsFromService),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    resultsFromService.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedResults.TotalCount,
-                    pageSize = mappedResults.PageSize,
-                    currentPage = mappedResults.CurrentPage,
-                    totalPages = mappedResults.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                return mappedResults;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get results from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="baseReportResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetAnnualAdverseEventResults<T>(BaseReportResourceParameters baseReportResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = baseReportResourceParameters.PageNumber,
-                PageSize = baseReportResourceParameters.PageSize
-            };
-
-            var resultsFromService = PagedCollection<AdverseEventAnnualList>.Create(_reportService.GetAdverseEventAnnualItems(
-                baseReportResourceParameters.SearchFrom,
-                baseReportResourceParameters.SearchTo), pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (resultsFromService != null)
             {

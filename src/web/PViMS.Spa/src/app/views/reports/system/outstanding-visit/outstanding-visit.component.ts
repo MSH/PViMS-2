@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, OnDestroy, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
@@ -29,8 +29,6 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './outstanding-visit.component.html',
-  styleUrls: ['./outstanding-visit.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class OutstandingVisitComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -127,7 +125,7 @@ export class OutstandingVisitComponent extends BaseComponent implements OnInit, 
 
   loadMetaDate(): void {
     let self = this;
-    self.configService.getConfigIdentifier(7)
+    self.configService.getConfigIdentifier(2)
       .subscribe(result => {
         self.metaDate = result.configValue
       });

@@ -96,12 +96,6 @@ namespace PVIMS.API.MapperProfiles
 
             CreateMap<AdverseEventList, AdverseEventReportDto>()
                 .ForMember(dest => dest.AdverseEvent, opt => opt.MapFrom(src => src.Description));
-            CreateMap<AdverseEventQuarterlyList, AdverseEventFrequencyReportDto>()
-                .ForMember(dest => dest.PeriodDisplay, opt => opt.MapFrom(src => src.PeriodQuarter != null ? $"Quarter {src.PeriodQuarter} ({src.PeriodYear})" : ""))
-                .ForMember(dest => dest.SystemOrganClass, opt => opt.MapFrom(src => src.MedDraTerm)); ;
-            CreateMap<AdverseEventAnnualList, AdverseEventFrequencyReportDto>()
-                .ForMember(dest => dest.PeriodDisplay, opt => opt.MapFrom(src => src.PeriodYear != null ? $"Year {src.PeriodYear}" : ""))
-                .ForMember(dest => dest.SystemOrganClass, opt => opt.MapFrom(src => src.MedDraTerm)); ;
             CreateMap<DrugList, PatientMedicationReportDto>();
 
             CreateMap<PatientStatusHistory, PatientStatusDto>()
