@@ -128,28 +128,18 @@ export class PatientService extends BaseService {
         return this.Get<AdverseEventReportWrapperModel>('/patients', 'application/vnd.pvims.adverseventreport.v1+json', parameters);
     }    
 
-    getAdverseEventQuarterlyReport(filterModel: any): any {
+    getAdverseEventFrequencyReport(filterModel: any): any {
         let parameters: ParameterKeyValueModel[] = [];
 
+        parameters.push(<ParameterKeyValueModel> { key: 'frequencyCriteria', value: filterModel.criteriaId == null ? 1 : filterModel.criteriaId });
         parameters.push(<ParameterKeyValueModel> { key: 'searchFrom', value: filterModel.searchFrom.format("YYYY-MM-DD") });
         parameters.push(<ParameterKeyValueModel> { key: 'searchTo', value: filterModel.searchTo.format("YYYY-MM-DD") });
         parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
         parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
 
-        return this.Get<AdverseEventFrequencyReportWrapperModel>('/patients', 'application/vnd.pvims.quarterlyadverseventreport.v1+json', parameters);
+        return this.Get<AdverseEventFrequencyReportWrapperModel>('/patients', 'application/vnd.pvims.adverseventfrequencyreport.v1+json', parameters);
     }    
 
-    getAdverseEventAnnualReport(filterModel: any): any {
-        let parameters: ParameterKeyValueModel[] = [];
-
-        parameters.push(<ParameterKeyValueModel> { key: 'searchFrom', value: filterModel.searchFrom.format("YYYY-MM-DD") });
-        parameters.push(<ParameterKeyValueModel> { key: 'searchTo', value: filterModel.searchTo.format("YYYY-MM-DD") });
-        parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
-        parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
-
-        return this.Get<AdverseEventFrequencyReportWrapperModel>('/patients', 'application/vnd.pvims.annualadverseventreport.v1+json', parameters);
-    }    
-    
     getPatientTreatmentReport(filterModel: any): any {
         let parameters: ParameterKeyValueModel[] = [];
 

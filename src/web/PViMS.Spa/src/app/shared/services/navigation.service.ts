@@ -430,8 +430,7 @@ export class NavigationService {
             sub: [
               { name: "Patients on Treatment", state: "system/patienttreatment" },
               { name: "Adverse Events", state: "system/adverseevent" },
-              { name: "Quarterly Adverse Events", state: "system/adverseeventfrequency", parameter: "Quarterly" },
-              { name: "Annual Adverse Events", state: "system/adverseeventfrequency", parameter: "Annual" },
+              { name: "Adverse Events by Class", state: "system/adverseeventfrequency" },
               { name: "Causality", state: "system/causality" },
               { name: "Patients by Drug", state: "system/patientsdrugreport" },
               { name: "Outstanding Visits", state: "system/outstandingvisit" }

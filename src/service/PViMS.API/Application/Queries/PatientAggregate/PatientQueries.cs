@@ -41,9 +41,10 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 						            ISNULL(mpce.SeverityGrade, '') AS SeverityGrade,
 						            COUNT(*) AS PatientCount
 					            FROM PatientClinicalEvent pce 
-						            INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
+						            INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
+                                    INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
 						            INNER JOIN Patient p ON pce.Patient_Id = p.Id
-						            INNER JOIN TerminologyMedDra t ON pce.SourceTerminologyMedDra_Id = t.Id
+						            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
 						            INNER JOIN TerminologyMedDra t2 ON t.Parent_Id = t2.Id
 						            INNER JOIN TerminologyMedDra t3 ON t2.Parent_Id = t3.Id
 						            INNER JOIN TerminologyMedDra t4 ON t3.Parent_Id = t4.Id
@@ -84,9 +85,10 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                                     ISNULL(mpce.SeverityGrade, '') AS SeverityGrade,
 			                        COUNT(*) AS PatientCount
 	                            FROM PatientClinicalEvent pce 
+                                    INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
                                     INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
 		                            INNER JOIN Patient p ON pce.Patient_Id = p.Id
-		                            INNER JOIN TerminologyMedDra t ON pce.SourceTerminologyMedDra_Id = t.Id
+		                            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
 		                            INNER JOIN TerminologyMedDra t2 ON t.Parent_Id = t2.Id
 		                            INNER JOIN TerminologyMedDra t3 ON t2.Parent_Id = t3.Id
 		                            INNER JOIN TerminologyMedDra t4 ON t3.Parent_Id = t4.Id

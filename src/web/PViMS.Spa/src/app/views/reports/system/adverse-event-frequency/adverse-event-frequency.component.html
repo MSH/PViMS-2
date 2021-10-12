@@ -43,6 +43,11 @@
             <mat-datepicker #searchToDatepicker></mat-datepicker>
           </div>
         </div>
+        <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="start" class="p-8">
+          <div class="light-mat-gray rounded p-24">
+            {{ 'Please note that the report uses the MedDra terminology set by the PV specialist ...' | translate }}
+          </div>
+        </div>
         <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="end" class="p-8">
           <button mat-raised-button color="primary" (click)="loadGrid()" [disabled]="viewModelForm.invalid">{{'Search' | translate }}</button>
         </div>
