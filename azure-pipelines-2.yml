@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- sprint/6
+- development
 
 name: $(Build.DefinitionName)-$(Year:yy).$(Month).$(DayOfYear)$(Rev:.rr)
 
