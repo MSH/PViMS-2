@@ -112,7 +112,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     self.thirdFormGroup = this._formBuilder.group({
       dateOfOnset: ['', Validators.required],
       regimen: [null, Validators.required],
-      sourceDescription: [null, [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
+      sourceDescription: [null, [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., '/\n/\r/\t/\s]*")]],
       isSerious: [null, Validators.required],
       seriousness: [null, Validators.required],
       classification: [null, Validators.required],
