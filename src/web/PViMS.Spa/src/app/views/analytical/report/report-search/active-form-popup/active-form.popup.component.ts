@@ -284,6 +284,7 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
     self.updateForm(self.firstFormGroup, {patientLastName: patientModel.lastName});
     self.updateForm(self.firstFormGroup, {gender: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Gender")});
     self.updateForm(self.firstFormGroup, {ethnicity: self.getValueOrSelectedValueFromAttribute(patientModel.patientAttributes, "Ethnic Group")});
+    self.updateForm(self.firstFormGroup, {facilityRegion: patientModel.organisationUnit});
   }
 
   private loadDataForThirdForm(clinicalEventModel: PatientClinicalEventExpandedModel) {

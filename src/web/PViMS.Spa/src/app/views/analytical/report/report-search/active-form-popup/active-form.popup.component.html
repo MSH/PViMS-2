@@ -70,13 +70,16 @@
                 </div>
                   
                 <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.75%" fxLayoutAlign="start start">
-                  <div fxFlex="45">
+                  <div fxFlex="90">
                     <mat-form-field class="p-8 full-width" appearance="fill">
                       <mat-label>{{'Facility' | translate}}</mat-label>
                       <input matInput formControlName="facilityName" readonly>
                     </mat-form-field>
                   </div>
-                  <div fxFlex="45">
+                </div>
+
+                <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.75%" fxLayoutAlign="start start">
+                  <div fxFlex="90">
                     <mat-form-field class="p-8 full-width" appearance="fill">
                       <mat-label>{{'Region' | translate}}</mat-label>
                       <input matInput formControlName="facilityRegion" readonly>
