@@ -43,10 +43,8 @@ export type ChartOptions = {
 @Component({
   templateUrl: './feedback-search.component.html',
   styles: [`
-    .mat-column-identifier { flex: 0 0 10% !important; width: 10% !important; }
     .mat-column-created { flex: 0 0 10% !important; width: 10% !important; }
     .mat-column-patient { flex: 0 0 10% !important; width: 10% !important; }
-    .mat-column-adverse-event { flex: 0 0 15% !important; width: 15% !important; }
     .mat-column-meddra-term { flex: 0 0 15% !important; width: 15% !important; }
     .mat-column-task-count { flex: 0 0 15% !important; width: 15% !important; }
     .mat-column-status { flex: 0 0 15% !important; width: 15% !important; }
@@ -157,11 +155,11 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
 
     switch(activity) { 
       case 'Confirm Report Data': { 
-        self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'task-count', 'status', 'actions'])
+        self.viewModel.mainGrid.updateDisplayedColumns(['created', 'patient', 'adverse-event', 'task-count', 'status', 'actions'])
         break; 
       } 
       case 'Set MedDRA and Causality': { 
-        self.viewModel.mainGrid.updateDisplayedColumns(['identifier', 'created', 'patient', 'adverse-event', 'meddra-term', 'status', 'actions'])
+        self.viewModel.mainGrid.updateDisplayedColumns(['created', 'patient', 'adverse-event', 'meddra-term', 'status', 'actions'])
          break; 
       } 
       default: { 
@@ -207,15 +205,16 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
         break;
 
       case "Term":
-        self.reportInstanceService.searchFeedbackInstanceByTerm(self.viewModel.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
+        self.reportInstanceService.searchReportInstanceByTerm(self.viewModel.workflowId, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-          self.CLog(result, 'feedback results by term');
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-          this.handleError(error, "Error searching for feedback instances by term");
+          this.handleError(error, "Error searching for report instances by term");
         });
+    
+        break;
     
         break;
     }    
@@ -232,6 +231,7 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
       })
       dialogRef.afterClosed()
         .subscribe(res => {
+          self.selectActivity('Confirm Report Data');
           return;
         })
     }
@@ -368,7 +368,7 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['created', 'identifier', 'patient', 'adverse-event', 'meddra-term', 'actions']);
+          (['created', 'patient', 'adverse-event', 'meddra-term', 'actions']);
 
   workflowId = '892F3305-7819-4F18-8A87-11CBA3AEE219';
   workFlow: WorkFlowDetailModel;
