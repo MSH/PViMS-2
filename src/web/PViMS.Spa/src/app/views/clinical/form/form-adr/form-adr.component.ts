@@ -355,8 +355,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
   saveFormOnline(): void {
     const self = this;
-
-    self.CLog('starting');
+    self.viewModel.saving = true;
     from(self.viewModel.medications).pipe(
       concatMap(medicationForUpdate => self.patientService.savePatientMedication(self.viewModel.patientId, medicationForUpdate.id, medicationForUpdate))
     ).pipe(
@@ -467,7 +466,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     const self = this;
     const requestArray = [];
 
-    self.CLog('saving meds complete');
     var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel();
     requestArray.push(this.patientService.savePatientClinicalEvent(self.viewModel.patientId, 0, clinicalEventForUpdate));
 
@@ -625,6 +623,7 @@ class ViewModel {
   isComplete = false;
   isSynched = false;
   connected: boolean = true;
+  saving: boolean = false;
 
   customAttributeKey = 'Case Number';
   customAttributeList: CustomAttributeDetailModel[] = [];
