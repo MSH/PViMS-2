@@ -10,9 +10,9 @@
             <mat-card-content class="m-1 p-5" style="height: 450px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
                 <div fxFlex="100" class="pr-1 mt-24">
-                  <mat-form-field class="full-width">
-                      <input matInput formControlName="sourceDescription" placeholder="{{'L_TEXT_7' | translate }}" required>
-                      <mat-hint>{{'Maximum length' | translate}} 250</mat-hint> 
+                  <mat-form-field class="full-width" appearance="outline">
+                      <textarea matInput formControlName="sourceDescription" rows="3" placeholder="{{'L_TEXT_7' | translate }}" required></textarea>
+                      <mat-hint>{{'Maximum length' | translate}} 500</mat-hint> 
                       <mat-error *ngIf="viewModelForm.get('sourceDescription').hasError('required')">
                         {{'This is a required field' | translate}}
                       </mat-error>            
@@ -20,7 +20,7 @@
                         {{'Maximum length exceeded' | translate}}
                       </mat-error>            
                       <mat-error *ngIf="viewModelForm.get('sourceDescription').hasError('pattern')">
-                        {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, hyphen, space, period, comma, parentheses, apostrophe)
+                        {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, parenthesis, forward slash, space, comma, period)
                       </mat-error>            
                   </mat-form-field>        
                 </div>
@@ -55,7 +55,7 @@
           <mat-tab label="{{'Detail Information' | translate}}">
             <mat-card-content class="m-1 p-5" style="height: 450px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" formGroupName="attributes">
-                <div fxFlex="50" class="pr-1 mt-24" *ngFor="let attribute of customAttributeList">
+                <div fxFlex="100" class="mt-24" *ngFor="let attribute of customAttributeList">
                   <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'String'">
                     <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" [required]="attribute.required">
                     <mat-hint *ngIf="attribute.stringMaxLength != null">

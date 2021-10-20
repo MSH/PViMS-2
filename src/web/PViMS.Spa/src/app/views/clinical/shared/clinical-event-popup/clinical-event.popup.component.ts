@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
@@ -25,7 +25,6 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './clinical-event.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class ClinicalEventPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
@@ -60,7 +59,7 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
 
     self.arrayAttributes = [];
     self.viewModelForm = this._formBuilder.group({
-      sourceDescription: ['', [Validators.required, Validators.maxLength(250), Validators.pattern("[-a-zA-Z .,()']*")]],
+      sourceDescription: ['', [Validators.required, Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9()/., '/\n/\r/\t/\s]*")]],
       sourceTerminologyMedDraId: [''],
       medDraTerm: [''],
       onsetDate: ['', Validators.required],
