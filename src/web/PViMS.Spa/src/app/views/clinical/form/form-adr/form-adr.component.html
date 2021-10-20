@@ -497,19 +497,11 @@
             <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
               <div fxFlex="50">
                 <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Date of recovery</mat-label>
+                  <mat-label>Date of outcome</mat-label>
                   <input matInput formControlName="dateOfRecovery" [matDatepicker]="recoveryDatepicker">
                   <mat-datepicker-toggle matSuffix [for]="recoveryDatepicker"></mat-datepicker-toggle>
                 </mat-form-field>
                 <mat-datepicker #recoveryDatepicker></mat-datepicker>
-              </div>
-              <div fxFlex="50">
-                <mat-form-field class="full-width" appearance="outline">
-                  <mat-label>Date of death</mat-label>
-                  <input matInput formControlName="dateOfDeath" [matDatepicker]="deathDatepicker">
-                  <mat-datepicker-toggle matSuffix [for]="deathDatepicker"></mat-datepicker-toggle>
-                </mat-form-field>
-                <mat-datepicker #deathDatepicker></mat-datepicker>
               </div>
             </div>                      
   

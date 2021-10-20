@@ -242,6 +242,7 @@
                                 <mat-option value="8">FQ resistant MDR TB (7a)</mat-option>
                                 <mat-option value="9">FQ resistant MDR TB (7b)</mat-option>
                                 <mat-option value="10">FQ resistant MDR TB (7c)</mat-option>
+                                <mat-option value="11">BPaL</mat-option>
                               </mat-select>
                               <mat-error *ngIf="thirdFormGroup.get('regimen').hasError('required')">
                                 Field is required
@@ -519,22 +520,11 @@
                     <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start">
                       <div fxFlex="95">
                         <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="outline">
-                          <mat-label>Date of recovery</mat-label>
+                          <mat-label>Date of outcome</mat-label>
                           <input matInput formControlName="dateOfRecovery" [matDatepicker]="recoveryDatepicker">
                           <mat-datepicker-toggle matSuffix [for]="recoveryDatepicker"></mat-datepicker-toggle>
                         </mat-form-field>
                         <mat-datepicker #recoveryDatepicker></mat-datepicker>
-                      </div>
-                    </div>
-
-                    <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start">
-                      <div fxFlex="95">
-                        <mat-form-field class="full-width pl-8 pr-8 mt-2" appearance="outline">
-                          <mat-label>Date of death</mat-label>
-                          <input matInput formControlName="dateOfDeath" [matDatepicker]="deathDatepicker">
-                          <mat-datepicker-toggle matSuffix [for]="deathDatepicker"></mat-datepicker-toggle>
-                        </mat-form-field>
-                        <mat-datepicker #deathDatepicker></mat-datepicker>
                       </div>
                     </div>
 

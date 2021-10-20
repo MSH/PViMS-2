@@ -112,7 +112,6 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
       treatmentDetails: ['', [Validators.maxLength(300), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
       outcome: [null, Validators.required],
       dateOfRecovery: [''],
-      dateOfDeath: [''],
       sequlae: ['', [Validators.maxLength(300), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
       interventions: ['', [Validators.maxLength(300), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
     });

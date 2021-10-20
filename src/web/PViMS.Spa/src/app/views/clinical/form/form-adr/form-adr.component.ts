@@ -9,7 +9,6 @@ import { BaseComponent } from 'app/shared/base/base.component';
 import { EventService } from 'app/shared/services/event.service';
 import { PatientService } from 'app/shared/services/patient.service';
 import { concatMap, finalize, switchMap, takeUntil } from 'rxjs/operators';
-import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AttachmentAddPopupComponent } from '../../shared/attachment-add-popup/attachment-add.popup.component';
 import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
@@ -127,7 +126,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       treatmentDetails: ['', [Validators.maxLength(300), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
       outcome: [null, Validators.required],
       dateOfRecovery: [''],
-      dateOfDeath: [''],
       sequlae: ['', [Validators.maxLength(300), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
       interventions: ['', [Validators.maxLength(300), Validators.pattern("[-a-zA-Z0-9()/., ']*")]],
     });
