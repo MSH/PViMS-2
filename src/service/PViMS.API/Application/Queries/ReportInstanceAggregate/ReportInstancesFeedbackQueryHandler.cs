@@ -1,22 +1,26 @@
 ﻿using AutoMapper;
 using LinqKit;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using PVIMS.Core.Aggregates.DatasetAggregate;
+
+using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
@@ -28,8 +32,10 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
+        private readonly IRepositoryInt<User> _userRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<ReportInstancesFeedbackQueryHandler> _logger;
 
         public ReportInstancesFeedbackQueryHandler(
@@ -38,8 +44,10 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository,
+            IRepositoryInt<User> userRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
+            IHttpContextAccessor httpContextAccessor,
             ILogger<ReportInstancesFeedbackQueryHandler> logger)
         {
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
@@ -47,8 +55,10 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
             _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -70,27 +80,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             };
 
             var orderby = Extensions.GetOrderBy<ReportInstance>("Created", "desc");
-
-            // Filter list
-            var predicate = PredicateBuilder.New<ReportInstance>(true);
-            predicate = predicate.And(r => r.WorkFlow.WorkFlowGuid == workFlowGuid);
-
-            var compareDate = await PrepareComparisonForFeedbackReportDateAsync();
-
-            switch (qualifiedName)
-            {
-                case "Confirm Report Data":
-                    predicate = predicate.And(ri => ri.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true && a.CurrentStatus.Description != "DELETED") && ri.Tasks.Any(t => t.TaskStatusId != Core.Aggregates.ReportInstanceAggregate.TaskStatus.Cancelled.Id && t.TaskStatusId != Core.Aggregates.ReportInstanceAggregate.TaskStatus.Completed.Id));
-                    break;
-
-                case "Set MedDRA and Causality":
-                    predicate = predicate.And(ri => ri.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == false && a.CurrentStatus.Description == "CAUSALITYCONFIRMED" && a.LastUpdated >= compareDate));
-                    break;
-
-                case "Extract E2B":
-                    predicate = predicate.And(ri => ri.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true && a.CurrentStatus.Description == "E2BSUBMITTED" && a.LastUpdated >= compareDate));
-                    break;
-            }
+            var predicate = await PreparePredicateForFilter(workFlowGuid, qualifiedName);
 
             var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "WorkFlow", "Medications", "TerminologyMedDra", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Tasks" });
             if (pagedReportsFromRepo != null)
@@ -112,11 +102,57 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 
                 CreateLinksForReportInstances(workFlowGuid, wrapper, "Created", "", DateTime.MinValue, DateTime.MaxValue, pageNumber, pageSize,
                     pagedReportsFromRepo.HasNext, pagedReportsFromRepo.HasPrevious);
-                
+
                 return wrapper;
             }
 
             return null;
+        }
+
+        private async Task<ExpressionStarter<ReportInstance>> PreparePredicateForFilter(Guid workFlowGuid, string qualifiedName)
+        {
+            var predicate = PredicateBuilder.New<ReportInstance>(true);
+            predicate = predicate.And(r => r.WorkFlow.WorkFlowGuid == workFlowGuid);
+
+            predicate = await AssertFilterOnStage(qualifiedName, predicate);
+            predicate = await AssertFacilityPermissions(predicate);
+
+            return predicate;
+        }
+
+        private async Task<ExpressionStarter<ReportInstance>> AssertFilterOnStage(string qualifiedName, ExpressionStarter<ReportInstance> predicate)
+        {
+            var compareDate = await PrepareComparisonForFeedbackReportDateAsync();
+
+            switch (qualifiedName)
+            {
+                case "Confirm Report Data":
+                    predicate = predicate.And(ri => ri.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true && a.CurrentStatus.Description != "DELETED") && ri.Tasks.Any(t => t.TaskStatusId != Core.Aggregates.ReportInstanceAggregate.TaskStatus.Cancelled.Id && t.TaskStatusId != Core.Aggregates.ReportInstanceAggregate.TaskStatus.Completed.Id));
+                    break;
+
+                case "Set MedDRA and Causality":
+                    predicate = predicate.And(ri => ri.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == false && a.CurrentStatus.Description == "CAUSALITYCONFIRMED" && a.LastUpdated >= compareDate));
+                    break;
+
+                case "Extract E2B":
+                    predicate = predicate.And(ri => ri.Activities.Any(a => a.QualifiedName == qualifiedName && a.Current == true && a.CurrentStatus.Description == "E2BSUBMITTED" && a.LastUpdated >= compareDate));
+                    break;
+            }
+
+            return predicate;
+        }
+
+        private async Task<ExpressionStarter<ReportInstance>> AssertFacilityPermissions(ExpressionStarter<ReportInstance> predicate)
+        {
+            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == userName, new string[] { "Facilities.Facility" });
+            if (userFromRepo == null)
+            {
+                throw new KeyNotFoundException("Unable to locate user");
+            }
+            var validfacilities = userFromRepo.Facilities.Select(uf => uf.Facility.FacilityCode).ToArray();
+            predicate = predicate.And(ri => validfacilities.Contains(ri.FacilityIdentifier));
+            return predicate;
         }
 
         private async Task<DateTime> PrepareComparisonForFeedbackReportDateAsync()

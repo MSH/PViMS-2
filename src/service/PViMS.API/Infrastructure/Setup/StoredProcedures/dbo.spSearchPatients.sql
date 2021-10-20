@@ -6,6 +6,7 @@
 ***************************************************************************************************************************/
 CREATE Procedure [dbo].[spSearchPatients]
 (
+	@UserId int = 0,
 	@FacilityId int = 0,
 	@PatientId int = 0,
 	@FirstName varchar(30) = NULL,
@@ -43,6 +44,7 @@ AS
 ****************************************************************************************************************************
 **	Date:			Version		Author:		Description:
 **	--------		--------	-------		-------------------------------------------
+**	2021-10-20		2			SIK			Cater for facilityID of 0 - check user permissions
 **
 ***************************************************************************************************************************/
 BEGIN
@@ -73,7 +75,7 @@ BEGIN
 				INNER JOIN Facility f ON pf.Facility_Id = f.Id
 			CROSS APPLY p.CustomAttributesXmlSerialised.nodes('CustomAttributeSet/CustomStringAttribute') as X(Y)
 			WHERE p.Archived = 0
-				AND ((@FacilityId > 0 AND pf.Facility_Id = @FacilityId) OR (@FacilityId = 0 AND 1 = 1))
+				AND ((@FacilityId > 0 AND pf.Facility_Id = @FacilityId) OR (@FacilityId = 0 AND pf.Facility_Id IN (SELECT f.Id FROM UserFacility uf INNER JOIN Facility f ON uf.Facility_Id = f.Id WHERE uf.User_Id = @UserId)))
 				AND ((@PatientId > 0 AND p.Id = @PatientId) OR (@PatientId = 0 AND 1 = 1))
 				AND ((@FirstName IS NOT NULL AND p.FirstName LIKE @FirstName) OR (@FirstName IS NULL AND 1 = 1))
 				AND ((@LastName IS NOT NULL AND p.Surname LIKE @LastName) OR (@LastName IS NULL AND 1 = 1))
@@ -94,7 +96,7 @@ BEGIN
 				INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
 				INNER JOIN Facility f ON pf.Facility_Id = f.Id
 			WHERE p.Archived = 0
-				AND ((@FacilityId > 0 AND pf.Facility_Id = @FacilityId) OR (@FacilityId = 0 AND 1 = 1))
+				AND ((@FacilityId > 0 AND pf.Facility_Id = @FacilityId) OR (@FacilityId = 0 AND pf.Facility_Id IN (SELECT f.Id FROM UserFacility uf INNER JOIN Facility f ON uf.Facility_Id = f.Id WHERE uf.User_Id = @UserId)))
 				AND ((@PatientId > 0 AND p.Id = @PatientId) OR (@PatientId = 0 AND 1 = 1))
 				AND ((@FirstName IS NOT NULL AND p.FirstName LIKE @FirstName) OR (@FirstName IS NULL AND 1 = 1))
 				AND ((@LastName IS NOT NULL AND p.Surname LIKE @LastName) OR (@LastName IS NULL AND 1 = 1))

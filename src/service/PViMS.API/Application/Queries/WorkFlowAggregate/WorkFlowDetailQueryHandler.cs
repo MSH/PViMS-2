@@ -1,16 +1,19 @@
 ﻿using AutoMapper;
 using LinqKit;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,23 +25,29 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
         private readonly IRepositoryInt<Config> _configRepository;
+        private readonly IRepositoryInt<User> _userRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<WorkFlowDetailQueryHandler> _logger;
 
         public WorkFlowDetailQueryHandler(
             IRepositoryInt<WorkFlow> workFlowRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<Config> configRepository,
+            IRepositoryInt<User> userRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
+            IHttpContextAccessor httpContextAccessor,
             ILogger<WorkFlowDetailQueryHandler> logger)
         {
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -156,10 +165,20 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
 
         private async Task<int> GetReportInstancesCountForFeedbackAsync(Guid workFlowGuid, string qualifiedName)
         {
-            var compareDate = await PrepareComparisonForFeedbackReportDateAsync();
-
             var predicate = PredicateBuilder.New<ReportInstance>(true);
             predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
+
+            predicate = await AssertFilterOnStage(qualifiedName, predicate);
+            predicate = await AssertFacilityPermissions(predicate);
+
+            var reportInstancesFromRepo = await _reportInstanceRepository.ListAsync(predicate, null, new string[] { "Activities.CurrentStatus", "Tasks" });
+
+            return reportInstancesFromRepo.Count;
+        }
+
+        private async Task<ExpressionStarter<ReportInstance>> AssertFilterOnStage(string qualifiedName, ExpressionStarter<ReportInstance> predicate)
+        {
+            var compareDate = await PrepareComparisonForFeedbackReportDateAsync();
 
             switch (qualifiedName)
             {
@@ -176,9 +195,20 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
                     break;
             }
 
-            var reportInstancesFromRepo = await _reportInstanceRepository.ListAsync(predicate, null, new string[] { "Activities.CurrentStatus", "Tasks" });
+            return predicate;
+        }
 
-            return reportInstancesFromRepo.Count;
+        private async Task<ExpressionStarter<ReportInstance>> AssertFacilityPermissions(ExpressionStarter<ReportInstance> predicate)
+        {
+            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == userName, new string[] { "Facilities.Facility" });
+            if (userFromRepo == null)
+            {
+                throw new KeyNotFoundException("Unable to locate user");
+            }
+            var validfacilities = userFromRepo.Facilities.Select(uf => uf.Facility.FacilityCode).ToArray();
+            predicate = predicate.And(ri => validfacilities.Contains(ri.FacilityIdentifier));
+            return predicate;
         }
 
         private async Task<DateTime> PrepareComparisonForFeedbackReportDateAsync()

@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Keyless;
@@ -16,6 +18,7 @@ using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,10 +33,12 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
+        private readonly IRepositoryInt<User> _userRepository;
         private readonly PVIMSDbContext _context;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<PatientsDetailQueryHandler> _logger;
 
         public PatientsDetailQueryHandler(
@@ -43,10 +48,12 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientCondition> patientConditionRepository,
             IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
+            IRepositoryInt<User> userRepository,
             PVIMSDbContext dbContext,
             ITypeExtensionHandler modelExtensionBuilder,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
+            IHttpContextAccessor httpContextAccessor,
             ILogger<PatientsDetailQueryHandler> logger)
         {
             _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
@@ -55,10 +62,12 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -70,9 +79,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                 PageSize = message.PageSize
             };
 
+            var userId = await GetUserIdAsync();
             var facilityId = await GetFacilityIdAsync(message.FacilityName);
             var custom = await GetCustomAsync(message.CustomAttributeId);
 
+            var userIdParm = new SqlParameter("@UserID", userId.ToString());
             var facilityIdParm = new SqlParameter("@FacilityID", facilityId.ToString());
             var patientIdParm = new SqlParameter("@PatientID", message.PatientId.ToString());
             var firstNameParm = new SqlParameter("@FirstName", !String.IsNullOrWhiteSpace(message.FirstName) ? (Object)message.FirstName : DBNull.Value);
@@ -84,7 +95,8 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             var customValueParm = new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(message.CustomAttributeValue) ? (Object)message.CustomAttributeValue : DBNull.Value);
 
             var patientsFromRepo = _context.PatientLists
-                .FromSqlRaw<PatientList>($"EXECUTE spSearchPatients @FacilityID, @PatientId, @FirstName, @LastName, @CaseNumber, @DateOfBirth, @CustomAttributeKey, @CustomPath, @CustomValue"
+                .FromSqlRaw<PatientList>($"EXECUTE spSearchPatients @UserID, @FacilityID, @PatientId, @FirstName, @LastName, @CaseNumber, @DateOfBirth, @CustomAttributeKey, @CustomPath, @CustomValue"
+                    , userIdParm
                     , facilityIdParm
                     , patientIdParm
                     , firstNameParm
@@ -122,6 +134,17 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             }
 
             return null;
+        }
+
+        private async Task<int> GetUserIdAsync()
+        {
+            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == userName, new string[] { "Facilities.Facility" });
+            if (userFromRepo == null)
+            {
+                throw new KeyNotFoundException("Unable to locate user");
+            }
+            return userFromRepo.Id;
         }
 
         private async Task<int> GetFacilityIdAsync(string facilityName)
