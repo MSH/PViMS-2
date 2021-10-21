@@ -30,6 +30,7 @@ import { FormBAdversePopupComponent } from './form-b-adverse-popup/form-b-advers
 import { FormCompletePopupComponent } from '../form-complete-popup/form-complete.popup.component';
 import { MeddraTermIdentifierModel } from 'app/shared/models/terminology/meddra-term.identifier.model';
 import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
+import { FormGuidelinesPopupComponent } from '../form-guidelines-popup/form-guidelines.popup.component';
 
 const moment =  _moment;
 
@@ -391,6 +392,19 @@ export class FormBComponent extends BaseComponent implements OnInit, AfterViewIn
         self._router.navigate([_routes.clinical.forms.landing]);        
       })
   }  
+
+  openGuidelinesPopup() {
+    let self = this;
+    let title = "GUIDELINES FOR COMPLETING THE FOLLOWUP FORM (FORM B)";
+    let dialogRef: MatDialogRef<any> = self.dialog.open(FormGuidelinesPopupComponent, {
+      width: '920px',
+      disableClose: true,
+      data: { title: title, type: 'A' }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+      })
+  }   
 
   completeForm(): void {
     let self = this;

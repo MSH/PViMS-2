@@ -28,6 +28,7 @@ import { FormALabsPopupComponent } from './form-a-labs-popup/form-a-labs.popup.c
 import { FormAMedicationsPopupComponent } from './form-a-medications-popup/form-a-medications.popup.component';
 import { FormCompletePopupComponent } from '../form-complete-popup/form-complete.popup.component';
 import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
+import { FormGuidelinesPopupComponent } from '../form-guidelines-popup/form-guidelines.popup.component';
 
 const moment =  _moment;
 
@@ -306,6 +307,19 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
     dialogRef.afterClosed()
       .subscribe(res => {
         self._router.navigate([_routes.clinical.forms.landing]);        
+      })
+  } 
+  
+  openGuidelinesPopup() {
+    let self = this;
+    let title = "GUIDELINES FOR COMPLETING THE TREATMENT INITIATION FORM (FORM A)";
+    let dialogRef: MatDialogRef<any> = self.dialog.open(FormGuidelinesPopupComponent, {
+      width: '920px',
+      disableClose: true,
+      data: { title: title, type: 'A' }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
       })
   }  
 

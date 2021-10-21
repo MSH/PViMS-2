@@ -50,6 +50,7 @@ import { FormListComponent } from './form/form-list/form-list.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { ClinicalEventViewPopupComponent } from './shared/clinical-event-view-popup/clinical-event-view.popup.component';
 import { AppointmentPopupComponent } from './patient/patient-view/appointment-popup/appointment.popup.component';
+import { FormGuidelinesPopupComponent } from './form/form-guidelines-popup/form-guidelines.popup.component';
 
 @NgModule({
   imports: [
@@ -93,6 +94,7 @@ import { AppointmentPopupComponent } from './patient/patient-view/appointment-po
     FormBComponent,
     FormCComponent,
     FormDeletePopupComponent,
+    FormGuidelinesPopupComponent,
     FormListComponent,
     GenericArchivePopupComponent,
     GenericDeletePopupComponent,
@@ -118,6 +120,7 @@ import { AppointmentPopupComponent } from './patient/patient-view/appointment-po
     ConditionViewPopupComponent,
     FormADRMedicationPopupComponent,
     FormDeletePopupComponent,
+    FormGuidelinesPopupComponent,
     PatientAddPopupComponent,
     PatientUpdatePopupComponent,
     GenericDeletePopupComponent,
