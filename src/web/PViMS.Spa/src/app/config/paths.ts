@@ -50,6 +50,7 @@ export const _paths = {
       search: `reportsearch/:wuid`,
       searchqualified: `reportsearch/:wuid/:qualifiedName`,
       activity: `activityhistory/:wuid/:reportinstanceid`,
+      clinical: `clinicaldetails/:patientId/:clinicalEventId`,
       task: `reporttask/:wuid/:reportinstanceid`
     }
   },

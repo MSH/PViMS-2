@@ -39,7 +39,6 @@ import { LinkModel } from 'app/shared/models/link.model';
 import { DatasetInstanceModel } from 'app/shared/models/dataset/dataset-instance-model';
 import { WhoPopupComponent } from './who-popup/who.popup.component';
 import { SetClassificationPopupComponent } from './set-classification/set-classification.popup.component';
-import { ActiveFormPopupComponent } from './active-form-popup/active-form.popup.component';
 import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexLegend, ApexPlotOptions, ApexStroke, ApexTooltip, ApexXAxis, ApexYAxis, ChartComponent } from 'ng-apexcharts';
 import { WorkFlowSummaryModel } from 'app/shared/models/work-flow/work-flow.summary.model';
 import { SeriesValueListModel } from 'app/shared/models/dataset/series-value-list.model';
@@ -404,6 +403,11 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     self._router.navigate([_routes.clinical.patients.view(model ? model.patientId : 0)]);
   }
 
+  detailClinical(patientId: number, patientClinicalEventId: number) {
+    let self = this;
+    self._router.navigate([_routes.analytical.reports.clinical(patientId, patientClinicalEventId)]);
+  }  
+
   openActivityChangePopUp(title: string, data: any = {}, newStatus: string) {
     let self = this;
     let dialogRef: MatDialogRef<any> = self.dialog.open(ActivityStatusChangePopupComponent, {
@@ -507,20 +511,6 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         self.loadData();
       })
   }
-
-  openActiveFormPopUp(patientId: number, patientClinicalEventId: number) {
-    let self = this;
-    let title = 'View Adverse Event';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(ActiveFormPopupComponent, {
-      width: '920px',
-      disableClose: true,
-      data: { patientId: patientId, clinicalEventId: patientClinicalEventId, title: title }
-    })
-    dialogRef.afterClosed()
-      .subscribe(res => {
-        return;
-      })
-  }  
 
   createE2B(data: any = {}) {
     let self = this;

@@ -24,15 +24,15 @@ import { ChangeTaskDetailsPopupComponent } from './report/report-task/change-tas
 import { SetClassificationPopupComponent } from './report/report-search/set-classification/set-classification.popup.component';
 import { MedicationListPopupComponent } from './report/report-search/medications-popup/medication-list.popup.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { ActiveFormPopupComponent } from './report/report-search/active-form-popup/active-form.popup.component';
+import { ClinicalDetailsComponent } from './report/clinical-details/clinical-details.component';
 
 @NgModule({
   declarations: [
     ActiveAnalyserComponent,
-    ActiveFormPopupComponent,
     ActivityHistoryComponent,
     ActivityStatusChangePopupComponent,
     ChangeTaskDetailsPopupComponent,
+    ClinicalDetailsComponent,
     DatasetInstancePopupComponent,
     LandingComponent,
     MedicationListPopupComponent,
@@ -58,7 +58,6 @@ import { ActiveFormPopupComponent } from './report/report-search/active-form-pop
   entryComponents:
   [
     ActivityStatusChangePopupComponent,
-    ActiveFormPopupComponent,
     ChangeTaskDetailsPopupComponent,
     DatasetInstancePopupComponent,
     MedicationListPopupComponent,

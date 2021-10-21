@@ -5,6 +5,7 @@ import { ReportSearchComponent } from './report/report-search/report-search.comp
 import { LandingComponent } from './landing/landing.component';
 import { ActiveAnalyserComponent } from './analyser/active-analyser/active-analyser.component';
 import { ReportTaskListComponent } from './report/report-task/report-task-list.component';
+import { ClinicalDetailsComponent } from './report/clinical-details/clinical-details.component';
 
 export const AnalyticalRoutes: Routes = [
   {
@@ -41,6 +42,11 @@ export const AnalyticalRoutes: Routes = [
       path: 'activityhistory/:wuid/:id',
       component: ActivityHistoryComponent,
       data: { title: 'Report Activities', breadcrumb: 'Activity' }
+    },
+    {
+      path: 'clinicaldetails/:patientId/:clinicalEventId',
+      component: ClinicalDetailsComponent,
+      data: { title: 'Report Clinical Details', breadcrumb: 'Report Clinical Details' }
     },
     {
       path: 'reporttask/:wuid/:id',

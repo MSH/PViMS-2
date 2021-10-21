@@ -9,8 +9,7 @@ import { CustomAttributeService } from 'app/shared/services/custom-attribute.ser
 import { CustomAttributeDetailModel } from 'app/shared/models/custom-attribute/custom-attribute.detail.model';
 import { PatientService } from 'app/shared/services/patient.service';
 import { switchMap } from 'rxjs/operators';
-import { BasePopupComponent } from 'app/shared/base/base.popup.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GridModel } from 'app/shared/models/grid.model';
 import { forkJoin, of } from 'rxjs';
 import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
@@ -27,10 +26,12 @@ import * as _moment from 'moment';
 import { AttributeValueModel } from 'app/shared/models/attributevalue.model';
 import { ProgressStatus, ProgressStatusEnum } from 'app/shared/models/program-status.model';
 import { HttpEventType } from '@angular/common/http';
+import { BaseComponent } from 'app/shared/base/base.component';
+import { EventService } from 'app/shared/services/event.service';
 const moment =  _moment;
 
 @Component({
-  templateUrl: './active-form.popup.component.html',
+  templateUrl: './clinical-details.component.html',
   styles: [`
     .mat-column-executed-date { flex: 0 0 25% !important; width: 25% !important; }
     .mat-column-activity { flex: 0 0 25% !important; width: 25% !important; }
@@ -45,7 +46,7 @@ const moment =  _moment;
   `],  
   animations: egretAnimations
 })
-export class ActiveFormPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
+export class ClinicalDetailsComponent extends BaseComponent implements OnInit, AfterViewInit {
   
   viewModel: ViewModel = new ViewModel();
 
@@ -60,22 +61,24 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
   showProgress: boolean;
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: PopupData,
-    public dialogRef: MatDialogRef<ActiveFormPopupComponent>,
+    protected _activatedRoute: ActivatedRoute,
     protected _router: Router,
     protected _location: Location,
     protected _formBuilder: FormBuilder,
     protected popupService: PopupService,
     protected accountService: AccountService,
+    protected eventService: EventService,
     protected patientService: PatientService,
     protected customAttributeService: CustomAttributeService,
-    protected dialog: MatDialog
   ) { 
-    super(_router, _location, popupService, accountService);
+    super(_router, _location, popupService, accountService, eventService);
   }
 
   ngOnInit(): void {
     const self = this;
+
+    self.viewModel.patientId = +self._activatedRoute.snapshot.paramMap.get('patientId');
+    self.viewModel.clinicalEventId = +self._activatedRoute.snapshot.paramMap.get('clinicalEventId');
 
     self.firstFormGroup = this._formBuilder.group({
       patientId: [''],
@@ -128,7 +131,7 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
 
   ngAfterViewInit(): void {
     let self = this;
-    if (self.data.clinicalEventId > 0) {
+    if (self.viewModel.clinicalEventId > 0) {
       self.loadData();
     }
   } 
@@ -151,8 +154,8 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
 
     const requestArray = [];
 
-    requestArray.push(self.patientService.getPatientClinicalEventExpanded(self.data.patientId, self.data.clinicalEventId));
-    requestArray.push(self.patientService.getPatientExpanded(self.data.patientId));
+    requestArray.push(self.patientService.getPatientClinicalEventExpanded(self.viewModel.patientId, self.viewModel.clinicalEventId));
+    requestArray.push(self.patientService.getPatientExpanded(self.viewModel.patientId));
 
     forkJoin(requestArray)
       .subscribe(
@@ -177,7 +180,7 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
   downloadAttachment(model: AttachmentGridRecordModel = null): void {
     this.downloadStatus( {status: ProgressStatusEnum.START});
 
-    this.patientService.downloadAttachment(this.data.patientId, model.id).subscribe(
+    this.patientService.downloadAttachment(this.viewModel.patientId, model.id).subscribe(
       data => {
         switch (data.type) {
           case HttpEventType.DownloadProgress:
@@ -358,7 +361,7 @@ export class ActiveFormPopupComponent extends BasePopupComponent implements OnIn
 class ViewModel {
   medicationGrid: GridModel<MedicationGridRecordModel> =
   new GridModel<MedicationGridRecordModel>
-      (['medication', 'start-date', 'dose']);
+      (['medication', 'start-date', 'dose', 'reason-for-stopping', 'clinical-action', 'result-of-challenge']);
   medications: PatientMedicationForUpdateModel[] = [];
 
   attachmentGrid: GridModel<AttachmentGridRecordModel> =
@@ -368,14 +371,11 @@ class ViewModel {
   workFlowId = '892F3305-7819-4F18-8A87-11CBA3AEE219';
   step = 0;
 
-  customAttributeKey = 'Case Number';
-  customAttributeList: CustomAttributeDetailModel[] = [];
-}
-
-export interface PopupData {
   patientId: number;
   clinicalEventId: number;
-  title: string;
+
+  customAttributeKey = 'Case Number';
+  customAttributeList: CustomAttributeDetailModel[] = [];
 }
 
 class MedicationGridRecordModel {

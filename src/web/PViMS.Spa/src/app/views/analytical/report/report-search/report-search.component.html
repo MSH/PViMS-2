@@ -358,7 +358,7 @@
                       </span>
                     </button>
                     <mat-divider></mat-divider>
-                    <button mat-menu-item *ngIf="hasLink(record, 'viewpatient')" (click)="openActiveFormPopUp(record.patientId, record.patientClinicalEventId)">
+                    <button mat-menu-item *ngIf="hasLink(record, 'viewpatient')" (click)="detailClinical(record.patientId, record.patientClinicalEventId)">
                         <mat-icon>person</mat-icon>
                         <span style="vertical-align: middle;">
                           {{ 'View details' | translate }}

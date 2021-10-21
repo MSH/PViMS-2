@@ -71,6 +71,9 @@ export const _routes = {
         activity(workFlowId: string, reportInstanceId: number): string {
           return `${_paths.analytical}/${_paths.analyticalPath.reports.activity.replace(':wuid', workFlowId).replace(':reportinstanceid', reportInstanceId.toString())}`;
         },
+        clinical(patientId: number, patientClinicalEventId: number): string {
+          return `${_paths.analytical}/${_paths.analyticalPath.reports.clinical.replace(':patientId', patientId.toString()).replace(':clinicalEventId', patientClinicalEventId.toString())}`;
+        },
         task(workFlowId: string, reportInstanceId: number): string {
           return `${_paths.analytical}/${_paths.analyticalPath.reports.task.replace(':wuid', workFlowId).replace(':reportinstanceid', reportInstanceId.toString())}`;
         }        
