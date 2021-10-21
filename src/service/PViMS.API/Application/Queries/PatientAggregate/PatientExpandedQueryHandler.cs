@@ -214,6 +214,9 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             IExtendable medicationExtended = medication;
 
             dto.IndicationType = await _customAttributeService.GetCustomAttributeValueAsync("PatientMedication", "Type of Indication", medicationExtended);
+            dto.ReasonForStopping = await _customAttributeService.GetCustomAttributeValueAsync("PatientMedication", "Reason For Stopping", medicationExtended);
+            dto.ClinicianAction = await _customAttributeService.GetCustomAttributeValueAsync("PatientMedication", "Clinician action taken with regard to medicine if related to AE", medicationExtended);
+            dto.ChallengeEffect = await _customAttributeService.GetCustomAttributeValueAsync("PatientMedication", "Effect OF Dechallenge (D) & Rechallenge (R)", medicationExtended);
         }
 
         private async Task CustomCohortMapAsync(Patient patientFromRepo, PatientExpandedDto mappedPatient)

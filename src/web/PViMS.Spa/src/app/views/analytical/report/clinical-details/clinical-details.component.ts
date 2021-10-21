@@ -163,7 +163,7 @@ export class ClinicalDetailsComponent extends BaseComponent implements OnInit, A
           self.CLog(data[0], 'get clinical event expanded')
           self.CLog(data[1], 'get patient detail')
 
-          self.loadGrids(data[1] as PatientExpandedModel, data[0] as PatientClinicalEventExpandedModel);
+          self.loadGrids(data[1] as PatientExpandedModel);
 
           self.loadDataForFirstForm(data[1] as PatientExpandedModel);
           self.loadDataForThirdForm(data[0] as PatientClinicalEventExpandedModel);
@@ -235,46 +235,10 @@ export class ClinicalDetailsComponent extends BaseComponent implements OnInit, A
     }
   }
 
-  private loadGrids(patientModel: PatientExpandedModel, clinicalEventModel: PatientClinicalEventExpandedModel) {
+  private loadGrids(patientModel: PatientExpandedModel) {
     let self = this;
-    self.viewModel.medications = self.mapMedicationForUpdateModels(patientModel.patientMedications);
-    self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
+    self.viewModel.medicationGrid.updateBasic(patientModel.patientMedications);
     self.viewModel.attachmentGrid.updateBasic(patientModel.attachments);    
-  }
-
-  private mapMedicationForUpdateModels(sourceMedications: PatientMedicationDetailModel[]): PatientMedicationForUpdateModel[] {
-    let medications: PatientMedicationForUpdateModel[] = [];
-
-    let index = 0;
-    sourceMedications.forEach(sourceMedication => {
-      index++;
-      let medication: PatientMedicationForUpdateModel = {
-        id: sourceMedication.id,
-        index,
-        medication: sourceMedication.medication,
-        sourceDescription: sourceMedication.sourceDescription,
-        conceptId: sourceMedication.conceptId,
-        productId: sourceMedication.productId,
-        startDate: sourceMedication.startDate,
-        endDate: sourceMedication.endDate,
-        dose: sourceMedication.dose,
-        doseFrequency: sourceMedication.doseFrequency,
-        doseUnit: sourceMedication.doseUnit,
-        attributes: []
-      };
-      
-      sourceMedication.medicationAttributes.forEach(sourceAttribute => {
-        let attribute: AttributeValueForPostModel = {
-          id: sourceAttribute.id,
-          value: sourceAttribute.value
-        };
-        medication.attributes.push(attribute);
-      });
-
-      medications.push(medication);
-    });
-
-    return medications;
   }
 
   private loadDataForFirstForm(patientModel: PatientExpandedModel)
@@ -359,8 +323,8 @@ export class ClinicalDetailsComponent extends BaseComponent implements OnInit, A
 }
 
 class ViewModel {
-  medicationGrid: GridModel<MedicationGridRecordModel> =
-  new GridModel<MedicationGridRecordModel>
+  medicationGrid: GridModel<PatientMedicationDetailModel> =
+  new GridModel<PatientMedicationDetailModel>
       (['medication', 'start-date', 'dose', 'reason-for-stopping', 'clinical-action', 'result-of-challenge']);
   medications: PatientMedicationForUpdateModel[] = [];
 
@@ -376,16 +340,6 @@ class ViewModel {
 
   customAttributeKey = 'Case Number';
   customAttributeList: CustomAttributeDetailModel[] = [];
-}
-
-class MedicationGridRecordModel {
-  id: number;
-  index: number;
-  medication: string;
-  dose: string;
-  doseUnit: string;
-  startDate: string;
-  endDate: string;
 }
 
 class AttachmentGridRecordModel {

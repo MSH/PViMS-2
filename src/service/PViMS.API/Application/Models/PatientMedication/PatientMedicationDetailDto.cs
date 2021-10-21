@@ -64,10 +64,28 @@ namespace PVIMS.API.Models
         public string EndDate { get; set; }
 
         /// <summary>
-        /// The indication type of the medication
+        /// The indication type of the medication (Custom Attribute)
         /// </summary>
         [DataMember]
         public string IndicationType { get; set; }
+
+        /// <summary>
+        /// The reason why the patient stopped the medication (Custom Attribute)
+        /// </summary>
+        [DataMember]
+        public string ReasonForStopping { get; set; }
+
+        /// <summary>
+        /// Clinician action taken with regard to medicine if related to AE (Custom Attribute)
+        /// </summary>
+        [DataMember]
+        public string ClinicianAction { get; set; }
+
+        /// <summary>
+        /// Effect OF Dechallenge (D) & Rechallenge (R) (Custom Attribute)
+        /// </summary>
+        [DataMember]
+        public string ChallengeEffect { get; set; }
 
         /// <summary>
         /// A list of custom attributes associated to the patient medication

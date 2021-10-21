@@ -9,7 +9,7 @@
 </div>
 
 <div fxLayout="row wrap">
-  <div fxFlex="100">
+  <div fxFlex="80">
     <mat-card class="p-12 mat-elevation-z6 rounded">
       <mat-card-title>
         <div class="card-title-text light-gray p-12">
@@ -98,7 +98,7 @@
 </div>    
 
 <div fxLayout="row wrap">
-  <div fxFlex="100">
+  <div fxFlex="80">
     <mat-card class="p-12 mat-elevation-z6 rounded">
       <mat-card-title>
         <div class="card-title-text light-gray p-12">
@@ -270,7 +270,7 @@
 </div>
 
 <div fxLayout="row wrap">
-  <div fxFlex="100">
+  <div fxFlex="80">
     <mat-card class="p-12 mat-elevation-z6 rounded">
       <mat-card-title>
         <div class="card-title-text light-gray p-12">
@@ -341,7 +341,7 @@
 </div>
 
 <div fxLayout="row wrap">
-  <div fxFlex="100">
+  <div fxFlex="80">
     <mat-card class="p-12 mat-elevation-z6 rounded">
       <mat-card-title>
         <div class="card-title-text light-gray p-12">
@@ -387,21 +387,21 @@
                   <ng-container matColumnDef="reason-for-stopping">
                     <mat-header-cell *matHeaderCellDef>{{'Reason for stopping' | translate}}</mat-header-cell>
                     <mat-cell *matCellDef="let record">
-                      {{record.dose}} {{record.doseUnit}}
+                      {{record.dose}} {{record.reasonForStopping}}
                     </mat-cell>
                   </ng-container>
 
                   <ng-container matColumnDef="clinical-action">
                     <mat-header-cell *matHeaderCellDef>{{'Clinical action' | translate}}</mat-header-cell>
                     <mat-cell *matCellDef="let record">
-                      {{record.dose}} {{record.doseUnit}}
+                      {{record.dose}} {{record.clinicianAction}}
                     </mat-cell>
                   </ng-container>
                   
                   <ng-container matColumnDef="result-of-challenge">
                     <mat-header-cell *matHeaderCellDef>{{'Result of challenge' | translate}}</mat-header-cell>
                     <mat-cell *matCellDef="let record">
-                      {{record.dose}} {{record.doseUnit}}
+                      {{record.dose}} {{record.challengeEffect}}
                     </mat-cell>
                   </ng-container>
 
@@ -432,7 +432,7 @@
 </div>
 
 <div fxLayout="row wrap">
-  <div fxFlex="100">
+  <div fxFlex="80">
     <mat-card class="p-12 mat-elevation-z6 rounded">
       <mat-card-title>
         <div class="card-title-text light-gray p-12">

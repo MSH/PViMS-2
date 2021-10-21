@@ -77,6 +77,9 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                 }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
 
             dto.IndicationType = await _customAttributeService.GetCustomAttributeValueAsync("PatientMedication", "Type of Indication", patientMedicationExtended);
+            dto.ReasonForStopping = await _customAttributeService.GetCustomAttributeValueAsync("PatientMedication", "Reason For Stopping", patientMedicationExtended);
+            dto.ClinicianAction = await _customAttributeService.GetCustomAttributeValueAsync("PatientMedication", "Clinician action taken with regard to medicine if related to AE", patientMedicationExtended);
+            dto.ChallengeEffect = await _customAttributeService.GetCustomAttributeValueAsync("PatientMedication", "Effect OF Dechallenge (D) & Rechallenge (R)", patientMedicationExtended);
         }
 
         private string GetSelectionValue(CustomAttributeType attributeType, string attributeKey, string selectionKey)
