@@ -27,6 +27,9 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './adverse-event-frequency.component.html',
+  styles: [`
+    .mat-column-system-organ-class { flex: 0 0 20% !important; width: 20% !important; }
+  `],  
   animations: egretAnimations
 })
 export class AdverseEventFrequencyComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -113,7 +116,7 @@ export class AdverseEventFrequencyComponent extends BaseComponent implements OnI
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['system-organ-class', 'period', 'facility', 'grade-1', 'grade-2', 'grade-3', 'grade-4', 'grade-5', 'grade-unknown']);
+          (['system-organ-class', 'period', 'grade-1', 'grade-2', 'grade-3', 'grade-4', 'grade-5', 'grade-unknown']);
 
   criteriaId: number;
   stratifyId: number;
@@ -124,7 +127,6 @@ class ViewModel {
 class GridRecordModel {
   systemOrganClass: string;
   periodDisplay: string;
-  facilityName: string;
   grade1Count: number;
   grade2Count: number;
   grade3Count: number;

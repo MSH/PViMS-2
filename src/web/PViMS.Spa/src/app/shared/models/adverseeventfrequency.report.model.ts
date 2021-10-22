@@ -6,7 +6,6 @@ export interface AdverseEventFrequencyReportWrapperModel {
 export interface AdverseEventFrequencyReportModel {
     periodDisplay: string;
     systemOrganClass: string;
-    facilityName: string;
     grade1Count: number;
     grade2Count: number;
     grade3Count: number;

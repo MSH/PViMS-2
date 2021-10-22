@@ -21,12 +21,6 @@ namespace PVIMS.API.Models
         public string SystemOrganClass { get; set; }
 
         /// <summary>
-        /// Name of thr facility
-        /// </summary>
-        [DataMember]
-        public string FacilityName { get; set; }
-
-        /// <summary>
         /// The total number of patients for grade 1
         /// </summary>
         [DataMember]

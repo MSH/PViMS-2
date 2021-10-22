@@ -25,18 +25,16 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
                 var sql = @$"SELECT c.PeriodYear AS PeriodDisplay, 
                                     c.MedDraTerm AS SystemOrganClass,
-                                    c.FacilityName, 
 		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 1' THEN c.PatientCount ELSE 0 END) AS Grade1Count,
 		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 2' THEN c.PatientCount ELSE 0 END) AS Grade2Count,
 		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 3' THEN c.PatientCount ELSE 0 END) AS Grade3Count,
 		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 4' THEN c.PatientCount ELSE 0 END) AS Grade4Count,
 		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 5' THEN c.PatientCount ELSE 0 END) AS Grade5Count,
 		                            SUM(CASE WHEN c.SeverityGrade = '' THEN c.PatientCount ELSE 0 END) AS GradeUnknownCount
-				            FROM (SELECT b.PeriodYear, b.FacilityName, tm1.MedDraTerm, b.SeverityGrade, b.PatientCount
+				            FROM (SELECT b.PeriodYear, tm1.MedDraTerm, b.SeverityGrade, b.PatientCount
 					            FROM TerminologyMedDra tm1 
 						            LEFT JOIN 
 					            (SELECT DATEPART(YEAR, pce.OnsetDate) as [PeriodYear], 
-						            f.FacilityName,
 						            t5.MedDraTerm AS 'Description',
 						            ISNULL(mpce.SeverityGrade, '') AS SeverityGrade,
 						            COUNT(*) AS PatientCount
@@ -49,13 +47,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 						            INNER JOIN TerminologyMedDra t3 ON t2.Parent_Id = t3.Id
 						            INNER JOIN TerminologyMedDra t4 ON t3.Parent_Id = t4.Id
 						            INNER JOIN TerminologyMedDra t5 ON t4.Parent_Id = t5.Id
-						            INNER JOIN PatientFacility pf ON pf.Id = (select top 1 Id from PatientFacility ipf where ipf.Patient_Id = p.Id and ipf.EnrolledDate <= GETDATE() order by ipf.EnrolledDate desc, ipf.Id desc)
-						            INNER JOIN Facility f on pf.Facility_Id = f.Id
 					            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' and pce.Archived = 0 and p.Archived = 0 
-					            GROUP BY DATEPART(YEAR, pce.OnsetDate), f.FacilityName, t5.MedDraTerm, mpce.SeverityGrade) as b on tm1.MedDraTerm = b.[Description] 
+					            GROUP BY DATEPART(YEAR, pce.OnsetDate), t5.MedDraTerm, mpce.SeverityGrade) as b on tm1.MedDraTerm = b.[Description] 
 					            WHERE tm1.MedDraTermType = 'SOC' AND b.PeriodYear IS NOT NULL) as c 
-	                        GROUP BY c.PeriodYear, c.FacilityName, c.MedDraTerm
-	                        ORDER BY c.MedDraTerm, c.PeriodYear, c.FacilityName";
+	                        GROUP BY c.PeriodYear, c.MedDraTerm
+	                        ORDER BY c.MedDraTerm, c.PeriodYear";
 
                 return await connection.QueryAsync<AdverseEventFrequencyReportDto>(sql);
             }
@@ -67,20 +63,18 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             {
                 connection.Open();
 
-                var sql = @$"SELECT c.PeriodQuarter + ' ' + c.PeriodYear AS PeriodDisplay,
+                var sql = @$"SELECT CAST(c.PeriodYear as varchar) + ' - ' + 'Q' + CAST(c.PeriodQuarter as varchar) AS PeriodDisplay,
                                     c.MedDraTerm AS SystemOrganClass,
-                                    c.FacilityName,
 		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 1' THEN c.PatientCount ELSE 0 END) AS Grade1Count,
 		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 2' THEN c.PatientCount ELSE 0 END) AS Grade2Count,
 		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 3' THEN c.PatientCount ELSE 0 END) AS Grade3Count,
 		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 4' THEN c.PatientCount ELSE 0 END) AS Grade4Count,
 		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 5' THEN c.PatientCount ELSE 0 END) AS Grade5Count,
 		                            SUM(CASE WHEN c.SeverityGrade = '' THEN c.PatientCount ELSE 0 END) AS GradeUnknownCount
-	                        FROM (SELECT b.PeriodYear, b.PeriodQuarter, b.FacilityName, tm1.MedDraTerm, b.SeverityGrade, b.PatientCount
+	                        FROM (SELECT b.PeriodYear, b.PeriodQuarter, tm1.MedDraTerm, b.SeverityGrade, b.PatientCount
 	                            FROM TerminologyMedDra tm1 
 		                            LEFT JOIN 
 	                            (SELECT DATEPART(YEAR, pce.OnsetDate) as [PeriodYear], DATEPART(QUARTER, pce.OnsetDate) as [PeriodQuarter],
-		                            f.FacilityName,
 		                            t5.MedDraTerm AS 'Description', 
                                     ISNULL(mpce.SeverityGrade, '') AS SeverityGrade,
 			                        COUNT(*) AS PatientCount
@@ -93,13 +87,51 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 		                            INNER JOIN TerminologyMedDra t3 ON t2.Parent_Id = t3.Id
 		                            INNER JOIN TerminologyMedDra t4 ON t3.Parent_Id = t4.Id
 		                            INNER JOIN TerminologyMedDra t5 ON t4.Parent_Id = t5.Id
-		                            INNER JOIN PatientFacility pf ON pf.Id = (select top 1 Id from PatientFacility ipf where ipf.Patient_Id = p.Id and ipf.EnrolledDate <= GETDATE() order by ipf.EnrolledDate desc, ipf.Id desc)
-		                            INNER JOIN Facility f on pf.Facility_Id = f.Id
 	                            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' and pce.Archived = 0 and p.Archived = 0 
-	                            GROUP BY DATEPART(YEAR, pce.OnsetDate), DATEPART(QUARTER, pce.OnsetDate), f.FacilityName, t5.MedDraTerm, mpce.SeverityGrade) as b on tm1.MedDraTerm = b.[Description] 
+	                            GROUP BY DATEPART(YEAR, pce.OnsetDate), DATEPART(QUARTER, pce.OnsetDate), t5.MedDraTerm, mpce.SeverityGrade) as b on tm1.MedDraTerm = b.[Description] 
 	                            WHERE tm1.MedDraTermType = 'SOC' AND b.PeriodYear IS NOT NULL) as c
-	                    GROUP BY c.PeriodYear, c.PeriodQuarter, c.FacilityName, c.MedDraTerm
-	                    ORDER BY c.MedDraTerm, c.PeriodYear, c.PeriodQuarter, c.FacilityName";
+	                    GROUP BY c.PeriodYear, c.PeriodQuarter, c.MedDraTerm
+	                    ORDER BY c.MedDraTerm, c.PeriodYear, c.PeriodQuarter";
+
+                return await connection.QueryAsync<AdverseEventFrequencyReportDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<AdverseEventFrequencyReportDto>> GetAdverseEventsByMonthAsync(DateTime searchFrom, DateTime searchTo)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var sql = @$"SELECT CAST(c.PeriodYear as varchar) + ' ' + CAST(c.PeriodMonth as varchar) AS PeriodDisplay,
+                                    c.MedDraTerm AS SystemOrganClass,
+		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 1' THEN c.PatientCount ELSE 0 END) AS Grade1Count,
+		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 2' THEN c.PatientCount ELSE 0 END) AS Grade2Count,
+		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 3' THEN c.PatientCount ELSE 0 END) AS Grade3Count,
+		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 4' THEN c.PatientCount ELSE 0 END) AS Grade4Count,
+		                            SUM(CASE WHEN c.SeverityGrade = 'Grade 5' THEN c.PatientCount ELSE 0 END) AS Grade5Count,
+		                            SUM(CASE WHEN c.SeverityGrade = '' THEN c.PatientCount ELSE 0 END) AS GradeUnknownCount
+	                        FROM (SELECT b.PeriodYear, b.PeriodMonth, tm1.MedDraTerm, b.SeverityGrade, b.PatientCount
+	                            FROM TerminologyMedDra tm1 
+		                            LEFT JOIN 
+	                            (SELECT DATEPART(YEAR, pce.OnsetDate) as [PeriodYear], DATENAME(mm, pce.OnsetDate) as [PeriodMonth],
+		                            t5.MedDraTerm AS 'Description', 
+                                    ISNULL(mpce.SeverityGrade, '') AS SeverityGrade,
+			                        COUNT(*) AS PatientCount
+	                            FROM PatientClinicalEvent pce 
+                                    INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
+                                    INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
+		                            INNER JOIN Patient p ON pce.Patient_Id = p.Id
+		                            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
+		                            INNER JOIN TerminologyMedDra t2 ON t.Parent_Id = t2.Id
+		                            INNER JOIN TerminologyMedDra t3 ON t2.Parent_Id = t3.Id
+		                            INNER JOIN TerminologyMedDra t4 ON t3.Parent_Id = t4.Id
+		                            INNER JOIN TerminologyMedDra t5 ON t4.Parent_Id = t5.Id
+	                            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' and pce.Archived = 0 and p.Archived = 0 
+	                            GROUP BY DATEPART(YEAR, pce.OnsetDate), DATENAME(mm, pce.OnsetDate), t5.MedDraTerm, mpce.SeverityGrade) as b on tm1.MedDraTerm = b.[Description] 
+	                            WHERE tm1.MedDraTermType = 'SOC' AND b.PeriodYear IS NOT NULL) as c
+	                    GROUP BY c.PeriodYear, c.PeriodMonth, c.MedDraTerm
+	                    ORDER BY c.MedDraTerm, c.PeriodYear, c.PeriodMonth";
 
                 return await connection.QueryAsync<AdverseEventFrequencyReportDto>(sql);
             }

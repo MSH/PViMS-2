@@ -5,7 +5,7 @@
 <mat-card class="p-0">
   <mat-card-title class="">
       <div class="card-title-text">
-        {{'Adverse Event By System Organ Class Report' | translate}} | 
+        {{'Adverse Event Frequency Report' | translate}} | 
         <small>({{'Meta data last refreshed' | translate }} : {{metaDate}})</small>
       </div>
   </mat-card-title>
@@ -19,6 +19,7 @@
               <mat-select formControlName="criteriaId" placeholder="{{'Frequency' | translate}}" required>
                 <mat-option value="1">{{'Annual' | translate}}</mat-option>
                 <mat-option value="2">{{'Quarterly' | translate}}</mat-option>
+                <mat-option value="3">{{'Monthly' | translate}}</mat-option>
               </mat-select>                        
             </mat-form-field>
           </div>
@@ -45,7 +46,7 @@
         </div>
         <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="start" class="p-8">
           <div class="light-mat-gray rounded p-24">
-            {{ 'Please note that the report uses the MedDra terminology set by the PV specialist ...' | translate }}
+            {{ 'Please note that report uses MedDra term set by the PV specialist and AE onset date for stratification ...' | translate }}
           </div>
         </div>
         <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="end" class="p-8">
@@ -70,13 +71,6 @@
                 <mat-header-cell *matHeaderCellDef>{{'Period' | translate }}</mat-header-cell>
                 <mat-cell *matCellDef="let record">
                     <p>{{record.periodDisplay}}</p>
-                </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="facility">
-                <mat-header-cell *matHeaderCellDef>{{'Facility' | translate }}</mat-header-cell>
-                <mat-cell *matCellDef="let record">
-                    <p>{{record.facilityName}}</p>
                 </mat-cell>
             </ng-container>
 

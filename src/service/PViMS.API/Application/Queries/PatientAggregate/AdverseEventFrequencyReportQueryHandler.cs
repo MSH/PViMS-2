@@ -60,6 +60,18 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                 return wrapper;
             }
 
+            if (message.FrequencyCriteria == FrequencyCriteria.Monthly)
+            {
+                var results = await _patientQueries.GetAdverseEventsByMonthAsync(message.SearchFrom, message.SearchTo);
+                var pagedResults = PagedCollection<AdverseEventFrequencyReportDto>.Create(results, pagingInfo.PageNumber, pagingInfo.PageSize);
+
+                var wrapper = new LinkedCollectionResourceWrapperDto<AdverseEventFrequencyReportDto>(pagedResults.TotalCount, pagedResults);
+                CreateLinksForAdverseEventFrequencyReport(wrapper, message.PageNumber, message.PageSize,
+                    pagedResults.HasNext, pagedResults.HasPrevious);
+
+                return wrapper;
+            }
+
             return null;
         }
 
