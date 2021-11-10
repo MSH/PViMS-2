@@ -177,29 +177,41 @@ namespace PVIMS.Services
             return null;
         }
 
-        public void UpdateIdentifiersForWorkFlowInstance(Guid contextGuid, string patientIdentifier, string sourceIdentifier)
+        public async Task UpdatePatientIdentifierForReportInstanceAsync(Guid contextGuid, string patientIdentifier)
         {
             if (String.IsNullOrWhiteSpace(patientIdentifier))
             {
                 throw new ArgumentNullException(nameof(patientIdentifier));
             }
+
+            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid, new string[] { 
+                "WorkFlow" 
+            });
+            if(reportInstance == null)
+            {
+                throw new ArgumentException("reportInstance may not be null");
+            }
+
+            reportInstance.SetPatientIdentifier(patientIdentifier);
+            _reportInstanceRepository.Update(reportInstance);
+        }
+
+        public async Task UpdateSourceIdentifierForReportInstanceAsync(Guid contextGuid, string sourceIdentifier)
+        {
             if (String.IsNullOrWhiteSpace(sourceIdentifier))
             {
                 throw new ArgumentNullException(nameof(sourceIdentifier));
             }
 
-            var reportInstance = _reportInstanceRepository.Get(ri => ri.ContextGuid == contextGuid, new string[] { "WorkFlow" });
-            if(reportInstance == null)
+            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid, new string[] { 
+                "WorkFlow" 
+            });
+            if (reportInstance == null)
             {
                 throw new ArgumentException("reportInstance may not be null");
             }
-            if (reportInstance.WorkFlow == null)
-            {
-                throw new ArgumentException("reportInstance work flow may not be null");
-            }
 
-            reportInstance.SetEventIdentifiers(patientIdentifier, sourceIdentifier);
-
+            reportInstance.SetSourceIdentifier(sourceIdentifier);
             _reportInstanceRepository.Update(reportInstance);
         }
 

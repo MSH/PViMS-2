@@ -48,7 +48,10 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
         public async Task<bool> Handle(ChangeClinicalEventDetailsCommand message, CancellationToken cancellationToken)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] { "PatientClinicalEvents.SourceTerminologyMedDra" });
+            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] { 
+                "PatientClinicalEvents.SourceTerminologyMedDra",
+                "PatientConditions.TerminologyMedDra.ConditionMedDras.Condition"
+            });
             if (patientFromRepo == null)
             {
                 throw new KeyNotFoundException("Unable to locate patient");
@@ -74,13 +77,19 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
             _patientRepository.Update(patientFromRepo);
 
-            _workFlowService.UpdateIdentifiersForWorkFlowInstance(clinicalEventToUpdate.PatientClinicalEventGuid, 
-                patientFromRepo.FullName,
-                clinicalEventToUpdate.SourceTerminologyMedDra?.DisplayName ?? clinicalEventToUpdate.SourceDescription);
+            // TODO Move to domain event
+            await UpdateReportInstanceIdentifiers(patientFromRepo, clinicalEventToUpdate);
 
             _logger.LogInformation($"----- Clinical Event {message.PatientClinicalEventId} details updated");
 
             return await _unitOfWork.CompleteAsync();
+        }
+
+        private async Task UpdateReportInstanceIdentifiers(Patient patientFromRepo, PatientClinicalEvent clinicalEventToUpdate)
+        {
+            await _workFlowService.UpdateSourceIdentifierForReportInstanceAsync(
+                contextGuid: clinicalEventToUpdate.PatientClinicalEventGuid,
+                sourceIdentifier: clinicalEventToUpdate.SourceTerminologyMedDra?.DisplayName ?? clinicalEventToUpdate.SourceDescription);
         }
 
         private async Task<List<CustomAttributeDetail>> PrepareClinicalEventAttributesWithNewValuesAsync(IExtendable extendedEntity, IDictionary<int, string> newAttributes)

@@ -21,6 +21,8 @@ namespace PVIMS.Core.Services
 
         TerminologyMedDra GetTerminologyMedDraForReportInstance(Guid contextGuid);
 
-        void UpdateIdentifiersForWorkFlowInstance(Guid contextGuid, string patientIdentifier, string sourceIdentifier);
+        Task UpdatePatientIdentifierForReportInstanceAsync(Guid contextGuid, string patientIdentifier);
+
+        Task UpdateSourceIdentifierForReportInstanceAsync(Guid contextGuid, string sourceIdentifier);
     }
 }
