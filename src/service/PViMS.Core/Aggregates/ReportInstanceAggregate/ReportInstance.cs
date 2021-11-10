@@ -296,9 +296,13 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             return _medications.Any(m => m.ReportInstanceMedicationGuid == reportInstanceMedicationGuid);
         }
 
-        public void SetEventIdentifiers(string patientIdentifier, string sourceIdentifier)
+        public void SetPatientIdentifier(string patientIdentifier)
         {
             PatientIdentifier = patientIdentifier;
+        }
+
+        public void SetSourceIdentifier(string sourceIdentifier)
+        {
             SourceIdentifier = sourceIdentifier;
         }
 
