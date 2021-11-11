@@ -40,6 +40,8 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
 
   pharmadexLink = '';
 
+  checking: boolean = false;
+
   constructor(
     private themeService: ThemeService,
     private layout: LayoutService,
@@ -128,13 +130,14 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
 
   refreshMeta(): void {
     let self = this;
-
+    self.checking = true;
     self.metaService.refresh()
-        .subscribe(result => {
-          //self.notify("Meta data refreshed successfully", "Success");          
-        }, error => {
-          //self.handleError(error, "Error refreshing meta data");
-        });
+      .subscribe(result => {
+        //self.checking = false;
+        //self.notify("Meta data refreshed successfully", "Success");          
+      }, error => {
+        //self.handleError(error, "Error refreshing meta data");
+      });
   }   
 
   installPwa(): void {
