@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using PVIMS.API.Models;
+using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -134,6 +135,594 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 	                    ORDER BY c.MedDraTerm, c.PeriodYear, c.PeriodMonth";
 
                 return await connection.QueryAsync<AdverseEventFrequencyReportDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<AdverseEventReportDto>> GetAdverseEventsByAgeGroupAsync(
+            DateTime searchFrom, DateTime searchTo,
+            AgeGroupCriteria ageGroupCriteria,
+            string genderId,
+            string regimenId,
+            int organisationUnitId,
+            string outcomeId,
+            string isSeriousId,
+            string seriousnessId,
+            string classificationId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var whereAgeGroupCriteria = PrepareAgeWhereQuery(ageGroupCriteria);
+                var whereGenderCriteria = !String.IsNullOrWhiteSpace(genderId) ? PrepareGenderWhereQuery(genderId) : "";
+                var whereRegimenCriteria = !String.IsNullOrWhiteSpace(regimenId) ? PrepareRegimenWhereQuery(regimenId) : "";
+                var whereFacilityRegionCriteria = organisationUnitId > 0 ? $"AND f.OrgUnit_Id = {organisationUnitId}" : "";
+                var whereOutcomeCriteria = !String.IsNullOrWhiteSpace(outcomeId) ? PrepareOutcomeWhereQuery(outcomeId) : "";
+                var whereIsSeriousCriteria = !String.IsNullOrWhiteSpace(isSeriousId) ? PrepareIsSeriousWhereQuery(isSeriousId) : "";
+                var whereSeriousnessCriteria = !String.IsNullOrWhiteSpace(seriousnessId) ? PrepareSeriousnessWhereQuery(seriousnessId) : "";
+                var whereClassificationCriteria = !String.IsNullOrWhiteSpace(classificationId) ? PrepareClassificationWhereQuery(classificationId) : "";
+
+                var sql = @$"SELECT	
+		                        CASE	WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 0 AND 4 THEN '0 - 4' 
+				                        WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 5 AND 14 THEN '5 - 14'
+				                        WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 15 AND 24 THEN '15 - 24'
+				                        WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 25 AND 34 THEN '25 - 34'
+				                        WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 35 AND 44 THEN '35 - 44'
+				                        WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 45 AND 54 THEN '45 - 54'
+				                        WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 55 AND 64 THEN '55 - 64'
+				                        WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) > 64 THEN '>= 65' END AS StratificationCriteria,
+		                            t.MedDraTerm AS AdverseEvent, 
+		                            COUNT(*) AS PatientCount
+	                            FROM PatientClinicalEvent pce 
+                                    INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
+                                    INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
+		                            INNER JOIN Patient p ON pce.Patient_Id = p.Id
+                                    INNER JOIN MetaPatient mp on p.PatientGuid = mp.PatientGuid
+		                            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
+		                            INNER JOIN Facility f ON pf.Facility_Id = f.Id
+		                            INNER JOIN OrgUnit ou ON f.OrgUnit_Id = ou.Id
+		                            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
+	                            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' 
+                                    AND pce.Archived = 0 AND p.Archived = 0 
+                                    {whereAgeGroupCriteria} 
+                                    {whereGenderCriteria} 
+                                    {whereRegimenCriteria} 
+                                    {whereFacilityRegionCriteria} 
+                                    {whereOutcomeCriteria} 
+                                    {whereIsSeriousCriteria} 
+                                    {whereSeriousnessCriteria} 
+                                    {whereClassificationCriteria} 
+	                            GROUP BY 
+		                            CASE	WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 0 AND 4 THEN '0 - 4' 
+				                            WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 5 AND 14 THEN '5 - 14'
+				                            WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 15 AND 24 THEN '15 - 24'
+				                            WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 25 AND 34 THEN '25 - 34'
+				                            WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 35 AND 44 THEN '35 - 44'
+				                            WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 45 AND 54 THEN '45 - 54'
+				                            WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 55 AND 64 THEN '55 - 64'
+				                            WHEN FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) > 64 THEN '>= 65' END,
+                                    t.MedDraTerm
+	                            ORDER BY t.MedDraTerm";
+
+                return await connection.QueryAsync<AdverseEventReportDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<AdverseEventReportDto>> GetAdverseEventsByFacilityRegionAsync(
+            DateTime searchFrom, DateTime searchTo,
+            AgeGroupCriteria ageGroupCriteria,
+            string genderId, 
+            string regimenId,
+            int organisationUnitId,
+            string outcomeId, 
+            string isSeriousId, 
+            string seriousnessId, 
+            string classificationId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var whereAgeGroupCriteria = PrepareAgeWhereQuery(ageGroupCriteria);
+                var whereGenderCriteria = !String.IsNullOrWhiteSpace(genderId) ? PrepareGenderWhereQuery(genderId) : "";
+                var whereRegimenCriteria = !String.IsNullOrWhiteSpace(regimenId) ? PrepareRegimenWhereQuery(regimenId) : "";
+                var whereFacilityRegionCriteria = organisationUnitId > 0 ? $"AND f.OrgUnit_Id = {organisationUnitId}" : "";
+                var whereOutcomeCriteria = !String.IsNullOrWhiteSpace(outcomeId) ? PrepareOutcomeWhereQuery(outcomeId) : "";
+                var whereIsSeriousCriteria = !String.IsNullOrWhiteSpace(isSeriousId) ? PrepareIsSeriousWhereQuery(isSeriousId) : "";
+                var whereSeriousnessCriteria = !String.IsNullOrWhiteSpace(seriousnessId) ? PrepareSeriousnessWhereQuery(seriousnessId) : "";
+                var whereClassificationCriteria = !String.IsNullOrWhiteSpace(classificationId) ? PrepareClassificationWhereQuery(classificationId) : "";
+
+                var sql = @$"SELECT	ou.[Name] AS StratificationCriteria,
+		                            t.MedDraTerm AS AdverseEvent, 
+		                            COUNT(*) AS PatientCount
+	                            FROM PatientClinicalEvent pce 
+                                    INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
+                                    INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
+		                            INNER JOIN Patient p ON pce.Patient_Id = p.Id
+                                    INNER JOIN MetaPatient mp on p.PatientGuid = mp.PatientGuid
+		                            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
+		                            INNER JOIN Facility f ON pf.Facility_Id = f.Id
+		                            INNER JOIN OrgUnit ou ON f.OrgUnit_Id = ou.Id
+		                            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
+	                            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' 
+                                    AND pce.Archived = 0 AND p.Archived = 0 
+                                    {whereAgeGroupCriteria} 
+                                    {whereGenderCriteria} 
+                                    {whereRegimenCriteria} 
+                                    {whereFacilityRegionCriteria} 
+                                    {whereOutcomeCriteria} 
+                                    {whereIsSeriousCriteria} 
+                                    {whereSeriousnessCriteria} 
+                                    {whereClassificationCriteria} 
+	                            GROUP BY ou.[Name], t.MedDraTerm
+	                            ORDER BY ou.[Name], t.MedDraTerm";
+
+                return await connection.QueryAsync<AdverseEventReportDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<AdverseEventReportDto>> GetAdverseEventsByOutcomeAsync(
+            DateTime searchFrom, DateTime searchTo,
+            AgeGroupCriteria ageGroupCriteria,
+            string genderId,
+            string regimenId,
+            int organisationUnitId,
+            string outcomeId,
+            string isSeriousId,
+            string seriousnessId,
+            string classificationId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var whereAgeGroupCriteria = PrepareAgeWhereQuery(ageGroupCriteria);
+                var whereGenderCriteria = !String.IsNullOrWhiteSpace(genderId) ? PrepareGenderWhereQuery(genderId) : "";
+                var whereRegimenCriteria = !String.IsNullOrWhiteSpace(regimenId) ? PrepareRegimenWhereQuery(regimenId) : "";
+                var whereFacilityRegionCriteria = organisationUnitId > 0 ? $"AND f.OrgUnit_Id = {organisationUnitId}" : "";
+                var whereOutcomeCriteria = !String.IsNullOrWhiteSpace(outcomeId) ? PrepareOutcomeWhereQuery(outcomeId) : "";
+                var whereIsSeriousCriteria = !String.IsNullOrWhiteSpace(isSeriousId) ? PrepareIsSeriousWhereQuery(isSeriousId) : "";
+                var whereSeriousnessCriteria = !String.IsNullOrWhiteSpace(seriousnessId) ? PrepareSeriousnessWhereQuery(seriousnessId) : "";
+                var whereClassificationCriteria = !String.IsNullOrWhiteSpace(classificationId) ? PrepareClassificationWhereQuery(classificationId) : "";
+
+                var sql = @$"SELECT	mpce.Outcome AS StratificationCriteria,
+		                            t.MedDraTerm AS AdverseEvent, 
+		                            COUNT(*) AS PatientCount
+	                            FROM PatientClinicalEvent pce 
+                                    INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
+                                    INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
+		                            INNER JOIN Patient p ON pce.Patient_Id = p.Id
+                                    INNER JOIN MetaPatient mp on p.PatientGuid = mp.PatientGuid
+		                            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
+		                            INNER JOIN Facility f ON pf.Facility_Id = f.Id
+		                            INNER JOIN OrgUnit ou ON f.OrgUnit_Id = ou.Id
+		                            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
+	                            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' 
+                                    AND pce.Archived = 0 AND p.Archived = 0 
+                                    {whereAgeGroupCriteria} 
+                                    {whereGenderCriteria} 
+                                    {whereRegimenCriteria} 
+                                    {whereFacilityRegionCriteria} 
+                                    {whereOutcomeCriteria} 
+                                    {whereIsSeriousCriteria} 
+                                    {whereSeriousnessCriteria} 
+                                    {whereClassificationCriteria} 
+	                            GROUP BY mpce.Outcome, t.MedDraTerm
+	                            ORDER BY mpce.Outcome, t.MedDraTerm";
+
+                return await connection.QueryAsync<AdverseEventReportDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<AdverseEventReportDto>> GetAdverseEventsByGenderAsync(
+            DateTime searchFrom, DateTime searchTo,
+            AgeGroupCriteria ageGroupCriteria,
+            string genderId,
+            string regimenId,
+            int organisationUnitId,
+            string outcomeId,
+            string isSeriousId,
+            string seriousnessId,
+            string classificationId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var whereAgeGroupCriteria = PrepareAgeWhereQuery(ageGroupCriteria);
+                var whereGenderCriteria = !String.IsNullOrWhiteSpace(genderId) ? PrepareGenderWhereQuery(genderId) : "";
+                var whereRegimenCriteria = !String.IsNullOrWhiteSpace(regimenId) ? PrepareRegimenWhereQuery(regimenId) : "";
+                var whereFacilityRegionCriteria = organisationUnitId > 0 ? $"AND f.OrgUnit_Id = {organisationUnitId}" : "";
+                var whereOutcomeCriteria = !String.IsNullOrWhiteSpace(outcomeId) ? PrepareOutcomeWhereQuery(outcomeId) : "";
+                var whereIsSeriousCriteria = !String.IsNullOrWhiteSpace(isSeriousId) ? PrepareIsSeriousWhereQuery(isSeriousId) : "";
+                var whereSeriousnessCriteria = !String.IsNullOrWhiteSpace(seriousnessId) ? PrepareSeriousnessWhereQuery(seriousnessId) : "";
+                var whereClassificationCriteria = !String.IsNullOrWhiteSpace(classificationId) ? PrepareClassificationWhereQuery(classificationId) : "";
+
+                var sql = @$"SELECT	mp.Gender AS StratificationCriteria,
+		                            t.MedDraTerm AS AdverseEvent, 
+		                            COUNT(*) AS PatientCount
+	                            FROM PatientClinicalEvent pce 
+                                    INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
+                                    INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
+		                            INNER JOIN Patient p ON pce.Patient_Id = p.Id
+                                    INNER JOIN MetaPatient mp on p.PatientGuid = mp.PatientGuid
+		                            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
+		                            INNER JOIN Facility f ON pf.Facility_Id = f.Id
+		                            INNER JOIN OrgUnit ou ON f.OrgUnit_Id = ou.Id
+		                            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
+	                            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' 
+                                    AND pce.Archived = 0 AND p.Archived = 0 
+                                    {whereAgeGroupCriteria} 
+                                    {whereGenderCriteria} 
+                                    {whereRegimenCriteria} 
+                                    {whereFacilityRegionCriteria} 
+                                    {whereOutcomeCriteria} 
+                                    {whereIsSeriousCriteria} 
+                                    {whereSeriousnessCriteria} 
+                                    {whereClassificationCriteria} 
+	                            GROUP BY mp.Gender, t.MedDraTerm
+	                            ORDER BY mp.Gender, t.MedDraTerm";
+
+                return await connection.QueryAsync<AdverseEventReportDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<AdverseEventReportDto>> GetAdverseEventsByRegimenAsync(
+            DateTime searchFrom, DateTime searchTo,
+            AgeGroupCriteria ageGroupCriteria,
+            string genderId,
+            string regimenId,
+            int organisationUnitId,
+            string outcomeId,
+            string isSeriousId,
+            string seriousnessId,
+            string classificationId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var whereAgeGroupCriteria = PrepareAgeWhereQuery(ageGroupCriteria);
+                var whereGenderCriteria = !String.IsNullOrWhiteSpace(genderId) ? PrepareGenderWhereQuery(genderId) : "";
+                var whereRegimenCriteria = !String.IsNullOrWhiteSpace(regimenId) ? PrepareRegimenWhereQuery(regimenId) : "";
+                var whereFacilityRegionCriteria = organisationUnitId > 0 ? $"AND f.OrgUnit_Id = {organisationUnitId}" : "";
+                var whereOutcomeCriteria = !String.IsNullOrWhiteSpace(outcomeId) ? PrepareOutcomeWhereQuery(outcomeId) : "";
+                var whereIsSeriousCriteria = !String.IsNullOrWhiteSpace(isSeriousId) ? PrepareIsSeriousWhereQuery(isSeriousId) : "";
+                var whereSeriousnessCriteria = !String.IsNullOrWhiteSpace(seriousnessId) ? PrepareSeriousnessWhereQuery(seriousnessId) : "";
+                var whereClassificationCriteria = !String.IsNullOrWhiteSpace(classificationId) ? PrepareClassificationWhereQuery(classificationId) : "";
+
+                var sql = @$"SELECT	mpce.Regimen AS StratificationCriteria,
+		                            t.MedDraTerm AS AdverseEvent, 
+		                            COUNT(*) AS PatientCount
+	                            FROM PatientClinicalEvent pce 
+                                    INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
+                                    INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
+		                            INNER JOIN Patient p ON pce.Patient_Id = p.Id
+                                    INNER JOIN MetaPatient mp on p.PatientGuid = mp.PatientGuid
+		                            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
+		                            INNER JOIN Facility f ON pf.Facility_Id = f.Id
+		                            INNER JOIN OrgUnit ou ON f.OrgUnit_Id = ou.Id
+		                            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
+	                            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' 
+                                    AND pce.Archived = 0 AND p.Archived = 0 
+                                    {whereAgeGroupCriteria} 
+                                    {whereGenderCriteria} 
+                                    {whereRegimenCriteria} 
+                                    {whereFacilityRegionCriteria} 
+                                    {whereOutcomeCriteria} 
+                                    {whereIsSeriousCriteria} 
+                                    {whereSeriousnessCriteria} 
+                                    {whereClassificationCriteria} 
+	                            GROUP BY mpce.Regimen, t.MedDraTerm
+	                            ORDER BY mpce.Regimen, t.MedDraTerm";
+
+                return await connection.QueryAsync<AdverseEventReportDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<AdverseEventReportDto>> GetAdverseEventsByIsSeriousAsync(
+            DateTime searchFrom, DateTime searchTo,
+            AgeGroupCriteria ageGroupCriteria,
+            string genderId,
+            string regimenId,
+            int organisationUnitId,
+            string outcomeId,
+            string isSeriousId,
+            string seriousnessId,
+            string classificationId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var whereAgeGroupCriteria = PrepareAgeWhereQuery(ageGroupCriteria);
+                var whereGenderCriteria = !String.IsNullOrWhiteSpace(genderId) ? PrepareGenderWhereQuery(genderId) : "";
+                var whereRegimenCriteria = !String.IsNullOrWhiteSpace(regimenId) ? PrepareRegimenWhereQuery(regimenId) : "";
+                var whereFacilityRegionCriteria = organisationUnitId > 0 ? $"AND f.OrgUnit_Id = {organisationUnitId}" : "";
+                var whereOutcomeCriteria = !String.IsNullOrWhiteSpace(outcomeId) ? PrepareOutcomeWhereQuery(outcomeId) : "";
+                var whereIsSeriousCriteria = !String.IsNullOrWhiteSpace(isSeriousId) ? PrepareIsSeriousWhereQuery(isSeriousId) : "";
+                var whereSeriousnessCriteria = !String.IsNullOrWhiteSpace(seriousnessId) ? PrepareSeriousnessWhereQuery(seriousnessId) : "";
+                var whereClassificationCriteria = !String.IsNullOrWhiteSpace(classificationId) ? PrepareClassificationWhereQuery(classificationId) : "";
+
+                var sql = @$"SELECT	mpce.[Istheadverseeventserious?] AS StratificationCriteria,
+		                            t.MedDraTerm AS AdverseEvent, 
+		                            COUNT(*) AS PatientCount
+	                            FROM PatientClinicalEvent pce 
+                                    INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
+                                    INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
+		                            INNER JOIN Patient p ON pce.Patient_Id = p.Id
+                                    INNER JOIN MetaPatient mp on p.PatientGuid = mp.PatientGuid
+		                            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
+		                            INNER JOIN Facility f ON pf.Facility_Id = f.Id
+		                            INNER JOIN OrgUnit ou ON f.OrgUnit_Id = ou.Id
+		                            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
+	                            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' 
+                                    AND pce.Archived = 0 AND p.Archived = 0 
+                                    {whereAgeGroupCriteria} 
+                                    {whereGenderCriteria} 
+                                    {whereRegimenCriteria} 
+                                    {whereFacilityRegionCriteria} 
+                                    {whereOutcomeCriteria} 
+                                    {whereIsSeriousCriteria} 
+                                    {whereSeriousnessCriteria} 
+                                    {whereClassificationCriteria} 
+	                            GROUP BY mpce.[Istheadverseeventserious?], t.MedDraTerm
+	                            ORDER BY mpce.[Istheadverseeventserious?], t.MedDraTerm";
+
+                return await connection.QueryAsync<AdverseEventReportDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<AdverseEventReportDto>> GetAdverseEventsBySeriousnessAsync(
+            DateTime searchFrom, DateTime searchTo,
+            AgeGroupCriteria ageGroupCriteria,
+            string genderId,
+            string regimenId,
+            int organisationUnitId,
+            string outcomeId,
+            string isSeriousId,
+            string seriousnessId,
+            string classificationId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var whereAgeGroupCriteria = PrepareAgeWhereQuery(ageGroupCriteria);
+                var whereGenderCriteria = !String.IsNullOrWhiteSpace(genderId) ? PrepareGenderWhereQuery(genderId) : "";
+                var whereRegimenCriteria = !String.IsNullOrWhiteSpace(regimenId) ? PrepareRegimenWhereQuery(regimenId) : "";
+                var whereFacilityRegionCriteria = organisationUnitId > 0 ? $"AND f.OrgUnit_Id = {organisationUnitId}" : "";
+                var whereOutcomeCriteria = !String.IsNullOrWhiteSpace(outcomeId) ? PrepareOutcomeWhereQuery(outcomeId) : "";
+                var whereIsSeriousCriteria = !String.IsNullOrWhiteSpace(isSeriousId) ? PrepareIsSeriousWhereQuery(isSeriousId) : "";
+                var whereSeriousnessCriteria = !String.IsNullOrWhiteSpace(seriousnessId) ? PrepareSeriousnessWhereQuery(seriousnessId) : "";
+                var whereClassificationCriteria = !String.IsNullOrWhiteSpace(classificationId) ? PrepareClassificationWhereQuery(classificationId) : "";
+
+                var sql = @$"SELECT	mpce.[Seriousness] AS StratificationCriteria,
+		                            t.MedDraTerm AS AdverseEvent, 
+		                            COUNT(*) AS PatientCount
+	                            FROM PatientClinicalEvent pce 
+                                    INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
+                                    INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
+		                            INNER JOIN Patient p ON pce.Patient_Id = p.Id
+                                    INNER JOIN MetaPatient mp on p.PatientGuid = mp.PatientGuid
+		                            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
+		                            INNER JOIN Facility f ON pf.Facility_Id = f.Id
+		                            INNER JOIN OrgUnit ou ON f.OrgUnit_Id = ou.Id
+		                            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
+	                            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' 
+                                    AND pce.Archived = 0 AND p.Archived = 0 
+                                    {whereAgeGroupCriteria} 
+                                    {whereGenderCriteria} 
+                                    {whereRegimenCriteria} 
+                                    {whereFacilityRegionCriteria} 
+                                    {whereOutcomeCriteria} 
+                                    {whereIsSeriousCriteria} 
+                                    {whereSeriousnessCriteria} 
+                                    {whereClassificationCriteria} 
+	                            GROUP BY mpce.[Seriousness], t.MedDraTerm
+	                            ORDER BY mpce.[Seriousness], t.MedDraTerm";
+
+                return await connection.QueryAsync<AdverseEventReportDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<AdverseEventReportDto>> GetAdverseEventsByClassificationAsync(
+            DateTime searchFrom, DateTime searchTo,
+            AgeGroupCriteria ageGroupCriteria,
+            string genderId,
+            string regimenId,
+            int organisationUnitId,
+            string outcomeId,
+            string isSeriousId,
+            string seriousnessId,
+            string classificationId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var whereAgeGroupCriteria = PrepareAgeWhereQuery(ageGroupCriteria);
+                var whereGenderCriteria = !String.IsNullOrWhiteSpace(genderId) ? PrepareGenderWhereQuery(genderId) : "";
+                var whereRegimenCriteria = !String.IsNullOrWhiteSpace(regimenId) ? PrepareRegimenWhereQuery(regimenId) : "";
+                var whereFacilityRegionCriteria = organisationUnitId > 0 ? $"AND f.OrgUnit_Id = {organisationUnitId}" : "";
+                var whereOutcomeCriteria = !String.IsNullOrWhiteSpace(outcomeId) ? PrepareOutcomeWhereQuery(outcomeId) : "";
+                var whereIsSeriousCriteria = !String.IsNullOrWhiteSpace(isSeriousId) ? PrepareIsSeriousWhereQuery(isSeriousId) : "";
+                var whereSeriousnessCriteria = !String.IsNullOrWhiteSpace(seriousnessId) ? PrepareSeriousnessWhereQuery(seriousnessId) : "";
+                var whereClassificationCriteria = !String.IsNullOrWhiteSpace(classificationId) ? PrepareClassificationWhereQuery(classificationId) : "";
+
+                var sql = @$"SELECT	mpce.[Classification] AS StratificationCriteria,
+		                            t.MedDraTerm AS AdverseEvent, 
+		                            COUNT(*) AS PatientCount
+	                            FROM PatientClinicalEvent pce 
+                                    INNER JOIN ReportInstance ri on pce.PatientClinicalEventGuid = ri.ContextGuid 
+                                    INNER JOIN MetaPatientClinicalEvent mpce on pce.PatientClinicalEventGuid = mpce.PatientClinicalEventGuid 
+		                            INNER JOIN Patient p ON pce.Patient_Id = p.Id
+                                    INNER JOIN MetaPatient mp on p.PatientGuid = mp.PatientGuid
+		                            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
+		                            INNER JOIN Facility f ON pf.Facility_Id = f.Id
+		                            INNER JOIN OrgUnit ou ON f.OrgUnit_Id = ou.Id
+		                            INNER JOIN TerminologyMedDra t ON ri.TerminologyMedDra_Id = t.Id
+	                            WHERE pce.OnsetDate BETWEEN '{searchFrom.ToString("yyyy-MM-dd")}' AND '{searchTo.ToString("yyyy-MM-dd")}' 
+                                    AND pce.Archived = 0 AND p.Archived = 0 
+                                    {whereAgeGroupCriteria} 
+                                    {whereGenderCriteria} 
+                                    {whereRegimenCriteria} 
+                                    {whereFacilityRegionCriteria} 
+                                    {whereOutcomeCriteria} 
+                                    {whereIsSeriousCriteria} 
+                                    {whereSeriousnessCriteria} 
+                                    {whereClassificationCriteria} 
+	                            GROUP BY mpce.[Classification], t.MedDraTerm
+	                            ORDER BY mpce.[Classification], t.MedDraTerm";
+
+                return await connection.QueryAsync<AdverseEventReportDto>(sql);
+            }
+        }
+
+        private string PrepareAgeWhereQuery(AgeGroupCriteria ageGroupCriteria)
+        {
+            switch (ageGroupCriteria)
+            {
+                case AgeGroupCriteria.None:
+                    return string.Empty;
+                case AgeGroupCriteria.ZeroToFour:
+                    return "AND FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 0 AND 4";
+                case AgeGroupCriteria.FiveToFourteen:
+                    return "AND FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 5 AND 14";
+                case AgeGroupCriteria.FifteenToTwentyFour:
+                    return "AND FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 15 AND 24";
+                case AgeGroupCriteria.TwentyFiveToThirtyFour:
+                    return "AND FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 25 AND 34";
+                case AgeGroupCriteria.ThirtyFiveToFortyFour:
+                    return "AND FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 35 AND 44";
+                case AgeGroupCriteria.FortyFiveToFivetyFour:
+                    return "AND FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 45 AND 54";
+                case AgeGroupCriteria.FifetyFiveToSixtyFour:
+                    return "AND FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) BETWEEN 55 AND 64";
+                case AgeGroupCriteria.AboveSixtyFour:
+                    return "AND FLOOR(DATEDIFF(DAY, p.DateofBirth, pce.OnsetDate) / 365.25) >= 65";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string PrepareGenderWhereQuery(string key)
+        {
+            switch (key)
+            {
+                case "1":
+                    return "AND mp.Gender = 'Male'";
+                case "2":
+                    return "AND mp.Gender = 'Female'";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string PrepareRegimenWhereQuery(string key)
+        {
+            switch (key)
+            {
+                case "1":
+                    return "AND mpce.Regimen = 'SSOR (3)'";
+                case "2":
+                    return "AND mpce.Regimen = 'SLOR FQ-S (4)'";
+                case "3":
+                    return "AND mpce.Regimen = 'SLOR FQ-R (5)'";
+                case "4":
+                    return "AND mpce.Regimen = 'ITR'";
+                case "5":
+                    return "AND mpce.Regimen = 'FQ susceptible MDR TB (6a)'";
+                case "6":
+                    return "AND mpce.Regimen = 'FQ susceptible MDR TB (6b)'";
+                case "7":
+                    return "AND mpce.Regimen = 'FQ susceptible MDR TB (6c)'";
+                case "8":
+                    return "AND mpce.Regimen = 'FQ resistant MDR TB (7a)'";
+                case "9":
+                    return "AND mpce.Regimen = 'FQ resistant MDR TB (7b)'";
+                case "10":
+                    return "AND mpce.Regimen = 'FQ resistant MDR TB (7c)'";
+                case "11":
+                    return "AND mpce.Regimen = 'BPaL'";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string PrepareOutcomeWhereQuery(string key)
+        {
+            switch (key)
+            {
+                case "1":
+                    return "AND mpce.Outcome = 'Resolved'";
+                case "2":
+                    return "AND mpce.Outcome = 'Resolved with sequelae'";
+                case "3":
+                    return "AND mpce.Outcome = 'Fatal'";
+                case "4":
+                    return "AND mpce.Outcome = 'Resolving'";
+                case "5":
+                    return "AND mpce.Outcome = 'Not resolved'";
+                case "6":
+                    return "AND mpce.Outcome = 'Unknown'";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string PrepareIsSeriousWhereQuery(string key)
+        {
+            switch (key)
+            {
+                case "1":
+                    return "AND mpce.[Istheadverseeventserious?] = 'Yes'";
+                case "2":
+                    return "AND mpce.[Istheadverseeventserious?] = 'No'";
+                case "3":
+                    return "AND mpce.[Istheadverseeventserious?] = 'Unknown'";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string PrepareSeriousnessWhereQuery(string key)
+        {
+            switch (key)
+            {
+                case "1":
+                    return "AND mpce.[Seriousness] = 'A congenital anomaly or birth defect'";
+                case "2":
+                    return "AND mpce.[Seriousness] = 'Persistent or significant disability or incapacity'";
+                case "3":
+                    return "AND mpce.[Seriousness] = 'Death'";
+                case "4":
+                    return "AND mpce.[Seriousness] = 'Hospitalisation'";
+                case "5":
+                    return "AND mpce.[Seriousness] = 'Prolonged hospitalisation'";
+                case "6":
+                    return "AND mpce.[Seriousness] = 'Life threatening'";
+                case "7":
+                    return "AND mpce.[Seriousness] = 'A medically important event'";
+                case "8":
+                    return "AND mpce.[Seriousness] = 'N/A'";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string PrepareClassificationWhereQuery(string key)
+        {
+            switch (key)
+            {
+                case "1":
+                    return "AND mpce.[Classification] = 'AESI'";
+                case "2":
+                    return "AND mpce.[Classification] = 'SAE'";
+                case "3":
+                    return "AND mpce.[Classification] = 'Clinically Significant'";
+                default:
+                    return string.Empty;
             }
         }
 
