@@ -432,7 +432,6 @@ export class NavigationService {
               { name: "Adverse Events", state: "system/adverseevent" },
               { name: "Adverse Events Frequency", state: "system/adverseeventfrequency" },
               { name: "Causality", state: "system/causality" },
-              { name: "Patients by Drug", state: "system/patientsdrugreport" },
               { name: "Outstanding Visits", state: "system/outstandingvisit" }
             ]
           };      

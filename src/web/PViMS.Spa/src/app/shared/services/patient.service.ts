@@ -118,12 +118,19 @@ export class PatientService extends BaseService {
     getAdverseEventReport(filterModel: any): any {
         let parameters: ParameterKeyValueModel[] = [];
 
-        parameters.push(<ParameterKeyValueModel> { key: 'adverseEventCriteria', value: filterModel.criteriaId == null ? 1 : filterModel.criteriaId });
         parameters.push(<ParameterKeyValueModel> { key: 'adverseEventStratifyCriteria', value: filterModel.stratifyId == null ? 1 : filterModel.stratifyId });
         parameters.push(<ParameterKeyValueModel> { key: 'searchFrom', value: filterModel.searchFrom.format("YYYY-MM-DD") });
         parameters.push(<ParameterKeyValueModel> { key: 'searchTo', value: filterModel.searchTo.format("YYYY-MM-DD") });
         parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
         parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
+        parameters.push(<ParameterKeyValueModel> { key: 'ageGroupCriteria', value: filterModel.ageGroupCriteria == null ? 0 : filterModel.ageGroupCriteria });
+        parameters.push(<ParameterKeyValueModel> { key: 'genderId', value: filterModel.genderId == null ? '' : filterModel.genderId });
+        parameters.push(<ParameterKeyValueModel> { key: 'regimenId', value: filterModel.regimenId == null ? '' : filterModel.regimenId });
+        parameters.push(<ParameterKeyValueModel> { key: 'organisationUnitId', value: filterModel.organisationUnitId == null ? 0 : filterModel.organisationUnitId });
+        parameters.push(<ParameterKeyValueModel> { key: 'outcomeId', value: filterModel.outcomeId == null ? 0 : filterModel.outcomeId });
+        parameters.push(<ParameterKeyValueModel> { key: 'isSeriousId', value: filterModel.isSeriousId == null ? 0 : filterModel.isSeriousId });
+        parameters.push(<ParameterKeyValueModel> { key: 'seriousnessId', value: filterModel.seriousnessId == null ? 0 : filterModel.seriousnessId });
+        parameters.push(<ParameterKeyValueModel> { key: 'classificationId', value: filterModel.classificationId == null ? 0 : filterModel.classificationId });
 
         return this.Get<AdverseEventReportWrapperModel>('/patients', 'application/vnd.pvims.adverseventreport.v1+json', parameters);
     }    
