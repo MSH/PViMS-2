@@ -350,7 +350,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.adverseventreport.v1+json", "application/vnd.pvims.adverseventreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<AdverseEventReportDto>> GetAdverseEventReport(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<AdverseEventReportDto>>> GetAdverseEventReport(
                         [FromQuery] AdverseEventReportResourceParameters adverseEventReportResourceParameters)
         {
             if (adverseEventReportResourceParameters == null)
@@ -359,13 +359,42 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var mappedResults = GetAdverseEventResults<AdverseEventReportDto>(adverseEventReportResourceParameters);
+            var query = new AdverseEventReportQuery(adverseEventReportResourceParameters.PageNumber,
+                adverseEventReportResourceParameters.PageSize,
+                adverseEventReportResourceParameters.SearchFrom,
+                adverseEventReportResourceParameters.SearchTo,
+                adverseEventReportResourceParameters.AdverseEventStratifyCriteria,
+                adverseEventReportResourceParameters.AgeGroupCriteria,
+                adverseEventReportResourceParameters.GenderId,
+                adverseEventReportResourceParameters.RegimenId,
+                adverseEventReportResourceParameters.OrganisationUnitId,
+                adverseEventReportResourceParameters.OutcomeId,
+                adverseEventReportResourceParameters.IsSeriousId,
+                adverseEventReportResourceParameters.SeriousnessId,
+                adverseEventReportResourceParameters.ClassificationId);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<AdverseEventReportDto>(mappedResults.TotalCount, mappedResults);
-            var wrapperWithLinks = CreateLinksForAdverseEventReport(wrapper, adverseEventReportResourceParameters,
-                mappedResults.HasNext, mappedResults.HasPrevious);
+            _logger.LogInformation("----- Sending query: AdverseEventReportQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = adverseEventReportResourceParameters.PageSize,
+                currentPage = adverseEventReportResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -1105,43 +1134,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="adverseEventReportResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForAdverseEventReport(
-            LinkedResourceBaseDto wrapper,
-            AdverseEventReportResourceParameters adverseEventReportResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            wrapper.Links.Add(
-               new LinkDto(
-                   _linkGeneratorService.CreateAdverseEventReportResourceUri(ResourceUriType.Current, adverseEventReportResourceParameters),
-                   "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateAdverseEventReportResourceUri(ResourceUriType.NextPage, adverseEventReportResourceParameters),
-                       "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                   new LinkDto(
-                       _linkGeneratorService.CreateAdverseEventReportResourceUri(ResourceUriType.PreviousPage, adverseEventReportResourceParameters),
-                       "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        /// <summary>
         ///  Prepare HATEOAS links for a single resource
         /// </summary>
         /// <param name="patientId">The unique identifier of the parent resource</param>
@@ -1166,52 +1158,6 @@ namespace PVIMS.API.Controllers
             dto.Patients = _mapper.Map<List<PatientListDto>>(_reportService.GetPatientListByDrugItems(dto.ConceptId));
 
             return dto;
-        }
-
-        /// <summary>
-        /// Get results from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="adverseEventReportResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetAdverseEventResults<T>(AdverseEventReportResourceParameters adverseEventReportResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = adverseEventReportResourceParameters.PageNumber,
-                PageSize = adverseEventReportResourceParameters.PageSize
-            };
-
-            var resultsFromService = PagedCollection<AdverseEventList>.Create(_reportService.GetAdverseEventItems(
-                adverseEventReportResourceParameters.SearchFrom, 
-                adverseEventReportResourceParameters.SearchTo, 
-                adverseEventReportResourceParameters.AdverseEventCriteria,
-                adverseEventReportResourceParameters.AdverseEventStratifyCriteria), pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (resultsFromService != null)
-            {
-                // Map EF entity to Dto
-                var mappedResults = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(resultsFromService),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    resultsFromService.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedResults.TotalCount,
-                    pageSize = mappedResults.PageSize,
-                    currentPage = mappedResults.CurrentPage,
-                    totalPages = mappedResults.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                return mappedResults;
-            }
-
-            return null;
         }
 
         /// <summary>

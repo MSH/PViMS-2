@@ -15,16 +15,10 @@ namespace PVIMS.API.Models
         public string AdverseEvent { get; set; }
 
         /// <summary>
-        /// Stratification criteris
+        /// Stratification criteria
         /// </summary>
         [DataMember]
-        public string Criteria { get; set; }
-
-        /// <summary>
-        /// Stratification by is serious
-        /// </summary>
-        [DataMember]
-        public string Serious { get; set; }
+        public string StratificationCriteria { get; set; }
 
         /// <summary>
         /// The total number of patients meeting the criteria

@@ -5,7 +5,6 @@ export interface AdverseEventReportWrapperModel {
 
 export interface AdverseEventReportModel {
     adverseEvent: string;
-    criteria: string;
-    serious: string;
+    stratificationCriteria: string;
     patientCount: number;
 }

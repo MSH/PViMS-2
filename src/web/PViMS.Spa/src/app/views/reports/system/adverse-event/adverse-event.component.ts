@@ -30,8 +30,9 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './adverse-event.component.html',
-  styleUrls: ['./adverse-event.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-system-organ-class { flex: 0 0 20% !important; width: 20% !important; }
+  `],  
   animations: egretAnimations
 })
 export class AdverseEventComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -76,10 +77,17 @@ export class AdverseEventComponent extends BaseComponent implements OnInit, Afte
     const self = this;
 
     self.viewModelForm = self._formBuilder.group({
-      criteriaId: [this.viewModel.criteriaId || '1', Validators.required],
-      stratifyId: [this.viewModel.stratifyId || '1', Validators.required],
-      searchFrom: [this.viewModel.searchFrom || moment().subtract(3, 'months'), Validators.required],
+      stratifyId: [this.viewModel.stratifyId || '5', Validators.required],
+      searchFrom: [this.viewModel.searchFrom || moment().subtract(13, 'months'), Validators.required],
       searchTo: [this.viewModel.searchTo || moment(), Validators.required],
+      ageGroupCriteria: [null],
+      genderId: [null],
+      regimenId: [null],
+      organisationUnitId: [null],
+      outcomeId: [null],
+      isSeriousId: [null],
+      seriousnessId: [null],
+      classificationId: [null]
     });
   }
 
@@ -113,7 +121,7 @@ export class AdverseEventComponent extends BaseComponent implements OnInit, Afte
 
   loadMetaDate(): void {
     let self = this;
-    self.configService.getConfigIdentifier(7)
+    self.configService.getConfigIdentifier(2)
       .subscribe(result => {
         self.metaDate = result.configValue
       });
@@ -123,7 +131,7 @@ export class AdverseEventComponent extends BaseComponent implements OnInit, Afte
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['adverse-event', 'criteria', 'serious', 'patient-count']);
+          (['adverse-event', 'stratification-criteria', 'patient-count']);
 
   criteriaId: number;
   stratifyId: number;
@@ -133,7 +141,6 @@ class ViewModel {
 
 class GridRecordModel {
   adverseEvent: string;
-  criteria: string;
-  serious: string;
+  stratificationCriteria: string;
   patientCount: number;
 }

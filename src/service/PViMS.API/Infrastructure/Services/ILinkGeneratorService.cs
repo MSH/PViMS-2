@@ -18,7 +18,7 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateDeleteResourceUri(string resourceName, long resourceId);
 
-        string CreateAdverseEventReportResourceUri(ResourceUriType type, AdverseEventReportResourceParameters adverseEventReportResourceParameters);
+        string CreateAdverseEventReportResourceUri(ResourceUriType type, int pageNumber, int pageSize, AdverseEventStratifyCriteria adverseEventStratifyCriteria);
 
         string CreateAnalyserTermSetsResourceUri(Guid workFlowGuid, ResourceUriType type, AnalyserTermSetResourceParameters analyserTermSetResourceParameters);
 

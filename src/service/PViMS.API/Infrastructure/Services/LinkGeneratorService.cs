@@ -108,7 +108,9 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreateAdverseEventReportResourceUri(ResourceUriType type,
-            AdverseEventReportResourceParameters adverseEventReportResourceParameters)
+            int pageNumber,
+            int pageSize,
+            AdverseEventStratifyCriteria adverseEventStratifyCriteria)
         {
             switch (type)
             {
@@ -116,29 +118,26 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetAdverseEventReport",
                       new
                       {
-                          pageNumber = adverseEventReportResourceParameters.PageNumber - 1,
-                          pageSize = adverseEventReportResourceParameters.PageSize,
-                          AdverseEventCriteria = adverseEventReportResourceParameters.AdverseEventCriteria,
-                          AdverseEventStratifyCriteria = adverseEventReportResourceParameters.AdverseEventStratifyCriteria
+                          pageNumber = pageNumber - 1,
+                          pageSize = pageSize,
+                          AdverseEventStratifyCriteria = adverseEventStratifyCriteria
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetAdverseEventReport",
                       new
                       {
-                          pageNumber = adverseEventReportResourceParameters.PageNumber + 1,
-                          pageSize = adverseEventReportResourceParameters.PageSize,
-                          AdverseEventCriteria = adverseEventReportResourceParameters.AdverseEventCriteria,
-                          AdverseEventStratifyCriteria = adverseEventReportResourceParameters.AdverseEventStratifyCriteria
+                          pageNumber = pageNumber + 1,
+                          pageSize = pageSize,
+                          AdverseEventStratifyCriteria = adverseEventStratifyCriteria
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetAdverseEventReport",
                       new
                       {
-                          pageNumber = adverseEventReportResourceParameters.PageNumber,
-                          pageSize = adverseEventReportResourceParameters.PageSize,
-                          AdverseEventCriteria = adverseEventReportResourceParameters.AdverseEventCriteria,
-                          AdverseEventStratifyCriteria = adverseEventReportResourceParameters.AdverseEventStratifyCriteria
+                          pageNumber = pageNumber,
+                          pageSize = pageSize,
+                          AdverseEventStratifyCriteria = adverseEventStratifyCriteria
                       });
             }
         }
