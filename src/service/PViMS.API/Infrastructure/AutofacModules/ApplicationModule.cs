@@ -26,10 +26,6 @@ namespace PVIMS.API.Infrastructure.AutofacModules
                 .AsImplementedInterfaces()
                 .InstancePerLifetimeScope();
 
-            builder.Register(c => new PatientQueries(QueriesConnectionString))
-                .As<IPatientQueries>()
-                .InstancePerLifetimeScope();
-
             builder.Register(c => new ReportInstanceQueries(QueriesConnectionString))
                 .As<IReportInstanceQueries>()
                 .InstancePerLifetimeScope();
