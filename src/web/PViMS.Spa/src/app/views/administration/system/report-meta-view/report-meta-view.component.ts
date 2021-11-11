@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -18,8 +18,6 @@ import { MetaSummaryModel } from 'app/shared/models/meta/meta-summary.model';
 
 @Component({
   templateUrl: './report-meta-view.component.html',
-  styleUrls: ['./report-meta-view.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations  
 })
 export class ReportMetaViewComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

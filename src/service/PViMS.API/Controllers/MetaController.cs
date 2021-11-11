@@ -33,6 +33,7 @@ namespace PVIMS.API.Controllers
     {
         private readonly ITypeHelperService _typeHelperService;
         private readonly IInfrastructureService _infrastructureService;
+        private readonly IRepositoryInt<DatasetCategoryElement> _datasetCategoryElementRepository;
         private readonly IRepositoryInt<MetaTable> _metaTableRepository;
         private readonly IRepositoryInt<MetaTableType> _metaTableTypeRepository;
         private readonly IRepositoryInt<MetaColumn> _metaColumnRepository;
@@ -59,6 +60,7 @@ namespace PVIMS.API.Controllers
             IInfrastructureService infrastructureService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
+            IRepositoryInt<DatasetCategoryElement> datasetCategoryElementRepository,
             IRepositoryInt<MetaTable> metaTableRepository,
             IRepositoryInt<MetaTableType> metaTableTypeRepository,
             IRepositoryInt<MetaColumn> metaColumnRepository,
@@ -71,6 +73,7 @@ namespace PVIMS.API.Controllers
             _infrastructureService = infrastructureService ?? throw new ArgumentNullException(nameof(infrastructureService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
+            _datasetCategoryElementRepository = datasetCategoryElementRepository ?? throw new ArgumentNullException(nameof(datasetCategoryElementRepository));
             _metaTableRepository = metaTableRepository ?? throw new ArgumentNullException(nameof(metaTableRepository));
             _metaTableTypeRepository = metaTableTypeRepository ?? throw new ArgumentNullException(nameof(metaTableTypeRepository));
             _metaColumnRepository = metaColumnRepository ?? throw new ArgumentNullException(nameof(metaColumnRepository));
@@ -257,7 +260,7 @@ namespace PVIMS.API.Controllers
 
             var orderby = Extensions.GetOrderBy<MetaTable>(metaResourceParameters.OrderBy, "asc");
 
-            var pagedMetaTablesFromRepo = _metaTableRepository.List(pagingInfo, null, orderby, "");
+            var pagedMetaTablesFromRepo = _metaTableRepository.List(pagingInfo, null, orderby, new string[] { "TableType" });
             if (pagedMetaTablesFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -303,7 +306,7 @@ namespace PVIMS.API.Controllers
 
             var orderby = Extensions.GetOrderBy<MetaColumn>(metaResourceParameters.OrderBy, "asc");
 
-            var pagedMetaColumnsFromRepo = _metaColumnRepository.List(pagingInfo, null, orderby, "");
+            var pagedMetaColumnsFromRepo = _metaColumnRepository.List(pagingInfo, null, orderby, new string[] { "Table", "ColumnType" });
             if (pagedMetaColumnsFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -349,7 +352,7 @@ namespace PVIMS.API.Controllers
 
             var orderby = Extensions.GetOrderBy<MetaDependency>(metaResourceParameters.OrderBy, "asc");
 
-            var pagedMetaDependenciesFromRepo = _metaDependencyRepository.List(pagingInfo, null, orderby, "");
+            var pagedMetaDependenciesFromRepo = _metaDependencyRepository.List(pagingInfo, null, orderby, new string[] { "ParentTable", "ReferenceTable" });
             if (pagedMetaDependenciesFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -660,15 +663,10 @@ namespace PVIMS.API.Controllers
             var metaTable = _metaTableRepository.Get(mt => mt.TableName == entityName);
             var attributes = _unitOfWork.Repository<CustomAttributeConfiguration>().Queryable().Where(c => c.ExtendableTypeName == entityName).OrderBy(c => c.Id).ToList();
 
-            List<DatasetCategoryElement> elements = null;
+            ICollection<DatasetCategoryElement> elements = null;
             if (entityName == "Encounter")
             {
-                elements = _unitOfWork.Repository<DatasetCategoryElement>()
-                    .Queryable()
-                    .Where(dce => dce.DatasetCategory.Dataset.DatasetName == "Chronic Treatment")
-                    .OrderBy(dce => dce.DatasetCategory.CategoryOrder)
-                    .ThenBy(dce => dce.FieldOrder)
-                    .ToList();
+                elements = _datasetCategoryElementRepository.List(dce => dce.DatasetCategory.Dataset.DatasetName == "Chronic Treatment", null, new string[] { "DatasetElement.Field.FieldType" });
             }
 
             MetaColumn metaColumn;
@@ -864,7 +862,7 @@ namespace PVIMS.API.Controllers
             StringBuilder sb;
             var valid = new[] { "varchar", "nvarchar" };
 
-            var metaTables = _unitOfWork.Repository<MetaTable>().Queryable().OrderBy(mt => mt.TableName).ToList();
+            var metaTables = _metaTableRepository.List(null, null, new string[] { "Columns.ColumnType" });
             foreach (MetaTable metaTable in metaTables)
             {
 
@@ -930,7 +928,7 @@ namespace PVIMS.API.Controllers
         private void ProcessInsertEntity(Type type, string entityName)
         {
             PropertyInfo[] properties = type.GetProperties();
-            var invalidProperties = new[] { "CustomAttributesXmlSerialised", "Archived", "ArchivedReason", "ArchivedDate", "AuditUser", "Age", "FullName", "AgeGroup", "DisplayName", "CurrentFacilityName", "LatestEncounterDate" };
+            var invalidProperties = new[] { "CustomAttributesXmlSerialised", "Archived", "ArchivedReason", "ArchivedDate", "AuditUser", "Age", "FullName", "AgeGroup", "DisplayName", "CurrentFacilityName", "CurrentFacilityCode", "CurrentFacilityOrganisationUnit", "LatestEncounterDate", "CreatedById" , "ConceptId", "PatientId", "LabTestId", "PriorityId", "EncounterTypeId", "CohortGroupId", "FacilityId" };
 
             var metaTable = _metaTableRepository.Get(mt => mt.TableName == entityName);
 
