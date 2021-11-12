@@ -25,5 +25,11 @@ namespace PVIMS.API.Models
         /// </summary>
         [DataMember]
         public string FacilityName { get; set; }
+
+        /// <summary>
+        /// The organisation unit the facility is associated to
+        /// </summary>
+        [DataMember]
+        public string OrgUnitName { get; set; }
     }
 }

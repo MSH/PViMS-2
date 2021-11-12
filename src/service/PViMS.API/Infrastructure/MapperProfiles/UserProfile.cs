@@ -4,7 +4,6 @@ using PVIMS.API.Models;
 using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
 using System;
-using System.Linq;
 
 namespace PVIMS.API.MapperProfiles
 {
@@ -25,7 +24,8 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active ? "Yes" : "No"));
 
             CreateMap<UserFacility, UserFacilityDto>()
-                .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.Facility.FacilityName));
+                .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.Facility.FacilityName))
+                .ForMember(dest => dest.OrgUnitName, opt => opt.MapFrom(src => src.Facility.OrgUnit.Name));
         }
     }
 }

@@ -1,68 +1,102 @@
-import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
+import { Component, Inject, AfterViewInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { AccountService } from 'app/shared/services/account.service';
+import { BasePopupComponent } from 'app/shared/base/base.popup.component';
+import { Router } from '@angular/router';
+import { UserService } from 'app/shared/services/user.service';
+import { UserDetailModel } from 'app/shared/models/user/user.detail.model';
+import { OrgUnitService } from 'app/shared/services/org-unit.service';
+import { forkJoin } from 'rxjs';
+import { OrgUnitIdentifierModel } from 'app/shared/models/org-unit/org-unit.identifier.model';
+import { GridModel } from 'app/shared/models/grid.model';
+import { UserFacilityModel } from 'app/shared/models/user/user-facility.model';
 
 @Component({
   templateUrl: './user-profile.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
-export class UserProfilePopupComponent implements OnInit {
-  
-  public itemForm: FormGroup;
-  protected busy: boolean = false;
+export class UserProfilePopupComponent extends BasePopupComponent implements AfterViewInit {
+
+  viewModel: ViewModel = new ViewModel();
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: UserProfilePopupData,
+    @Inject(MAT_DIALOG_DATA) public data: PopupData,
     public dialogRef: MatDialogRef<UserProfilePopupComponent>,
+    protected _router: Router,
+    protected _location: Location,
+    protected _formBuilder: FormBuilder,
     protected popupService: PopupService,
-    public accountService: AccountService,
-    protected formBuilder: FormBuilder,
-  ) { }
+    protected accountService: AccountService,
+    protected userService: UserService,
+    protected orgUnitService: OrgUnitService
+  ) { 
+    super(_router, _location, popupService, accountService);
+  }
 
   ngOnInit(): void {
     const self = this;
-
-    self.itemForm = this.formBuilder.group({
-    })
+    self.viewModel.facilitiesGrid.setupBasic(null, null, null);
   }
 
-  public setBusy(value: boolean): void {
-    setTimeout(() => { this.busy = value; });
+  ngAfterViewInit(): void {
+    let self = this;
+    self.loadData();
   }
 
-  public isBusy(): boolean {
-    return this.busy;
+  selectOrgUnit(orgUnit: OrgUnitIdentifierModel): void {
+    let self = this;
+
+    self.viewModel.selectedOrgUnit = orgUnit;
+    self.viewModel.filteredFacilities = self.viewModel.user.facilities.filter(f => f.orgUnitName == orgUnit.orgUnitName);
+
+    self.viewModel.facilitiesGrid.updateBasic(self.viewModel.filteredFacilities);
   }
 
-  protected notify(message: string, action: string) {
-    return this.popupService.notify(message, action);
-  }
+  private loadData(): void {
+    let self = this;
 
-  protected showError(errorMessage: any, title: string = "Error") {
-    this.popupService.showErrorMessage(errorMessage, title);
-  }
+    const requestArray = [];
 
-  protected showInfo(message: string, title: string = "Info") {
-    this.popupService.showInfoMessage(message, title);
-  }
+    requestArray.push(self.userService.getUserDetail(+self.accountService.getUniquename()));
+    requestArray.push(self.orgUnitService.getAllOrgUnits());
 
-  protected updateForm(form: FormGroup, value: any): void {
-    form.patchValue(value);
+    forkJoin(requestArray)
+      .subscribe(
+        data => {
+          self.CLog(data[0], 'get user details')
+          self.CLog(data[1], 'get org units')
+
+          self.viewModel.user = data[0] as UserDetailModel;
+          self.viewModel.orgUnitList = data[1] as OrgUnitIdentifierModel[];
+
+          if(self.viewModel.orgUnitList.length > 0) {
+            self.selectOrgUnit(self.viewModel.orgUnitList[0]);
+          }
+
+          self.setBusy(false);
+        },
+        error => {
+          this.handleError(error, "Error preparing view");
+        });    
   }  
-
-  protected throwError(errorObject: any, title: string = "Exception") {
-    if (errorObject.status == 401) {
-        this.showError(errorObject.error.message, errorObject.error.statusCodeType);
-    } else {
-        this.showError(errorObject.message, title);
-    }
-  }
 }
 
-export interface UserProfilePopupData {
+export interface PopupData {
   title: string;
+}
+
+class ViewModel {
+  user: UserDetailModel;
+  orgUnitList: OrgUnitIdentifierModel[] = [];
+  selectedOrgUnit: OrgUnitIdentifierModel;
+
+  filteredFacilities: UserFacilityModel[] = [];
+
+  facilitiesGrid: GridModel<UserFacilityModel> =
+      new GridModel<UserFacilityModel>
+          (['facility-name']);  
 }

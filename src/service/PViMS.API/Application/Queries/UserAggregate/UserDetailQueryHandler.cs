@@ -40,7 +40,9 @@ namespace PVIMS.API.Application.Queries.UserAggregate
 
         public async Task<UserDetailDto> Handle(UserDetailQuery message, CancellationToken cancellationToken)
         {
-            var userFromRepo = await _userRepository.GetAsync(f => f.Id == message.UserId, new string[] { "Facilities.Facility" });
+            var userFromRepo = await _userRepository.GetAsync(f => f.Id == message.UserId, new string[] {
+                "Facilities.Facility.OrgUnit"
+            });
 
             if (userFromRepo == null)
             {
