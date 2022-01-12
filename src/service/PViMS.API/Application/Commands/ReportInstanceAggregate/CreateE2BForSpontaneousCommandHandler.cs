@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
 {
-    public class CreateE2BForSpontaneousCommandCommandHandler
+    public class CreateE2BForSpontaneousCommandHandler
         : IRequestHandler<CreateE2BForSpontaneousCommand, bool>
     {
         private readonly IRepositoryInt<Config> _configRepository;
@@ -28,9 +28,9 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IWorkFlowService _workFlowService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ILogger<CreateE2BForSpontaneousCommandCommandHandler> _logger;
+        private readonly ILogger<CreateE2BForSpontaneousCommandHandler> _logger;
 
-        public CreateE2BForSpontaneousCommandCommandHandler(
+        public CreateE2BForSpontaneousCommandHandler(
             IRepositoryInt<Config> configRepository,
             IRepositoryInt<Dataset> datasetRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
@@ -39,7 +39,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             IUnitOfWorkInt unitOfWork,
             IWorkFlowService workFlowService,
             IHttpContextAccessor httpContextAccessor,
-            ILogger<CreateE2BForSpontaneousCommandCommandHandler> logger)
+            ILogger<CreateE2BForSpontaneousCommandHandler> logger)
         {
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
