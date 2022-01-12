@@ -138,17 +138,6 @@ namespace PVIMS.Services
             return activityExecutionStatusEvent;
         }
 
-        public TerminologyMedDra GetCurrentAdverseReaction(Patient patient)
-        {
-            foreach (PatientClinicalEvent clinicalEvent in patient.PatientClinicalEvents)
-            {
-                var term = GetTerminologyMedDraForReportInstance(clinicalEvent.PatientClinicalEventGuid);
-                if (term != null) { return term; };
-            };
-
-            return null;
-        }
-
         public async Task<bool> ValidateExecutionStatusForCurrentActivityAsync(Guid contextGuid, string executionStatusToBeValidated)
         {
             var reportInstanceFromRepo = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid, new string[] { "Activities" } );
@@ -164,17 +153,6 @@ namespace PVIMS.Services
             }
 
             return activity.ExecutionStatuses.Any(aes => aes.Description == executionStatusToBeValidated);
-        }
-
-        public TerminologyMedDra GetTerminologyMedDraForReportInstance(Guid contextGuid)
-        {
-            var reportInstance = _unitOfWork.Repository<ReportInstance>().Queryable().SingleOrDefault(ri => ri.ContextGuid == contextGuid);
-            
-            if(reportInstance != null)
-            {
-                return reportInstance.TerminologyMedDra;
-            }
-            return null;
         }
 
         public async Task UpdatePatientIdentifierForReportInstanceAsync(Guid contextGuid, string patientIdentifier)

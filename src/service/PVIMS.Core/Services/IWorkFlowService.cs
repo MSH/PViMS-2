@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
-using PVIMS.Core.Entities;
 using PVIMS.Core.Models;
 
 namespace PVIMS.Core.Services
@@ -15,11 +14,7 @@ namespace PVIMS.Core.Services
 
         Task<ActivityExecutionStatusEvent> ExecuteActivityAsync(Guid contextGuid, string newExecutionStatus, string comments, DateTime? contextDate, string contextCode);
 
-        TerminologyMedDra GetCurrentAdverseReaction(Patient patient);
-
         Task<bool> ValidateExecutionStatusForCurrentActivityAsync(Guid contextGuid, string executionStatusToBeValidated);
-
-        TerminologyMedDra GetTerminologyMedDraForReportInstance(Guid contextGuid);
 
         Task UpdatePatientIdentifierForReportInstanceAsync(Guid contextGuid, string patientIdentifier);
 
