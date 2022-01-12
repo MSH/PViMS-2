@@ -36,7 +36,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasForeignKey(d => d.DatasetInstanceValueId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            configuration.HasIndex(e => new { e.DatasetInstanceValueId, e.DatasetElementSubId }).IsUnique(true);
+            configuration.HasIndex(e => new { e.ContextValue, e.DatasetInstanceValueId, e.DatasetElementSubId }).IsUnique(true);
             configuration.HasIndex(e => e.DatasetElementSubId);
             configuration.HasIndex(e => e.DatasetInstanceValueId);
         }
