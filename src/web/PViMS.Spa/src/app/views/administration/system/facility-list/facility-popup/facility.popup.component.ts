@@ -46,7 +46,7 @@ export class FacilityPopupComponent extends BasePopupComponent implements OnInit
 
     self.itemForm = this.formBuilder.group({
       facilityName: [this.data.payload.facilityName || '', [Validators.required, Validators.maxLength(100), Validators.pattern("[-a-zA-Z0-9. '()]*")]],
-      facilityCode: [this.data.payload.facilityCode || '', [Validators.required, Validators.maxLength(10), Validators.pattern("[-a-zA-Z0-9]*")]],
+      facilityCode: [this.data.payload.facilityCode || '', [Validators.required, Validators.maxLength(18), Validators.pattern("[-a-zA-Z0-9]*")]],
       facilityType: [this.data.payload.facilityType || '', Validators.required],
       contactNumber: [this.data.payload.contactNumber || '', [Validators.maxLength(30), Validators.pattern("[-a-zA-Z0-9]*")]],
       mobileNumber: [this.data.payload.mobileNumber || '', [Validators.maxLength(30), Validators.pattern("[-a-zA-Z0-9]*")]],

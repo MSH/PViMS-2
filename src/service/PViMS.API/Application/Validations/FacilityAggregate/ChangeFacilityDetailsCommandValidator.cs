@@ -16,7 +16,7 @@ namespace PVIMS.API.Application.Validations
 
             RuleFor(command => command.FacilityCode)
                 .NotEmpty()
-                .Length(1, 10)
+                .Length(1, 18)
                 .Matches(@"[-a-zA-Z0-9]")
                 .WithMessage("Facility code contains invalid characters (Enter A-Z, a-z, 0-9)");
 

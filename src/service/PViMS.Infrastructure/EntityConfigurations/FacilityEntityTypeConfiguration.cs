@@ -14,7 +14,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
 
             configuration.Property(c => c.FacilityCode)
                 .IsRequired()
-                .HasMaxLength(10);
+                .HasMaxLength(18);
 
             configuration.Property(c => c.FacilityName)
                 .IsRequired()
