@@ -119,13 +119,14 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
     let self = this;
     self.setBusy(true);
     self.patientService.searchPatient(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
-        .pipe(takeUntil(self._unsubscribeAll))
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-          self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-          self.handleError(error, "Error fetching patients");
-        });
+      .pipe(takeUntil(self._unsubscribeAll))
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.CLog(result, 'patients');
+        self.viewModel.mainGrid.updateAdvance(result);
+      }, error => {
+        self.handleError(error, "Error fetching patients");
+      });
   }  
 
   loadDropDowns(): void {
