@@ -41,6 +41,14 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using PVIMS.API.Application.IntegrationEvents;
+using PViMS.BuildingBlocks.EventBusRabbitMQ;
+using RabbitMQ.Client;
+using PVIMS.API.Application.IntegrationEvents.Events;
+using PViMS.BuildingBlocks.EventBus.Abstractions;
+using PViMS.BuildingBlocks.EventBus;
+using System.Data.Common;
+using PViMS.BuildingBlocks.IntegrationEventLogEF;
 
 namespace PViMS.API
 {
@@ -64,6 +72,7 @@ namespace PViMS.API
                 .AddCustomSwagger(Configuration)
                 .AddCustomIntegrations(Configuration)
                 .AddCustomConfiguration(Configuration)
+                .AddEventBus(Configuration)
                 .AddCustomAuthentication(Configuration)
                 .AddDependencies(Configuration);
 
@@ -129,6 +138,10 @@ namespace PViMS.API
                 endpoints.MapDefaultControllerRoute();
                 endpoints.MapControllers();
             });
+
+            var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
+
+            eventBus.Subscribe<CausalityConfirmedIntegrationEvent, IIntegrationEventHandler<CausalityConfirmedIntegrationEvent>>();
         }
     }
 
@@ -261,6 +274,16 @@ namespace PViMS.API
                    },
                        ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
                    );
+            services.AddDbContext<IntegrationEventLogContext>(options =>
+            {
+                options.UseSqlServer(configuration["ConnectionString"],
+                                        sqlServerOptionsAction: sqlOptions =>
+                                        {
+                                            sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                                        });
+            });
 
             return services;
         }
@@ -317,6 +340,40 @@ namespace PViMS.API
             services.AddHttpContextAccessor();
             services.AddMemoryCache();
             services.AddAutoMapper(typeof(Startup));
+
+            services.AddTransient<Func<DbConnection, IIntegrationEventLogService>>(
+                sp => (DbConnection c) => new IntegrationEventLogService(c));
+
+            services.AddTransient<IIntegrationEventService, IntegrationEventService>();
+
+            services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
+            {
+                var logger = sp.GetRequiredService<ILogger<DefaultRabbitMQPersistentConnection>>();
+
+                var factory = new ConnectionFactory()
+                {
+                    HostName = configuration["EventBusConnection"],
+                    DispatchConsumersAsync = true
+                };
+
+                if (!string.IsNullOrEmpty(configuration["EventBusUserName"]))
+                {
+                    factory.UserName = configuration["EventBusUserName"];
+                }
+
+                if (!string.IsNullOrEmpty(configuration["EventBusPassword"]))
+                {
+                    factory.Password = configuration["EventBusPassword"];
+                }
+
+                var retryCount = 5;
+                if (!string.IsNullOrEmpty(configuration["EventBusRetryCount"]))
+                {
+                    retryCount = int.Parse(configuration["EventBusRetryCount"]);
+                }
+
+                return new DefaultRabbitMQPersistentConnection(factory, logger, retryCount);
+            });
 
             return services;
         }
@@ -473,6 +530,30 @@ namespace PViMS.API
                 smtpSettings[nameof(SMTPSettings.MailboxUserName)], 
                 smtpSettings[nameof(SMTPSettings.MailboxPassword)], 
                 smtpSettings[nameof(SMTPSettings.MailboxAddress)]));
+
+            return services;
+        }
+
+        public static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
+            {
+                var subscriptionClientName = configuration["SubscriptionClientName"];
+                var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
+                var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+                var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
+                var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+
+                var retryCount = 5;
+                if (!string.IsNullOrEmpty(configuration["EventBusRetryCount"]))
+                {
+                    retryCount = int.Parse(configuration["EventBusRetryCount"]);
+                }
+
+                return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubcriptionsManager, subscriptionClientName, retryCount);
+            });
+
+            services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
 
             return services;
         }

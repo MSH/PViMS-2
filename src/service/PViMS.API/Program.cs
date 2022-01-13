@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PViMS.BuildingBlocks.IntegrationEventLogEF;
 using PVIMS.API;
 using PVIMS.API.Infrastructure;
 using PVIMS.Infrastructure;
@@ -57,7 +58,8 @@ namespace PViMS.API
                     new PVIMSContextSeed()
                         .SeedAsync(context, env, settings, logger)
                         .Wait();
-                });
+                })
+                    .MigrateDbContext<IntegrationEventLogContext>((_, __) => { });
 
                 Log.Information("Starting web host ({ApplicationContext})...", AppName);
                 host.Run();

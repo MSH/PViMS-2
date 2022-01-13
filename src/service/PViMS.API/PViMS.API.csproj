@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>PVIMS.API</RootNamespace>
     <UserSecretsId>3b9bc950-c2b8-4c39-a7c0-4d1f1a58718e</UserSecretsId>
   </PropertyGroup>
@@ -20,13 +20,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Application\NewFolder\**" />
-    <Content Remove="Application\NewFolder\**" />
-    <EmbeddedResource Remove="Application\NewFolder\**" />
-    <None Remove="Application\NewFolder\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Dapper" Version="2.0.90" />
@@ -42,7 +35,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.2">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -54,7 +47,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\WebHost.Customisation\WebHost.Customisation.csproj" />
+    <ProjectReference Include="..\..\building\EventBus\EventBusRabbitMQ\EventBusRabbitMQ.csproj" />
+    <ProjectReference Include="..\..\building\EventBus\EventBus\EventBus.csproj" />
+    <ProjectReference Include="..\..\building\EventBus\IntegrationEventLogEF\IntegrationEventLogEF.csproj" />
+    <ProjectReference Include="..\..\building\WebHostCustomisation\WebHost.Customisation\WebHost.Customisation.csproj" />
     <ProjectReference Include="..\PViMS.Infrastructure\PViMS.Infrastructure.csproj" />
     <ProjectReference Include="..\PVIMS.Service\PVIMS.Services.csproj" />
   </ItemGroup>
