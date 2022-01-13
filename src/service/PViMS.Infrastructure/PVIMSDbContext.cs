@@ -16,6 +16,8 @@ using PVIMS.Core.SeedWork;
 using PVIMS.Infrastructure.EntityConfigurations;
 using PVIMS.Infrastructure.EntityConfigurations.KeyLess;
 using PViMS.Infrastructure.Helpers;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
 
 namespace PVIMS.Infrastructure
 {
@@ -23,6 +25,8 @@ namespace PVIMS.Infrastructure
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMediator _mediator;
+
+        private IDbContextTransaction _currentTransaction;
 
         // Database entities
         public virtual DbSet<Activity> Activities { get; set; }
@@ -149,6 +153,8 @@ namespace PVIMS.Infrastructure
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         }
+
+        public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -304,6 +310,56 @@ namespace PVIMS.Infrastructure
             var result = await base.SaveChangesAsync(cancellationToken);
 
             return true;
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            if (_currentTransaction != null) return null;
+
+            _currentTransaction = await Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+            return _currentTransaction;
+        }
+
+        public async Task CommitTransactionAsync(IDbContextTransaction transaction)
+        {
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+
+            try
+            {
+                await SaveChangesAsync();
+                transaction.Commit();
+            }
+            catch
+            {
+                RollbackTransaction();
+                throw;
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null;
+                }
+            }
+        }
+
+        public void RollbackTransaction()
+        {
+            try
+            {
+                _currentTransaction?.Rollback();
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null;
+                }
+            }
         }
 
         public bool SaveEntities(CancellationToken cancellationToken = default(CancellationToken))
