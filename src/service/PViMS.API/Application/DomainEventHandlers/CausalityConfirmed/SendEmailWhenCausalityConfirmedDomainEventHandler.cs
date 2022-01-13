@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
+namespace PVIMS.API.Application.DomainEventHandlers.CausalityConfirmed
 {
     public class SendEmailWhenCausalityConfirmedDomainEventHandler
                             : INotificationHandler<CausalityConfirmedDomainEvent>
