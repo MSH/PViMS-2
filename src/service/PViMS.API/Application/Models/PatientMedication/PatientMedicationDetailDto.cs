@@ -82,7 +82,7 @@ namespace PVIMS.API.Models
         public string ClinicianAction { get; set; }
 
         /// <summary>
-        /// Effect OF Dechallenge (D) & Rechallenge (R) (Custom Attribute)
+        /// Effect OF Dechallenge (D) and Rechallenge (R) (Custom Attribute)
         /// </summary>
         [DataMember]
         public string ChallengeEffect { get; set; }

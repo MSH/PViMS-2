@@ -158,6 +158,7 @@ export class NavigationService {
       icon: "folder",
       state: "administration/work",
       sub: [
+        { name: "Attributes", state: "attributes" },
         { name: "Care Events", state: "careevent" },
         { name: "Datasets", state: "dataset" },
         { name: "Dataset Elements", state: "datasetelement" },

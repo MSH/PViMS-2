@@ -22,6 +22,7 @@ import { FormListComponent } from './work/form-list/form-list.component';
 import { DatasetCategoryListComponent } from './work/dataset-list/dataset-category-list/dataset-category-list.component';
 import { DatasetCategoryElementListComponent } from './work/dataset-list/dataset-category-element-list/dataset-category-element-list.component';
 import { ConceptListComponent } from './reference/concept-list/concept-list.component';
+import { CustomAttributeListComponent } from './work/custom-attribute-list/custom-attribute-list.component';
 
 export const ReportRoutes: Routes = [
   {
@@ -98,6 +99,11 @@ export const ReportRoutes: Routes = [
     path: 'user/role',
     component: RoleListComponent,
     data: { title: 'Role Management', breadcrumb: 'Role Management' }
+  },
+  {
+    path: 'work/attributes',
+    component: CustomAttributeListComponent,
+    data: { title: 'Custom Attribute Management', breadcrumb: 'Custom Attribute Management' }
   },
   {
     path: 'work/careevent',

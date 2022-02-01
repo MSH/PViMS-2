@@ -58,6 +58,7 @@ import { UserAddPopupComponent } from './user/user-list/user-add-popup/user-add.
 import { UserDeletePopupComponent } from './user/user-list/user-delete-popup/user-delete.popup.component';
 import { UserUpdatePopupComponent } from './user/user-list/user-update-popup/user-update.popup.component';
 import { UserFacilityPopupComponent } from './user/user-list/user-facility-popup/user-facility.popup.component';
+import { CustomAttributeListComponent } from './work/custom-attribute-list/custom-attribute-list.component';
 
 @NgModule({
   declarations: [
@@ -72,6 +73,7 @@ import { UserFacilityPopupComponent } from './user/user-list/user-facility-popup
     ConditionDeletePopupComponent,
     ConditionPopupComponent,
     ContactDetailListComponent,
+    CustomAttributeListComponent,
     DatasetCategoryListComponent,
     DatasetCategoryDeletePopupComponent,
     DatasetCategoryElementPopupComponent,
