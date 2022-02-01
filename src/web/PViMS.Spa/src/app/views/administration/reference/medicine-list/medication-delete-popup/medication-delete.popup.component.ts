@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup } from '@angular/forms';
@@ -12,7 +12,6 @@ import { AccountService } from 'app/shared/services/account.service';
 
 @Component({
   templateUrl: './medication-delete.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class MedicationDeletePopupComponent extends BasePopupComponent implements OnInit {

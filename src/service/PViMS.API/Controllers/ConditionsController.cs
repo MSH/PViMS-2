@@ -38,6 +38,7 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<ConditionMedication> _conditionMedicationRepository;
         private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
         private readonly IRepositoryInt<LabTest> _labTestRepository;
+        private readonly IRepositoryInt<Concept> _conceptRepository;
         private readonly IRepositoryInt<Product> _productRepository;
         private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
         private readonly IMapper _mapper;
@@ -54,6 +55,7 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<ConditionMedication> conditionMedicationRepository,
             IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
             IRepositoryInt<LabTest> labTestRepository,
+            IRepositoryInt<Concept> conceptRepository,
             IRepositoryInt<Product> productRepository,
             IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
             IUnitOfWorkInt unitOfWork,
@@ -68,6 +70,7 @@ namespace PVIMS.API.Controllers
             _conditionMedicationRepository = conditionMedicationRepository ?? throw new ArgumentNullException(nameof(conditionMedicationRepository));
             _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
             _labTestRepository = labTestRepository ?? throw new ArgumentNullException(nameof(labTestRepository));
+            _conceptRepository = conceptRepository ?? throw new ArgumentNullException(nameof(conceptRepository));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _terminologyMeddraRepository = terminologyMeddraRepository ?? throw new ArgumentNullException(nameof(terminologyMeddraRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -271,8 +274,8 @@ namespace PVIMS.API.Controllers
                 // ensure products are linked to condition
                 foreach (var productId in conditionForUpdate.ConditionMedications)
                 {
-                    var product = _productRepository.Get(f => f.Id == productId);
-                    newCondition.ConditionMedications.Add(new ConditionMedication() { Product = product, Concept = product.Concept });
+                    var concept = _conceptRepository.Get(c => c.Id == productId, new string[] { "" });
+                    newCondition.ConditionMedications.Add(new ConditionMedication() { Product = null, Concept = concept });
                 }
 
                 // ensure meddra terms are linked to condition
@@ -401,7 +404,11 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetConditionAsync<T>(int id) where T : class
         {
-            var conditionFromRepo = await _conditionRepository.GetAsync(f => f.Id == id);
+            var conditionFromRepo = await _conditionRepository.GetAsync(f => f.Id == id, new string[] { 
+                "ConditionLabTests.LabTest",
+                "ConditionMedications.Concept.MedicationForm",
+                "ConditionMedDras.TerminologyMedDra"
+            });
 
             if (conditionFromRepo != null)
             {

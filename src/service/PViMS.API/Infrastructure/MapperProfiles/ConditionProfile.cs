@@ -24,8 +24,8 @@ namespace PVIMS.API.MapperProfiles
 
             CreateMap<ConditionMedication, ConditionMedicationDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Product.Id))
-                .ForMember(dest => dest.MedicationName, opt => opt.MapFrom(src => $"{src.Concept.ConceptName} ({src.Concept.MedicationForm.Description}) ({src.Product.ProductName})"));
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Concept.Id))
+                .ForMember(dest => dest.MedicationName, opt => opt.MapFrom(src => $"{src.Concept.ConceptName} ({src.Concept.MedicationForm.Description})"));
 
             CreateMap<ConditionMedDra, ConditionMeddraDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))

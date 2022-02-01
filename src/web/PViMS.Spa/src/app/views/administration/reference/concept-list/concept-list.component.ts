@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { BaseComponent } from 'app/shared/base/base.component';
@@ -19,8 +19,9 @@ import { GenericDeletePopupComponent } from '../../shared/generic-delete-popup/g
 
 @Component({
   templateUrl: './concept-list.component.html',
-  styleUrls: ['./concept-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 10% !important; width: 10% !important; }
+  `],  
   animations: egretAnimations
 })
 export class ConceptListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

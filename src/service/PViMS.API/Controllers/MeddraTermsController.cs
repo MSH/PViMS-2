@@ -247,7 +247,10 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetMeddraTermAsync<T>(long id) where T : class
         {
-            var meddraTermFromRepo = await _termsRepository.GetAsync(t => t.Id == id, new string[] { "Children" });
+            var meddraTermFromRepo = await _termsRepository.GetAsync(t => t.Id == id, new string[] { 
+                "Children",
+                "Parent"
+            });
 
             if (meddraTermFromRepo != null)
             {
@@ -294,7 +297,10 @@ namespace PVIMS.API.Controllers
                 predicate = predicate.And(mt => mt.MedDraCode.Contains(meddraTermResourceParameters.SearchCode));
             }
 
-            var pagedTermsFromRepo = _termsRepository.List(pagingInfo, predicate, orderby, "");
+            var pagedTermsFromRepo = _termsRepository.List(pagingInfo, predicate, orderby, new string[] {
+                "Children",
+                "Parent"
+            });
             if (pagedTermsFromRepo != null)
             {
                 // Map EF entity to Dto

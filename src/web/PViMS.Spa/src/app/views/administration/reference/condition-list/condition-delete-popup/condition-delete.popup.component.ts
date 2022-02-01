@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup } from '@angular/forms';
@@ -12,7 +12,6 @@ import { ConditionService } from 'app/shared/services/condition.service';
 
 @Component({
   templateUrl: './condition-delete.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class ConditionDeletePopupComponent extends BasePopupComponent implements OnInit {

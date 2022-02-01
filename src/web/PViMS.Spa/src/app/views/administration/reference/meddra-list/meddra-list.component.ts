@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,8 +17,12 @@ import { ImportMeddraPopupComponent } from './import-meddra-popup/import-meddra.
 
 @Component({
   templateUrl: './meddra-list.component.html',
-  styleUrls: ['./meddra-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-code { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-term-type { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-version { flex: 0 0 10% !important; width: 10% !important; }
+  `],  
   animations: egretAnimations
 })
 export class MeddraListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

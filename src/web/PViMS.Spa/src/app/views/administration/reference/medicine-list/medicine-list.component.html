@@ -7,7 +7,7 @@
   <mat-card-title class="">
       <div class="card-title-text">
         {{'Medications' | translate}}
-        <div class="addButton">
+        <div fxLayout="row" fxLayout.xs="column" fxLayoutWrap fxLayoutGap="0.1%" fxLayoutAlign="end" class="p-0">
           <button mat-raised-button class="mb-05" color="accent" (click)="openPopUp({}, true)">{{'Add Medication' | translate }}</button>
         </div>
       </div>

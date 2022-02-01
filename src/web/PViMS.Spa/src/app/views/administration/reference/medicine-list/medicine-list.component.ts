@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,8 +19,9 @@ import { MedicationDeletePopupComponent } from './medication-delete-popup/medica
 
 @Component({
   templateUrl: './medicine-list.component.html',
-  styleUrls: ['./medicine-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 10% !important; width: 10% !important; }
+  `],
   animations: egretAnimations
 })
 export class MedicineListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

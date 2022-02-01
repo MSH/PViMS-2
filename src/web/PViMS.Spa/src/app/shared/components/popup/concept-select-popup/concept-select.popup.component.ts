@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -14,7 +14,6 @@ import { ConceptService } from 'app/shared/services/concept.service';
 
 @Component({
   templateUrl: './concept-select.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class ConceptSelectPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {

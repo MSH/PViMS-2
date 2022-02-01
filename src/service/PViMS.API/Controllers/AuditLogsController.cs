@@ -266,7 +266,7 @@ namespace PVIMS.API.Controllers
                 predicate = predicate.And(au => au.User.Facilities.Any(uf => uf.Facility.Id == auditLogResourceParameters.FacilityId));
             }
 
-            var pagedAuditLogsFromRepo = _auditLogRepository.List(pagingInfo, predicate, orderby, "");
+            var pagedAuditLogsFromRepo = _auditLogRepository.List(pagingInfo, predicate, orderby, new string[] { "User" });
             if (pagedAuditLogsFromRepo != null)
             {
                 // Map EF entity to Dto

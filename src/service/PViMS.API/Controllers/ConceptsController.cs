@@ -785,7 +785,9 @@ namespace PVIMS.API.Controllers
                 predicate = predicate.And(f => f.Active == (productResourceParameters.Active == Models.ValueTypes.YesNoBothValueType.Yes));
             }
 
-            var pagedProductsFromRepo = _productRepository.List(pagingInfo, predicate, orderby, "");
+            var pagedProductsFromRepo = _productRepository.List(pagingInfo, predicate, orderby, new string[] {
+                "Concept.MedicationForm"
+            });
             if (pagedProductsFromRepo != null)
             {
                 // Map EF entity to Dto
