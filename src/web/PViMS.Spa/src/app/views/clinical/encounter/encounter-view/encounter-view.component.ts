@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -30,7 +30,6 @@ import { LabTestPopupComponent } from '../../shared/lab-test-popup/lab-test.popu
 @Component({
   templateUrl: './encounter-view.component.html',
   styleUrls: ['./encounter-view.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class EncounterViewComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -141,6 +140,7 @@ export class EncounterViewComponent extends BaseComponent implements OnInit, Aft
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
+        self.CLog(result, 'result');
         self.updateForm(self.viewNotesForm, (self.viewModel = result));
         self.updateForm(self.viewAuditForm, (self.viewModel = result));
         

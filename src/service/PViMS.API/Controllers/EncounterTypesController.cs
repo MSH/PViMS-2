@@ -343,7 +343,7 @@ namespace PVIMS.API.Controllers
 
             var orderby = Extensions.GetOrderBy<EncounterType>(encounterTypeResourceParameters.OrderBy, "asc");
 
-            var pagedEncounterTypesFromRepo = _encounterTypeRepository.List(pagingInfo, null, orderby, "");
+            var pagedEncounterTypesFromRepo = _encounterTypeRepository.List(pagingInfo, null, orderby, new string[] { "EncounterTypeWorkPlans.WorkPlan" });
             if (pagedEncounterTypesFromRepo != null)
             {
                 // Map EF entity to Dto

@@ -337,15 +337,15 @@ namespace PVIMS.Services
             //newEncounter.AuditStamp(user);
             await _encounterRepository.SaveAsync(newEncounter);
 
-            var encounterTypeWorkPlan = _encounterTypeWorkPlanRepository.Get(et => et.EncounterType.Id == encounterType.Id);
+            var encounterTypeWorkPlan = _encounterTypeWorkPlanRepository.Get(et => et.EncounterType.Id == encounterType.Id, new string[] { "WorkPlan.Dataset" });
             if (encounterTypeWorkPlan != null)
             {
                 // Create a new instance
-                var dataset = _datasetRepository.Get(d => d.Id == encounterTypeWorkPlan.WorkPlan.Dataset.Id);
+                var dataset = _datasetRepository.Get(d => d.Id == encounterTypeWorkPlan.WorkPlan.Dataset.Id, new string[] { "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType" });
                 if (dataset != null)
                 {
                     var datasetInstance = dataset.CreateInstance(newEncounter.Id, "", encounterTypeWorkPlan, null, null);
-                    _datasetInstanceRepository.Save(datasetInstance);
+                    await _datasetInstanceRepository.SaveAsync(datasetInstance);
                 }
             }
 

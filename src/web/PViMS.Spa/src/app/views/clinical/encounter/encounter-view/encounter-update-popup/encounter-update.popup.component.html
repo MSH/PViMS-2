@@ -5,22 +5,22 @@
   <form [formGroup]="viewModelForm" (ngSubmit)="submit()">
     <div fxLayout="row wrap" fxLayout.lt-sm="column">
       <div fxFlex="100" class="pr-1">
-        <mat-tab-group class="height-100vh-300px">
+        <mat-tab-group>
           <mat-tab [label]="category.datasetCategoryName" *ngFor="let category of datasetCategories">
-            <mat-card-content class="m-1 p-2">
+            <mat-card-content class="m-1 p-2" style="height: 450px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" formGroupName="elements">
                 <div fxFlex="50" class="pr-1" *ngFor="let element of category.datasetElements">
-                  <mat-form-field class="p-8 full-width" appearance="fill" *ngIf="element.datasetElementSystem">
+                  <mat-form-field class="full-width" appearance="fill" *ngIf="element.datasetElementSystem">
                     <mat-label>{{element.datasetElementDisplayName | translate}}</mat-label>
                     <input matInput formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" readonly>
                   </mat-form-field>
-                  <mat-form-field class="p-8 full-width" *ngIf="element.datasetElementType == 'AlphaNumericTextbox' && !element.datasetElementSystem && element.stringMaxLength <= 100">
+                  <mat-form-field class="full-width" *ngIf="element.datasetElementType == 'AlphaNumericTextbox' && !element.datasetElementSystem && element.stringMaxLength <= 100" appearance="outline">
                     <input matInput formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" [required]="element.required">
                     <mat-hint *ngIf="element.stringMaxLength != null">
                       {{'Maximum length' | translate}} {{element.stringMaxLength}}
                     </mat-hint>
                   </mat-form-field>
-                  <mat-form-field class="p-8 full-width" *ngIf="element.datasetElementType == 'AlphaNumericTextbox' && !element.datasetElementSystem && element.stringMaxLength > 100" appearance="outline">
+                  <mat-form-field class="full-width" *ngIf="element.datasetElementType == 'AlphaNumericTextbox' && !element.datasetElementSystem && element.stringMaxLength > 100" appearance="outline">
                     <textarea matInput formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" [required]="element.required" rows="8"></textarea>
                     <mat-hint *ngIf="element.datasetElementHelp != ''">
                       {{element.datasetElementHelp}}
@@ -29,20 +29,20 @@
                       {{'Maximum length' | translate}} {{element.stringMaxLength}}
                     </mat-hint>
                   </mat-form-field>
-                  <mat-form-field class="p-8 full-width" *ngIf="element.datasetElementType == 'NumericTextbox' && !element.datasetElementSystem">
+                  <mat-form-field class="full-width" *ngIf="element.datasetElementType == 'NumericTextbox' && !element.datasetElementSystem" appearance="outline">
                     <input matInput formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" type="number" [required]="element.required">
                     <mat-hint *ngIf="element.numericMinValue != null && element.numericMaxValue != null">
                       {{'Valid between ' | translate}} {{element.numericMinValue}} {{'and ' | translate}} {{element.numericMaxValue}}
                     </mat-hint>
                   </mat-form-field>
                   <span *ngIf="element.datasetElementType == 'Date' && !element.datasetElementSystem">
-                    <mat-form-field class="p-8 full-width">
+                    <mat-form-field class="full-width" appearance="outline">
                       <input matInput formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" [matDatepicker]="datepicker" [required]="element.required">
                       <mat-datepicker-toggle matSuffix [for]="datepicker"></mat-datepicker-toggle>
                     </mat-form-field>        
                     <mat-datepicker #datepicker startView="multi-year"></mat-datepicker>
                   </span>
-                  <mat-form-field class="p-8 full-width" *ngIf="element.datasetElementType == 'DropDownList' && !element.datasetElementSystem">
+                  <mat-form-field class="full-width" *ngIf="element.datasetElementType == 'DropDownList' && !element.datasetElementSystem" appearance="outline">
                     <mat-select formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" [required]="element.required">
                       <mat-option value=""></mat-option>
                       <mat-option *ngFor="let item of element.selectionDataItems" value="{{item.selectionKey}}">
@@ -50,7 +50,7 @@
                       </mat-option>
                     </mat-select>                        
                   </mat-form-field>                
-                  <mat-form-field class="p-8 full-width" *ngIf="element.datasetElementType == 'YesNo' && !element.datasetElementSystem">
+                  <mat-form-field class="full-width" *ngIf="element.datasetElementType == 'YesNo' && !element.datasetElementSystem" appearance="outline">
                     <mat-select formControlName="{{element.datasetElementId}}" placeholder="{{element.datasetElementDisplayName | translate}}" [required]="element.required">
                       <mat-option value=""></mat-option>
                       <mat-option value="Yes">Yes</mat-option>
@@ -63,7 +63,7 @@
           </mat-tab>
 
           <mat-tab label="{{'Notes' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 300px;">
+            <mat-card-content class="m-1 p-5" style="height: 450px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
                 <div fxFlex="100" class="pr-1">
                   <quill-editor theme="snow" formControlName="notes"></quill-editor>

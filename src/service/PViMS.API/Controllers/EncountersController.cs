@@ -330,7 +330,7 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var encounterFromRepo = await _encounterRepository.GetAsync(e => e.Patient.Id == patientId && e.Id == id);
+            var encounterFromRepo = await _encounterRepository.GetAsync(e => e.Patient.Id == patientId && e.Id == id, new string[] { "EncounterType" });
             if (encounterFromRepo == null)
             {
                 return NotFound();
@@ -346,7 +346,7 @@ namespace PVIMS.API.Controllers
 
             foreach (var element in encounterForUpdate.Elements)
             {
-                var datasetElement = _datasetElementRepository.Get(de => de.Id == element.Key);
+                var datasetElement = _datasetElementRepository.Get(de => de.Id == element.Key, new string[] { "Field.FieldType" });
                 if(datasetElement == null)
                 {
                     ModelState.AddModelError("Message", $"Unable to locate dataset element {datasetElement.Id}");
@@ -373,14 +373,14 @@ namespace PVIMS.API.Controllers
                 _encounterRepository.Update(encounterFromRepo);
 
                 var contextTypeId = (int)ContextTypes.Encounter;
-                var datasetInstanceFromRepo = _datasetInstanceRepository
-                .Queryable()
-                .Include(di => di.Dataset)
-                .Include("DatasetInstanceValues.DatasetInstanceSubValues.DatasetElementSub")
-                .Include("DatasetInstanceValues.DatasetElement")
-                .SingleOrDefault(di => di.Dataset.ContextType.Id == contextTypeId
-                        && di.ContextId == id
-                        && di.EncounterTypeWorkPlan.EncounterType.Id == encounterFromRepo.EncounterType.Id);
+                var datasetInstanceFromRepo = _datasetInstanceRepository.Get(
+                    di => di.Dataset.ContextType.Id == contextTypeId
+                    && di.ContextId == id
+                    && di.EncounterTypeWorkPlan.EncounterType.Id == encounterFromRepo.EncounterType.Id, new string[] {
+                        "Dataset",
+                        "DatasetInstanceValues.DatasetInstanceSubValues.DatasetElementSub",
+                        "DatasetInstanceValues.DatasetElement"
+                    });
 
                 if (datasetInstanceFromRepo != null)
                 {

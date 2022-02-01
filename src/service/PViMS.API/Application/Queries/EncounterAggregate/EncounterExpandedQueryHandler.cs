@@ -54,7 +54,13 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
             var encounterFromRepo = await _encounterRepository.GetAsync(e => e.Patient.Id == message.PatientId
                     && e.Archived == false
                     && e.Id == message.EncounterId, 
-                new string[] { "Patient.PatientClinicalEvents", "Patient.PatientConditions.Outcome", "Patient.PatientLabTests.TestUnit", "Patient.PatientLabTests.LabTest", "Patient.PatientMedications", "EncounterType" });
+                new string[] { 
+                    "Patient.PatientClinicalEvents", 
+                    "Patient.PatientConditions.Outcome", 
+                    "Patient.PatientLabTests.TestUnit", 
+                    "Patient.PatientLabTests.LabTest", 
+                    "Patient.PatientMedications", 
+                    "EncounterType" });
 
             if (encounterFromRepo == null)
             {
@@ -85,9 +91,12 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
                         , "EncounterTypeWorkPlan.EncounterType"
                         , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategory"
                         , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategory"
+                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType"
                         , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldValues"
                         , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs"
-                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategoryElementConditions" });
+                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategoryElementConditions"
+                        , "DatasetInstanceValues"
+                    });
 
             if (datasetInstanceFromRepo != null)
             {

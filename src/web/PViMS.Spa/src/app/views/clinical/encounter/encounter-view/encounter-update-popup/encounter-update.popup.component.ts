@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
@@ -14,7 +14,6 @@ import { DatasetCategoryViewModel } from 'app/shared/models/dataset/dataset-cate
 
 @Component({
   templateUrl: './encounter-update.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class EncounterUpdatePopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
@@ -56,7 +55,7 @@ export class EncounterUpdatePopupComponent extends BasePopupComponent implements
   loadData(): void {
     let self = this;
     self.setBusy(true);
-    self.encounterService.getEncounterDetail(self.data.patientId, self.data.encounterId)
+    self.encounterService.getEncounterExpanded(self.data.patientId, self.data.encounterId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.updateForm(self.viewModelForm, result);
