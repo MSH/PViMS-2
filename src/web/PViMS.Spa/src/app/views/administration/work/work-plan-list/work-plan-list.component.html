@@ -7,9 +7,6 @@
   <mat-card-title class="">
     <div class="card-title-text">
       {{'Work Plans' | translate}}
-      <div class="addButton">
-        <button mat-raised-button class="mb-05" color="accent" (click)="openPopUp({}, true)">{{'Add Work Plan' | translate }}</button>
-      </div>
     </div>
   </mat-card-title>
 
@@ -46,14 +43,6 @@
                     {{"Actions" | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let record">
-                    <button mat-icon-button color="primary" matTooltip="{{'Update Work Plan' | translate }}"
-                            (click)="openPopUp(record, false)">
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" matTooltip="{{'Delete Work Plan' | translate }}"
-                            (click)="openDeletePopUp(record)">
-                        <mat-icon>delete</mat-icon>
-                    </button>
                 </mat-cell>
             </ng-container>
 

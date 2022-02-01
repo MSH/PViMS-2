@@ -2,6 +2,7 @@
 using PVIMS.API.Models;
 using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Entities;
+using System.Linq;
 
 namespace PVIMS.API.MapperProfiles
 {
@@ -77,7 +78,8 @@ namespace PVIMS.API.MapperProfiles
             CreateMap<EncounterType, EncounterTypeIdentifierDto>()
                 .ForMember(dest => dest.EncounterTypeName, opt => opt.MapFrom(src => src.Description));
             CreateMap<EncounterType, EncounterTypeDetailDto>()
-                .ForMember(dest => dest.EncounterTypeName, opt => opt.MapFrom(src => src.Description));
+                .ForMember(dest => dest.EncounterTypeName, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.WorkPlanName, opt => opt.MapFrom(src => src.EncounterTypeWorkPlans.First().WorkPlan.Description));
 
             CreateMap<WorkPlan, WorkPlanIdentifierDto>()
                 .ForMember(dest => dest.WorkPlanName, opt => opt.MapFrom(src => src.Description));

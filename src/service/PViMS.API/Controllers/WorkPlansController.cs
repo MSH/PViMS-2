@@ -156,7 +156,7 @@ namespace PVIMS.API.Controllers
 
             var orderby = Extensions.GetOrderBy<WorkPlan>(workPlanResourceParameters.OrderBy, "asc");
 
-            var pagedWorkPlansFromRepo = _workPlanRepository.List(pagingInfo, null, orderby, "");
+            var pagedWorkPlansFromRepo = _workPlanRepository.List(pagingInfo, null, orderby, new string[] { "Dataset" });
             if (pagedWorkPlansFromRepo != null)
             {
                 // Map EF entity to Dto
