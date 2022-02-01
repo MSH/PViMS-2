@@ -14,9 +14,16 @@ import { MetaService } from 'app/shared/services/meta.service';
 
 @Component({
   selector: 'app-header-side',
+  styles: [`
+    .error-status { color: red; }
+    .connected-status { color: green; }
+    .checking-status { color: black; } 
+  `],  
   templateUrl: './header-side.template.html'
 })
 export class HeaderSideComponent implements OnInit, AfterViewInit {
+  
+  viewModel: ViewModel = new ViewModel();
   
   public availableLangs = [{
     name: 'EN',
@@ -39,8 +46,6 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
   public layoutConf:any;
 
   pharmadexLink = '';
-
-  checking: boolean = false;
 
   constructor(
     private themeService: ThemeService,
@@ -130,13 +135,15 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
 
   refreshMeta(): void {
     let self = this;
-    self.checking = true;
+    self.viewModel.checking = true;
+    self.viewModel.refreshError = false;
     self.metaService.refresh()
       .subscribe(result => {
-        //self.checking = false;
-        //self.notify("Meta data refreshed successfully", "Success");          
+        self.viewModel.checking = false;
+        self.viewModel.refreshError = false;
       }, error => {
-        //self.handleError(error, "Error refreshing meta data");
+        self.viewModel.checking = false;
+        self.viewModel.refreshError = true;
       });
   }   
 
@@ -187,4 +194,9 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
         }
       })
   }  
+}
+
+class ViewModel {
+  refreshError: boolean = false;
+  checking: boolean = false;
 }
