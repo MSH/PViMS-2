@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { BaseService } from '../base/base.service';
 import { EventService } from './event.service';
 import { ParameterKeyValueModel } from '../models/parameter.keyvalue.model';
-import { CustomAttributeDetailWrapperModel } from '../models/custom-attribute/custom-attribute.detail.model';
+import { CustomAttributeDetailModel, CustomAttributeDetailWrapperModel } from '../models/custom-attribute/custom-attribute.detail.model';
 import { CustomAttributeIdentifierWrapperModel } from '../models/custom-attribute/custom-attribute.identifier.model';
 import { FilterModel } from '../models/grid.model';
 import { expand, map, reduce } from 'rxjs/operators';
@@ -58,5 +58,25 @@ export class CustomAttributeService extends BaseService {
       parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
       
       return this.Get<CustomAttributeDetailWrapperModel>('', 'application/vnd.pvims.detail.v1+json', parameters);
+    }
+
+    getCustomAttributeDetail(id: number): any {
+      let parameters: ParameterKeyValueModel[] = [];
+      parameters.push(<ParameterKeyValueModel> { key: 'id', value: id.toString() });
+
+      return this.Get<CustomAttributeDetailModel>('', 'application/vnd.pvims.detail.v1+json', parameters);
+    }    
+
+    saveCustomAttribute(id: number, model: any): any {
+      if(id == 0) {
+        return this.Post('', model);
+      }
+      else {
+        return this.Put(`${id}`, model);
+      }
+    }
+
+    deleteCustomAttribute(id: number): any {
+      return this.Delete(`${id}`);
     }    
 }

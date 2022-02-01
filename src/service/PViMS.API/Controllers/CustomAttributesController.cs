@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using PVIMS.API.Application.Commands.CustomAttributeAggregate;
+using PVIMS.API.Application.Queries.CustomAttributeAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Application.Queries.CustomAttributeAggregate;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Repositories;
 using System;
@@ -174,7 +176,7 @@ namespace PVIMS.API.Controllers
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public async Task<ActionResult<CustomAttributeIdentifierDto>> GetCustomAttributeByIdentifier(long id)
+        public async Task<ActionResult<CustomAttributeIdentifierDto>> GetCustomAttributeByIdentifier(int id)
         {
             var mappedCustomAttribute = await GetCustomAttributeAsync<CustomAttributeIdentifierDto>(id);
             if (mappedCustomAttribute == null)
@@ -197,16 +199,134 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<CustomAttributeDetailDto>> GetCustomAttributeByDetail(long id)
+        public async Task<ActionResult<CustomAttributeDetailDto>> GetCustomAttributeByDetail(int id)
         {
-            var mappedCustomAttribute = await GetCustomAttributeAsync<CustomAttributeDetailDto>(id);
-            if (mappedCustomAttribute == null)
+            var query = new CustomAttributeDetailQuery(id);
+
+            _logger.LogInformation($"----- Sending query: CustomAttributeDetailQuery - {id}");
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            //return Ok(CreateLinksForCustomAttribute<CustomAttributeDetailDto>(CreateSelectionValues(mappedCustomAttribute)));
+            return Ok(queryResult);
+        }
+
+        /// <summary>
+        /// Create a new custom attribute
+        /// </summary>
+        /// <param name="customAttributeForCreation">The custom attribute payload</param>
+        /// <returns></returns>
+        [HttpPost(Name = "CreateCustomAttribute")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [Consumes("application/json")]
+        public async Task<IActionResult> CreateCustomAttribute(
+            [FromBody] CustomAttributeForCreationDto customAttributeForCreation)
+        {
+            if (customAttributeForCreation == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new attribute");
+                return BadRequest(ModelState);
+            }
+
+            var command = new AddCustomAttributeCommand(
+                customAttributeForCreation.ExtendableTypeName.ToString(),
+                MapCustomAttributeType(customAttributeForCreation.CustomAttributeType),
+                customAttributeForCreation.Category,
+                customAttributeForCreation.AttributeKey,
+                customAttributeForCreation.AttributeDetail,
+                customAttributeForCreation.IsRequired == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForCreation.MaxLength,
+                customAttributeForCreation.MinValue,
+                customAttributeForCreation.MaxValue,
+                customAttributeForCreation.FutureDateOnly == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForCreation.PastDateOnly == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForCreation.IsSearchable == Models.ValueTypes.YesNoValueType.Yes
+            );
+
+            _logger.LogInformation($"----- Sending command: AddCustomAttributeCommand - {customAttributeForCreation.AttributeKey}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return CreatedAtAction("GetCustomAttributeByIdentifier",
+                new
+                {
+                    id = commandResult.Id
+                }, commandResult);
+        }
+
+        /// <summary>
+        /// Update an existing custom attribute
+        /// </summary>
+        /// <param name="id">The unique id of the custom attribute</param>
+        /// <param name="customAttributeForUpdate">The custom attribute payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}", Name = "UpdateCustomAttribute")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdateCustomAttribute(int id,
+            [FromBody] CustomAttributeForUpdateDto customAttributeForUpdate)
+        {
+            if (customAttributeForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for custom attribute");
+                return BadRequest(ModelState);
+            }
+
+            var command = new ChangeCustomAttributeDetailsCommand(
+                id,
+                customAttributeForUpdate.ExtendableTypeName,
+                customAttributeForUpdate.Category,
+                customAttributeForUpdate.AttributeKey,
+                customAttributeForUpdate.AttributeDetail,
+                customAttributeForUpdate.IsRequired == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForUpdate.StringMaxLength,
+                customAttributeForUpdate.NumericMinValue,
+                customAttributeForUpdate.NumericMaxValue,
+                customAttributeForUpdate.FutureDateOnly == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForUpdate.PastDateOnly == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForUpdate.IsSearchable == Models.ValueTypes.YesNoValueType.Yes
+             );
+
+            _logger.LogInformation($"----- Sending command: ChangeCustomAttributeDetailsCommand - {command.Id}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
             return Ok();
+        }
+
+        /// <summary>
+        /// Delete an existing custom attribute
+        /// </summary>
+        /// <param name="id">The unique id of the custom attribute</param>
+        /// <returns></returns>
+        [HttpDelete("{id}", Name = "DeleteCustomAttribute")]
+        public async Task<IActionResult> DeleteCustomAttribute(int id)
+        {
+            var command = new DeleteCustomAttributeCommand(id);
+
+            _logger.LogInformation($"----- Sending command: DeleteCustomAttributeCommand - {command.Id}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return NoContent();
         }
 
         /// <summary>
@@ -242,6 +362,28 @@ namespace PVIMS.API.Controllers
             identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("CustomAttribute", identifier.Id), "self", "GET"));
 
             return identifier;
+        }
+
+        private CustomAttributeType MapCustomAttributeType(CustomAttributeTypes sourceAttributeType)
+        {
+            switch (sourceAttributeType)
+            {
+                case CustomAttributeTypes.All:
+                    return CustomAttributeType.String;
+                case CustomAttributeTypes.None:
+                    return CustomAttributeType.String;
+                case CustomAttributeTypes.Numeric:
+                    return CustomAttributeType.Numeric;
+                case CustomAttributeTypes.String:
+                    return CustomAttributeType.String;
+                case CustomAttributeTypes.Selection:
+                    return CustomAttributeType.Selection;
+                case CustomAttributeTypes.DateTime:
+                    return CustomAttributeType.DateTime;
+                case CustomAttributeTypes.FirstClassProperty:
+                    return CustomAttributeType.FirstClassProperty;
+            }
+            return CustomAttributeType.String;
         }
     }
 }

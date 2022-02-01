@@ -14,26 +14,26 @@
     <form [formGroup]="viewModelForm">
       <div fxLayout="column" fxLayoutWrap fxLayoutGap="0.1%" fxLayoutAlign="start" class="p-0">
         <div fxFlex="100" fxLayoutAlign="end">
-          <button mat-raised-button class="mr-05" color="accent" (click)="openPopUp({}, true)">{{'Add Attribute' | translate}}</button>
+          <button mat-raised-button class="mr-05" color="accent" (click)="openAddPopUp()">{{'Add Attribute' | translate}}</button>
         </div>
         <div fxFlex="100" class="pr-1 p-12">
           <mat-label>{{'Please select an extendable type below' | translate}}...</mat-label>
         </div>
         <div fxFlex="100" class="pr-1">
           <mat-chip-list #chipList>
-            <mat-chip color="primary" [selected]="viewModel.extendableTypeName == 'Patient'" (click)="selectExtendableType('Patient')" style="cursor: pointer;"> 
+            <mat-chip color="primary" [selected]="viewModel.extendableTypeName == '1'" (click)="selectExtendableType('1')" style="cursor: pointer;"> 
               {{'Patient Attributes' | translate}}
             </mat-chip>
-            <mat-chip color="primary" [selected]="viewModel.extendableTypeName == 'PatientCondition'" (click)="selectExtendableType('PatientCondition')" style="cursor: pointer;"> 
+            <mat-chip color="primary" [selected]="viewModel.extendableTypeName == '2'" (click)="selectExtendableType('2')" style="cursor: pointer;"> 
               {{'Condition Attributes' | translate}}
             </mat-chip>
-            <mat-chip color="primary" [selected]="viewModel.extendableTypeName == 'PatientMedication'" (click)="selectExtendableType('PatientMedication')" style="cursor: pointer;"> 
+            <mat-chip color="primary" [selected]="viewModel.extendableTypeName == '3'" (click)="selectExtendableType('3')" style="cursor: pointer;"> 
               {{'Medication Attributes' | translate}}
             </mat-chip>
-            <mat-chip color="primary" [selected]="viewModel.extendableTypeName == 'PatientLabTest'" (click)="selectExtendableType('PatientLabTest')" style="cursor: pointer;"> 
+            <mat-chip color="primary" [selected]="viewModel.extendableTypeName == '4'" (click)="selectExtendableType('4')" style="cursor: pointer;"> 
               {{'Lab Test Attributes' | translate}}
             </mat-chip>
-            <mat-chip color="primary" [selected]="viewModel.extendableTypeName == 'PatientClinicalEvent'" (click)="selectExtendableType('PatientClinicalEvent')" style="cursor: pointer;"> 
+            <mat-chip color="primary" [selected]="viewModel.extendableTypeName == '5'" (click)="selectExtendableType('5')" style="cursor: pointer;"> 
               {{'Clinical Event Attributes' | translate}}
             </mat-chip>
           </mat-chip-list>
@@ -81,7 +81,7 @@
                 </mat-header-cell>
                 <mat-cell *matCellDef="let record">
                     <button mat-icon-button color="primary" matTooltip="{{'Update Attribute' | translate }}"
-                            (click)="openPopUp(record, false)">
+                            (click)="openEditPopUp(record)">
                         <mat-icon>edit</mat-icon>
                     </button>
                     <button mat-icon-button color="warn" matTooltip="{{'Delete Attribute' | translate }}"

@@ -11,6 +11,7 @@ export interface CustomAttributeDetailModel {
     id: number;
     extendableTypeName: string;
     attributeKey: string;
+    attributeDetail: string;
     category: string;
     customAttributeType: string;
     required: boolean;

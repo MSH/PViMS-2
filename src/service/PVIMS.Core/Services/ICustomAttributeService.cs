@@ -36,7 +36,7 @@ namespace PVIMS.Core.Services
         /// </summary>
         /// <param name="customAttribute"></param>
         /// <returns></returns>
-        void AddCustomAttribute(CustomAttributeConfigDetail customAttribute);
+        Task AddCustomAttributeAsync(CustomAttributeConfigDetail customAttribute);
 
         /// <summary>
         /// Updates CustomAttributeConfigDetail record

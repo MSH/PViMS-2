@@ -16,6 +16,12 @@ namespace PVIMS.API.Models
         public string Category { get; set; }
 
         /// <summary>
+        /// Additional info for the attribute
+        /// </summary>
+        [DataMember]
+        public string AttributeDetail { get; set; }
+
+        /// <summary>
         /// The type of attribute  
         /// Valid options are string, selection, DateTime, Numeric
         /// </summary>

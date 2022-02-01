@@ -69,7 +69,7 @@ namespace PVIMS.Services
             return attributesOfEntity;
         }
 
-        public void AddCustomAttribute(CustomAttributeConfigDetail customAttribute)
+        public async Task AddCustomAttributeAsync(CustomAttributeConfigDetail customAttribute)
         {
             var newCustomAttribute = new CustomAttributeConfiguration()
             {
@@ -109,7 +109,7 @@ namespace PVIMS.Services
                     break;
             }
 
-            _customAttributeConfigRepository.Save(newCustomAttribute);
+            await _customAttributeConfigRepository.SaveAsync(newCustomAttribute);
 
             if(newCustomAttribute.CustomAttributeType == CustomAttributeType.Selection)
             {
@@ -120,7 +120,7 @@ namespace PVIMS.Services
                     SelectionKey = "0"
                 };
 
-                _selectionDataItemRepository.Save(newSelectionDataItem);
+                await _selectionDataItemRepository.SaveAsync(newSelectionDataItem);
             }
         }
 

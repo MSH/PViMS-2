@@ -59,6 +59,9 @@ import { UserDeletePopupComponent } from './user/user-list/user-delete-popup/use
 import { UserUpdatePopupComponent } from './user/user-list/user-update-popup/user-update.popup.component';
 import { UserFacilityPopupComponent } from './user/user-list/user-facility-popup/user-facility.popup.component';
 import { CustomAttributeListComponent } from './work/custom-attribute-list/custom-attribute-list.component';
+import { CustomAttributeAddPopupComponent } from './work/custom-attribute-list/custom-attribute-add-popup/custom-attribute-add.popup.component';
+import { CustomAttributeDeletePopupComponent } from './work/custom-attribute-list/custom-attribute-delete-popup/custom-attribute-delete.popup.component';
+import { CustomAttributeEditPopupComponent } from './work/custom-attribute-list/custom-attribute-edit-popup/custom-attribute-edit.popup.component';
 
 @NgModule({
   declarations: [
@@ -74,6 +77,9 @@ import { CustomAttributeListComponent } from './work/custom-attribute-list/custo
     ConditionPopupComponent,
     ContactDetailListComponent,
     CustomAttributeListComponent,
+    CustomAttributeAddPopupComponent,
+    CustomAttributeEditPopupComponent,
+    CustomAttributeDeletePopupComponent,
     DatasetCategoryListComponent,
     DatasetCategoryDeletePopupComponent,
     DatasetCategoryElementPopupComponent,
@@ -130,6 +136,9 @@ import { CustomAttributeListComponent } from './work/custom-attribute-list/custo
     ConceptPopupComponent,
     ConditionPopupComponent,
     ConditionDeletePopupComponent,
+    CustomAttributeAddPopupComponent,
+    CustomAttributeEditPopupComponent,
+    CustomAttributeDeletePopupComponent,
     DatasetCategoryDeletePopupComponent,
     DatasetCategoryElementPopupComponent,
     DatasetCategoryElementDeletePopupComponent,

@@ -13,6 +13,9 @@ import { MatPaginator } from '@angular/material/paginator';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { CustomAttributeService } from 'app/shared/services/custom-attribute.service';
+import { CustomAttributeAddPopupComponent } from './custom-attribute-add-popup/custom-attribute-add.popup.component';
+import { CustomAttributeDeletePopupComponent } from './custom-attribute-delete-popup/custom-attribute-delete.popup.component';
+import { CustomAttributeEditPopupComponent } from './custom-attribute-edit-popup/custom-attribute-edit.popup.component';
 
 @Component({
   templateUrl: './custom-attribute-list.component.html',
@@ -84,48 +87,66 @@ export class CustomAttributeListComponent extends BaseComponent implements OnIni
         });
   }
 
-  openPopUp(data: any = {}, isNew?) {
-    // let self = this;
-    // let title = isNew ? 'Add Element' : 'Update Element';
-    // let dialogRef: MatDialogRef<any> = self.dialog.open(DatasetElementPopupComponent, {
-    //   width: '920px',
-    //   minHeight: '530px',
-    //   disableClose: true,
-    //   data: { datasetElementId: isNew ? 0: data.id, title: title, payload: data }
-    // })
-    // dialogRef.afterClosed()
-    //   .subscribe(res => {
-    //     if(!res) {
-    //       // If user press cancel
-    //       return;
-    //     }
-    //     self.loadGrid();
-    //   })
+  openAddPopUp() {
+    let self = this;
+    let title = 'Add Attribute';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(CustomAttributeAddPopupComponent, {
+      width: '920px',
+      minHeight: '530px',
+      disableClose: true,
+      data: { customAttributeId: 0, extendableTypeName: self.viewModel.extendableTypeName, title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+      })
+  }
+
+  openEditPopUp(data: any = {}) {
+    let self = this;
+    let title = 'Update Attribute';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(CustomAttributeEditPopupComponent, {
+      width: '920px',
+      minHeight: '530px',
+      disableClose: true,
+      data: { customAttributeId: data.id, extendableTypeName: self.viewModel.extendableTypeName, title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+      })
   }
 
   openDeletePopUp(data: any = {}) {
-    // let self = this;
-    // let title = 'Delete Element';
-    // let dialogRef: MatDialogRef<any> = self.dialog.open(DatasetElementDeletePopupComponent, {
-    //   width: '720px',
-    //   disableClose: true,
-    //   data: { datasetElementId: data.id, title: title, payload: data }
-    // })
-    // dialogRef.afterClosed()
-    //   .subscribe(res => {
-    //     if(!res) {
-    //       // If user press cancel
-    //       return;
-    //     }
-    //     self.loadGrid();
-    //   })
+    let self = this;
+    let title = 'Delete Attribute';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(CustomAttributeDeletePopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { customAttributeId: data.id, attributeKey: data.attributeKey, title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+      })
   }
 
   selectExtendableType(extendableTypeName: string): void {
     this.viewModel.extendableTypeName = extendableTypeName;
     this.loadGrid();
   }  
-
 }
 
 class ViewModel {
@@ -133,7 +154,7 @@ class ViewModel {
       new GridModel<GridRecordModel>
           (['id', 'attribute-key', 'category', 'attribute-type', 'actions']);
   
-  extendableTypeName: string = 'Patient';
+  extendableTypeName: string = '1';
 }
 
 class GridRecordModel {
