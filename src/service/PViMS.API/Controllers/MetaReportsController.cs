@@ -1,53 +1,59 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
+using System.Xml;
+using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Linq;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using System.Threading.Tasks;
-using PVIMS.API.Helpers;
-using System.Xml;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Authorization;
-using PVIMS.Core.Repositories;
-using PVIMS.Core.Paging;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/metareports")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class MetaReportsController : ControllerBase
     {
         private readonly ITypeHelperService _typeHelperService;
         private readonly ILinkGeneratorService _linkGeneratorService;
+        private readonly IRepositoryInt<MetaColumn> _metaColumnRepository;
+        private readonly IRepositoryInt<MetaDependency> _metaDependencyRepository;
         private readonly IRepositoryInt<MetaReport> _metaReportRepository;
         private readonly IRepositoryInt<MetaTable> _metaTableRepository;
-        private readonly IRepositoryInt<MetaColumn> _metaColumnRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
 
         public MetaReportsController(ITypeHelperService typeHelperService,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
+            IRepositoryInt<MetaColumn> metaColumnTypeRepository,
+            IRepositoryInt<MetaDependency> metaDependencyRepository,
             IRepositoryInt<MetaReport> metaReportRepository,
             IRepositoryInt<MetaTable> metaTableRepository,
-            IRepositoryInt<MetaColumn> metaColumnTypeRepository,
             IUnitOfWorkInt unitOfWork)
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _metaColumnRepository = metaColumnTypeRepository ?? throw new ArgumentNullException(nameof(metaColumnTypeRepository));
+            _metaDependencyRepository = metaDependencyRepository ?? throw new ArgumentNullException(nameof(metaDependencyRepository));
             _metaReportRepository = metaReportRepository ?? throw new ArgumentNullException(nameof(metaReportRepository));
             _metaTableRepository = metaTableRepository ?? throw new ArgumentNullException(nameof(metaTableRepository));
-            _metaColumnRepository = metaColumnTypeRepository ?? throw new ArgumentNullException(nameof(metaColumnTypeRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
@@ -451,7 +457,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetMetaReportAsync<T>(long id) where T : class
         {
-            var metaReportFromRepo = await _metaReportRepository.GetAsync(f => f.Id == id);
+            var metaReportFromRepo = await _metaReportRepository.GetAsync(f => f.Id == id, new string[] { "" });
 
             if (metaReportFromRepo != null)
             {
@@ -644,9 +650,7 @@ namespace PVIMS.API.Controllers
             string ocriteria = ""; // orders
             string wcriteria = ""; // wheres
 
-            var metaTable = _unitOfWork.Repository<MetaTable>()
-                .Queryable()
-                .SingleOrDefault(mt => mt.TableName == metaReportForAttributeUpdate.CoreEntity);
+            var metaTable = _metaTableRepository.Get(mt => mt.TableName == metaReportForAttributeUpdate.CoreEntity, new string[] { "TableType" });
 
             // FROM
             switch ((MetaTableTypes)metaTable.TableType.Id)
@@ -683,9 +687,7 @@ namespace PVIMS.API.Controllers
                 case MetaTableTypes.History:
                 case MetaTableTypes.CoreChild:
                     // get parent
-                    metaDependency = _unitOfWork.Repository<MetaDependency>()
-                        .Queryable()
-                        .SingleOrDefault(md => md.ReferenceTable.TableName == metaReportForAttributeUpdate.CoreEntity);
+                    metaDependency = _metaDependencyRepository.Get(md => md.ReferenceTable.TableName == metaReportForAttributeUpdate.CoreEntity, new string[] { "ParentTable" });
 
                     jcriteria += String.Format(" LEFT JOIN [Meta{0}] P ON P.{1} = C.{2} ", metaDependency.ParentTable.TableName, metaDependency.ParentColumnName, metaDependency.ReferenceColumnName);
 
@@ -912,7 +914,7 @@ namespace PVIMS.API.Controllers
             }
 
             // Map core entity
-            var metaTableFromRepo = _metaTableRepository.Get(p => p.TableName == dto.CoreEntity);
+            var metaTableFromRepo = _metaTableRepository.Get(p => p.TableName == dto.CoreEntity, new string[] { "TableType", "Columns.ColumnType" });
             if (metaTableFromRepo == null)
             {
                 return dto;
