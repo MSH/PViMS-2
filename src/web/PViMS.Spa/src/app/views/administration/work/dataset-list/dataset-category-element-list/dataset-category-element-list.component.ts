@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewEncapsulation, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,7 +22,6 @@ import { DatasetCategoryElementPopupComponent } from './dataset-category-element
 @Component({
   templateUrl: './dataset-category-element-list.component.html',
   styleUrls: ['./dataset-category-element-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations  
 })
 export class DatasetCategoryElementListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

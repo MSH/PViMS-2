@@ -431,7 +431,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 var newDataset = new Dataset(datasetForUpdate.DatasetName, contextType, "", "", datasetForUpdate.Help, "");
-                _datasetRepository.Save(newDataset);
+                await _datasetRepository.SaveAsync(newDataset);
                 id = newDataset.Id;
 
                 var mappedDataset = await GetDatasetAsync<DatasetIdentifierDto>(id);
@@ -1060,7 +1060,7 @@ namespace PVIMS.API.Controllers
 
             var orderby = Extensions.GetOrderBy<Dataset>(datasetResourceParameters.OrderBy, "asc");
 
-            var pagedDatasetsFromRepo = _datasetRepository.List(pagingInfo, null, orderby, "");
+            var pagedDatasetsFromRepo = _datasetRepository.List(pagingInfo, null, orderby, "ContextType");
             if (pagedDatasetsFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -1110,7 +1110,7 @@ namespace PVIMS.API.Controllers
             var predicate = PredicateBuilder.New<DatasetCategory>(true);
             predicate = predicate.And(f => f.Dataset.Id == datasetId);
 
-            var pagedDatasetCategoriesFromRepo = _datasetCategoryRepository.List(pagingInfo, predicate, orderby, "");
+            var pagedDatasetCategoriesFromRepo = _datasetCategoryRepository.List(pagingInfo, predicate, orderby, new string[] { "DatasetCategoryElements" });
             if (pagedDatasetCategoriesFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -1161,7 +1161,7 @@ namespace PVIMS.API.Controllers
             var predicate = PredicateBuilder.New<DatasetCategoryElement>(true);
             predicate = predicate.And(f => f.DatasetCategory.Dataset.Id == datasetId && f.DatasetCategory.Id == id);
 
-            var pagedDatasetCategoryElementsFromRepo = _datasetCategoryElementRepository.List(pagingInfo, predicate, orderby, "");
+            var pagedDatasetCategoryElementsFromRepo = _datasetCategoryElementRepository.List(pagingInfo, predicate, orderby, new string[] { "DatasetElement" } );
             if (pagedDatasetCategoryElementsFromRepo != null)
             {
                 // Map EF entity to Dto

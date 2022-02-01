@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,11 +15,11 @@ import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { DatasetService } from 'app/shared/services/dataset.service';
 import { DatasetPopupComponent } from './dataset-popup/dataset.popup.component';
 import { _routes } from 'app/config/routes';
+import { DatasetDeletePopupComponent } from './dataset-delete-popup/dataset-delete.popup.component';
 
 @Component({
   templateUrl: './dataset-list.component.html',
   styleUrls: ['./dataset-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class DatasetListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -100,19 +100,19 @@ export class DatasetListComponent extends BaseComponent implements OnInit, After
   openDeletePopUp(data: any = {}) {
     let self = this;
     let title = 'Delete Dataset';
-    // let dialogRef: MatDialogRef<any> = self.dialog.open(CareEventDeletePopupComponent, {
-    //   width: '720px',
-    //   disableClose: true,
-    //   data: { careEventId: data.id, title: title, payload: data }
-    // })
-    // dialogRef.afterClosed()
-    //   .subscribe(res => {
-    //     if(!res) {
-    //       // If user press cancel
-    //       return;
-    //     }
-    //     self.loadGrid();
-    //   })
+    let dialogRef: MatDialogRef<any> = self.dialog.open(DatasetDeletePopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { datasetId: data.id, title: title, payload: data }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+      })
   }
 
   categories(model: GridRecordModel = null): void {
