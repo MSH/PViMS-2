@@ -18,11 +18,14 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Paging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using PVIMS.API.Infrastructure.Auth;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/metapages")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class MetaPagesController : ControllerBase
     {
         private readonly ITypeHelperService _typeHelperService;
@@ -506,13 +509,13 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var metaPageFromRepo = await _metaPageRepository.GetAsync(f => f.Id == metaPageId);
+            var metaPageFromRepo = await _metaPageRepository.GetAsync(f => f.Id == metaPageId, new string[] { "Widgets" });
             if (metaPageFromRepo == null)
             {
                 return NotFound();
             }
 
-            var metaWidgetFromRepo = await _metaWidgetRepository.GetAsync(f => f.MetaPage.Id == metaPageId && f.Id == id);
+            var metaWidgetFromRepo = await _metaWidgetRepository.GetAsync(f => f.MetaPage.Id == metaPageId && f.Id == id, new string[] { "WidgetType" });
             if (metaWidgetFromRepo == null)
             {
                 return NotFound();
@@ -716,7 +719,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetMetaPageAsync<T>(long id) where T : class
         {
-            var metaPageFromRepo = await _metaPageRepository.GetAsync(f => f.Id == id);
+            var metaPageFromRepo = await _metaPageRepository.GetAsync(f => f.Id == id, new string[] { "Widgets.WidgetType" });
 
             if (metaPageFromRepo != null)
             {
@@ -738,7 +741,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetMetaWidgetAsync<T>(long metaPageId, long id) where T : class
         {
-            var metaWidgetFromRepo = await _metaWidgetRepository.GetAsync(f => f.MetaPage.Id == metaPageId && f.Id == id);
+            var metaWidgetFromRepo = await _metaWidgetRepository.GetAsync(f => f.MetaPage.Id == metaPageId && f.Id == id, new string[] { "WidgetType" });
 
             if (metaWidgetFromRepo != null)
             {

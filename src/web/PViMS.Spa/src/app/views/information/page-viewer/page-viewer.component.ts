@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
@@ -22,8 +22,9 @@ import { WidgetMovePopupComponent } from './widget-move-popup/widget-move.popup.
 
 @Component({
   templateUrl: './page-viewer.component.html',
-  styleUrls: ['./page-viewer.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mainButton { display: flex; justify-content: flex-end; button { margin-left: auto; } }  
+  `],  
   animations: egretAnimations
 })
 export class PageViewerComponent extends BaseComponent implements OnInit, OnDestroy {
