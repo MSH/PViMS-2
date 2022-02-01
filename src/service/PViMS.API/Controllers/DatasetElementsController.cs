@@ -337,16 +337,23 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (Regex.Matches(datasetElementForUpdate.OID, @"[-a-zA-Z0-9 ']").Count < datasetElementForUpdate.OID.Length)
+
+            if(!String.IsNullOrWhiteSpace(datasetElementForUpdate.OID))
             {
-                ModelState.AddModelError("Message", "OID contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
-                return BadRequest(ModelState);
+                if (Regex.Matches(datasetElementForUpdate.OID, @"[-a-zA-Z0-9 ']").Count < datasetElementForUpdate.OID.Length)
+                {
+                    ModelState.AddModelError("Message", "OID contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
+                    return BadRequest(ModelState);
+                }
             }
 
-            if (Regex.Matches(datasetElementForUpdate.DefaultValue, @"[-a-zA-Z0-9 ']").Count < datasetElementForUpdate.DefaultValue.Length)
+            if (!String.IsNullOrWhiteSpace(datasetElementForUpdate.DefaultValue))
             {
-                ModelState.AddModelError("Message", "Default value contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
-                return BadRequest(ModelState);
+                if (Regex.Matches(datasetElementForUpdate.DefaultValue, @"[-a-zA-Z0-9 ']").Count < datasetElementForUpdate.DefaultValue.Length)
+                {
+                    ModelState.AddModelError("Message", "Default value contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
+                    return BadRequest(ModelState);
+                }
             }
 
             if (_unitOfWork.Repository<DatasetElement>().Queryable().
@@ -364,7 +371,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var datasetElementFromRepo = await _datasetElementRepository.GetAsync(f => f.Id == id);
+            var datasetElementFromRepo = await _datasetElementRepository.GetAsync(f => f.Id == id, new string[] { "Field.FieldType" });
             if (datasetElementFromRepo == null)
             {
                 return NotFound();
@@ -401,7 +408,11 @@ namespace PVIMS.API.Controllers
         [HttpDelete("{id}", Name = "DeleteDatasetElement")]
         public async Task<IActionResult> DeleteDatasetElement(long id)
         {
-            var datasetElementFromRepo = await _datasetElementRepository.GetAsync(f => f.Id == id);
+            var datasetElementFromRepo = await _datasetElementRepository.GetAsync(f => f.Id == id, new string[] { 
+                "DatasetCategoryElements", 
+                "DatasetElementSubs", 
+                "Field.FieldValues" 
+            });
             if (datasetElementFromRepo == null)
             {
                 return NotFound();
@@ -430,8 +441,6 @@ namespace PVIMS.API.Controllers
                     _fieldValueRepository.Delete(fieldValue);
                 }
 
-                _fieldRepository.Delete(datasetElementFromRepo.Field);
-
                 ICollection<DatasetRule> deleteDatasetRules = new Collection<DatasetRule>();
                 foreach (var datasetRule in datasetElementFromRepo.DatasetRules)
                 {
@@ -443,6 +452,8 @@ namespace PVIMS.API.Controllers
                 }
 
                 _datasetElementRepository.Delete(datasetElementFromRepo);
+                _fieldRepository.Delete(datasetElementFromRepo.Field);
+
                 await _unitOfWork.CompleteAsync();
             }
 
@@ -472,7 +483,9 @@ namespace PVIMS.API.Controllers
                 predicate = predicate.And(f => f.ElementName.Contains(datasetElementResourceParameters.ElementName));
             }
 
-            var pagedDatasetElementsFromRepo = _datasetElementRepository.List(pagingInfo, predicate, orderby, "");
+            var pagedDatasetElementsFromRepo = _datasetElementRepository.List(pagingInfo, predicate, orderby, new string[] { 
+                "Field.FieldType"
+            });
             if (pagedDatasetElementsFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -510,7 +523,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetDatasetElementAsync<T>(long id) where T : class
         {
-            var datasetElementFromRepo = await _datasetElementRepository.GetAsync(f => f.Id == id);
+            var datasetElementFromRepo = await _datasetElementRepository.GetAsync(f => f.Id == id, new string[] { "Field.FieldType" });
 
             if (datasetElementFromRepo != null)
             {
