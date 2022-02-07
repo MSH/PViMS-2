@@ -183,7 +183,7 @@ namespace PVIMS.Services
             return selectionDataItems;
         }
 
-        public void AddSelectionDataItem(SelectionDataItemDetail selectionDataItem)
+        public async Task AddSelectionDataItemAsync(SelectionDataItemDetail selectionDataItem)
         {
             var newSelectionDataItem = new SelectionDataItem()
             {
@@ -192,7 +192,7 @@ namespace PVIMS.Services
                 SelectionKey = selectionDataItem.SelectionKey
             };
 
-            _selectionDataItemRepository.Save(newSelectionDataItem);
+            await _selectionDataItemRepository.SaveAsync(newSelectionDataItem);
         }
 
         public async Task<string> GetCustomAttributeValueAsync(string extendableTypeName, string attributeKey, IExtendable extended)

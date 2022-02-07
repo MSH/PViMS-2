@@ -49,7 +49,7 @@ namespace PVIMS.Core.Services
         /// Adds SelectionDataItem record
         /// </summary>
         /// <param name="selectionItem"></param>
-        void AddSelectionDataItem(SelectionDataItemDetail selectionItem);
+        Task AddSelectionDataItemAsync(SelectionDataItemDetail selectionItem);
 
         /// <summary>
         /// Get custom attribute value

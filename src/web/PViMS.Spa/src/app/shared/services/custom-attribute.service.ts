@@ -76,7 +76,15 @@ export class CustomAttributeService extends BaseService {
       }
     }
 
+    saveSelectionValue(customAttributeId: number, model: any): any {
+      return this.Post(`${customAttributeId}/selection`, model);
+    }
+
     deleteCustomAttribute(id: number): any {
       return this.Delete(`${id}`);
-    }    
+    }
+
+    deleteSelectionValue(customAttributeId: number, key: string): any {
+      return this.Delete(`${customAttributeId}/selection/${key}`);
+    }
 }

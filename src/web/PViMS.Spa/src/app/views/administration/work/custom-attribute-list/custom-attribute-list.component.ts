@@ -16,16 +16,13 @@ import { CustomAttributeService } from 'app/shared/services/custom-attribute.ser
 import { CustomAttributeAddPopupComponent } from './custom-attribute-add-popup/custom-attribute-add.popup.component';
 import { CustomAttributeDeletePopupComponent } from './custom-attribute-delete-popup/custom-attribute-delete.popup.component';
 import { CustomAttributeEditPopupComponent } from './custom-attribute-edit-popup/custom-attribute-edit.popup.component';
+import { SelectionItemPopupComponent } from './selection-item-popup/selection-item.popup.component';
 
 @Component({
   templateUrl: './custom-attribute-list.component.html',
   styles: [`
-    .addButton { display: flex; justify-content: space-between; button { margin-left: auto; } }
     .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
-    .mat-column-identifier { flex: 0 0 10% !important; width: 10% !important; }
-    .mat-column-patient { flex: 0 0 15% !important; width: 15% !important; }
-    .mat-column-medication-summary { flex: 0 0 10% !important; width: 10% !important; }
-    .mat-column-actions { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }
   `],
   animations: egretAnimations
 })
@@ -132,6 +129,25 @@ export class CustomAttributeListComponent extends BaseComponent implements OnIni
       width: '720px',
       disableClose: true,
       data: { customAttributeId: data.id, attributeKey: data.attributeKey, title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+      })
+  }
+
+  openSelectionPopUp(data: any = {}) {
+    let self = this;
+    let title = 'Update Selection Values';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(SelectionItemPopupComponent, {
+      width: '920px',
+      minHeight: '530px',
+      disableClose: true,
+      data: { customAttributeId: data.id, title: title }
     })
     dialogRef.afterClosed()
       .subscribe(res => {

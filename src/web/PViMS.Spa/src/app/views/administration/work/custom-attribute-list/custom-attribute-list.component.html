@@ -88,6 +88,11 @@
                             (click)="openDeletePopUp(record)">
                         <mat-icon>delete</mat-icon>
                     </button>
+                    <button mat-icon-button color="primary" matTooltip="{{'Set Values' | translate }}"
+                            (click)="openSelectionPopUp(record)"
+                            *ngIf="record.customAttributeType == 'Selection'">
+                        <mat-icon>apps</mat-icon>
+                    </button>
                 </mat-cell>
             </ng-container>
 

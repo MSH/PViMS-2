@@ -330,6 +330,65 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Create a new selection value
+        /// </summary>
+        /// <param name="customAttributeId">The unique id of the custom attribute</param>
+        /// <param name="selectionDataItemForCreation">The selection data item payload</param>
+        /// <returns></returns>
+        [HttpPost("{customAttributeId}/selection", Name = "CreateSelectionDataItem")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [Consumes("application/json")]
+        public async Task<IActionResult> CreateSelectionDataItem(int customAttributeId,
+            [FromBody] SelectionDataItemForCreationDto selectionDataItemForCreation)
+        {
+            if (selectionDataItemForCreation == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new value");
+                return BadRequest(ModelState);
+            }
+
+            var command = new AddSelectionValueCommand(
+                selectionDataItemForCreation.AttributeKey,
+                selectionDataItemForCreation.SelectionKey,
+                selectionDataItemForCreation.DataItemValue
+            );
+
+            _logger.LogInformation($"----- Sending command: AddSelectionValueCommand - {selectionDataItemForCreation.AttributeKey}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Delete an existing selection data item
+        /// </summary>
+        /// <param name="customAttributeId">The unique id of the custom attribute</param>
+        /// <param name="key">The unique id of the selection data item key</param>
+        /// <returns></returns>
+        [HttpDelete("{customAttributeId}/selection/{key}", Name = "DeleteSelectionDataItem")]
+        public async Task<IActionResult> DeleteSelectionDataItem(int customAttributeId, string key)
+        {
+            var command = new DeleteSelectionValueCommand(customAttributeId, key);
+
+            _logger.LogInformation($"----- Sending command: DeleteSelectionValueCommand - {key}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return NoContent();
+        }
+
+        /// <summary>
         /// Get single custom attribute from repository and auto map to Dto
         /// </summary>
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
