@@ -16,6 +16,7 @@ import { FormADRComponent } from './form/form-adr/form-adr.component';
 import { LandingComponent } from './form/landing/landing.component';
 import { PendingChangesGuard } from 'app/shared/guards/component-can-deactive';
 import { FormListComponent } from './form/form-list/form-list.component';
+import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynamic.component';
 
 export const ClinicalRoutes: Routes = [
   {

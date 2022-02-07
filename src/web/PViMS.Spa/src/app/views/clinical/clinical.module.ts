@@ -51,6 +51,7 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { ClinicalEventViewPopupComponent } from './shared/clinical-event-view-popup/clinical-event-view.popup.component';
 import { AppointmentPopupComponent } from './patient/patient-view/appointment-popup/appointment.popup.component';
 import { FormGuidelinesPopupComponent } from './form/form-guidelines-popup/form-guidelines.popup.component';
+import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynamic.component';
 
 @NgModule({
   imports: [
@@ -90,6 +91,7 @@ import { FormGuidelinesPopupComponent } from './form/form-guidelines-popup/form-
     FeedbackSearchComponent,
     FormAComponent,
     FormADRComponent,
+    FormADRDynamicComponent,
     FormADRMedicationPopupComponent,
     FormBComponent,
     FormCComponent,
