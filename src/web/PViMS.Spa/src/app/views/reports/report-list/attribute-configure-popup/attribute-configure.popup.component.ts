@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
@@ -17,7 +17,6 @@ import { MetaTableExpandedModel } from 'app/shared/models/meta/meta-table.expand
 
 @Component({
   templateUrl: './attribute-configure.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class AttributeConfigurePopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
