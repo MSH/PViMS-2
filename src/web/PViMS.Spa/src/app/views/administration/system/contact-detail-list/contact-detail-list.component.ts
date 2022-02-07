@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,8 +16,9 @@ import { ContactDetailPopupComponent } from './contact-detail-popup/contact-deta
 
 @Component({
   templateUrl: './contact-detail-list.component.html',
-  styleUrls: ['./contact-detail-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-actions { flex: 0 0 5% !important; width: 5% !important; }
+  `],  
   animations: egretAnimations
 })
 export class ContactDetailListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

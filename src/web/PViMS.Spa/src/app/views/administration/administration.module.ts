@@ -62,6 +62,7 @@ import { CustomAttributeListComponent } from './work/custom-attribute-list/custo
 import { CustomAttributeAddPopupComponent } from './work/custom-attribute-list/custom-attribute-add-popup/custom-attribute-add.popup.component';
 import { CustomAttributeDeletePopupComponent } from './work/custom-attribute-list/custom-attribute-delete-popup/custom-attribute-delete.popup.component';
 import { CustomAttributeEditPopupComponent } from './work/custom-attribute-list/custom-attribute-edit-popup/custom-attribute-edit.popup.component';
+import { SelectionItemPopupComponent } from './work/custom-attribute-list/selection-item-popup/selection-item.popup.component';
 
 @NgModule({
   declarations: [
@@ -112,6 +113,7 @@ import { CustomAttributeEditPopupComponent } from './work/custom-attribute-list/
     ReportMetaViewComponent,
     RoleListComponent,
     PasswordResetPopupComponent,
+    SelectionItemPopupComponent,
     UserAddPopupComponent,
     UserDeletePopupComponent,
     UserListComponent,
@@ -154,6 +156,7 @@ import { CustomAttributeEditPopupComponent } from './work/custom-attribute-list/
     MedicationPopupComponent,
     MedicationDeletePopupComponent,
     PasswordResetPopupComponent,
+    SelectionItemPopupComponent,
     UserAddPopupComponent,
     UserDeletePopupComponent,
     UserFacilityPopupComponent,

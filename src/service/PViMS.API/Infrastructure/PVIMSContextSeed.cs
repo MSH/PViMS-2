@@ -802,16 +802,16 @@ namespace PVIMS.API.Infrastructure
         {
             List<SiteContactDetail> siteContactDetails = new List<SiteContactDetail>();
 
-            if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.RegulatoryAuthority))
+            if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.SendingAuthority))
             {
-                var regulatoryContactDetail = new SiteContactDetail { ContactType = ContactType.RegulatoryAuthority, ContactFirstName = "Not", ContactSurname = "Specified", StreetAddress = "None", City = "None", OrganisationName = "None" };
+                var regulatoryContactDetail = new SiteContactDetail { ContactType = ContactType.SendingAuthority, ContactFirstName = "Not", ContactSurname = "Specified", StreetAddress = "None", City = "None", OrganisationName = "None" };
                 regulatoryContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
                 siteContactDetails.Add(regulatoryContactDetail);
             }
 
-            if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.ReportingAuthority))
+            if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.ReceivingAuthority))
             {
-                var reportingContactDetail = new SiteContactDetail { ContactType = ContactType.ReportingAuthority, ContactFirstName = "Uppsala", ContactSurname = "Monitoring Centre", StreetAddress = "Bredgrand 7B", City = "Uppsala", State = "None", PostCode = "75320", ContactEmail = "info@who-umc.org", ContactNumber = "18656060", CountryCode = "46", OrganisationName = "UMC" };
+                var reportingContactDetail = new SiteContactDetail { ContactType = ContactType.ReceivingAuthority, ContactFirstName = "Uppsala", ContactSurname = "Monitoring Centre", StreetAddress = "Bredgrand 7B", City = "Uppsala", State = "None", PostCode = "75320", ContactEmail = "info@who-umc.org", ContactNumber = "18656060", CountryCode = "46", OrganisationName = "UMC" };
                 reportingContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
                 siteContactDetails.Add(reportingContactDetail);
             }

@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
@@ -13,7 +13,6 @@ import { AccountService } from 'app/shared/services/account.service';
 @Component({
   selector: 'contactdetail-popup',
   templateUrl: './contact-detail.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class ContactDetailPopupComponent extends BasePopupComponent  implements OnInit, AfterViewInit {
