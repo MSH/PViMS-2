@@ -127,7 +127,7 @@
         <mat-table [dataSource]="viewModel?.mainGrid?.records"
                     [@animate]="{value:'50'}">
 
-            <ng-container matColumnDef="Id">
+            <ng-container matColumnDef="id">
                 <mat-header-cell *matHeaderCellDef>Id</mat-header-cell>
                 <mat-cell *matCellDef="let record">
                     <p>{{record.id}}</p>
@@ -197,7 +197,7 @@
         <mat-table [dataSource]="viewModel?.appointmentGrid?.records"
                     [@animate]="{value:'50'}">
 
-            <ng-container matColumnDef="Id">
+            <ng-container matColumnDef="id">
                 <mat-header-cell *matHeaderCellDef>Id</mat-header-cell>
                 <mat-cell *matCellDef="let record">
                     <p>{{record.id}}</p>

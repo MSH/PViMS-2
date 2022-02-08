@@ -32,7 +32,10 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './encounter-search.component.html',
-  styleUrls: ['./encounter-search.component.scss'],
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }  
+  `],   
   animations: egretAnimations
 })
 export class EncounterSearchComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -195,11 +198,11 @@ export class EncounterSearchComponent extends BaseComponent implements OnInit, A
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['Id', 'first-name', 'last-name', 'facility', 'encounter-type', 'encounter-date', 'actions']);
+          (['id', 'first-name', 'last-name', 'facility', 'encounter-type', 'encounter-date', 'actions']);
 
   appointmentGrid: GridModel<AppointmentGridRecordModel> =
   new GridModel<AppointmentGridRecordModel>
-      (['Id', 'first-name', 'last-name', 'facility', 'appointment-date', 'appointment-status', 'actions']);
+      (['id', 'first-name', 'last-name', 'facility', 'appointment-date', 'appointment-status', 'actions']);
     
   facilityName: string;
   patientId: number;

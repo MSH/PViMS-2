@@ -184,9 +184,9 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
                     , new string[] { "Dataset.ContextType"
                         , "EncounterTypeWorkPlan.EncounterType"
                         , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategory"
-                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategory"
                         , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldValues"
-                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs"
+                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType"
+                        , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType"
                         , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategoryElementConditions" });
 
             if (datasetInstanceFromRepo != null)
