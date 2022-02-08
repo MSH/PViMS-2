@@ -93,7 +93,6 @@ export class ReportTaskListComponent extends BaseComponent implements OnInit, Af
     self.reportInstanceService.getReportInstanceExpanded(self.workFlowId, self.reportInstanceId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        this.CLog(result);
         self.qualifiedName = result.qualifiedName;
         self.updateForm(self.itemForm, result);
         self.viewModel.mainGrid.updateBasic(result.tasks);

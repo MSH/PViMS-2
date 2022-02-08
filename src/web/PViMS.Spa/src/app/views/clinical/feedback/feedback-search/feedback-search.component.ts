@@ -122,15 +122,11 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
     forkJoin(requestArray)
       .subscribe(
         data => {
-          self.CLog(data[0], 'get work flow detail')
-          self.CLog(data[1], 'get work flow summary')
-
           self.viewModel.workFlow = data[0] as WorkFlowDetailModel;
           self.viewModel.workFlowSummary = data[1] as WorkFlowSummaryModel;
 
           self.pepareChartSeries();
           self.initClassificationChart();
-          self.CLog(self.viewModel.mainSeries, 'main series');
 
           self.setBusy(false);
         },
@@ -196,7 +192,6 @@ export class FeedbackSearchComponent extends BaseComponent implements OnInit, Af
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-          self.CLog(result, 'feedback results by activity');
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
           this.handleError(error, "Error getting report instances by activity");

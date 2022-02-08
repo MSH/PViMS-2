@@ -86,7 +86,6 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.updateForm(self.viewModelForm, result);
-        self.CLog(result, 'result');
         self.clinicalEventAttributes = result.clinicalEventAttributes;
 
         self.CLogFormErrors(self.viewModelForm);
@@ -121,7 +120,6 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
     self.setBusy(true);
 
     let clinicalEventForUpdate = this.prepareClinicalEventForUpdateModel();
-    self.CLog(clinicalEventForUpdate, 'clinicalEventForUpdate');
     self.patientService.savePatientClinicalEvent(self.data.patientId, self.data.clinicalEventId, clinicalEventForUpdate)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {

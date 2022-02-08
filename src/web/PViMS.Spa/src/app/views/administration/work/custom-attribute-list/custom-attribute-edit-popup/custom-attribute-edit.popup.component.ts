@@ -66,7 +66,6 @@ export class CustomAttributeEditPopupComponent extends BasePopupComponent implem
     self.customAttributeService.getCustomAttributeDetail(self.data.customAttributeId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.CLog(result);
         self.updateForm(self.itemForm, result);
       }, error => {
         self.handleError(error, "Error fetching attribute");

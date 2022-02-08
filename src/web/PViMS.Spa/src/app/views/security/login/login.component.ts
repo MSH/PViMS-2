@@ -46,7 +46,6 @@ export class LoginComponent implements OnInit {
     self.accountService.login(self.viewModelForm.value)
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-          this.CLog(result);
           self.accountService.setSessionToken(result as any);
 
           if(self.accountService.eulaAcceptanceRequired) {
@@ -54,7 +53,6 @@ export class LoginComponent implements OnInit {
           }
           else {
             self.notify("Successfully authenticated!", "Login");
-            self.navigationService.initialiseMenus();
             self.navigationService.determineRouteToLanding();
           }
         }, error => {

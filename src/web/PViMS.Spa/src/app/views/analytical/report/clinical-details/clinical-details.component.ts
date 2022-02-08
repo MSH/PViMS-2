@@ -160,9 +160,6 @@ export class ClinicalDetailsComponent extends BaseComponent implements OnInit, A
     forkJoin(requestArray)
       .subscribe(
         data => {
-          self.CLog(data[0], 'get clinical event expanded')
-          self.CLog(data[1], 'get patient detail')
-
           self.loadGrids(data[1] as PatientExpandedModel);
 
           self.loadDataForFirstForm(data[1] as PatientExpandedModel);

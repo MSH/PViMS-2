@@ -122,7 +122,6 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.CLog(result, 'patients');
         self.viewModel.mainGrid.updateAdvance(result);
       }, error => {
         self.handleError(error, "Error fetching patients");

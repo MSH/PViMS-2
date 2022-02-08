@@ -64,7 +64,6 @@ export class SelectionItemPopupComponent extends BasePopupComponent implements O
     self.customAttributeService.getCustomAttributeDetail(self.data.customAttributeId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.CLog(result);
         self.updateForm(self.itemForm, { attributeKey: result.attributeKey });
         self.viewModel.selectionGrid.updateBasic(result.selectionDataItems);
       }, error => {

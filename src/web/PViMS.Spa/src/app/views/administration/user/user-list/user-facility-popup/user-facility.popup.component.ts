@@ -131,9 +131,6 @@ export class UserFacilityPopupComponent extends BasePopupComponent implements On
     forkJoin(requestArray)
       .subscribe(
         data => {
-          self.CLog(data[0], 'get user detail')
-          self.CLog(data[1], 'get facility list')
-
           let user = data[0] as any;
           self.viewModel.mainGrid.updateBasic(user.facilities);
 

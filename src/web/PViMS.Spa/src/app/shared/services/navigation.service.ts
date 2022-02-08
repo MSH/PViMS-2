@@ -43,15 +43,7 @@ export class NavigationService {
     protected metaPageService: MetaPageService,
     protected metaReportService: MetaReportService,
     protected routePartsService: RoutePartsService
-  ) 
-  {
-    this.prepareClinicalMenus();
-    this.prepareInfoMenus();
-    this.prepareReportMenus();
-   }
-
-  initialiseMenus(): void {
-  }
+  ) { }
 
   currentPortal: string;
 
@@ -226,27 +218,22 @@ export class NavigationService {
               // user has no roles, do nothing
               }
               else {
-                // route to formns list
                 this.routeToFormsLanding();
               }
             }
             else {
-              // route to admin landing page
               this.routeToAdminLanding();
             }
           }
           else {
-            // route to information home page
             this.routeToPublisherHome();
           }
         }
         else {
-          // route to patient treatment report
           this.routeToPatientTreatmentReport();
         }
       }
       else {
-        // route to analyser landing
         this.routeToAnalyticalLanding();
       }
     }
@@ -361,6 +348,9 @@ export class NavigationService {
 
   private prepareInfoMenus(): void {
     this.infoMenu = [];
+    this.menuItems.next([]);
+
+    console.log('prepare info');
     
     let metaPageList: MetaPageDetailModel[] = [];
 
@@ -400,6 +390,7 @@ export class NavigationService {
           };      
           this.infoMenu.push(newMenu);
         }
+
         this.menuItems.next(this.infoMenu);
       }, error => {
           console.log(error + ' ' + error.statusText);
@@ -408,6 +399,7 @@ export class NavigationService {
 
   private prepareReportMenus(): void {
     this.reportMenu = [];
+    this.menuItems.next([]);
     
     let metaReportList: MetaReportDetailModel[] = [];
 

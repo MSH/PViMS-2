@@ -39,6 +39,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   changePageTitleAndPortal() {
     this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((routeChange) => {
+      console.log('route changed');
       var routeParts = this.routePartsService.generateRouteParts(this.activeRoute.snapshot);
       if (!routeParts.length)
         return this.title.setTitle(this.appTitle);

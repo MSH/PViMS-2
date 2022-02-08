@@ -109,7 +109,6 @@ export class CohortEnrolmentListComponent extends BaseComponent implements OnIni
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.CLog(result, 'enrolments')
         self.viewGridModel.mainGrid.updateAdvance(result);
 
         const nonSeriousCountSum = result.value.reduce((nonSeriousCountSum, current) => nonSeriousCountSum + current.nonSeriousEventCount, 0);

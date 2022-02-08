@@ -57,7 +57,6 @@ export class UserUpdatePopupComponent extends BasePopupComponent implements OnIn
     self.userService.getUserDetail(self.data.userId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.CLog(result, 'user detail');
         self.updateForm(self.itemForm, (self.data.payload = result));
       }, error => {
         self.handleError(error, "Error fetching user");

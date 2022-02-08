@@ -89,7 +89,6 @@ export class ActivityHistoryComponent extends BaseComponent implements OnInit, A
     self.reportInstanceService.getReportInstanceExpanded(self.workFlowId, self.reportInstanceId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.CLog(result, 'result');
         self.qualifiedName = result.qualifiedName;
         self.updateForm(self.itemForm, result);
         self.viewModel.mainGrid.updateBasic(result.events);

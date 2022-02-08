@@ -122,10 +122,6 @@ export class PatientAddPopupComponent extends BasePopupComponent implements OnIn
     forkJoin(requestArray)
       .subscribe(
         data => {
-          self.CLog(data[0], 'get all conditions')
-          self.CLog(data[1], 'get all encounter types')
-          self.CLog(data[2], 'get all priorities')
-
           self.viewModel.conditionList = data[0] as ConditionDetailModel[];
           self.viewModel.encounterTypeList = data[1] as EncounterTypeIdentifierModel[];
           self.viewModel.priorityList = data[2] as PriorityIdentifierModel[];

@@ -60,7 +60,6 @@ export class LandingComponent extends BaseComponent implements OnInit {
         )    
         .pipe(takeUntil(self._unsubscribeAll))
         .subscribe(result => {
-            self.CLog(result, 'meta forms')
             self.viewModel.formList = result;
         }, error => {
             self.throwError(error, error.statusText);

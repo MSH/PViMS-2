@@ -104,9 +104,6 @@ export class ClinicalEventViewPopupComponent extends BasePopupComponent implemen
     forkJoin(requestArray)
       .subscribe(
         data => {
-          self.CLog(data[0], 'get clinical event expanded')
-          self.CLog(data[1], 'get patient detail')
-
           let patientClinicalEvent = data[0] as PatientClinicalEventExpandedModel;
           let patient = data[1] as PatientExpandedModel;
 

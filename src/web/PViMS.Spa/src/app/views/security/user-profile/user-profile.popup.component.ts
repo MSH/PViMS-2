@@ -67,9 +67,6 @@ export class UserProfilePopupComponent extends BasePopupComponent implements Aft
     forkJoin(requestArray)
       .subscribe(
         data => {
-          self.CLog(data[0], 'get user details')
-          self.CLog(data[1], 'get org units')
-
           self.viewModel.user = data[0] as UserDetailModel;
           self.viewModel.orgUnitList = data[1] as OrgUnitIdentifierModel[];
 

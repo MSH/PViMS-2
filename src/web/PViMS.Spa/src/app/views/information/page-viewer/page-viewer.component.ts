@@ -81,7 +81,9 @@ export class PageViewerComponent extends BaseComponent implements OnInit, OnDest
     const self = this;
 
     self.id = +self._activatedRoute.snapshot.paramMap.get('id');
-    self.loadData();
+    if(self.accountService.hasToken()) {
+      self.loadData();
+    }
   }  
 
   ngOnDestroy(): void {

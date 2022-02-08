@@ -259,9 +259,6 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     forkJoin(requestArray)
       .subscribe(
         data => {
-          self.CLog(data[0], 'get work flow detail')
-          self.CLog(data[1], 'get work flow summary')
-
           self.workFlow = data[0] as WorkFlowDetailModel;
           if(self.qualifiedName != null) {
             self.selectActivity(self.qualifiedName);
@@ -271,7 +268,6 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
 
           self.pepareChartSeries();
           self.initClassificationChart();
-          self.CLog(self.viewModel.mainSeries, 'main series');
 
           self.setBusy(false);
         },
@@ -323,7 +319,6 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-          self.CLog(result, 'new reports');
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
           this.handleError(error, "Error getting new report instances");
@@ -336,7 +331,6 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-          self.CLog(result, 'analysis reports');
           self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
           this.handleError(error, "Error getting report instances by activity");

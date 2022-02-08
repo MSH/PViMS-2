@@ -173,7 +173,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
     self.metaFormService.getForm(self.viewModel.formId).then(result => {
         let form = result as Form;
-        self.CLog(form, 'form');
         
         self.viewModel.formIdentifier = form.formIdentifier;
 
@@ -214,7 +213,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        this.CLog(result, 'patient by condition');
         if(result == null) {
           self.viewModel.errorFindingPatient = true;
           self.viewModel.patientFound = false;
@@ -238,8 +236,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
 
           self.viewModel.medications = self.mapMedicationForUpdateModels(result.patientMedications);
           self.viewModel.medicationGrid.updateBasic(self.viewModel.medications);
-
-          self.CLog(self.viewModel.medications);
         }
       }, error => {
         self.handleError(error, "Error fetching patient");
@@ -313,7 +309,6 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
     let existingMedication = null;
     if (!isNew) {
       let actualIndex = self.viewModel.medications.findIndex(m => m.index == indexToUse);
-      self.CLog(actualIndex, 'actual index');
       existingMedication = self.viewModel.medications[actualIndex];
     }
     

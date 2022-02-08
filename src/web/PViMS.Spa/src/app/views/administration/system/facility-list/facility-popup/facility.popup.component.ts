@@ -87,9 +87,6 @@ export class FacilityPopupComponent extends BasePopupComponent implements OnInit
     forkJoin(requestArray)
       .subscribe(
         data => {
-          self.CLog(data[0], 'get facility types')
-          self.CLog(data[1], 'get org units')
-
           let facilityTypes = data[0] as FacilityTypeIdentifierWrapperModel;
           self.typeList = facilityTypes.value;
 

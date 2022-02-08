@@ -152,9 +152,6 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
     forkJoin(requestArray)
       .subscribe(
         data => {
-          self.CLog(data[0], 'get clinical event expanded')
-          self.CLog(data[1], 'get patient detail')
-
           self.loadGrids(data[1] as PatientExpandedModel, data[0] as PatientClinicalEventExpandedModel);
 
           self.loadPatientData(data[1] as PatientExpandedModel);
@@ -236,7 +233,6 @@ export class ClinicalEventTaskPopupComponent extends BasePopupComponent implemen
     let existingMedication = null;
     if (!isNew) {
       let actualIndex = self.viewModel.medications.findIndex(m => m.index == indexToUse);
-      self.CLog(actualIndex, 'actual index');
       existingMedication = self.viewModel.medications[actualIndex];
     }
     

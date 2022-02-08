@@ -86,7 +86,6 @@ export class PatientUpdatePopupComponent extends BasePopupComponent  implements 
     self.patientService.getPatientDetail(self.data.patientId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.CLog(result, 'result');
         self.updateForm(self.viewModelForm, result);
         self.patientAttributes = result.patientAttributes;
 

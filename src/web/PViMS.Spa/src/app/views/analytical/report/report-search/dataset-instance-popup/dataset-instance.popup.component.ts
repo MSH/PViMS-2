@@ -57,7 +57,6 @@ export class DatasetInstancePopupComponent extends BasePopupComponent implements
     self.datasetService.getDatasetInstanceDetail(self.data.datasetId, self.data.instanceId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.CLog(result, 'dataset instance detail');
         // handle dynamic data
         self.datasetCategories = result.datasetCategories;
         // Add elements to form group

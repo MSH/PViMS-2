@@ -43,7 +43,6 @@ export class FormCompletePopupComponent extends BasePopupComponent implements On
 
     self.metaFormService.getForm(self.data.formId).then(result => {
         let form = result as Form;
-        self.CLog(form, 'form');
         self.viewModel.formIdentifier = form.formIdentifier;
         self.setBusy(false);
     }, error => {
