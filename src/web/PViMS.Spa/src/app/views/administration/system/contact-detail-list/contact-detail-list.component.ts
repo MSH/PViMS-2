@@ -64,9 +64,9 @@ export class ContactDetailListComponent extends BaseComponent implements OnInit,
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-            self.viewModel.mainGrid.updateAdvance(result);
+          self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-            self.throwError(error, error.statusText);
+          self.handleError(error, "Error fetching contacts");
         });
   }
 
@@ -92,13 +92,15 @@ export class ContactDetailListComponent extends BaseComponent implements OnInit,
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['contact-type', 'contact-first-name', 'contact-last-name', 'city', 'actions']);
+          (['contact-type', 'organisation-name', 'contact-first-name', 'contact-last-name', 'contact-number', 'contact-email', 'actions']);
 }
 
 class GridRecordModel {
   id: number;
   contactType: string;
+  organisationName: string;
   contactFirstName: string;
   contactLastName: string;
-  city: string;
+  contactNumber: string;
+  contactEmail: string;
 }

@@ -13,6 +13,22 @@
 
       <div fxFlex="100" class="pr-1">
         <mat-form-field class="full-width">
+          <mat-select formControlName="organisationType" placeholder="{{'Organisation type' | translate}}">
+            <mat-option value="PharmaceuticalCompany">Pharmaceutical Company</mat-option>
+            <mat-option value="RegulatoryAuthority">Regulatory Authority</mat-option>
+            <mat-option value="Healthprofessional">Health professional</mat-option>
+            <mat-option value="RegionalPharmacovigilanceCenter">Regional Pharmacovigilance Center</mat-option>
+            <mat-option value="WHOCollaboratingCenterForInternationalDrugMonitoring">WHO Collaborating Center for International Drug Monitoring</mat-option>
+            <mat-option value="Other">Other</mat-option>
+          </mat-select>               
+          <mat-error *ngIf="itemForm.get('organisationType').hasError('required')">
+            {{'This is a required field' | translate}}
+          </mat-error>
+        </mat-form-field>
+      </div>      
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="full-width">
             <input matInput formControlName="organisationName" placeholder="{{'Organisation name' | translate }}">
             <mat-error *ngIf="itemForm.get('organisationName').hasError('required')">
               {{'This is a required field' | translate}}
@@ -21,6 +37,21 @@
               {{'Maximum length exceeded' | translate}}
             </mat-error>            
             <mat-error *ngIf="itemForm.get('organisationName').hasError('pattern')">
+              {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, space)
+            </mat-error>            
+        </mat-form-field>
+      </div>
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="full-width">
+            <input matInput formControlName="departmentName" placeholder="{{'Department name' | translate }}">
+            <mat-error *ngIf="itemForm.get('departmentName').hasError('required')">
+              {{'This is a required field' | translate}}
+            </mat-error>            
+            <mat-error *ngIf="itemForm.get('departmentName').hasError('maxlength')">
+              {{'Maximum length exceeded' | translate}}
+            </mat-error>            
+            <mat-error *ngIf="itemForm.get('departmentName').hasError('pattern')">
               {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, space)
             </mat-error>            
         </mat-form-field>
@@ -56,7 +87,7 @@
         </mat-form-field>
       </div>
 
-      <div fxFlex="50" class="pr-1">
+      <div fxFlex="100" class="pr-1">
         <mat-form-field class="full-width">
             <input matInput formControlName="streetAddress" placeholder="{{'Street address' | translate }}">
             <mat-error *ngIf="itemForm.get('streetAddress').hasError('required')">

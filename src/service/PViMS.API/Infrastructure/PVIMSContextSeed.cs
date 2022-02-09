@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
+using PVIMS.Core.Aggregates.ContactAggregate;
 using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.ValueTypes;
@@ -804,16 +805,16 @@ namespace PVIMS.API.Infrastructure
 
             if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.SendingAuthority))
             {
-                var regulatoryContactDetail = new SiteContactDetail { ContactType = ContactType.SendingAuthority, ContactFirstName = "Not", ContactSurname = "Specified", StreetAddress = "None", City = "None", OrganisationName = "None" };
-                regulatoryContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                siteContactDetails.Add(regulatoryContactDetail);
+                var sendingAuthority = new SiteContactDetail(ContactType.SendingAuthority, OrganisationType.RegulatoryAuthority, "", "", "Not", "Specified", "", "", "", "", "", "", "");
+                sendingAuthority.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                siteContactDetails.Add(sendingAuthority);
             }
 
             if (!context.SiteContactDetails.Any(ce => ce.ContactType == ContactType.ReceivingAuthority))
             {
-                var reportingContactDetail = new SiteContactDetail { ContactType = ContactType.ReceivingAuthority, ContactFirstName = "Uppsala", ContactSurname = "Monitoring Centre", StreetAddress = "Bredgrand 7B", City = "Uppsala", State = "None", PostCode = "75320", ContactEmail = "info@who-umc.org", ContactNumber = "18656060", CountryCode = "46", OrganisationName = "UMC" };
-                reportingContactDetail.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
-                siteContactDetails.Add(reportingContactDetail);
+                var receivingAuthority = new SiteContactDetail(ContactType.ReceivingAuthority, OrganisationType.WHOCollaboratingCenterForInternationalDrugMonitoring, "UMC", "", "Not", "Specified", "Bredgrand 7B", "Uppsala", "46", "75320", "", "18656060", "info@who-umc.org");
+                receivingAuthority.AuditStamp(context.Users.Single(u => u.UserName == "Admin"));
+                siteContactDetails.Add(receivingAuthority);
             }
 
             return siteContactDetails;

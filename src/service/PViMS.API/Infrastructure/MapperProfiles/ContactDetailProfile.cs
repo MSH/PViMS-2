@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using PVIMS.API.Models;
-using PVIMS.Core.Entities;
+using PVIMS.Core.Aggregates.ContactAggregate;
 
 namespace PVIMS.API.MapperProfiles
 {

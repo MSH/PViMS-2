@@ -1,4 +1,5 @@
-﻿using PVIMS.Core.Aggregates.DatasetAggregate;
+﻿using PVIMS.Core.Aggregates.ContactAggregate;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Aggregates.NotificationAggregate;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Entities;

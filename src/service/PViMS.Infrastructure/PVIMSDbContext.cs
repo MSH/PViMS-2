@@ -16,6 +16,7 @@ using PVIMS.Core.SeedWork;
 using PVIMS.Infrastructure.EntityConfigurations;
 using PVIMS.Infrastructure.EntityConfigurations.KeyLess;
 using PViMS.Infrastructure.Helpers;
+using PVIMS.Core.Aggregates.ContactAggregate;
 
 namespace PVIMS.Infrastructure
 {
