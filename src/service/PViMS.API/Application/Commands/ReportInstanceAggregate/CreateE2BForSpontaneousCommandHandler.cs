@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using PVIMS.Core.Aggregates.ContactAggregate;
 using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Aggregates.UserAggregate;
@@ -22,8 +23,10 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
     {
         private readonly IRepositoryInt<Config> _configRepository;
         private readonly IRepositoryInt<Dataset> _datasetRepository;
+        private readonly IRepositoryInt<DatasetElement> _datasetElementRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
+        private readonly IRepositoryInt<SiteContactDetail> _siteContactDetailRepository;
         private readonly IRepositoryInt<User> _userRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IWorkFlowService _workFlowService;
@@ -33,8 +36,10 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
         public CreateE2BForSpontaneousCommandHandler(
             IRepositoryInt<Config> configRepository,
             IRepositoryInt<Dataset> datasetRepository,
+            IRepositoryInt<DatasetElement> datasetElementRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<ReportInstance> reportInstanceRepository,
+            IRepositoryInt<SiteContactDetail> siteContactDetailRepository,
             IRepositoryInt<User> userRepository,
             IUnitOfWorkInt unitOfWork,
             IWorkFlowService workFlowService,
@@ -43,8 +48,10 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
         {
             _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
             _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
+            _datasetElementRepository = datasetElementRepository ?? throw new ArgumentNullException(nameof(datasetElementRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
+            _siteContactDetailRepository = siteContactDetailRepository ?? throw new ArgumentNullException(nameof(siteContactDetailRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
@@ -199,33 +206,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 }
             }
 
-            // ************************************* sender
-            var regAuth = _unitOfWork.Repository<SiteContactDetail>().Queryable().Single(cd => cd.ContactType == ContactType.SendingAuthority);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender Type"), "2=Regulatory Authority");
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender Organization"), regAuth.OrganisationName);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender Given Name"), regAuth.ContactFirstName);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender Family Name"), regAuth.ContactSurname);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender Street Address"), regAuth.StreetAddress);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender City"), regAuth.City);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender State"), regAuth.State);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender Postcode"), regAuth.PostCode);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender Tel Number"), regAuth.ContactNumber);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender Tel Country Code"), regAuth.CountryCode);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Sender Email Address"), regAuth.ContactEmail);
-
-            // ************************************* receiver
-            var repAuth = _unitOfWork.Repository<SiteContactDetail>().Queryable().Single(cd => cd.ContactType == ContactType.ReceivingAuthority);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver Type"), "5=WHO Collaborating Center for International Drug Monitoring");
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver Organization"), repAuth.OrganisationName);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver Given Name"), repAuth.ContactFirstName);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver Family Name"), repAuth.ContactSurname);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver Street Address"), repAuth.StreetAddress);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver City"), repAuth.City);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver State"), repAuth.State);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver Postcode"), repAuth.PostCode);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver Tel"), repAuth.ContactNumber);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver Tel Country Code"), repAuth.CountryCode);
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Receiver Email Address"), repAuth.ContactEmail);
+            MapSenderAndReceivedRelatedFields(e2bInstance);
 
             // ************************************* patient
             var dob = spontaneousReport.GetInstanceValue("Date of Birth");
@@ -313,6 +294,43 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                         }
                     }
                 }
+            }
+        }
+
+        private void MapSenderAndReceivedRelatedFields(DatasetInstance e2bInstance)
+        {
+            var sendingAuthority = _siteContactDetailRepository.Get(cd => cd.ContactType == ContactType.SendingAuthority);
+            if (sendingAuthority != null)
+            {
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender Type"), ((int)sendingAuthority.OrganisationType).ToString());
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender Organization"), sendingAuthority.OrganisationName);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender Department"), sendingAuthority.DepartmentName);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender Given Name"), sendingAuthority.ContactFirstName);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender Family Name"), sendingAuthority.ContactSurname);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender Street Address"), sendingAuthority.StreetAddress);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender City"), sendingAuthority.City);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender State"), sendingAuthority.State);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender Postcode"), sendingAuthority.PostCode);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender Tel Number"), sendingAuthority.ContactNumber);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender Tel Country Code"), sendingAuthority.CountryCode);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Sender Email Address"), sendingAuthority.ContactEmail);
+            }
+
+            var receivingAuthority = _siteContactDetailRepository.Get(cd => cd.ContactType == ContactType.ReceivingAuthority);
+            if (receivingAuthority != null)
+            {
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Type"), ((int)receivingAuthority.OrganisationType).ToString());
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Organization"), receivingAuthority.OrganisationName);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Department"), receivingAuthority.DepartmentName);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Given Name"), receivingAuthority.ContactFirstName);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Family Name"), receivingAuthority.ContactSurname);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Street Address"), receivingAuthority.StreetAddress);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver City"), receivingAuthority.City);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver State"), receivingAuthority.State);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Postcode"), receivingAuthority.PostCode);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Tel"), receivingAuthority.ContactNumber);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Tel Country Code"), receivingAuthority.CountryCode);
+                e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Email Address"), receivingAuthority.ContactEmail);
             }
         }
 
