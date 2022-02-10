@@ -13,7 +13,7 @@
 
       <div fxFlex="100" class="pr-1">
         <mat-form-field class="full-width">
-          <mat-select formControlName="organisationType" placeholder="{{'Organisation type' | translate}}">
+          <mat-select formControlName="organisationType" placeholder="{{'Organisation type' | translate}}" required>
             <mat-option value="PharmaceuticalCompany">Pharmaceutical Company</mat-option>
             <mat-option value="RegulatoryAuthority">Regulatory Authority</mat-option>
             <mat-option value="Healthprofessional">Health professional</mat-option>
@@ -29,7 +29,7 @@
 
       <div fxFlex="100" class="pr-1">
         <mat-form-field class="full-width">
-            <input matInput formControlName="organisationName" placeholder="{{'Organisation name' | translate }}">
+            <input matInput formControlName="organisationName" placeholder="{{'Organisation name' | translate }}" required>
             <mat-error *ngIf="itemForm.get('organisationName').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            
@@ -44,7 +44,7 @@
 
       <div fxFlex="100" class="pr-1">
         <mat-form-field class="full-width">
-            <input matInput formControlName="departmentName" placeholder="{{'Department name' | translate }}">
+            <input matInput formControlName="departmentName" placeholder="{{'Department name' | translate }}" required>
             <mat-error *ngIf="itemForm.get('departmentName').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            
@@ -59,7 +59,7 @@
 
       <div fxFlex="50" class="pr-1">
         <mat-form-field class="full-width">
-            <input matInput formControlName="contactFirstName" placeholder="{{'Contact first name' | translate }}">
+            <input matInput formControlName="contactFirstName" placeholder="{{'Contact first name' | translate }}" required>
             <mat-error *ngIf="itemForm.get('contactFirstName').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            
@@ -74,7 +74,7 @@
 
       <div fxFlex="50" class="pr-1">
         <mat-form-field class="full-width">
-            <input matInput formControlName="contactLastName" placeholder="{{'Contact last name' | translate }}">
+            <input matInput formControlName="contactLastName" placeholder="{{'Contact last name' | translate }}" required>
             <mat-error *ngIf="itemForm.get('contactLastName').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            
@@ -89,7 +89,7 @@
 
       <div fxFlex="100" class="pr-1">
         <mat-form-field class="full-width">
-            <input matInput formControlName="streetAddress" placeholder="{{'Street address' | translate }}">
+            <input matInput formControlName="streetAddress" placeholder="{{'Street address' | translate }}" required>
             <mat-error *ngIf="itemForm.get('streetAddress').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            
@@ -104,7 +104,7 @@
 
       <div fxFlex="50" class="pr-1">
         <mat-form-field class="full-width">
-            <input matInput formControlName="city" placeholder="{{'City' | translate }}">
+            <input matInput formControlName="city" placeholder="{{'City' | translate }}" required>
             <mat-error *ngIf="itemForm.get('city').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            

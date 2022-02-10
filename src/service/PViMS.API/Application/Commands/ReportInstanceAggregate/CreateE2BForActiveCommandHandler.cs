@@ -141,7 +141,10 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             return await _datasetRepository.GetAsync(d => d.DatasetName == datasetName, 
                 new string[] { 
                     "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType", 
-                    "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType" 
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.DatasetMappingValues",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.SubMappings.DestinationElement.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.SubMappings.SourceElement.Field.FieldType"
                 });
         }
 
@@ -367,7 +370,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 var comments = objectValue != null ? objectValue.ToString() : "";
                 e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Additional Information"), comments, (Guid)newContext);
 
-                e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Dosage Text"), patientMedication.Dose, (Guid)newContext);
+                e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Dosage Text"), patientMedication.DoseFrequency, (Guid)newContext);
 
                 var form = patientMedication?.Concept?.MedicationForm?.Description;
                 e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Dosage Form"), form, (Guid)newContext);
@@ -385,6 +388,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                     e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Treatment Duration Unit"), "804=Day", (Guid)newContext);
                 }
 
+                if (int.TryParse(patientMedication.Dose, out int n)) { e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Structured Dosage"), patientMedication.Dose, (Guid)newContext); };
                 var doseUnit = MapDoseUnitForActive(patientMedication.DoseUnit);
                 if (!string.IsNullOrWhiteSpace(doseUnit)) { e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Structured Dosage Unit"), doseUnit, (Guid)newContext); };
 
@@ -396,7 +400,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 // Causality
                 if (med.WhoCausality != null)
                 {
-                    e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), activeReport.SourceDescription, (Guid)newContext);
+                    e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), med.ReportInstance.TerminologyMedDra.DisplayName, (Guid)newContext);
                     e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Method of Assessment"), "WHO Causality Scale", (Guid)newContext);
                     e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), med.WhoCausality.ToLowerInvariant() == "ignored" ? "" : med.WhoCausality, (Guid)newContext);
                 }
@@ -404,7 +408,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 {
                     if (med.NaranjoCausality != null)
                     {
-                        e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), activeReport.SourceDescription, (Guid)newContext);
+                        e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), med.ReportInstance.TerminologyMedDra.DisplayName, (Guid)newContext);
                         e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Method of Assessment"), "Naranjo Causality Scale", (Guid)newContext);
                         e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), med.NaranjoCausality.ToLowerInvariant() == "ignored" ? "" : med.NaranjoCausality, (Guid)newContext);
                     }

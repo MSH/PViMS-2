@@ -77,7 +77,7 @@ namespace PVIMS.Core.Aggregates.DatasetAggregate
                 foreach (DatasetCategoryElement dce in dc.DatasetCategoryElements)
                 {
                     // Default using default value
-                    if (dce.DatasetElement.DefaultValue != null && dce.DatasetElement.DefaultValue != "")
+                    if (!String.IsNullOrWhiteSpace(dce.DatasetElement.DefaultValue))
                     {
                         SetInstanceValue(dce.DatasetElement, dce.DatasetElement.DefaultValue);
                     }
