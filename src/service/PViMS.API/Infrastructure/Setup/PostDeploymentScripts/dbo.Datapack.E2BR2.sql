@@ -3660,6 +3660,8 @@ set @dsxenid = (SELECT @@IDENTITY)
 -- mapping
 INSERT [dbo].[DatasetMapping] (Tag, MappingType, MappingOption, DestinationElement_Id, PropertyPath, Property)
 	VALUES ('Active', 2, '', @dceid, 'PatientClinicalEvent', 'Comments')
+INSERT [dbo].[DatasetMapping] (Tag, MappingType, MappingOption, DestinationElement_Id, PropertyPath, Property)
+	VALUES ('Active', 4, '', @dceid, '', 'SourceDescription')
 
 INSERT [dbo].[Field] ([Anonymise], [Mandatory], [MaxLength], [RegEx], [FieldType_Id]) 
 	VALUES (0, 0, 500, NULL, 3)
