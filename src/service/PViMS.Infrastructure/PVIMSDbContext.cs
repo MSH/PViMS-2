@@ -6,6 +6,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using PVIMS.Core.Aggregates.ConceptAggregate;
+using PVIMS.Core.Aggregates.ContactAggregate;
 using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Aggregates.NotificationAggregate;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
@@ -16,7 +18,6 @@ using PVIMS.Core.SeedWork;
 using PVIMS.Infrastructure.EntityConfigurations;
 using PVIMS.Infrastructure.EntityConfigurations.KeyLess;
 using PViMS.Infrastructure.Helpers;
-using PVIMS.Core.Aggregates.ContactAggregate;
 
 namespace PVIMS.Infrastructure
 {

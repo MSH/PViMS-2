@@ -15,6 +15,12 @@ namespace PVIMS.API.Models
         public string ConceptName { get; set; }
 
         /// <summary>
+        /// The strength of the concept
+        /// </summary>
+        [DataMember]
+        public string Strength { get; set; }
+
+        /// <summary>
         /// The form of the concept
         /// </summary>
         [DataMember]

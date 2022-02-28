@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PVIMS.Core.Entities;
+using PVIMS.Core.Aggregates.ConceptAggregate;
 
 namespace PVIMS.Infrastructure.EntityConfigurations
 {
@@ -15,6 +15,10 @@ namespace PVIMS.Infrastructure.EntityConfigurations
             configuration.Property(c => c.ConceptName)
                 .IsRequired()
                 .HasMaxLength(1000);
+
+            configuration.Property(c => c.Strength)
+                .IsRequired()
+                .HasMaxLength(250);
 
             configuration.Property(c => c.Active)
                 .IsRequired();

@@ -13,5 +13,11 @@ namespace PVIMS.API.Models
         /// </summary>
         [DataMember]
         public string FormName { get; set; }
+
+        /// <summary>
+        /// The strength of the concept
+        /// </summary>
+        [DataMember]
+        public string Strength { get; set; }
     }
 }

@@ -1,18 +1,19 @@
 ﻿using AutoMapper;
+using LinqKit;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
-using PVIMS.Core.Entities;
+using PVIMS.API.Models.ValueTypes;
+using PVIMS.Core.Aggregates.ConceptAggregate;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using LinqKit;
-using PVIMS.API.Models.ValueTypes;
+
 
 namespace PVIMS.API.Application.Queries.ConceptAggregate
 {

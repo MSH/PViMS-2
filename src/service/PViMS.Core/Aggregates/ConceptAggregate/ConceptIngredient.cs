@@ -1,17 +1,26 @@
-namespace PVIMS.Core.Entities
+using PVIMS.Core.Entities;
+
+namespace PVIMS.Core.Aggregates.ConceptAggregate
 {
-	public class ConceptIngredient : EntityBase
+	public class ConceptIngredient 
+		: EntityBase
 	{
-		public ConceptIngredient()
+		public string Ingredient { get; private set; }
+		public string Strength { get; private set; }
+		public bool Active { get; private set; }
+		
+		public int ConceptId { get; set; }
+		public virtual Concept Concept { get; set; }
+
+		protected ConceptIngredient()
 		{
-			Active = true;
 		}
 
-		public string Ingredient { get; set; }
-		public string Strength { get; set; }
-		public bool Active { get; set; }
-		public int ConceptId { get; set; }
-
-		public virtual Concept Concept { get; set; }
-	}
+        public ConceptIngredient(string ingredient, string strength)
+        {
+            Ingredient = ingredient;
+            Strength = strength;
+            Active = true;
+        }
+    }
 }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PVIMS.Core.Entities;
+using PVIMS.Core.Aggregates.ConceptAggregate;
 
 namespace PVIMS.Infrastructure.EntityConfigurations
 {

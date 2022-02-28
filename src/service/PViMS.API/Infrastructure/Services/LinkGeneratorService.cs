@@ -558,6 +558,41 @@ namespace PVIMS.API.Infrastructure.Services
               new { patientId, id = enrolmentId });
         }
 
+        public string CreateMedicationFormsResourceUri(ResourceUriType type,
+            string orderBy,
+            int pageNumber,
+            int pageSize)
+        {
+            switch (type)
+            {
+                case ResourceUriType.PreviousPage:
+                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetMedicationFormsByIdentifier",
+                      new
+                      {
+                          orderBy,
+                          pageNumber = pageNumber - 1,
+                          pageSize
+                      });
+                case ResourceUriType.NextPage:
+                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetMedicationFormsByIdentifier",
+                      new
+                      {
+                          orderBy,
+                          pageNumber = pageNumber + 1,
+                          pageSize
+                      });
+                case ResourceUriType.Current:
+                default:
+                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetMedicationFormsByIdentifier",
+                      new
+                      {
+                          orderBy,
+                          pageNumber,
+                          pageSize
+                      });
+            }
+        }
+
         public string CreateMetaWidgetResourceUri(long metaPageId, long metaWidgetId)
         {
             return _linkGenerator.GetPathByName(_accessor.HttpContext, $"GetMetaWidgetByIdentifier",
@@ -721,7 +756,11 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreateProductsResourceUri(ResourceUriType type,
-           ProductResourceParameters productResourceParameters)
+            string orderBy,
+            string searchTerm,
+            YesNoBothValueType active,
+            int pageNumber,
+            int pageSize)
         {
             switch (type)
             {
@@ -729,32 +768,32 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetProductsByIdentifier",
                       new
                       {
-                          orderBy = productResourceParameters.OrderBy,
-                          pageNumber = productResourceParameters.PageNumber - 1,
-                          pageSize = productResourceParameters.PageSize,
-                          SearchTerm = productResourceParameters.SearchTerm,
-                          Active = productResourceParameters.Active
+                          orderBy,
+                          pageNumber = pageNumber - 1,
+                          pageSize,
+                          searchTerm,
+                          active
                       });
                 case ResourceUriType.NextPage:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetProductsByIdentifier",
                       new
                       {
-                          orderBy = productResourceParameters.OrderBy,
-                          pageNumber = productResourceParameters.PageNumber + 1,
-                          pageSize = productResourceParameters.PageSize,
-                          SearchTerm = productResourceParameters.SearchTerm,
-                          Active = productResourceParameters.Active
+                          orderBy,
+                          pageNumber = pageNumber + 1,
+                          pageSize,
+                          searchTerm,
+                          active
                       });
                 case ResourceUriType.Current:
                 default:
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetProductsByIdentifier",
                       new
                       {
-                          orderBy = productResourceParameters.OrderBy,
-                          pageNumber = productResourceParameters.PageNumber,
-                          pageSize = productResourceParameters.PageSize,
-                          SearchTerm = productResourceParameters.SearchTerm,
-                          Active = productResourceParameters.Active
+                          orderBy,
+                          pageNumber,
+                          pageSize,
+                          searchTerm,
+                          active
                       });
             }
         }

@@ -1,3 +1,5 @@
+using PVIMS.Core.Aggregates.ConceptAggregate;
+
 namespace PVIMS.Core.Entities
 {
 	public class ConditionMedication : EntityBase

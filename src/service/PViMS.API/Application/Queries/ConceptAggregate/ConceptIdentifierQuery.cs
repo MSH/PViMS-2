@@ -15,9 +15,9 @@ namespace PVIMS.API.Application.Queries.ConceptAggregate
         {
         }
 
-        public ConceptIdentifierQuery(int cohortGroupId) : this()
+        public ConceptIdentifierQuery(int conceptId) : this()
         {
-            ConceptId = cohortGroupId;
+            ConceptId = conceptId;
         }
     }
 }

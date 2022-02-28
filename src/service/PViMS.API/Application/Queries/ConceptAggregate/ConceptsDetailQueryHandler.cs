@@ -1,18 +1,18 @@
 ﻿using AutoMapper;
+using LinqKit;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
-using PVIMS.Core.Entities;
+using PVIMS.API.Models.ValueTypes;
+using PVIMS.Core.Aggregates.ConceptAggregate;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using LinqKit;
-using PVIMS.API.Models.ValueTypes;
 
 namespace PVIMS.API.Application.Queries.ConceptAggregate
 {
@@ -47,9 +47,9 @@ namespace PVIMS.API.Application.Queries.ConceptAggregate
             var orderby = Extensions.GetOrderBy<Concept>(message.OrderBy, "asc");
 
             var predicate = PredicateBuilder.New<Concept>(true);
-            if (message.Active != Models.ValueTypes.YesNoBothValueType.Both)
+            if (message.Active != YesNoBothValueType.Both)
             {
-                predicate = predicate.And(c => c.Active == (message.Active == Models.ValueTypes.YesNoBothValueType.Yes));
+                predicate = predicate.And(c => c.Active == (message.Active == YesNoBothValueType.Yes));
             }
             if (!String.IsNullOrWhiteSpace(message.SearchTerm))
             {

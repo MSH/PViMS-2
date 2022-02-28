@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,19 +9,17 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using PVIMS.API.Application.Queries.ConditionAggregate;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
-using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using System;
 using System.Collections;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 using MediatR;
+using PVIMS.Core.Aggregates.ConceptAggregate;
 
 namespace PVIMS.API.Controllers
 {

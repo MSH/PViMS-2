@@ -48,6 +48,8 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateEnrolmentForPatientResourceUri(long patientId, long enrolmentId);
 
+        string CreateMedicationFormsResourceUri(ResourceUriType type, string orderBy, int pageNumber, int pageSize);
+
         string CreateMetaWidgetResourceUri(long metaPageId, long metaWidgetId);
 
         string CreateNewAppointmentForPatientResourceUri(long patientId);
@@ -64,7 +66,7 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreatePatientTreatmentReportResourceUri(ResourceUriType type, int pageNumber, int pageSize, PatientOnStudyCriteria patientOnStudyCriteria);
 
-        string CreateProductsResourceUri(ResourceUriType type, ProductResourceParameters productResourceParameters);
+        string CreateProductsResourceUri(ResourceUriType type, string orderBy, string searchTerm, YesNoBothValueType active, int pageNumber, int pageSize);
 
         string CreateReportInstanceResourceUri(Guid workFlowGuid, int reportInstanceId);
 
