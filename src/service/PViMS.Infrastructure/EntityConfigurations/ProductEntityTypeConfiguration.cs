@@ -32,6 +32,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasForeignKey(d => d.ConceptId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            configuration.HasIndex(e => new { e.ConceptId, e.ProductName, e.Manufacturer }).IsUnique(true);
             configuration.HasIndex(e => e.ConceptId);
         }
     }

@@ -30,8 +30,9 @@ namespace PVIMS.API.Application.Commands.ConceptAggregate
 
         public async Task<bool> Handle(DeleteProductCommand message, CancellationToken cancellationToken)
         {
-            var productFromRepo = await _productRepository.GetAsync(p => p.Concept.Id == message.ConceptId && p.Id == message.ProductId, new string[] { 
-                "Products"
+            var productFromRepo = await _productRepository.GetAsync(p => p.Id == message.ProductId, new string[] {
+                "ConditionMedications",
+                "PatientMedications"
             });
             if (productFromRepo == null)
             {

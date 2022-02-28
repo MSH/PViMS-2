@@ -14,6 +14,9 @@ import { ConceptService } from 'app/shared/services/concept.service';
 
 @Component({
   templateUrl: './concept-select.popup.component.html',
+  styles: [`
+    .mat-column-display-name { flex: 0 0 70% !important; width: 70% !important; }
+  `],   
   animations: egretAnimations
 })
 export class ConceptSelectPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {

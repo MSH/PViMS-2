@@ -16,12 +16,11 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasMaxLength(1000);
 
-            configuration.Property(c => c.Strength)
-                .IsRequired()
-                .HasMaxLength(250);
-
             configuration.Property(c => c.Active)
                 .IsRequired();
+
+            configuration.Property(c => c.Strength)
+                .HasMaxLength(250);
 
             configuration.Property(e => e.MedicationFormId)
                 .IsRequired()
@@ -32,7 +31,7 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .HasForeignKey(d => d.MedicationFormId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            configuration.HasIndex(e => new { e.ConceptName, e.MedicationFormId }).IsUnique(true);
+            configuration.HasIndex(e => new { e.ConceptName, e.Strength, e.MedicationFormId }).IsUnique(true);
             configuration.HasIndex(e => e.MedicationFormId);
         }
     }

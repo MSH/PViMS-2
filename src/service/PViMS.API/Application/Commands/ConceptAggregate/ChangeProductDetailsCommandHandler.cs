@@ -32,15 +32,15 @@ namespace PVIMS.API.Application.Commands.ConceptAggregate
 
         public async Task<bool> Handle(ChangeProductDetailsCommand message, CancellationToken cancellationToken)
         {
-            var conceptFromRepo = await _conceptRepository.GetAsync(c => c.Id == message.ConceptId, new string[] {
+            var conceptFromRepo = await _conceptRepository.GetAsync(c => c.ConceptName + "; " + c.Strength + " (" + c.MedicationForm.Description + ")" == message.ConceptName, new string[] {
                 "Products"
             });
             if (conceptFromRepo == null)
             {
-                throw new KeyNotFoundException($"Unable to locate concept {message.ConceptId}");
+                throw new KeyNotFoundException($"Unable to locate concept {message.ConceptName}");
             }
 
-            if (_productRepository.Exists(p => p.ConceptId == message.ConceptId &&
+            if (_productRepository.Exists(p => p.ConceptId == conceptFromRepo.Id &&
                 p.ProductName == message.ProductName &&
                 p.Id != message.ProductId))
             {
@@ -48,6 +48,14 @@ namespace PVIMS.API.Application.Commands.ConceptAggregate
             }
 
             conceptFromRepo.ChangeProductDetails(message.ProductId, message.ProductName, message.Manufacturer, message.Description);
+            if (message.Active)
+            {
+                conceptFromRepo.MarkProductAsActive(message.ProductId);
+            }
+            else
+            {
+                conceptFromRepo.MarkProductAsInActive(message.ProductId);
+            }
             _conceptRepository.Update(conceptFromRepo);
 
             _logger.LogInformation($"----- Product {message.ProductId} details updated");

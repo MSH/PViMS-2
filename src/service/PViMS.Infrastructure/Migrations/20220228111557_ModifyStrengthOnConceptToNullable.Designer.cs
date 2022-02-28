@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PVIMS.Infrastructure;
 
 namespace PViMS.Infrastructure.Migrations
 {
     [DbContext(typeof(PVIMSDbContext))]
-    partial class PVIMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220228111557_ModifyStrengthOnConceptToNullable")]
+    partial class ModifyStrengthOnConceptToNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,9 +48,8 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.HasIndex("MedicationFormId");
 
-                    b.HasIndex("ConceptName", "Strength", "MedicationFormId")
-                        .IsUnique()
-                        .HasFilter("[Strength] IS NOT NULL");
+                    b.HasIndex("ConceptName", "MedicationFormId")
+                        .IsUnique();
 
                     b.ToTable("Concept");
                 });
@@ -118,9 +119,6 @@ namespace PViMS.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ConceptId");
-
-                    b.HasIndex("ConceptId", "ProductName", "Manufacturer")
-                        .IsUnique();
 
                     b.ToTable("Product");
                 });

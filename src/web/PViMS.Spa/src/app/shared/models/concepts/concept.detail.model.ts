@@ -7,6 +7,7 @@ export interface ConceptDetailModel {
     id: number;
     conceptName: string;
     displayName: string;
-    formName: string;
     active: string;
+    formName: string;
+    strength: string;
 }

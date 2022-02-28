@@ -42,7 +42,8 @@ export class ConceptPopupComponent extends BasePopupComponent implements OnInit 
     self.loadDropDowns();
 
     self.itemForm = this._formBuilder.group({
-      conceptName: [this.data.payload.conceptName || '', [Validators.required, Validators.maxLength(250), Validators.pattern('[-a-zA-Z0-9 .,()%/]*')]],
+      conceptName: [this.data.payload.conceptName || '', [Validators.required, Validators.maxLength(1000), Validators.pattern('[-a-zA-Z0-9 .,()%/]*')]],
+      strength: [this.data.payload.strength || '', [Validators.maxLength(250), Validators.pattern('[-a-zA-Z0-9 ,()/]*')]],
       medicationForm: [this.data.payload.formName || '', Validators.required],
       active: [this.data.payload.active, Validators.required]
     })
@@ -51,16 +52,6 @@ export class ConceptPopupComponent extends BasePopupComponent implements OnInit 
   loadDropDowns(): void {
     let self = this;
     self.getMedicationFormList();
-  }
-
-  getMedicationFormList(): void {
-    let self = this;
-    self.conceptService.getAllMedicationForms()
-        .subscribe(result => {
-            self.formList = result;
-        }, error => {
-            self.handleError(error, "Error fetching medication forms");
-        });
   }
 
   submit() {
@@ -75,6 +66,16 @@ export class ConceptPopupComponent extends BasePopupComponent implements OnInit 
     }, error => {
         self.handleError(error, "Error saving active ingredient");
     });
+  }
+
+  private getMedicationFormList(): void {
+    let self = this;
+    self.conceptService.getAllMedicationForms()
+      .subscribe(result => {
+        self.formList = result;
+      }, error => {
+        self.handleError(error, "Error fetching medication forms");
+      });
   }
 }
 

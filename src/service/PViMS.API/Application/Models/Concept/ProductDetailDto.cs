@@ -9,6 +9,12 @@ namespace PVIMS.API.Models
     public class ProductDetailDto : ProductIdentifierDto
     {
         /// <summary>
+        /// Full concept name
+        /// </summary>
+        [DataMember]
+        public string ConceptDisplayName { get; set; }
+
+        /// <summary>
         /// The concept the product has implemented
         /// </summary>
         [DataMember]

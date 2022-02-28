@@ -485,14 +485,13 @@ namespace PVIMS.API.Controllers
         /// <summary>
         /// Create a new product
         /// </summary>
-        /// <param name="conceptId">The unique id of the concept</param>
         /// <param name="productForUpdate">The product payload</param>
         /// <returns></returns>
-        [HttpPost("concepts/{conceptId}/products", Name = "CreateProduct")]
+        [HttpPost("products", Name = "CreateProduct")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [Consumes("application/json")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateProduct(int conceptId, 
+        public async Task<IActionResult> CreateProduct( 
             [FromBody] ProductForUpdateDto productForUpdate)
         {
             if (productForUpdate == null)
@@ -501,7 +500,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var command = new AddProductCommand(conceptId, productForUpdate.ProductName, productForUpdate.Manufacturer, productForUpdate.Description);
+            var command = new AddProductCommand(productForUpdate.ConceptName, productForUpdate.ProductName, productForUpdate.Manufacturer, productForUpdate.Description);
 
             _logger.LogInformation(
                 $"----- Sending command: AddProductCommand - {command.ProductName}");
@@ -523,14 +522,13 @@ namespace PVIMS.API.Controllers
         /// <summary>
         /// Update an existing product
         /// </summary>
-        /// <param name="conceptId">The unique id of the concept</param>
         /// <param name="id">The unique id of the product</param>
         /// <param name="productForUpdate">The product payload</param>
         /// <returns></returns>
-        [HttpPut("concepts/{conceptId}/products/{id}", Name = "UpdateProduct")]
+        [HttpPut("products/{id}", Name = "UpdateProduct")]
         [Consumes("application/json")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateProduct(int conceptId, int id, 
+        public async Task<IActionResult> UpdateProduct(int id, 
             [FromBody] ProductForUpdateDto productForUpdate)
         {
             if (productForUpdate == null)
@@ -539,7 +537,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var command = new ChangeProductDetailsCommand(conceptId, id, productForUpdate.ProductName, productForUpdate.Manufacturer, productForUpdate.Description, productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
+            var command = new ChangeProductDetailsCommand(id, productForUpdate.ConceptName, productForUpdate.ProductName, productForUpdate.Manufacturer, productForUpdate.Description, productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
 
             _logger.LogInformation(
                 $"----- Sending command: ChangeProductDetailsCommand - {command.ProductId}");
@@ -557,13 +555,12 @@ namespace PVIMS.API.Controllers
         /// <summary>
         /// Delete an existing product
         /// </summary>
-        /// <param name="conceptId">The unique id of the concept</param>
         /// <param name="id">The unique id of the product</param>
         /// <returns></returns>
-        [HttpDelete("concepts/{conceptId}/products/{id}", Name = "DeleteProduct")]
-        public async Task<IActionResult> DeleteProduct(int conceptId, int id)
+        [HttpDelete("products/{id}", Name = "DeleteProduct")]
+        public async Task<IActionResult> DeleteProduct(int id)
         {
-            var command = new DeleteProductCommand(conceptId, id);
+            var command = new DeleteProductCommand(id);
 
             _logger.LogInformation(
                 $"----- Sending command: DeleteProductCommand - {id}");

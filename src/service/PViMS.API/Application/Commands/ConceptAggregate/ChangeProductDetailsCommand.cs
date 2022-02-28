@@ -8,10 +8,10 @@ namespace PVIMS.API.Application.Commands.ConceptAggregate
         : IRequest<bool>
     {
         [DataMember]
-        public int ConceptId { get; private set; }
+        public int ProductId { get; private set; }
 
         [DataMember]
-        public int ProductId { get; private set; }
+        public string ConceptName { get; private set; }
 
         [DataMember]
         public string ProductName { get; private set; }
@@ -29,10 +29,10 @@ namespace PVIMS.API.Application.Commands.ConceptAggregate
         {
         }
 
-        public ChangeProductDetailsCommand(int conceptId, int productId, string productName, string manufacturer, string description, bool active): this()
+        public ChangeProductDetailsCommand(int productId, string conceptName, string productName, string manufacturer, string description, bool active): this()
         {
-            ConceptId = conceptId;
             ProductId = productId;
+            ConceptName = conceptName;
             ProductName = productName;
             Manufacturer = manufacturer;
             Description = description;

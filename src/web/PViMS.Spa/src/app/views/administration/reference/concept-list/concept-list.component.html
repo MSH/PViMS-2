@@ -41,6 +41,13 @@
               </mat-cell>
             </ng-container>
 
+            <ng-container matColumnDef="strength">
+              <mat-header-cell *matHeaderCellDef>{{'Strength' | translate }}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <p>{{record.strength}}</p>
+              </mat-cell>
+            </ng-container>
+
             <ng-container matColumnDef="form">
               <mat-header-cell *matHeaderCellDef>{{'Medication form' | translate }}</mat-header-cell>
               <mat-cell *matCellDef="let record">

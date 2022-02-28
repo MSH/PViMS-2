@@ -135,7 +135,7 @@ export class ConceptListComponent extends BaseComponent implements OnInit, After
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['id', 'active-ingredient', 'form', 'active', 'actions']);
+          (['id', 'active-ingredient', 'strength', 'form', 'active', 'actions']);
 
   searchTerm: string;
 }
@@ -143,6 +143,7 @@ class ViewModel {
 class GridRecordModel {
   id: number;
   conceptName: string;
+  strength: string;
   formName: string;
   active: string;
 }

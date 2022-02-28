@@ -11,8 +11,8 @@ namespace PVIMS.API.Application.Validations
             RuleFor(command => command.ProductName)
                 .NotEmpty()
                 .Length(1, 200)
-                .Matches(@"[-a-zA-Z0-9 .,()%]")
-                .WithMessage("Product name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage)");
+                .Matches(@"[-a-zA-Z0-9 .;,()%]")
+                .WithMessage("Product name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, semi-colon, comma, brackets, percentage)");
 
             RuleFor(command => command.Manufacturer)
                 .NotEmpty()

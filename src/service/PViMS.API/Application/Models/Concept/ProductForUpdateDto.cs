@@ -6,6 +6,11 @@ namespace PVIMS.API.Models
     public class ProductForUpdateDto
     {
         /// <summary>
+        /// The name of the concept
+        /// </summary>
+        public string ConceptName { get; set; }
+
+        /// <summary>
         /// The name of the product
         /// </summary>
         public string ProductName { get; set; }

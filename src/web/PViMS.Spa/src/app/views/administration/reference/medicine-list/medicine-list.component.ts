@@ -86,18 +86,18 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
     self.setBusy(true);
 
     self.conceptService.searchProductsByDetail(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
-        .pipe(takeUntil(self._unsubscribeAll))
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-            self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-            self.handleError(error, "Error searching for products");
-        });
+      .pipe(takeUntil(self._unsubscribeAll))
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.viewModel.mainGrid.updateAdvance(result);
+      }, error => {
+        self.handleError(error, "Error searching for products");
+      });
   }
 
   openPopUp(data: any = {}, isNew?) {
     let self = this;
-    let title = isNew ? 'Add Medication' : 'Update Medication';
+    let title = isNew ? 'Add Product' : 'Update Product';
     let dialogRef: MatDialogRef<any> = self.dialog.open(MedicationPopupComponent, {
       width: '720px',
       disableClose: true,
@@ -136,7 +136,7 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['id', 'product', 'active-ingredient', 'form', 'manufacturer', 'active', 'actions']);
+          (['id', 'product', 'active-ingredient', 'strength', 'form', 'manufacturer', 'active', 'actions']);
 
   searchTerm: string;
 }
@@ -145,6 +145,7 @@ class GridRecordModel {
   id: number;
   productName: string;
   conceptName: string;
+  strength: string;
   formName: string;
   manufacturer: string;
   active: string;

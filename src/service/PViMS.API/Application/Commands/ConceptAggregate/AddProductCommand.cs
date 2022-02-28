@@ -9,7 +9,7 @@ namespace PVIMS.API.Application.Commands.ConceptAggregate
         : IRequest<ProductIdentifierDto>
     {
         [DataMember]
-        public int ConceptId { get; set; }
+        public string ConceptName { get; set; }
 
         [DataMember]
         public string ProductName { get; private set; }
@@ -24,9 +24,9 @@ namespace PVIMS.API.Application.Commands.ConceptAggregate
         {
         }
 
-        public AddProductCommand(int conceptId, string productName, string manufacturer, string description): this()
+        public AddProductCommand(string conceptName, string productName, string manufacturer, string description): this()
         {
-            ConceptId = conceptId;
+            ConceptName = conceptName;
             ProductName = productName;
             Manufacturer = manufacturer;
             Description = description;

@@ -41,13 +41,13 @@ namespace PVIMS.API.Application.Commands.ConceptAggregate
 
         public async Task<ProductIdentifierDto> Handle(AddProductCommand message, CancellationToken cancellationToken)
         {
-            var conceptFromRepo = await _conceptRepository.GetAsync(c => c.Id == message.ConceptId);
+            var conceptFromRepo = await _conceptRepository.GetAsync(c => c.ConceptName + "; " + c.Strength + " (" + c.MedicationForm.Description + ")" == message.ConceptName);
             if (conceptFromRepo == null)
             {
-                throw new KeyNotFoundException($"Unable to locate concept {message.ConceptId}");
+                throw new KeyNotFoundException($"Unable to locate concept {message.ConceptName}");
             }
 
-            if (_productRepository.Exists(p => p.ConceptId == message.ConceptId &&
+            if (_productRepository.Exists(p => p.ConceptId == conceptFromRepo.Id &&
                 p.ProductName == message.ProductName))
             {
                 throw new DomainException("Product with same name annd concept already exists");

@@ -54,6 +54,14 @@ namespace PVIMS.API.Application.Commands.ConceptAggregate
             }
 
             conceptFromRepo.ChangeDetails(message.ConceptName, message.Strength, medicationFormFromRepo);
+            if (message.Active)
+            {
+                conceptFromRepo.MarkAsActive();
+            }
+            else
+            {
+                conceptFromRepo.MarkAsInActive();
+            } 
             _conceptRepository.Update(conceptFromRepo);
 
             _logger.LogInformation($"----- Concept {message.ConceptName} details updated");

@@ -166,12 +166,12 @@ export class ConceptService extends BaseService {
       return this.Get<MedicationFormIdentifierWrapperModel>('/medicationforms', 'application/vnd.pvims.identifier.v1+json', parameters);
   }
 
-  saveProduct(id: number, model: any): any {
-    if(id == 0) {
+  saveProduct(productId: number, model: any): any {
+    if(productId == 0) {
       return this.Post(`products`, model);
     }
     else {
-      return this.Put(`products/${id}`, model);
+      return this.Put(`products/${productId}`, model);
     }
   }
 

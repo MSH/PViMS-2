@@ -22,6 +22,7 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => $"{src.Concept.ConceptName}; {src.Concept.Strength} ({src.Concept.MedicationForm.Description}) ({src.ProductName})" ));
             CreateMap<Product, ProductDetailDto>()
                 .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active ? "Yes" : "No"))
+                .ForMember(dest => dest.ConceptDisplayName, opt => opt.MapFrom(src => $"{src.Concept.ConceptName}; {src.Concept.Strength} ({src.Concept.MedicationForm.Description})"))
                 .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => $"{src.Concept.ConceptName}; {src.Concept.Strength} ({src.Concept.MedicationForm.Description}) ({src.ProductName})"))
                 .ForMember(dest => dest.ConceptName, opt => opt.MapFrom(src => src.Concept.ConceptName))
                 .ForMember(dest => dest.Strength, opt => opt.MapFrom(src => src.Concept.Strength))
