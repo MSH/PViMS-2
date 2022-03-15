@@ -14,12 +14,18 @@ namespace PViMS.BuildingBlocks.EventBus.Events
         [JsonConstructor]
         public IntegrationEvent(Guid id, DateTime createDate)
         {
-            Id = id;
+            TransactionId = id;
             CreationDate = createDate;
         }
 
         [JsonInclude]
-        public Guid Id { get; private init; }
+        public Guid TransactionId { get; private init; }
+
+        [JsonInclude]
+        public Guid? AcknowledgeId { get; private init; }
+
+        [JsonInclude]
+        public Guid SenderId { get; private init; }
 
         [JsonInclude]
         public DateTime CreationDate { get; private init; }
