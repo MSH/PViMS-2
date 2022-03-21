@@ -389,7 +389,7 @@ export class FormBComponent extends BaseComponent implements OnInit, AfterViewIn
     })
     dialogRef.afterClosed()
       .subscribe(res => {
-        self._router.navigate([_routes.clinical.forms.landing]);        
+        self._router.navigate([_routes.clinical.forms.cohortselect]);        
       })
   }  
 
@@ -451,7 +451,7 @@ export class FormBComponent extends BaseComponent implements OnInit, AfterViewIn
         {
             if (response) {
                 self.notify('Form B saved successfully!', 'Form Saved');
-                self._router.navigate([_routes.clinical.forms.landing]);
+                self._router.navigate([_routes.clinical.forms.cohortselect]);
             }
             else {
                 self.showError('There was an error saving form B, please try again !', 'Download');
@@ -463,7 +463,7 @@ export class FormBComponent extends BaseComponent implements OnInit, AfterViewIn
         {
             if (response) {
                 self.notify('Form B updated successfully!', 'Form Saved');
-                self._router.navigate([_routes.clinical.forms.landing]);
+                self._router.navigate([_routes.clinical.forms.cohortselect]);
             }
             else {
                 self.showError('There was an error updating form C, please try again !', 'Download');

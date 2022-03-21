@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,7 +26,7 @@ import { _routes } from 'app/config/routes';
   `],  
   animations: egretAnimations
 })
-export class CohortSearchComponent extends BaseComponent implements OnInit, OnDestroy {
+export class CohortSearchComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     protected _activatedRoute: ActivatedRoute,

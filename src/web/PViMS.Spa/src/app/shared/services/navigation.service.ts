@@ -248,7 +248,7 @@ export class NavigationService {
   }
 
   routeToFormsLanding() : void {
-    this._router.navigate([_routes.clinical.forms.landing]);
+    this._router.navigate([_routes.clinical.forms.cohortselect]);
   }
 
   routeToAnalyticalLanding() : void {
@@ -296,7 +296,7 @@ export class NavigationService {
         type: "link",
         tooltip: "View Forms for Capture",
         icon: "content_copy",
-        state: "clinical/form-landing"
+        state: "clinical/cohort-select"
       };      
       this.clinicalMenu.push(newMenu);
 

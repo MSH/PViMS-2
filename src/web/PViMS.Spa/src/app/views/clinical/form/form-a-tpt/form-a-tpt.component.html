@@ -1,0 +1,529 @@
+<div style="height: 5px;">
+  <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isBusy()"></mat-progress-bar>
+</div>
+
+<mat-card class="p-8">
+  
+  <mat-card-title class="">
+    <div class="card-title-text">
+      <button mat-raised-button (click)="goBack()" color="accent" class="mr-48">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      
+      Treatment Initiation Data Collection - Form A
+      
+      <button mat-button color="" class="mr-48" (click)="openGuidelinesPopup()">
+        <mat-icon>help</mat-icon>
+      </button>
+
+    </div>
+  </mat-card-title>
+
+  <mat-card-content class="m-1 p-2">
+    <div fxLayout="row" fxLayoutAlign="start">
+      <div fxFlex="20" class="mt-4">
+        <div class="p-12">
+          <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
+            <mat-icon color="primary" *ngIf="viewModel.currentStep == 1" class="mr-12">brightness_1</mat-icon>
+            <mat-icon color="warn" *ngIf="viewModel.currentStep > 1 && viewPatientModelForm.invalid" class="mr-12">error</mat-icon>
+            <mat-icon color="accent" *ngIf="viewModel.currentStep > 1 && viewPatientModelForm.valid" class="mr-12">check_circle</mat-icon>
+            <span [class.font-weight-bold]="viewModel.currentStep == 1">Patient information</span>
+          </div>
+          <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
+            <mat-icon color="primary" *ngIf="viewModel.currentStep < 2" class="mr-12">panorama_fish_eye</mat-icon>
+            <mat-icon color="primary" *ngIf="viewModel.currentStep == 2" class="mr-12">brightness_1</mat-icon>
+            <mat-icon color="warn" *ngIf="viewModel.currentStep > 2 && viewConditionModelForm.invalid" class="mr-12">error</mat-icon>
+            <mat-icon color="accent" *ngIf="viewModel.currentStep > 2 && viewConditionModelForm.valid" class="mr-12">check_circle</mat-icon>
+            <span [class.font-weight-bold]="viewModel.currentStep == 2">Medical conditions</span>
+          </div>
+          <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
+            <mat-icon color="primary" *ngIf="viewModel.currentStep < 3" class="mr-12">panorama_fish_eye</mat-icon>
+            <mat-icon color="primary" *ngIf="viewModel.currentStep == 3" class="mr-12">brightness_1</mat-icon>
+            <mat-icon color="warn" *ngIf="viewModel.currentStep > 3 && viewLabTestModelForm.invalid" class="mr-12">error</mat-icon>
+            <mat-icon color="accent" *ngIf="viewModel.currentStep > 3 && viewLabTestModelForm.valid" class="mr-12">check_circle</mat-icon>
+            <span [class.font-weight-bold]="viewModel.currentStep == 3">Lab test history</span>
+          </div>
+          <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
+            <mat-icon color="primary" *ngIf="viewModel.currentStep < 4" class="mr-12">panorama_fish_eye</mat-icon>
+            <mat-icon color="primary" *ngIf="viewModel.currentStep == 4" class="mr-12">brightness_1</mat-icon>
+            <mat-icon color="warn" *ngIf="viewModel.currentStep > 4 && viewMedicationModelForm.invalid" class="mr-12">error</mat-icon>
+            <mat-icon color="accent" *ngIf="viewModel.currentStep > 4 && viewMedicationModelForm.valid" class="mr-12">check_circle</mat-icon>
+            <span [class.font-weight-bold]="viewModel.currentStep == 4">Medication history</span>
+          </div>
+          <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
+            <mat-icon color="primary" *ngIf="viewModel.currentStep < 5" class="mr-12">panorama_fish_eye</mat-icon>
+            <mat-icon color="primary" *ngIf="viewModel.currentStep == 5" class="mr-12">brightness_1</mat-icon>
+            <mat-icon color="warn" *ngIf="viewModel.currentStep > 5 && viewOtherModelForm.invalid" class="mr-12">error</mat-icon>
+            <mat-icon color="accent" *ngIf="viewModel.currentStep > 5 && viewOtherModelForm.valid" class="mr-12">check_circle</mat-icon>
+            <span [class.font-weight-bold]="viewModel.currentStep == 5">Other details</span>
+          </div>
+          <div fxLayout="row" fxLayoutGap="0.5%" fxLayoutAlign="start" class="p-05">
+            <mat-icon color="primary" *ngIf="viewModel.currentStep < 6" class="mr-12">panorama_fish_eye</mat-icon>
+            <mat-icon color="primary" *ngIf="viewModel.currentStep == 6" class="mr-12">brightness_1</mat-icon>
+            <span [class.font-weight-bold]="viewModel.currentStep == 6">Finish</span>
+          </div>
+          <div fxLayout="row" fxLayoutGap="1.0%" fxLayoutAlign="center" class="p-2">
+            <button mat-raised-button color="" class="mr-12" (click)="previousStep()" [disabled]="viewModel.currentStep == 1" style="width: 120px;">Previous</button>
+            <button mat-raised-button color="accent" (click)="nextStep()" [disabled]="viewModel.currentStep > 5" style="width: 120px;">Next</button>
+          </div>
+          <div fxLayout="row" fxLayoutGap="1.0%" fxLayoutAlign="center" class="p-2 mt-12">
+            <button mat-raised-button color="primary" class="mr-12" (click)="saveFormOnline()" *ngIf="viewModel.currentStep > 5 && viewModel.formId == 0 && viewModel.connected" [disabled]="viewPatientModelForm.invalid || viewConditionModelForm.invalid || viewLabTestModelForm.invalid || viewMedicationModelForm.invalid || viewOtherModelForm.invalid || viewModel.isSynched || viewModel.saving" style="width: 120px;">{{'Save' | translate}}</button>
+            <button mat-raised-button color="accent" class="mr-12" (click)="saveFormOffline()" *ngIf="(viewModel.formId == 0 && !viewModel.connected) || viewModel.formId > 0" [disabled]="viewModel.isSynched" style="width: 120px;">{{'Save' | translate}}</button>
+            <button mat-raised-button color="primary" (click)="completeFormOffline()" *ngIf="(viewModel.formId == 0 && !viewModel.connected) || (viewModel.formId > 0 && !viewModel?.isComplete)" [disabled]="viewPatientModelForm.invalid || viewConditionModelForm.invalid || viewLabTestModelForm.invalid || viewMedicationModelForm.invalid || viewOtherModelForm.invalid || viewModel.isSynched" style="width: 120px;">{{'Complete' | translate}}</button>
+          </div>
+        </div>
+      </div>
+  
+      <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 1">
+        <form [formGroup]="viewPatientModelForm" [@fadeInOut2]="">
+          <div class="p-24">
+            <span class="mat-title">Patient information</span>
+
+            <div class="p-24 light-gray rounded">
+              Please enter demographic details of the patient
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-label>{{'Treatment site' | translate}}</mat-label>
+                  <mat-select formControlName="treatmentSiteId" required>
+                      <mat-option *ngFor="let facility of facilityList" [value]="facility.facilityName">
+                          {{facility.facilityName}}
+                      </mat-option>
+                  </mat-select>
+                  <mat-error>
+                    {{'This is a required field' | translate}}
+                  </mat-error>            
+                </mat-form-field>
+              </div>
+  
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-label>{{'Medical record number' | translate}}</mat-label>
+                  <input matInput formControlName="asmNumber" required>
+                  <mat-error *ngIf="viewPatientModelForm.get('asmNumber').hasError('required')">
+                    {{'This is a required field' | translate}}
+                  </mat-error>
+                  <mat-error *ngIf="viewPatientModelForm.get('asmNumber').hasError('maxlength')">
+                    {{'Maximum length exceeded' | translate}}
+                  </mat-error>            
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-label>{{'Last name' | translate}}</mat-label>
+                  <input matInput formControlName="patientLastName" required>
+                  <mat-error>
+                    {{'This is a required field' | translate}}
+                  </mat-error>            
+                </mat-form-field>
+              </div>
+  
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-label>{{'Given name' | translate}}</mat-label>
+                  <input matInput formControlName="patientFirstName" required>
+                  <mat-error>
+                    {{'This is a required field' | translate}}
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input matInput formControlName="patientIdentityNumber" placeholder="Patient Hospital Number" required>
+                  <mat-error *ngIf="viewPatientModelForm.get('patientIdentityNumber').hasError('required')">
+                    {{'This is a required field' | translate}}
+                  </mat-error>            
+                  <mat-error *ngIf="viewPatientModelForm.get('patientIdentityNumber').hasError('maxlength')">
+                    {{'Maximum length exceeded' | translate}}
+                  </mat-error>            
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input matInput formControlName="birthDate" placeholder="{{'Date of birth' | translate}}" [matDatepicker]="birthDateDatepicker">
+                  <mat-datepicker-toggle matSuffix [for]="birthDateDatepicker"></mat-datepicker-toggle>
+                </mat-form-field>
+                <mat-datepicker #birthDateDatepicker startView="multi-year"></mat-datepicker>
+              </div>
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input matInput formControlName="age" placeholder="{{'Or Age' | translate}}" type="number">
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-select formControlName="gender" placeholder="{{'Gender' | translate}}">
+                    <mat-option value="M">
+                      {{'Male' | translate}}
+                    </mat-option>
+                    <mat-option value="F">
+                      {{'Female' | translate}}
+                    </mat-option>
+                  </mat-select>                        
+                </mat-form-field>                
+              </div>
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input matInput formControlName="weight" placeholder="{{'Weight' | translate}}" type="number">
+                  <mat-hint>{{'Valid between ' | translate}} 0 and 199</mat-hint>
+                  <mat-error>
+                    {{'Value out of range' | translate}}
+                  </mat-error>            
+                </mat-form-field>
+              </div>
+            </div>              
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input matInput formControlName="address" placeholder="{{'Address' | translate}}" required>
+                  <mat-error *ngIf="viewPatientModelForm.get('address').hasError('maxlength')">
+                    {{'Maximum length exceeded' | translate}}
+                  </mat-error>            
+                </mat-form-field>
+              </div>
+  
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input matInput formControlName="contactNumber" placeholder="{{'Patient phone number' | translate}}">
+                  <mat-error *ngIf="viewPatientModelForm.get('contactNumber').hasError('maxlength')">
+                    {{'Maximum length exceeded' | translate}}
+                  </mat-error>            
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-select formControlName="alcoholConsumption" placeholder="{{'Alcohol use' | translate}}">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="Yes">  
+                      {{'Yes' | translate}}
+                    </mat-option>
+                    <mat-option value="No">
+                      {{'No' | translate}}
+                    </mat-option>
+                  </mat-select>                        
+                </mat-form-field>
+              </div>
+  
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-select formControlName="smoker" placeholder="{{'Smoking' | translate}}">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="Yes">  
+                      {{'Yes' | translate}}
+                    </mat-option>
+                    <mat-option value="No">
+                      {{'No' | translate}}
+                    </mat-option>
+                  </mat-select>                        
+                </mat-form-field>  
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-select formControlName="otherSubstance" placeholder="{{'Abuse of other substances' | translate}}">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="Yes">  
+                      {{'Yes' | translate}}
+                    </mat-option>
+                    <mat-option value="No">
+                      {{'No' | translate}}
+                    </mat-option>
+                  </mat-select>                        
+                </mat-form-field>                                                  
+              </div>
+            </div>              
+          </div>
+        </form>
+      </div>
+  
+      <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 2">
+        <form [formGroup]="viewConditionModelForm" [@fadeInOut2]="">
+  
+          <div class="p-24">
+            <span class="mat-title">Medical conditions</span>
+  
+            <div class="p-24 light-gray rounded">
+              Please specify any medical conditions the patient may have
+            </div>
+
+            <div class="ml-05 mr-05 mt-05 pb-1">
+              <div class="pb-12 table-container">
+                  <div class="p-12" fxLayoutAlign="end">
+                    <button mat-mini-fab (click)="openConditionPopup({}, true)"><mat-icon>add</mat-icon></button>
+                  </div>
+                  <mat-table [dataSource]="viewModel?.conditionGrid?.records"
+                          [@animate]="{value:'50'}">
+      
+                  <ng-container matColumnDef="condition">
+                      <mat-header-cell *matHeaderCellDef>{{'Condition' | translate}}</mat-header-cell>
+                      <mat-cell *matCellDef="let record">
+                          {{record.condition}}
+                      </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="condition status">
+                    <mat-header-cell *matHeaderCellDef>{{'Condition status' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                        {{record.conditionStatus}}
+                    </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="actions">
+                    <mat-header-cell *matHeaderCellDef>{{'Actions' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                      <button mat-icon-button color="primary" matTooltip="{{'Update Condition' | translate }}"
+                              (click)="openConditionPopup(record, false)">
+                          <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" matTooltip="{{'Delete Condition' | translate}}"
+                          (click)="removeCondition(record.index)">
+                          <mat-icon>delete</mat-icon>
+                      </button>
+                  </mat-cell>                    
+                  </ng-container>                        
+                
+                  <mat-header-row *matHeaderRowDef="viewModel?.conditionGrid?.displayedColumns; sticky:true"></mat-header-row>
+                  <mat-row *matRowDef="let record; columns: viewModel?.conditionGrid?.displayedColumns;" matRipple></mat-row>
+                </mat-table>
+              </div>
+  
+            </div>              
+          </div>
+        </form>
+      </div>
+  
+      <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 3">
+        <form [formGroup]="viewLabTestModelForm" [@fadeInOut2]="">
+  
+          <div class="p-24">
+            <span class="mat-title">Lab test history</span>
+  
+            <div class="p-24 light-gray rounded">
+              Please add any lab tests conducted for the patient
+            </div>
+
+            <div class="ml-05 mr-05 mt-05 pb-1">
+              <div class="p-12 table-container">
+                <div class="p-12" fxLayoutAlign="end">
+                  <button mat-mini-fab (click)="openLabPopup({}, true)"><mat-icon>add</mat-icon></button>
+                </div>
+                <mat-table [dataSource]="viewModel?.labTestGrid?.records"
+                          [@animate]="{value:'50'}">
+      
+                  <ng-container matColumnDef="lab test">
+                      <mat-header-cell *matHeaderCellDef>{{'Lab Test' | translate}}</mat-header-cell>
+                      <mat-cell *matCellDef="let record">
+                          {{record.labTest}}
+                      </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="test date">
+                    <mat-header-cell *matHeaderCellDef>{{'Test date' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                        {{record.testResultDate | date:'yyyy-MM-dd'}}
+                    </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="test result">
+                    <mat-header-cell *matHeaderCellDef>{{'Test result' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                        {{record.testResultValue}}
+                    </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="actions">
+                    <mat-header-cell *matHeaderCellDef>{{'Actions' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                      <button mat-icon-button color="primary" matTooltip="{{'Update Test Result' | translate }}"
+                              (click)="openLabPopup(record, false)">
+                          <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" matTooltip="{{'Delete Test Result' | translate}}"
+                          (click)="removeLabTest(record.index)">
+                          <mat-icon>delete</mat-icon>
+                      </button>
+                  </mat-cell>                    
+                  </ng-container>                        
+                
+                  <mat-header-row *matHeaderRowDef="viewModel?.labTestGrid?.displayedColumns; sticky:true"></mat-header-row>
+                  <mat-row *matRowDef="let record; columns: viewModel?.labTestGrid?.displayedColumns;" matRipple></mat-row>
+                </mat-table>
+              </div>
+  
+            </div>              
+          </div>
+        </form>
+      </div>
+  
+      <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 4">
+        <form [formGroup]="viewMedicationModelForm" [@fadeInOut2]="">
+          <div class="p-24">
+            <span class="mat-title">Medication history</span>
+  
+            <div class="p-24 light-gray rounded">
+              Please enter medications taken in the last month month including traditional/herbal medicines & ARVs and medications prescribed at this visit
+            </div>
+
+            <div class="ml-05 mr-05 mt-05 pb-1">
+              <div class="p-12 table-container">
+                  <div class="p-12" fxLayoutAlign="end">
+                    <button mat-mini-fab (click)="openMedicationPopup({}, true)"><mat-icon>add</mat-icon></button>
+                  </div>
+                  <mat-table [dataSource]="viewModel?.medicationGrid?.records"
+                          [@animate]="{value:'50'}">
+      
+                  <ng-container matColumnDef="medication">
+                      <mat-header-cell *matHeaderCellDef>{{'Medication' | translate}}</mat-header-cell>
+                      <mat-cell *matCellDef="let record">
+                          {{record.medication}} {{record.dose}} {{record.frequency}}
+                      </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="start date">
+                    <mat-header-cell *matHeaderCellDef>{{'Start date' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                        {{record.startDate | date:'yyyy-MM-dd'}}
+                    </mat-cell>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="continued">
+                    <mat-header-cell *matHeaderCellDef>{{'Continued' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                        {{record.continued}}
+                    </mat-cell>
+                  </ng-container>
+                  
+                  <ng-container matColumnDef="actions">
+                    <mat-header-cell *matHeaderCellDef>{{'Actions' | translate}}</mat-header-cell>
+                    <mat-cell *matCellDef="let record">
+                      <button mat-icon-button color="primary" matTooltip="{{'Update Medication' | translate }}"
+                              (click)="openMedicationPopup(record, false)">
+                          <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" matTooltip="{{'Delete Medication' | translate}}"
+                          (click)="removeMedication(record.index)">
+                          <mat-icon>delete</mat-icon>
+                      </button>
+                  </mat-cell>                    
+                  </ng-container>                        
+                
+                  <mat-header-row *matHeaderRowDef="viewModel?.medicationGrid?.displayedColumns; sticky:true"></mat-header-row>
+                  <mat-row *matRowDef="let record; columns: viewModel?.medicationGrid?.displayedColumns;" matRipple></mat-row>
+                </mat-table>
+              </div>
+            </div>              
+  
+          </div>
+        </form>
+      </div>
+
+      <div fxFlex="70" fxFlex.lt-md="100" *ngIf="viewModel.currentStep == 5">
+        <form [formGroup]="viewOtherModelForm" [@fadeInOut2]="">
+          <div class="p-24">
+            <span class="mat-title">Other details</span>
+  
+            <div class="p-24 light-gray rounded">
+              Please enter any other details of the visit
+            </div>
+
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input matInput formControlName="followUpDate" placeholder="{{'Followup date' | translate}}" [matDatepicker]="followUpDatepicker">
+                  <mat-datepicker-toggle matSuffix [for]="followUpDatepicker"></mat-datepicker-toggle>
+                </mat-form-field>
+                <mat-datepicker #followUpDatepicker></mat-datepicker>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input matInput formControlName="nameReporter" placeholder="{{'Name of reporter' | translate}}">
+                </mat-form-field>              
+              </div>
+  
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input matInput formControlName="currentDate" placeholder="{{'Current date' | translate}}" [matDatepicker]="currentDatepicker">
+                  <mat-datepicker-toggle matSuffix [for]="currentDatepicker"></mat-datepicker-toggle>
+                </mat-form-field>
+                <mat-datepicker #currentDatepicker></mat-datepicker>
+              </div>
+            </div>
+  
+            <div fxLayout="row" fxLayout.sm="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-12">
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input matInput formControlName="telephoneReporter" placeholder="{{'Number of reporter' | translate}}">
+                </mat-form-field>              
+              </div>
+  
+              <div fxFlex="50">
+                <mat-form-field class="full-width" appearance="outline">
+                  <input type="text" placeholder="{{'Profession of reporter' | translate}}" aria-label="Number" matInput formControlName="professionReporter" [matAutocomplete]="autoProfession">
+                  <mat-autocomplete #autoProfession="matAutocomplete">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="Doctor">  
+                      {{'Doctor' | translate}}
+                    </mat-option>
+                    <mat-option value="Pharmacist">
+                      {{'Pharmacist' | translate}}
+                    </mat-option>
+                    <mat-option value="Nurse">
+                      {{'Nurse' | translate}}
+                    </mat-option>
+                    <mat-option value="Pharmacy assistant">
+                      {{'Pharmacy assistant' | translate}}
+                    </mat-option>
+                    <mat-option value="Clinical assistant">
+                      {{'Clinical assistant' | translate}}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>              
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </div>
+      
+      <div fxFlex="70" *ngIf="viewModel.currentStep == 6">
+        <div class="p-24">
+          <span class="mat-title">Finish</span>
+  
+          <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
+            <div fxFlex="50">
+              <div *ngIf="viewPatientModelForm.invalid || viewConditionModelForm.invalid || viewLabTestModelForm.invalid || viewMedicationModelForm.invalid || viewOtherModelForm.invalid" class="card-title-text mat-bg-warn p-24 rounded text-center mt-12"  [@fadeInOut2]="">
+                Please ensure all sections are completed successfully
+              </div>
+              <div *ngIf="viewPatientModelForm.valid && viewConditionModelForm.valid && viewLabTestModelForm.valid && viewMedicationModelForm.valid && viewOtherModelForm.valid" class="card-title-text light-gray p-24 rounded text-center mt-12"  [@fadeInOut2]="">
+                Please click on the finish button to complete the capturing of the adverse event
+              </div>
+            </div>
+          </div>                      
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

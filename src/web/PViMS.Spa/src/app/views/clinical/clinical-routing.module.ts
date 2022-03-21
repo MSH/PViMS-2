@@ -13,10 +13,12 @@ import { FeedbackSearchComponent } from './feedback/feedback-search/feedback-sea
 import { CohortSearchComponent } from './cohort/cohort-search/cohort-search.component';
 import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/cohort-enrolment-list.component';
 import { FormADRComponent } from './form/form-adr/form-adr.component';
-import { LandingComponent } from './form/landing/landing.component';
 import { PendingChangesGuard } from 'app/shared/guards/component-can-deactive';
 import { FormListComponent } from './form/form-list/form-list.component';
-import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynamic.component';
+import { FormSelectComponent } from './form/form-select/form-select.component';
+import { CohortSelectComponent } from './form/cohort-select/cohort-select.component';
+import { FormATPTComponent } from './form/form-a-tpt/form-a-tpt.component';
+import { FormBTPTComponent } from './form/form-b-tpt/form-b-tpt.component';
 
 export const ClinicalRoutes: Routes = [
   {
@@ -62,8 +64,13 @@ export const ClinicalRoutes: Routes = [
       data: { title: 'Encounter View', breadcrumb: 'Encounter View' }
     },
     {
-      path: 'form-landing',
-      component: LandingComponent,
+      path: 'cohort-select',
+      component: CohortSelectComponent,
+      data: { title: 'List All Cohorts for Form Selection', breadcrumb: 'Cohorts' }
+    },
+    {
+      path: 'form-select/:cohortGroupId',
+      component: FormSelectComponent,
       data: { title: 'List All Forms for Capture', breadcrumb: 'Forms' }
     },
     {
@@ -82,8 +89,18 @@ export const ClinicalRoutes: Routes = [
       data: { title: 'Baseline Form A', breadcrumb: 'Baseline Form A' }
     },
     {
+      path: 'formatpt/:id',
+      component: FormATPTComponent,
+      data: { title: 'Baseline Form A', breadcrumb: 'Baseline Form A' }
+    },
+    {
       path: 'formb/:id',
       component: FormBComponent,
+      data: { title: 'Follow-Up Form B', breadcrumb: 'Follow-Up Form B' }
+    },
+    {
+      path: 'formbtpt/:id',
+      component: FormBTPTComponent,
       data: { title: 'Follow-Up Form B', breadcrumb: 'Follow-Up Form B' }
     },
     {

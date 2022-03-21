@@ -36,11 +36,14 @@ export const _paths = {
       forms: {
           list: `form-list/:type`,
           synchronise: `synchronise/:type`,
-          landing: `form-landing`,
+          formselect: `form-select/:cohortGroupId`,
+          cohortselect: `cohort-select`,
           forma: `forma/:formId`,
           formb: `formb/:formId`,
           formc: `formc/:formId`,
           formadr: `formadr/:formId`,
+          formatpt: `formatpt/:formId`,
+          formbtpt: `formbtpt/:formId`,
       }
   },
   analytical: `analytical`,

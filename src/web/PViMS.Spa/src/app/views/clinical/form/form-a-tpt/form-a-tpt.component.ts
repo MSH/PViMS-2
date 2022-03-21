@@ -1,15 +1,15 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, RequiredValidator, ValidatorFn } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ValidatorFn } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
-import { Subscription, Observable } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { FacilityService } from 'app/shared/services/facility.service';
-import { takeUntil, finalize, startWith, map } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { Moment } from 'moment';
 // Depending on whether rollup is used, moment needs to be imported differently.
 // Since Moment.js doesn't have a default export, we normally need to import using the `* as`
@@ -23,23 +23,20 @@ import { _routes } from 'app/config/routes';
 import { Form } from 'app/shared/indexed-db/appdb';
 import { FacilityIdentifierModel } from 'app/shared/models/facility/facility.identifier.model';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
-import { FormAConditionsPopupComponent } from './form-a-conditions-popup/form-a-conditions.popup.component';
-import { FormALabsPopupComponent } from './form-a-labs-popup/form-a-labs.popup.component';
-import { FormAMedicationsPopupComponent } from './form-a-medications-popup/form-a-medications.popup.component';
+import { FormATPTLabsPopupComponent } from './form-a-tpt-labs-popup/form-a-tpt-labs.popup.component';
+import { FormATPTMedicationsPopupComponent } from './form-a-tpt-medications-popup/form-a-tpt-medications.popup.component';
 import { FormCompletePopupComponent } from '../form-complete-popup/form-complete.popup.component';
 import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
 import { FormGuidelinesPopupComponent } from '../form-guidelines-popup/form-guidelines.popup.component';
+import { FormATPTConditionsPopupComponent } from './form-a-tpt-conditions-popup/form-a-tpt-conditions.popup.component';
 
 const moment =  _moment;
 
 @Component({
-  selector: 'app-form-a',
-  templateUrl: './form-a.component.html',
-  styleUrls: ['./form-a.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  templateUrl: './form-a-tpt.component.html',
   animations: egretAnimations
 })
-export class FormAComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+export class FormATPTComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     protected _activatedRoute: ActivatedRoute,
@@ -90,10 +87,10 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
     const self = this;
     self.loadDropDowns();
 
-    self.id = +self._activatedRoute.snapshot.paramMap.get('id');
-
+    self.viewModel.formId = +self._activatedRoute.snapshot.paramMap.get('id');
+    
     self.viewModelForm = self._formBuilder.group({
-      formCompleted: [this.viewModel.formCompleted]
+      formCompleted: ['']
     });
 
     self.viewPatientModelForm = self._formBuilder.group({
@@ -106,9 +103,6 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
       age: [this.viewModel.age],
       gender: [this.viewModel.gender],
       weight: [this.viewModel.weight, [Validators.max(199), Validators.min(0)]],
-      pregnant: [this.viewModel.pregnant],
-      lmpDate: [this.viewModel.lmpDate],
-      gestAge: [this.viewModel.gestAge, [Validators.max(44), Validators.min(4)]],
       address: [this.viewModel.address, Validators.maxLength(100)],
       contactNumber: [this.viewModel.contactNumber, Validators.maxLength(15)],
       alcoholConsumption: [this.viewModel.alcoholConsumption],
@@ -150,8 +144,16 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
   ngOnDestroy(): void {
     this._unsubscribeAll.next();
     this._unsubscribeAll.complete();
-    this.eventService.removeAll(FormAComponent.name);
-  }    
+    this.eventService.removeAll(FormATPTComponent.name);
+  }
+
+  nextStep(): void {
+    this.viewModel.currentStep ++;
+  }
+
+  previousStep(): void {
+    this.viewModel.currentStep --;
+  }
 
   loadDropDowns(): void {
     let self = this;
@@ -199,7 +201,7 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
   openConditionPopup(data: any = {}, isNew?) {
     let self = this;
     let title = isNew ? 'Add Condition' : 'Update Condition';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(FormAConditionsPopupComponent, {
+    let dialogRef: MatDialogRef<any> = self.dialog.open(FormATPTConditionsPopupComponent, {
       width: '720px',
       disableClose: true,
       data: { title: title, payload: data }
@@ -229,7 +231,7 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
   openLabPopup(data: any = {}, isNew?) {
     let self = this;
     let title = isNew ? 'Add Test Result' : 'Update Test Result';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(FormALabsPopupComponent, {
+    let dialogRef: MatDialogRef<any> = self.dialog.open(FormATPTLabsPopupComponent, {
       width: '720px',
       disableClose: true,
       data: { title: title, payload: data }
@@ -260,7 +262,7 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
   openMedicationPopup(data: any = {}, isNew?) {
     let self = this;
     let title = isNew ? 'Add Medication' : 'Update Medication';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(FormAMedicationsPopupComponent, {
+    let dialogRef: MatDialogRef<any> = self.dialog.open(FormATPTMedicationsPopupComponent, {
       width: '720px',
       disableClose: true,
       data: { title: title, payload: data }
@@ -426,7 +428,14 @@ export class FormAComponent extends BaseComponent implements OnInit, AfterViewIn
 }
 
 class ViewModel {
-  formCompleted: any;
+  formId: number;
+  formIdentifier: string;
+
+  currentStep = 1;
+  isComplete = false;
+  isSynched = false;
+  connected: boolean = true;
+  saving: boolean = false;
 
   treatmentSiteId: string;
   asmNumber: string;

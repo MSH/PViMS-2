@@ -42,7 +42,6 @@ import { CohortPopupComponent } from './cohort/cohort-search/cohort-popup/cohort
 import { CohortDeletePopupComponent } from './cohort/cohort-search/cohort-delete-popup/cohort-delete.popup.component';
 import { CohortEnrolmentListComponent } from './cohort/cohort-enrolment-list/cohort-enrolment-list.component';
 import { FormADRComponent } from './form/form-adr/form-adr.component';
-import { LandingComponent } from './form/landing/landing.component';
 import { AttachmentAddPopupComponent } from './shared/attachment-add-popup/attachment-add.popup.component';
 import { ClinicalEventTaskPopupComponent } from './feedback/clinical-event-task-popup/clinical-event-task.popup.component';
 import { FormADRMedicationPopupComponent } from './shared/form-adr-medication-popup/form-adr-medication.popup.component';
@@ -52,6 +51,16 @@ import { ClinicalEventViewPopupComponent } from './shared/clinical-event-view-po
 import { AppointmentPopupComponent } from './patient/patient-view/appointment-popup/appointment.popup.component';
 import { FormGuidelinesPopupComponent } from './form/form-guidelines-popup/form-guidelines.popup.component';
 import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynamic.component';
+import { FormSelectComponent } from './form/form-select/form-select.component';
+import { CohortSelectComponent } from './form/cohort-select/cohort-select.component';
+import { FormATPTComponent } from './form/form-a-tpt/form-a-tpt.component';
+import { FormATPTConditionsPopupComponent } from './form/form-a-tpt/form-a-tpt-conditions-popup/form-a-tpt-conditions.popup.component';
+import { FormATPTLabsPopupComponent } from './form/form-a-tpt/form-a-tpt-labs-popup/form-a-tpt-labs.popup.component';
+import { FormATPTMedicationsPopupComponent } from './form/form-a-tpt/form-a-tpt-medications-popup/form-a-tpt-medications.popup.component';
+import { FormBTPTComponent } from './form/form-b-tpt/form-b-tpt.component';
+import { FormBTPTAdversePopupComponent } from './form/form-b-tpt/form-b-tpt-adverse-popup/form-b-tpt-adverse.popup.component';
+import { FormBTPTLabsPopupComponent } from './form/form-b-tpt/form-b-tpt-labs-popup/form-b-tpt-labs.popup.component';
+import { FormBTPTMedicationsPopupComponent } from './form/form-b-tpt/form-b-tpt-medications-popup/form-b-tpt-medications.popup.component';
 
 @NgModule({
   imports: [
@@ -78,6 +87,7 @@ import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynami
     ClinicalEventViewPopupComponent,
     CohortEnrolmentListComponent,
     CohortSearchComponent,
+    CohortSelectComponent,
     CohortPopupComponent,
     CohortDeletePopupComponent,
     ConditionPopupComponent,
@@ -90,18 +100,26 @@ import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynami
     EncounterViewComponent,
     FeedbackSearchComponent,
     FormAComponent,
+    FormATPTComponent,
+    FormATPTConditionsPopupComponent,
+    FormATPTLabsPopupComponent,
+    FormATPTMedicationsPopupComponent,
     FormADRComponent,
     FormADRDynamicComponent,
     FormADRMedicationPopupComponent,
     FormBComponent,
+    FormBTPTComponent,
+    FormBTPTAdversePopupComponent,
+    FormBTPTLabsPopupComponent,
+    FormBTPTMedicationsPopupComponent,
     FormCComponent,
     FormDeletePopupComponent,
     FormGuidelinesPopupComponent,
     FormListComponent,
+    FormSelectComponent,
     GenericArchivePopupComponent,
     GenericDeletePopupComponent,
     LabTestPopupComponent,
-    LandingComponent,
     MedicationPopupComponent,
     PatientAddPopupComponent,
     PatientSearchComponent,
@@ -120,7 +138,13 @@ import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynami
     ClinicalEventViewPopupComponent,
     ConditionPopupComponent,
     ConditionViewPopupComponent,
+    FormATPTConditionsPopupComponent,
+    FormATPTLabsPopupComponent,
+    FormATPTMedicationsPopupComponent,
     FormADRMedicationPopupComponent,
+    FormBTPTAdversePopupComponent,
+    FormBTPTLabsPopupComponent,
+    FormBTPTMedicationsPopupComponent,
     FormDeletePopupComponent,
     FormGuidelinesPopupComponent,
     PatientAddPopupComponent,

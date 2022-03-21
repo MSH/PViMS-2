@@ -38,7 +38,10 @@ export const _routes = {
         }
       },      
       forms: {
-          landing: `${_paths.clinical}/${_paths.clinicalPath.forms.landing}`,
+          cohortselect: `${_paths.clinical}/${_paths.clinicalPath.forms.cohortselect}`,
+          formSelect(cohortGroupId: number): string {
+            return `${_paths.clinical}/${_paths.clinicalPath.forms.formselect.replace(':cohortGroupId', cohortGroupId.toString())}`;
+          },
           listForm(type: string): string {
             return `${_paths.clinical}/${_paths.clinicalPath.forms.list.replace(':type', type)}`;
           },
@@ -48,8 +51,14 @@ export const _routes = {
           viewFormA(formId: number): string {
               return `${_paths.clinical}/${_paths.clinicalPath.forms.forma.replace(':formId', formId.toString())}`;
           },
+          viewFormATPT(formId: number): string {
+              return `${_paths.clinical}/${_paths.clinicalPath.forms.formatpt.replace(':formId', formId.toString())}`;
+          },
           viewFormB(formId: number): string {
               return `${_paths.clinical}/${_paths.clinicalPath.forms.formb.replace(':formId', formId.toString())}`;
+          },
+          viewFormBTPT(formId: number): string {
+              return `${_paths.clinical}/${_paths.clinicalPath.forms.formbtpt.replace(':formId', formId.toString())}`;
           },
           viewFormC(formId: number): string {
               return `${_paths.clinical}/${_paths.clinicalPath.forms.formc.replace(':formId', formId.toString())}`;

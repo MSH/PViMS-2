@@ -380,7 +380,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
             self.fifthFormGroup.markAsPristine();
             self.sixthFormGroup.markAsPristine();
     
-            self._router.navigate([_routes.clinical.forms.landing]);
+            self._router.navigate([_routes.clinical.forms.cohortselect]);
           }
           else {
             self.showError('There was an error saving the form locally, please try again !', 'Form Error');
@@ -399,7 +399,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
                   self.fifthFormGroup.markAsPristine();
                   self.sixthFormGroup.markAsPristine();
       
-                  self._router.navigate([_routes.clinical.forms.landing]);
+                  self._router.navigate([_routes.clinical.forms.cohortselect]);
               }
               else {
                   self.showError('There was an error saving the form locally, please try again !', 'Form Error');
@@ -478,7 +478,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
         self.fifthFormGroup.markAsPristine();
         self.sixthFormGroup.markAsPristine();
 
-        self._router.navigate([_routes.clinical.forms.landing]);
+        self._router.navigate([_routes.clinical.forms.cohortselect]);
       },
       error => {
         this.handleError(error, "Error adding form");
@@ -499,7 +499,7 @@ export class FormADRComponent extends BaseComponent implements OnInit, AfterView
           // If user press cancel
           return;
         }        
-        self._router.navigate([_routes.clinical.forms.landing]);        
+        self._router.navigate([_routes.clinical.forms.cohortselect]);        
       })
   }    
 

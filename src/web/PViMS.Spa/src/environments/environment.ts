@@ -7,11 +7,11 @@ export const environment = {
   production: false,
   apiURL: 'http://localhost:5000/api',
   //apiURL: 'https://localhost:44380/api',
-  //apiURL: 'https://pvims-training-api.doh.gov.ph/api',
+  //apiURL: 'https://pvims-api.doh.gov.ph/api',
   apiURLBase: 'http://localhost:5000',
-  //apiURLBase: 'https://pvims-training-api.doh.gov.ph',
-  appVersion: '2.1.0',
+  //apiURLBase: 'https://pvims-api.doh.gov.ph',
+  appVersion: '2.2.2203011405',
   appName: 'PViMS Training',
-  installationDate: '2020-06-24',
-  countryISOCode: 'za'
+  installationDate: '2022-03-21',
+  countryISOCode: 'mz'
 };

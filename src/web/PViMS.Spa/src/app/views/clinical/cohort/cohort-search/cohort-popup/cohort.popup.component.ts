@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
@@ -14,7 +14,6 @@ import { CohortGroupService } from 'app/shared/services/cohort-group.service';
 
 @Component({
   templateUrl: './cohort.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class CohortPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
