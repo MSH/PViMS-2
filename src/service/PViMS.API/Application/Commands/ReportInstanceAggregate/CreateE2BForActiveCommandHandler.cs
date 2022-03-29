@@ -484,15 +484,17 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             var dob = activeReport.Patient.DateOfBirth;
             onset = activeReport.OnsetDate;
             recovery = activeReport.ResolutionDate;
-            if (dob != null)
+            if (dob.HasValue)
             {
-                e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "4F71B7F4-4317-4680-B3A3-9C1C1F72AD6A"), Convert.ToDateTime(dob).ToString("yyyyMMdd")); //Patient Birthdate
+                e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "4F71B7F4-4317-4680-B3A3-9C1C1F72AD6A"), dob.Value.ToString("yyyyMMdd")); //Patient Birthdate
 
-                if (onset != null)
+                if (onset.HasValue)
                 {
-                    var age = (Convert.ToDateTime(onset) - Convert.ToDateTime(dob)).Days;
+                    var age = onset.Value.Year - dob.Value.Year;
+                    if (dob.Value > onset.Value.AddYears(-age)) age--;
+
                     e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "E10C259B-DD2C-4F19-9D41-16FDDF9C5807"), age.ToString()); //Patient Onset Age
-                    e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "CA9B94C2-E1EF-407B-87C3-181224AF637A"), "804=Day"); //Patient Onset Age Unit
+                    e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "CA9B94C2-E1EF-407B-87C3-181224AF637A"), "801=Year"); //Patient Onset Age Unit
                 }
             }
 
