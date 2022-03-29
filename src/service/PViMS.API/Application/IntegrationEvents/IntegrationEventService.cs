@@ -28,8 +28,8 @@ namespace PVIMS.API.Application.IntegrationEvents
         {
             _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-            _eventLogService = _integrationEventLogServiceFactory(_dbContext.Database.GetDbConnection());
             _integrationEventLogServiceFactory = integrationEventLogServiceFactory ?? throw new ArgumentNullException(nameof(integrationEventLogServiceFactory));
+            _eventLogService = _integrationEventLogServiceFactory(_dbContext.Database.GetDbConnection());
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -58,7 +58,7 @@ namespace PVIMS.API.Application.IntegrationEvents
 
         public async Task AddAndSaveEventAsync(IntegrationEvent evt)
         {
-            _logger.LogInformation("----- Enqueuing integration event {IntegrationEventId} to repository ({@IntegrationEvent})", evt.Id, evt);
+            _logger.LogInformation("----- Enqueuing integration event {IntegrationEventId} to repository ({@IntegrationEvent})", evt.TransactionId, evt);
 
             await _eventLogService.SaveEventAsync(evt, _dbContext.GetCurrentTransaction());
         }

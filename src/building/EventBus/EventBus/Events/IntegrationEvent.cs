@@ -7,8 +7,16 @@ namespace PViMS.BuildingBlocks.EventBus.Events
     {
         public IntegrationEvent()
         {
-            Id = Guid.NewGuid();
+            TransactionId = Guid.NewGuid();
             CreationDate = DateTime.UtcNow;
+        }
+
+        public IntegrationEvent(Guid acknowledgeId)
+        {
+            AcknowledgeId = acknowledgeId;
+            TransactionId = Guid.NewGuid();
+            CreationDate = DateTime.UtcNow;
+            SenderId = Guid.Parse("E9B71820-76EC-4009-8078-47FCEC14F95C");
         }
 
         [JsonConstructor]

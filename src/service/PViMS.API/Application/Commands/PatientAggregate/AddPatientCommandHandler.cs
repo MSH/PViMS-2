@@ -80,7 +80,8 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
                 throw new KeyNotFoundException("Unable to locate newly added patient");
             }
 
-            return CreateLinks(mappedPatient);
+            //return CreateLinks(mappedPatient);
+            return mappedPatient;
         }
 
         private async Task CheckIfPatientIsUniqueAsync(IDictionary<int, string> attributes)

@@ -156,7 +156,8 @@ namespace PViMS.BuildingBlocks.EventBus
 
         public string GetEventKey<T>()
         {
-            return typeof(T).Name;
+            //            return typeof(T).Name;
+            return "pvims.patient.add";
         }
     }
 }

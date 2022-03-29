@@ -11,7 +11,7 @@ namespace PViMS.BuildingBlocks.IntegrationEventLogEF
         private IntegrationEventLogEntry() { }
         public IntegrationEventLogEntry(IntegrationEvent @event, Guid transactionId)
         {
-            EventId = @event.Id;
+            EventId = @event.TransactionId;
             CreationTime = @event.CreationDate;
             EventTypeName = @event.GetType().FullName;
             Content = JsonSerializer.Serialize(@event, @event.GetType(), new JsonSerializerOptions

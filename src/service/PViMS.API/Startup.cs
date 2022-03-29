@@ -139,9 +139,14 @@ namespace PViMS.API
                 endpoints.MapControllers();
             });
 
+            ConfigureEventBus(app);
+        }
+
+        private void ConfigureEventBus(IApplicationBuilder app)
+        {
             var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
 
-            eventBus.Subscribe<CausalityConfirmedIntegrationEvent, IIntegrationEventHandler<CausalityConfirmedIntegrationEvent>>();
+            eventBus.Subscribe<PatientAddedIntegrationEvent, IIntegrationEventHandler<PatientAddedIntegrationEvent>>();
         }
     }
 
@@ -275,15 +280,16 @@ namespace PViMS.API
                        ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
                    );
             services.AddDbContext<IntegrationEventLogContext>(options =>
-            {
-                options.UseSqlServer(configuration["ConnectionString"],
-                                        sqlServerOptionsAction: sqlOptions =>
-                                        {
-                                            sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
-                                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
-                                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                                        });
-            });
+                    {
+                        options.UseSqlServer(configuration["ConnectionString"],
+                            sqlServerOptionsAction: sqlOptions =>
+                            {
+                                sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                                sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                            });
+                    },
+                       ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
+                    );
 
             return services;
         }
@@ -337,6 +343,8 @@ namespace PViMS.API
 
         public static IServiceCollection AddCustomIntegrations(this IServiceCollection services, IConfiguration configuration)
         {
+            IConfigurationSection eventBusSettings = configuration.GetSection(nameof(EventBusSettings));
+
             services.AddHttpContextAccessor();
             services.AddMemoryCache();
             services.AddAutoMapper(typeof(Startup));
@@ -352,24 +360,24 @@ namespace PViMS.API
 
                 var factory = new ConnectionFactory()
                 {
-                    HostName = configuration["EventBusConnection"],
+                    HostName = eventBusSettings[nameof(EventBusSettings.EventBusConnection)],
                     DispatchConsumersAsync = true
                 };
 
-                if (!string.IsNullOrEmpty(configuration["EventBusUserName"]))
+                if (!string.IsNullOrEmpty(eventBusSettings[nameof(EventBusSettings.EventBusUserName)]))
                 {
-                    factory.UserName = configuration["EventBusUserName"];
+                    factory.UserName = eventBusSettings[nameof(EventBusSettings.EventBusUserName)];
                 }
 
-                if (!string.IsNullOrEmpty(configuration["EventBusPassword"]))
+                if (!string.IsNullOrEmpty(eventBusSettings[nameof(EventBusSettings.EventBusPassword)]))
                 {
-                    factory.Password = configuration["EventBusPassword"];
+                    factory.Password = eventBusSettings[nameof(EventBusSettings.EventBusPassword)];
                 }
 
                 var retryCount = 5;
-                if (!string.IsNullOrEmpty(configuration["EventBusRetryCount"]))
+                if (!string.IsNullOrEmpty(eventBusSettings[nameof(EventBusSettings.EventBusRetryCount)]))
                 {
-                    retryCount = int.Parse(configuration["EventBusRetryCount"]);
+                    retryCount = int.Parse(eventBusSettings[nameof(EventBusSettings.EventBusRetryCount)]);
                 }
 
                 return new DefaultRabbitMQPersistentConnection(factory, logger, retryCount);
@@ -536,18 +544,20 @@ namespace PViMS.API
 
         public static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration)
         {
+            IConfigurationSection eventBusSettings = configuration.GetSection(nameof(EventBusSettings));
+
             services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
             {
-                var subscriptionClientName = configuration["SubscriptionClientName"];
+                var subscriptionClientName = eventBusSettings[nameof(EventBusSettings.SubscriptionClientName)];
                 var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
                 var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
                 var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
                 var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
 
                 var retryCount = 5;
-                if (!string.IsNullOrEmpty(configuration["EventBusRetryCount"]))
+                if (!string.IsNullOrEmpty(eventBusSettings[nameof(EventBusSettings.EventBusRetryCount)]))
                 {
-                    retryCount = int.Parse(configuration["EventBusRetryCount"]);
+                    retryCount = int.Parse(eventBusSettings[nameof(EventBusSettings.EventBusRetryCount)]);
                 }
 
                 return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubcriptionsManager, subscriptionClientName, retryCount);
