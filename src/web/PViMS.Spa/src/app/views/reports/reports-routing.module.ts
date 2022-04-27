@@ -7,11 +7,18 @@ import { CausalityComponent } from './system/causality/causality.component';
 import { PatientMedicationComponent } from './system/patient-medication/patient-medication.component';
 import { ReportListComponent } from './report-list/report-list.component';
 import { ReportViewerComponent } from './report-viewer/report-viewer.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 export const ReportRoutes: Routes = [
   {
     path: '',
-    children: [{
+    children: [
+    {
+      path: 'dashboard',
+      component: DashboardComponent,
+      data: { title: 'Dashboard', breadcrumb: 'Dashboard' }
+    },
+    {
       path: 'system/outstandingvisit',
       component: OutstandingVisitComponent,
       data: { title: 'Outstanding Visit Report', breadcrumb: 'Outstanding Visit Report' }

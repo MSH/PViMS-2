@@ -21,6 +21,8 @@ import { GenericDeletePopupComponent } from './shared/generic-delete-popup/gener
 import { AttributeConfigurePopupComponent } from './report-list/attribute-configure-popup/attribute-configure.popup.component';
 import { FilterConfigurePopupComponent } from './report-list/filter-configure-popup/filter-configure.popup.component';
 import { ReportViewerComponent } from './report-viewer/report-viewer.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 @NgModule({
   declarations: [
@@ -30,6 +32,7 @@ import { ReportViewerComponent } from './report-viewer/report-viewer.component';
     PatientTreatmentComponent,
     PatientMedicationComponent,
     CausalityComponent,
+    DashboardComponent,
     PatientListPopupComponent,
     ReportListComponent,
     ReportViewerComponent,
@@ -44,6 +47,7 @@ import { ReportViewerComponent } from './report-viewer/report-viewer.component';
     SharedComponentsModule,
     SharedMaterialModule,
     SharedModule,
+    NgApexchartsModule,
     PerfectScrollbarModule,
     RouterModule.forChild(ReportRoutes)
   ],

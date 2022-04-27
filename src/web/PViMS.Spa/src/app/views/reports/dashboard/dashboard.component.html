@@ -1,0 +1,191 @@
+<div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+  <div fxFlex="75">
+    <mat-card class="p-12 mat-elevation-z2 rounded">
+      <mat-card-content>
+        <div class="p-12 rounded default-light-bg">
+          <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="5.5%" fxLayoutAlign="start">
+            <div fxFlex="100" class="pr-1 p-12">
+              <mat-label>{{'Please select a cohort below' | translate}}...</mat-label>
+            </div>
+            <div fxFlex="100" class="pr-1">
+              <mat-chip-list #chipList>
+                <div *ngFor="let cohort of viewModel?.cohortList">
+                  <mat-chip color="accent" [selected]="cohort.cohortName == viewModel?.selectedCohort?.cohortName" (click)="selectDashboard(cohort)" style="cursor: pointer;"> 
+                    {{ cohort.cohortName }}
+                  </mat-chip>
+                  <span class="mr-24" matBadge="{{cohort.enrolmentCount}}" matBadgePosition="above after" matBadgeColor="accent" matBadgeOverlap="true"></span>
+                </div>
+              </mat-chip-list>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<div *ngIf="viewModel?.selectedCohort?.cohortName == 'ADSM HIV TLD Cohort'">
+  <div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+    <div fxFlex.gt-sm="50" fxFlex.sm="75" fxFlex.xs="100">
+      <mat-card class="p-12 mat-elevation-z2 rounded">
+        <mat-card-title class="text-center">
+          <div class="card-title-text light-gray p-12">
+            {{'Enrollment-cumulative' | translate}}
+          </div>
+        </mat-card-title>              
+        <mat-card-content>
+          <apx-chart
+          [series]="initCohortEnrollmentCumulativeChartOptions?.series"
+          [chart]="initCohortEnrollmentCumulativeChartOptions?.chart"
+          [dataLabels]="initCohortEnrollmentCumulativeChartOptions?.dataLabels"
+          [plotOptions]="initCohortEnrollmentCumulativeChartOptions?.plotOptions"
+          [yaxis]="initCohortEnrollmentCumulativeChartOptions?.yaxis"
+          [legend]="initCohortEnrollmentCumulativeChartOptions?.legend"
+          [fill]="initCohortEnrollmentCumulativeChartOptions?.fill"
+          [stroke]="initCohortEnrollmentCumulativeChartOptions?.stroke"
+          [tooltip]="initCohortEnrollmentCumulativeChartOptions?.tooltip"
+          [xaxis]="initCohortEnrollmentCumulativeChartOptions?.xaxis"
+          [colors]="initCohortEnrollmentCumulativeChartOptions.colors"
+        ></apx-chart>        
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div fxFlex.gt-sm="25" fxFlex.sm="50" fxFlex.xs="100">
+      <mat-card class="p-12 mat-elevation-z2 rounded">
+        <mat-card-title class="text-center">
+          <div class="card-title-text light-gray p-12">
+            {{'Follow Up Visit-cumulative' | translate}}
+          </div>
+        </mat-card-title>              
+        <mat-card-content>
+          <apx-chart
+          [series]="followUpCumulativeChartOptions?.series"
+          [chart]="followUpCumulativeChartOptions?.chart"
+          [dataLabels]="followUpCumulativeChartOptions?.dataLabels"
+          [plotOptions]="followUpCumulativeChartOptions?.plotOptions"
+          [yaxis]="followUpCumulativeChartOptions?.yaxis"
+          [legend]="followUpCumulativeChartOptions?.legend"
+          [fill]="followUpCumulativeChartOptions?.fill"
+          [stroke]="followUpCumulativeChartOptions?.stroke"
+          [tooltip]="followUpCumulativeChartOptions?.tooltip"
+          [xaxis]="followUpCumulativeChartOptions?.xaxis"
+          [colors]="followUpCumulativeChartOptions.colors"
+        ></apx-chart>        
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+  <div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+    <div fxFlex.gt-sm="25" fxFlex.sm="75" fxFlex.xs="100">
+      <mat-card class="p-12 mat-elevation-z2 rounded">
+        <mat-card-title class="text-center">
+          <div class="card-title-text light-gray p-12">
+            {{'Gender-distribution' | translate}}
+          </div>
+        </mat-card-title>              
+        <mat-card-content>
+          <apx-chart
+          [series]="genderDistributionChartOptions.series"
+          [chart]="genderDistributionChartOptions.chart"
+          [labels]="genderDistributionChartOptions.labels"
+          [responsive]="genderDistributionChartOptions.responsive"
+        ></apx-chart>        
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div fxFlex.gt-sm="25" fxFlex.sm="50" fxFlex.xs="100">
+      <mat-card class="p-12 mat-elevation-z2 rounded">
+        <mat-card-title class="text-center">
+          <div class="card-title-text light-gray p-12">
+            {{'Lab Test-distribution' | translate}}
+          </div>
+        </mat-card-title>              
+        <mat-card-content>
+          <apx-chart
+          [series]="labDistributionChartOptions.series"
+          [chart]="labDistributionChartOptions.chart"
+          [dataLabels]="labDistributionChartOptions.dataLabels"
+          [plotOptions]="labDistributionChartOptions.plotOptions"
+          [xaxis]="labDistributionChartOptions.xaxis"
+        ></apx-chart>        
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div fxFlex.gt-sm="25" fxFlex.sm="50" fxFlex.xs="100">
+      <mat-card class="p-12 mat-elevation-z2 rounded">
+        <mat-card-title class="text-center">
+          <div class="card-title-text light-gray p-12">
+            {{'Condition-distribution' | translate}}
+          </div>
+        </mat-card-title>              
+        <mat-card-content>
+          <apx-chart
+          [series]="conditionDistributionChartOptions.series"
+          [chart]="conditionDistributionChartOptions.chart"
+          [dataLabels]="conditionDistributionChartOptions.dataLabels"
+          [plotOptions]="conditionDistributionChartOptions.plotOptions"
+          [xaxis]="conditionDistributionChartOptions.xaxis"
+        ></apx-chart>        
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+  <div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+    <div fxFlex.gt-sm="75" fxFlex.sm="75" fxFlex.xs="100">
+      <mat-card class="p-12 mat-elevation-z2 rounded">
+        <mat-card-title class="text-center">
+          <div class="card-title-text light-gray p-12">
+            {{'Follow-up visits and AEs reported per facility' | translate}}
+          </div>
+        </mat-card-title>              
+        <mat-card-content>
+          <apx-chart
+          [series]="followUpBreakdownChartOptions.series"
+          [chart]="followUpBreakdownChartOptions.chart"
+          [xaxis]="followUpBreakdownChartOptions.xaxis"
+          [markers]="followUpBreakdownChartOptions.markers"
+          [stroke]="followUpBreakdownChartOptions.stroke"
+          [yaxis]="followUpBreakdownChartOptions.yaxis"
+          [dataLabels]="followUpBreakdownChartOptions.dataLabels"
+          [title]="followUpBreakdownChartOptions.title"
+          [fill]="followUpBreakdownChartOptions.fill"
+          [tooltip]="followUpBreakdownChartOptions.tooltip"
+          [legend]="followUpBreakdownChartOptions.legend"
+        ></apx-chart>        
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="viewModel?.selectedCohort?.cohortName == ' ADSM HIV TPT Cohort'">
+  <div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+    <div fxFlex.gt-sm="25" fxFlex.sm="75" fxFlex.xs="100">
+      <mat-card class="p-12 mat-elevation-z2 rounded">
+        <mat-card-title class="text-center">
+          <div class="card-title-text light-gray p-12">
+            {{'NO CHARTS CONFIGURED FOR COHORT' | translate}}
+          </div>
+        </mat-card-title>              
+        <mat-card-content>
+        </mat-card-content>
+     </mat-card>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="viewModel?.selectedCohort?.cohortName == 'ADSM Vaccinations Cohort'">
+  <div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+    <div fxFlex.gt-sm="25" fxFlex.sm="75" fxFlex.xs="100">
+      <mat-card class="p-12 mat-elevation-z2 rounded">
+        <mat-card-title class="text-center">
+          <div class="card-title-text light-gray p-12">
+            {{'NO CHARTS CONFIGURED FOR COHORT' | translate}}
+          </div>
+        </mat-card-title>              
+        <mat-card-content>
+        </mat-card-content>
+     </mat-card>
+    </div>
+  </div>
+</div>
