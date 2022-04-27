@@ -16,7 +16,6 @@ import { FormADRComponent } from './form/form-adr/form-adr.component';
 import { PendingChangesGuard } from 'app/shared/guards/component-can-deactive';
 import { FormListComponent } from './form/form-list/form-list.component';
 import { FormSelectComponent } from './form/form-select/form-select.component';
-import { CohortSelectComponent } from './form/cohort-select/cohort-select.component';
 import { FormATPTComponent } from './form/form-a-tpt/form-a-tpt.component';
 import { FormBTPTComponent } from './form/form-b-tpt/form-b-tpt.component';
 
@@ -64,12 +63,7 @@ export const ClinicalRoutes: Routes = [
       data: { title: 'Encounter View', breadcrumb: 'Encounter View' }
     },
     {
-      path: 'cohort-select',
-      component: CohortSelectComponent,
-      data: { title: 'List All Cohorts for Form Selection', breadcrumb: 'Cohorts' }
-    },
-    {
-      path: 'form-select/:cohortGroupId',
+      path: 'form-select',
       component: FormSelectComponent,
       data: { title: 'List All Forms for Capture', breadcrumb: 'Forms' }
     },

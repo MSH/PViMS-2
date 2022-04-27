@@ -16,7 +16,7 @@
       </button>
     </div>
     <div class="icon-menu-item" *ngIf="this.accountService.hasRole('Reporter')">
-      <button mat-raised-button matTooltip="{{'Reports Portal' | translate}}" (click)="navService.routeToPatientTreatmentReport()">
+      <button mat-raised-button matTooltip="{{'Reports Portal' | translate}}" (click)="navService.routeToReportingDashboard()">
         <mat-icon [ngStyle]="{'color': this.navService.isPortalCurrent('Reports Portal') ? 'orange' : 'black' }">data_usage</mat-icon>
       </button>
     </div>

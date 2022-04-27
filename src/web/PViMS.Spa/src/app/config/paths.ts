@@ -59,6 +59,7 @@ export const _paths = {
   },
   reports: `reports`,
   reportPath: {
+    dashboard: `dashboard`,
     patienttreatment: `system/patienttreatment`
   },
   information: `information`,

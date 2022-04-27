@@ -33,6 +33,7 @@ import { WorkFlowService } from 'app/shared/services/work-flow.service';
 import { ProgressStatusEnum, ProgressStatus } from 'app/shared/models/program-status.model';
 import { HttpEventType } from '@angular/common/http';
 import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexLegend, ApexPlotOptions, ApexStroke, ApexTooltip, ApexXAxis, ApexYAxis, ChartComponent } from 'ng-apexcharts';
+import { CohortGroupDetailModel } from 'app/shared/models/cohort/cohort-group.detail.model';
 
 const moment =  _moment;
 
@@ -97,7 +98,7 @@ export class ActiveAnalyserComponent extends BaseComponent implements OnInit, Af
   viewDatasetModelForm: FormGroup;
 
   conditionList: ConditionIdentifierModel[] = [];
-  cohortList: CohortGroupIdentifierModel[] = [];
+  cohortList: CohortGroupDetailModel[] = [];
   riskFactorList: RiskFactorDetailModel[] = [];
   selectedRiskFactor: RiskFactorDetailModel;
 

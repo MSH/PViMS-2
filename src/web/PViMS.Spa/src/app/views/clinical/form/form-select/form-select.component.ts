@@ -12,6 +12,7 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { _routes } from 'app/config/routes';
 import { CohortGroupService } from 'app/shared/services/cohort-group.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
+import { CohortGroupDetailModel } from 'app/shared/models/cohort/cohort-group.detail.model';
 
 @Component({
   templateUrl: './form-select.component.html',
@@ -40,42 +41,40 @@ export class FormSelectComponent extends BaseComponent implements OnInit, AfterV
   ngOnInit(): void {
     const self = this;
     
-    self.viewModel.cohortGroupId = +self._activatedRoute.snapshot.paramMap.get('cohortGroupId');
-
     self.accountService.connected$.subscribe(val => {
       self.viewModel.connected = val;
     });
-
-    self.viewModelForm = self._formBuilder.group({
-      cohortName: [''],
-      cohortCode: [''],
-      conditionName: [''],
-    });    
   }
 
   ngAfterViewInit(): void {
     let self = this;
 
-    self.loadData();
-    self.getMetaFormList();
-  }  
+    self.loadCohorts();
+  } 
 
-  loadData(): void {
+  loadCohorts(): void {
     let self = this;
     self.setBusy(true);
-    self.cohortGroupService.getCohortGroupDetail(self.viewModel.cohortGroupId)
+
+    self.cohortGroupService.getAllCohortGroups()
       .pipe(takeUntil(self._unsubscribeAll))
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.updateForm(self.viewModelForm, (self.viewModel = result));
+        self.CLog(result, 'result');
+        self.viewModel.cohortList = result;
       }, error => {
-        this.handleError(error, "Error fetching cohort group");
+        self.handleError(error, "Error fetching cohorts");
       });
+  } 
+
+  selectCohort(cohort: CohortGroupDetailModel): void {
+    let self = this;
+    self.viewModel.selectedCohort = cohort;
+    self.getMetaFormList(cohort.id);
   }  
 
-  getMetaFormList(): void {
+  getMetaFormList(cohortId: number): void {
     let self = this;
-    let cohortId = self.viewModel.cohortGroupId;
     self.metaFormService.getAllMetaForms()
     .pipe(
       map((result: MetaFormDetailModel[]) => {
@@ -199,6 +198,9 @@ class ViewModel {
   cohortCode: string;
   conditionName: string;
     
+  cohortList: CohortGroupDetailModel[] = [];
+  selectedCohort: CohortGroupDetailModel;
+
   formList: MetaFormDetailModel[] = [];
   filteredFormList: MetaFormDetailModel[] = [];
   connected: boolean = true;

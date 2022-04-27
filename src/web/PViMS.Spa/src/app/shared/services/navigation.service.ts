@@ -255,6 +255,10 @@ export class NavigationService {
     this._router.navigate([_routes.analytical.landing]);
   }
 
+  routeToReportingDashboard() : void {
+    this._router.navigate([_routes.reports.dashboard]);
+  }
+
   routeToPatientTreatmentReport() : void {
     this._router.navigate([_routes.reports.patienttreatment]);
   }
@@ -296,7 +300,7 @@ export class NavigationService {
         type: "link",
         tooltip: "View Forms for Capture",
         icon: "content_copy",
-        state: "clinical/cohort-select"
+        state: "clinical/form-select"
       };      
       this.clinicalMenu.push(newMenu);
 

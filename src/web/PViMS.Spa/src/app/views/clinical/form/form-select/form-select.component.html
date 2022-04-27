@@ -2,80 +2,76 @@
   <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isBusy()"></mat-progress-bar>
 </div>
 
-<mat-card class="p-0">
-    <mat-card-title class="">
-    <div class="card-title-text">
-      <button mat-raised-button (click)="navigateToCohortSelect()" color="accent" class="mr-48">
-        <mat-icon>arrow_back</mat-icon>
-      </button>
-      {{'Select a Form' | translate}}
-    </div>
-  </mat-card-title>
-
-  <mat-card-content>
-    <form [formGroup]="viewModelForm">
-      <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start" >
-        <div fxFlex="100" class="p-12 default-light-bg rounded">
-          <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="center" >
-            <div fxFlex="30" class="pr-1">
-              <mat-form-field class="p-8 full-width" appearance="fill">
-                <mat-label>{{'Cohort name' | translate}}</mat-label>
-                <input matInput formControlName="cohortName" readonly>
-              </mat-form-field>
+<div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+  <div fxFlex="75">
+    <mat-card class="p-12 mat-elevation-z2 rounded">
+      <mat-card-content>
+        <div class="p-12 rounded default-light-bg">
+          <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="5.5%" fxLayoutAlign="start">
+            <div fxFlex="100" class="pr-1 p-12">
+              <mat-label>{{'Please select a cohort below' | translate}}...</mat-label>
             </div>
-            <div fxFlex="30" class="pr-1">
-              <mat-form-field class="p-8 full-width" appearance="fill">
-                <mat-label>{{'Code' | translate}}</mat-label>
-                <input matInput formControlName="cohortCode" readonly>
-              </mat-form-field>
-            </div>
-            <div fxFlex="30" class="pr-1">
-              <mat-form-field class="p-8 full-width" appearance="fill">
-                <mat-label>{{'Primary condition' | translate}}</mat-label>
-                <input matInput formControlName="conditionName" readonly>
-              </mat-form-field>
+            <div fxFlex="100" class="pr-1">
+              <mat-chip-list #chipList>
+                <div *ngFor="let cohort of viewModel?.cohortList">
+                  <mat-chip color="accent" [selected]="cohort.cohortName == viewModel?.selectedCohort?.cohortName" (click)="selectCohort(cohort)" style="cursor: pointer;"> 
+                    {{ cohort.cohortName }}
+                  </mat-chip>
+                  <span class="mr-24" matBadge="{{cohort.enrolmentCount}}" matBadgePosition="above after" matBadgeColor="accent" matBadgeOverlap="true"></span>
+                </div>
+              </mat-chip-list>
             </div>
           </div>
         </div>
-      </div>
-    </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
 
-    <div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }" [ngStyle]="{'border': (viewModel?.connected) ? 'thin solid red' : ''}">
-      <div fxFlex.xl="25" fxFlex.gt-sm="50" fxFlex.sm="75" fxFlex.sm="100" *ngFor="let action of viewModel?.formList">
-        <mat-card class="p-12 rounded">
-          <mat-card-title class="text-center">
-            <div class="card-title-text light-gray p-12">
-              {{action.formName | translate}}
-            </div>
-          </mat-card-title>              
-          <mat-card-content>
-            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
-              <div fxFlex="50" class="text-center pt-16 pb-16 border-right-light">
-                <mat-icon class="text-red">cloud_download</mat-icon>
-                <h4 class="m-0">{{action.unsynchedCount}}</h4>
-                <small class="m-0 text-muted">Forms unsynched</small>
-              </div>        
-              <div fxFlex="50" class="text-center pt-16 pb-16 border-right-light">
-                <mat-icon class="text-blue">cloud_done</mat-icon>
-                <h4 class="m-0">{{action.synchedCount}}</h4>
-                <small class="m-0 text-muted">Forms synched</small>
-              </div>        
-            </div>
-            <div class="m-8 text-center">
-              <button mat-raised-button color="accent" class="mr-16" (click)="addForm(action.actionName)" >
-                {{'Add Form' | translate }}
-              </button>
-              <button mat-raised-button color="accent" class="mr-16" (click)="listForm(action.actionName)" *ngIf="action.unsynchedCount > 0 || action.synchedCount > 0">
-                {{'List Forms' | translate }}
-              </button>
-              <button mat-raised-button color="primary" (click)="synchroniseForm(action.actionName)" *ngIf="action.completedCount > 0">
-                {{'Submit Forms' | translate }}
-              </button>
-            </div>
-          </mat-card-content>
-        </mat-card>  
-      </div>
-    </div>    
-  </mat-card-content>
-</mat-card>
-
+<div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
+  <div fxFlex.xl="25" fxFlex.gt-sm="50" fxFlex.sm="75" fxFlex.sm="100" *ngFor="let action of viewModel?.formList">
+    <mat-card class="p-12 rounded">
+      <mat-card-title class="text-center">
+        <div class="card-title-text light-gray p-12">
+          {{action.formName | translate}}
+        </div>
+      </mat-card-title>              
+      <mat-card-content>
+        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1.0%" fxLayoutAlign="start" class="mt-6">
+          <div fxFlex="50" class="text-center pt-16 pb-16 border-right-light">
+            <mat-icon class="text-red">cloud_download</mat-icon>
+            <h4 class="m-0">{{action.unsynchedCount}}</h4>
+            <small class="m-0 text-muted">Forms unsynched</small>
+          </div>        
+          <div fxFlex="50" class="text-center pt-16 pb-16 border-right-light">
+            <mat-icon class="text-blue">cloud_done</mat-icon>
+            <h4 class="m-0">{{action.synchedCount}}</h4>
+            <small class="m-0 text-muted">Forms synched</small>
+          </div>        
+        </div>
+        <div class="m-8 text-center">
+          <button mat-raised-button color="accent" class="mr-16" (click)="addForm(action.actionName)" >
+            {{'Add Form' | translate }}
+          </button>
+          <button mat-raised-button color="accent" class="mr-16" (click)="listForm(action.actionName)" *ngIf="action.unsynchedCount > 0 || action.synchedCount > 0">
+            {{'List Forms' | translate }}
+          </button>
+          <button mat-raised-button color="primary" (click)="synchroniseForm(action.actionName)" *ngIf="action.completedCount > 0">
+            {{'Submit Forms' | translate }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>  
+  </div>
+  <div fxFlex.xl="25" fxFlex.gt-sm="50" fxFlex.sm="75" fxFlex.sm="100" *ngIf="viewModel?.formList?.length == 0 && viewModel?.selectedCohort?.id > 0">
+    <mat-card class="p-12 rounded">
+      <mat-card-title class="text-center">
+        <div class="card-title-text light-gray p-12">
+          NO FORMS CONFIGURED FOR COHORT
+        </div>
+      </mat-card-title>              
+      <mat-card-content>
+      </mat-card-content>
+    </mat-card>  
+  </div>  
+</div>

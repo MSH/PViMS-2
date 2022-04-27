@@ -1,6 +1,9 @@
+import { LinkModel } from "../link.model";
+
 export interface CohortGroupDetailWrapperModel {
     value:  CohortGroupDetailModel[];
     recordCount: number;
+    links: LinkModel[];
 }
 
 export interface CohortGroupDetailModel {

@@ -52,7 +52,6 @@ import { AppointmentPopupComponent } from './patient/patient-view/appointment-po
 import { FormGuidelinesPopupComponent } from './form/form-guidelines-popup/form-guidelines.popup.component';
 import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynamic.component';
 import { FormSelectComponent } from './form/form-select/form-select.component';
-import { CohortSelectComponent } from './form/cohort-select/cohort-select.component';
 import { FormATPTComponent } from './form/form-a-tpt/form-a-tpt.component';
 import { FormATPTConditionsPopupComponent } from './form/form-a-tpt/form-a-tpt-conditions-popup/form-a-tpt-conditions.popup.component';
 import { FormATPTLabsPopupComponent } from './form/form-a-tpt/form-a-tpt-labs-popup/form-a-tpt-labs.popup.component';
@@ -87,7 +86,6 @@ import { FormBTPTMedicationsPopupComponent } from './form/form-b-tpt/form-b-tpt-
     ClinicalEventViewPopupComponent,
     CohortEnrolmentListComponent,
     CohortSearchComponent,
-    CohortSelectComponent,
     CohortPopupComponent,
     CohortDeletePopupComponent,
     ConditionPopupComponent,

@@ -89,6 +89,7 @@ export const _routes = {
       }
     },
     reports: {
+      dashboard: `${_paths.reports}/${_paths.reportPath.dashboard}`,
       patienttreatment: `${_paths.reports}/${_paths.reportPath.patienttreatment}`
     },
     information: {

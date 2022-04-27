@@ -23,15 +23,15 @@ export class CohortGroupService extends BaseService {
     filter.recordsPerPage = 50;
     filter.currentPage = 1;
 
-    return this.getCohortGroups(filter)
+    return this.getCohortGroupsByDetail(filter)
       .pipe( 
         expand(response => {
-          let typedResponse = response as CohortGroupIdentifierWrapperModel;
+          let typedResponse = response as CohortGroupDetailWrapperModel;
           let next = typedResponse.links.find(l => l.rel == 'nextPage');
-          return next ? this.GetByAddress<CohortGroupIdentifierWrapperModel>(next.href, 'application/vnd.pvims.identifier.v1+json') : EMPTY;
+          return next ? this.GetByAddress<CohortGroupDetailWrapperModel>(next.href, 'application/vnd.pvims.detail.v1+json') : EMPTY;
         }),
         map(response => {
-          let typedResponse = response as CohortGroupIdentifierWrapperModel;
+          let typedResponse = response as CohortGroupDetailWrapperModel;
           return typedResponse.value;
         }),
         reduce((accData, data) => accData.concat(data), [])
