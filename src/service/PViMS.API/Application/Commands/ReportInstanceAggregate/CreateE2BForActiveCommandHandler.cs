@@ -395,7 +395,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 objectValue = mcExtended.GetAttributeValue("Clinician action taken with regard to medicine if related to AE");
                 var drugAction = objectValue != null ? objectValue.ToString() : "";
                 if (!string.IsNullOrWhiteSpace(drugAction)) { drugAction = MapDrugActionForActive(drugAction); };
-                if (!string.IsNullOrWhiteSpace(drugAction)) { e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Action"), doseUnit, (Guid)newContext); };
+                if (!string.IsNullOrWhiteSpace(drugAction)) { e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Action"), drugAction, (Guid)newContext); };
 
                 // Causality
                 if (med.WhoCausality != null)
