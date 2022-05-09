@@ -27,7 +27,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.CausalityConfirmed
             _logger.LogInformation($"Causality confirmed for report instance: {domainEvent.ReportInstance.Id}. Send integration event.");
 
             var causalityConfirmedIntegrationEvent = new CausalityConfirmedIntegrationEvent(domainEvent.ReportInstance.Id, domainEvent.ReportInstance.Identifier);
-            await _integrationEventService.AddAndSaveEventAsync(causalityConfirmedIntegrationEvent);
+            //await _integrationEventService.AddAndSaveEventAsync(causalityConfirmedIntegrationEvent);
         }
     }
 }

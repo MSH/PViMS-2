@@ -65,10 +65,10 @@ namespace PVIMS.API.Infrastructure.Services
                 //smtpClient.ServerCertificateValidationCallback = MySslCertificateValidationCallback;
                 smtpClient.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                await smtpClient.ConnectAsync(_smtpHost, _port, _useSSL);
-                await smtpClient.AuthenticateAsync(_mailboxUserName, _mailboxPassword);
-                await smtpClient.SendAsync(mailMessage);
-                await smtpClient.DisconnectAsync(true);
+                //await smtpClient.ConnectAsync(_smtpHost, _port, _useSSL);
+                //await smtpClient.AuthenticateAsync(_mailboxUserName, _mailboxPassword);
+                //await smtpClient.SendAsync(mailMessage);
+                //await smtpClient.DisconnectAsync(true);
             }
         }
 
