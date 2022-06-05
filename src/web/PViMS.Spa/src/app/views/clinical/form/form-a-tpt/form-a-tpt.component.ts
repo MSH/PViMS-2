@@ -7,9 +7,9 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
-import { Subscription } from 'rxjs';
+import { from, Subscription } from 'rxjs';
 import { FacilityService } from 'app/shared/services/facility.service';
-import { takeUntil } from 'rxjs/operators';
+import { concatMap, finalize, takeUntil } from 'rxjs/operators';
 import { Moment } from 'moment';
 // Depending on whether rollup is used, moment needs to be imported differently.
 // Since Moment.js doesn't have a default export, we normally need to import using the `* as`
@@ -29,6 +29,8 @@ import { FormCompletePopupComponent } from '../form-complete-popup/form-complete
 import { FormAttachmentModel } from 'app/shared/models/form/form-attachment.model';
 import { FormGuidelinesPopupComponent } from '../form-guidelines-popup/form-guidelines.popup.component';
 import { FormATPTConditionsPopupComponent } from './form-a-tpt-conditions-popup/form-a-tpt-conditions.popup.component';
+import { PatientMedicationForUpdateModel } from 'app/shared/models/patient/patient-medication-for-update.model';
+import { PatientService } from 'app/shared/services/patient.service';
 
 const moment =  _moment;
 
@@ -47,6 +49,7 @@ export class FormATPTComponent extends BaseComponent implements OnInit, AfterVie
     protected accountService: AccountService,
     protected eventService: EventService,
     protected facilityService: FacilityService,
+    protected patientService: PatientService,
     protected dialog: MatDialog,
     protected metaFormService: MetaFormService,
     protected mediaObserver: MediaObserver) 
@@ -132,6 +135,11 @@ export class FormATPTComponent extends BaseComponent implements OnInit, AfterVie
       telephoneReporter: [this.viewModel.telephoneReporter],
       professionReporter: [this.viewModel.professionReporter]
     });
+
+    self.accountService.connected$.subscribe(val => {
+      self.viewModel.connected = val;
+    });
+
   }
 
   ngAfterViewInit(): void {
@@ -325,71 +333,114 @@ export class FormATPTComponent extends BaseComponent implements OnInit, AfterVie
       })
   }  
 
-  completeForm(): void {
-    let self = this;
-    let otherModels:any[]; 
-    let attachments:FormAttachmentModel[] = []; 
-
-    otherModels = [this.conditions, this.labTests, this.medications, this.viewOtherModelForm.value];
-
-    if (self.id == 0) {
-      self.metaFormService.saveFormToDatabase('FormA', this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
-        {
-            if (response) {
-                self.notify('Form A saved successfully!', 'Form Saved');
-                this.openCompletePopup(response);
-              }
-            else {
-                self.showError('There was an error saving form A, please try again !', 'Download');
-            }
-        });
-      }
-      else {
-        self.metaFormService.updateForm(self.id, this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
-          {
-              if (response) {
-                  self.notify('Form A updated successfully!', 'Form Saved');
-                  this.openCompletePopup(self.id);
-                }
-              else {
-                  self.showError('There was an error updating form C, please try again !', 'Download');
-              }
-          });         
-      }
+  saveFormOnline(): void {
+    const self = this;
+    self.viewModel.saving = true;
+    from(self.viewModel.medications).pipe(
+      concatMap(medicationForUpdate => self.patientService.savePatientMedication(self.viewModel.patientId, medicationForUpdate.id, medicationForUpdate))
+    ).pipe(
+      finalize(() => self.saveOnlineMedicationsComplete()),
+    ).subscribe(
+      data => {
+        self.CLog('subscription to save meds');
+      },
+      error => {
+        this.handleError(error, "Error saving medications");
+      });    
   }
+  
+  saveFormOffline(): void {
+    const self = this;
+    let otherModels:any[]; 
+    otherModels = [self.viewModel.medications, self.viewOtherModelForm.value];
 
-  saveForm(): void {
-    let self = this;
-    let otherModels:any[];
-    let attachments:FormAttachmentModel[] = []; 
-
-    otherModels = [this.conditions, this.labTests, this.medications, this.viewOtherModelForm.value];
-
-    if (self.id == 0) {
-      self.metaFormService.saveFormToDatabase('FormA', this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
+    if (self.viewModel.formId == 0) {
+      self.metaFormService.saveFormToDatabase('FormATPT', self.viewModelForm.value, self.viewPatientModelForm.value, null, otherModels).then(response =>
         {
-            if (response) {
-                self.notify('Form A saved successfully!', 'Form Saved');
-                self._router.navigate([_routes.clinical.forms.cohortselect]);
-            }
-            else {
-                self.showError('There was an error saving form A, please try again !', 'Download');
-            }
+          if (response) {
+            self.setBusy(false);              
+            self.notify('Form saved successfully!', 'Form Saved');
+
+            self.viewPatientModelForm.markAsPristine();
+            self.viewConditionModelForm.markAsPristine();
+            self.viewLabTestModelForm.markAsPristine();
+            self.viewMedicationModelForm.markAsPristine();
+            self.viewOtherModelForm.markAsPristine();
+    
+            self._router.navigate([_routes.clinical.forms.cohortselect]);
+          }
+          else {
+            self.showError('There was an error saving the form locally, please try again !', 'Form Error');
+          }
         });
       }
       else {
-        self.metaFormService.updateForm(self.id, this.viewModelForm.value, this.viewPatientModelForm.value, attachments, otherModels).then(response =>
+        self.metaFormService.updateForm(self.viewModel.formId, this.viewModelForm.value, this.viewPatientModelForm.value, null, otherModels).then(response =>
           {
               if (response) {
-                  self.notify('Form A updated successfully!', 'Form Saved');
+                  self.notify('Form updated successfully!', 'Form Saved');
+
+                  self.viewPatientModelForm.markAsPristine();
+                  self.viewConditionModelForm.markAsPristine();
+                  self.viewLabTestModelForm.markAsPristine();
+                  self.viewMedicationModelForm.markAsPristine();
+                  self.viewOtherModelForm.markAsPristine();
+            
                   self._router.navigate([_routes.clinical.forms.cohortselect]);
               }
               else {
-                  self.showError('There was an error updating form C, please try again !', 'Download');
+                  self.showError('There was an error saving the form locally, please try again !', 'Form Error');
               }
-          });         
+          });
       }
   }
+
+  completeFormOffline(): void {
+    let self = this;
+    let otherModels:any[];
+
+    otherModels = [self.viewModel.medications, self.viewOtherModelForm.value];
+
+    if (self.viewModel.formId == 0) {
+      self.metaFormService.saveFormToDatabase('FormATPT', self.viewModelForm.value, self.viewPatientModelForm.value, null, otherModels).then(response =>
+        {
+            if (response) {
+              self.setBusy(false);              
+              self.notify('Form saved successfully!', 'Form Saved');
+  
+              self.viewPatientModelForm.markAsPristine();
+              self.viewConditionModelForm.markAsPristine();
+              self.viewLabTestModelForm.markAsPristine();
+              self.viewMedicationModelForm.markAsPristine();
+              self.viewOtherModelForm.markAsPristine();
+  
+              self.openCompletePopup(+response);
+            }
+            else {
+                self.showError('There was an error saving the form locally, please try again !', 'Form Error');
+            }
+        });
+      }
+      else {
+        self.metaFormService.updateForm(self.viewModel.formId, this.viewModelForm.value, this.viewPatientModelForm.value, null, otherModels).then(response =>
+          {
+              if (response) {
+                  self.notify('Form updated successfully!', 'Form Saved');
+
+                  self.viewPatientModelForm.markAsPristine();
+                  self.viewConditionModelForm.markAsPristine();
+                  self.viewLabTestModelForm.markAsPristine();
+                  self.viewMedicationModelForm.markAsPristine();
+                  self.viewOtherModelForm.markAsPristine();
+    
+                  this.openCompletePopup(self.viewModel.formId);
+                }
+              else {
+                  self.showError('There was an error updating the form locally, please try again !', 'Form Error');
+              }
+          });
+      }
+  }   
 
   getFacilityList(): void {
     let self = this;
@@ -424,6 +475,36 @@ export class FormATPTComponent extends BaseComponent implements OnInit, AfterVie
     this.viewModel.labTestGrid.updateBasic(this.labTests);
 
     this.notify("Lab test removed successfully!", "Lab Test");
+  }
+
+  private saveOnlineMedicationsComplete(): void {
+    const self = this;
+    const requestArray = [];
+
+    // var clinicalEventForUpdate = self.prepareClinicalEventForUpdateModel();
+    // requestArray.push(this.patientService.savePatientClinicalEvent(self.viewModel.patientId, 0, clinicalEventForUpdate));
+
+    // self.viewModel.attachments.forEach(attachmentForUpdate => {
+    //   requestArray.push(this.patientService.saveAttachment(self.viewModel.patientId, attachmentForUpdate.file, attachmentForUpdate.description));
+    // });
+
+    // forkJoin(requestArray)
+    // .subscribe(
+    //   data => {
+    //     self.setBusy(false);
+    //     self.notify('Form added successfully!', 'Success');
+
+    //     self.firstFormGroup.markAsPristine();
+    //     self.thirdFormGroup.markAsPristine();
+    //     self.fourthFormGroup.markAsPristine();
+    //     self.fifthFormGroup.markAsPristine();
+    //     self.sixthFormGroup.markAsPristine();
+
+    //     self._router.navigate([_routes.clinical.forms.cohortselect]);
+    //   },
+    //   error => {
+    //     this.handleError(error, "Error adding form");
+    //   });
   }
 }
 
@@ -465,8 +546,9 @@ class ViewModel {
 
   medicationGrid: GridModel<MedicationGridRecordModel> =
   new GridModel<MedicationGridRecordModel>
-      (['medication', 'start date', 'continued', 'actions']);
-
+      (['medication', 'start-date', 'end-date', 'dose', 'actions']);
+  medications: PatientMedicationForUpdateModel[] = [];
+    
   adherenceReason: string;
   followUpDate: Moment;
   nameReporter: string;
