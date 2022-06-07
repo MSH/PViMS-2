@@ -67,7 +67,7 @@ BEGIN
 		-- WE DO NOT NEED TO INCLUDE RISK FACTORS
 		INSERT INTO #Druglist 
 				(Patient_Id, Drug, Medication_Id, StartDate, FinishDate, DaysContributed, ADR)
-			SELECT pm.Patient_Id, c.ConceptName, c.Id, pm.DateStart, pm.DateEnd, 0, 0
+			SELECT pm.Patient_Id, c.ConceptName, c.Id, pm.StartDate, pm.EndDate, 0, 0
 				FROM PatientMedication pm
 					INNER JOIN Concept c ON pm.Concept_Id = c.Id
 					INNER JOIN #PatientList p ON pm.Patient_Id = p.Id 
@@ -82,7 +82,7 @@ BEGIN
 		SET @sql  = N'
 		INSERT INTO #Druglist 
 				(Patient_Id, Drug, Medication_Id, StartDate, FinishDate, DaysContributed, ADR)
-			SELECT pm.Patient_Id, c.ConceptName, c.Id, pm.DateStart, pm.DateEnd, 0, 0
+			SELECT pm.Patient_Id, c.ConceptName, c.Id, pm.StartDate, pm.EndDate, 0, 0
 				FROM PatientMedication pm
 					INNER JOIN Concept c ON pm.Concept_Id = c.Id
 					INNER JOIN #PatientList p ON pm.Patient_Id = p.Id 

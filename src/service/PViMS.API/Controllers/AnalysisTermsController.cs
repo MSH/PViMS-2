@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
@@ -18,11 +20,10 @@ using PVIMS.Core.Paging;
 using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
-using PVIMS.API.Infrastructure.Services;
+
 
 namespace PVIMS.API.Controllers
 {
@@ -245,7 +246,7 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@DebugMode", "False"));
 
             var resultsFromService = _context.ContingencyAnalysisLists
-                .FromSqlRaw($"spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
+                .FromSqlRaw($"EXECUTE spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
                         parameters.ToArray()).ToList();
 
             if (resultsFromService != null)
@@ -406,7 +407,7 @@ namespace PVIMS.API.Controllers
             var resultsFromService = PagedCollection<ContingencyAnalysisPatient>.Create(
                 _context.ContingencyAnalysisPatients
                     .FromSqlRaw($"Exec spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
-                            parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
+                            parameters.ToArray()).ToList(), pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (resultsFromService != null)
             {

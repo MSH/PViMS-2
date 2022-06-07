@@ -196,7 +196,7 @@ BEGIN
 		-- ******* OUTPUT
 		IF @DebugPatientList = 1
 			BEGIN
-				SELECT p.FirstName + ' ' + p.Surname AS PatientName, pl.Id, CONVERT(varchar(10), DLD.[StartDate], 120) AS StartDate, CONVERT(varchar(10), DLD.[FinishDate], 120) AS FinishDate, DLD.Drug, DLD.[DaysContributed], DLD.[ADR]
+				SELECT p.FirstName + ' ' + p.Surname AS PatientName, pl.Id, CONVERT(varchar(10), DLD.[StartDate], 120) AS StartDate, CONVERT(varchar(10), DLD.[FinishDate], 120) AS FinishDate, DLD.Drug, DLD.[DaysContributed], DLD.[ADR], '' as RiskFactor, '' as RiskFactorOption, '' as FactorMet
 					FROM #PatientList pl
 						INNER JOIN #DruglistDeduped dld ON pl.Id = dld.Patient_Id
 						INNER JOIN Concept C ON dld.Medication_Id = c.Id
@@ -204,7 +204,7 @@ BEGIN
 					ORDER BY p.Surname, p.FirstName, dld.Drug, dld.StartDate 
 			END
 		ELSE
-			SELECT E.*, NE.[NonExposedCases], NE.[NonExposedNonCases], NE.[NonExposedPopulation], NE.[NonExposedIncidenceRate], ISNULL(R.[UnAdjustedRelativeRisk], 0) AS 'UnAdjustedRelativeRisk', ISNULL(R.[ConfidenceIntervalLow], 0) AS 'ConfidenceIntervalLow', ISNULL(R.[ConfidenceIntervalHigh], 0) AS 'ConfidenceIntervalHigh'
+			SELECT E.*, NE.[NonExposedCases], NE.[NonExposedNonCases], NE.[NonExposedPopulation], NE.[NonExposedIncidenceRate], ISNULL(R.[UnAdjustedRelativeRisk], 0.00) AS 'UnAdjustedRelativeRisk', 0.00 AS 'AdjustedRelativeRisk', ISNULL(R.[ConfidenceIntervalLow], 0) AS 'ConfidenceIntervalLow', ISNULL(R.[ConfidenceIntervalHigh], 0) AS 'ConfidenceIntervalHigh'
 				FROM #ContingencyExposed E 
 					INNER JOIN #ContingencyNonExposed NE ON E.Medication_Id = NE.Medication_Id
 					LEFT JOIN #ContingencyRiskRatio R ON E.Medication_Id = R.Medication_Id 
@@ -265,7 +265,7 @@ BEGIN
 				ORDER BY p.Surname, p.FirstName, dld.Drug, dld.StartDate 
 		END
 	ELSE
-		SELECT E.*, NE.[NonExposedCases], NE.[NonExposedNonCases], NE.[NonExposedPopulation], NE.[NonExposedIncidenceRate], ISNULL(R.[UnAdjustedRelativeRisk], 0) AS 'UnAdjustedRelativeRisk', ISNULL(AR.[AdjustedRelativeRisk], 0) AS 'AdjustedRelativeRisk', ISNULL(AR.[ConfidenceIntervalLow], 0) AS 'ConfidenceIntervalLow', ISNULL(AR.[ConfidenceIntervalHigh], 0) AS 'ConfidenceIntervalHigh'
+		SELECT E.*, NE.[NonExposedCases], NE.[NonExposedNonCases], NE.[NonExposedPopulation], NE.[NonExposedIncidenceRate], ISNULL(R.[UnAdjustedRelativeRisk], 0.00) AS 'UnAdjustedRelativeRisk', ISNULL(AR.[AdjustedRelativeRisk], 0.00) AS 'AdjustedRelativeRisk', ISNULL(AR.[ConfidenceIntervalLow], 0) AS 'ConfidenceIntervalLow', ISNULL(AR.[ConfidenceIntervalHigh], 0) AS 'ConfidenceIntervalHigh'
 			FROM #ContingencyExposed E 
 				INNER JOIN #ContingencyNonExposed NE ON E.Medication_Id = NE.Medication_Id
 				LEFT JOIN #ContingencyRiskRatio R ON E.Medication_Id = R.Medication_Id 
