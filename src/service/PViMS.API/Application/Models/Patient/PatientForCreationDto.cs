@@ -71,11 +71,6 @@ namespace PVIMS.API.Models
         public string Comments { get; set; }
 
         /// <summary>
-        /// Patient custom attributes
-        /// </summary>
-        public IDictionary<int, string> Attributes { get; set; }
-
-        /// <summary>
         /// The type of encounter on patient registration
         /// </summary>
         public int EncounterTypeId { get; set; }
@@ -89,5 +84,10 @@ namespace PVIMS.API.Models
         /// The date of the encounter
         /// </summary>
         public DateTime EncounterDate { get; set; }
+
+        /// <summary>
+        /// Patient custom attributes
+        /// </summary>
+        public ICollection<AttributeValueForPostDto> Attributes { get; set; }
     }
 }
