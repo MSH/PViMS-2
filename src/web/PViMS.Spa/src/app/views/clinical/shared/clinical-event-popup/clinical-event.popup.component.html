@@ -7,9 +7,9 @@
       <div fxFlex="100" class="pr-1">
         <mat-tab-group>
           <mat-tab label="{{'Basic Information' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 450px;">
+            <mat-card-content class="m-1" style="height: 400px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
-                <div fxFlex="100" class="pr-1 mt-24">
+                <div fxFlex="100" class="pr-1 mt-12">
                   <mat-form-field class="full-width" appearance="outline">
                       <textarea matInput formControlName="sourceDescription" rows="3" placeholder="{{'L_TEXT_7' | translate }}" required></textarea>
                       <mat-hint>{{'Maximum length' | translate}} 500</mat-hint> 
@@ -24,7 +24,7 @@
                       </mat-error>            
                   </mat-form-field>        
                 </div>
-                <div fxFlex="50" class="pr-1 mt-24">
+                <div fxFlex="50" class="pr-1 mt-12">
                   <mat-form-field class="full-width">
                     <input matInput formControlName="onsetDate" placeholder="{{'Onset date' | translate}}" [matDatepicker]="onsetDateDatepicker" required>
                     <mat-datepicker-toggle matSuffix [for]="onsetDateDatepicker"></mat-datepicker-toggle>
@@ -34,33 +34,30 @@
                   </mat-form-field>
                   <mat-datepicker #onsetDateDatepicker></mat-datepicker>
                 </div>
-                <div fxFlex="50" class="pr-1 mt-24">
+                <div fxFlex="50" class="pr-1 mt-12">
                   <mat-form-field class="full-width">
                     <input matInput formControlName="resolutionDate" placeholder="{{'Resolution date' | translate}}" [matDatepicker]="resolutionDateDatepicker">
                     <mat-datepicker-toggle matSuffix [for]="resolutionDateDatepicker"></mat-datepicker-toggle>
                   </mat-form-field>
                   <mat-datepicker #resolutionDateDatepicker></mat-datepicker>
                 </div>
-                <div fxFlex="100" class="pr-1 mt-24">
+                <div fxFlex="100" class="pr-1 mt-12">
                   <mat-form-field class="full-width" appearance='fill'>
                       <input matInput formControlName="medDraTerm" placeholder="{{'L_TEXT_6' | translate }}" readonly>
                   </mat-form-field>
                 </div>
-                <div fxFlex="100" class="pr-1" fxLayoutAlign="end">
+                <div fxFlex="100" class="pr-1 mt-12" fxLayoutAlign="end">
                   <button mat-mini-fab (click)="openMeddraPopup()"><mat-icon>search</mat-icon></button>
                 </div>
               </div>
             </mat-card-content>
           </mat-tab>
           <mat-tab label="{{'Detail Information' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 450px;">
-              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" formGroupName="attributes">
-                <div fxFlex="100" class="mt-24" *ngFor="let attribute of customAttributeList">
+            <mat-card-content class="m-1" style="height: 400px;">
+              <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" formGroupName="attributes" fxLayoutGap="1.5%">
+                <div fxFlex="100" class="mt-12" *ngFor="let attribute of customAttributeList">
                   <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'String'">
                     <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" [required]="attribute.required">
-                    <mat-hint *ngIf="attribute.stringMaxLength != null">
-                      {{'Maximum length' | translate}} {{attribute.stringMaxLength}}
-                    </mat-hint>
                   </mat-form-field>
                   <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'Numeric'">
                     <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" type="number" [required]="attribute.required">

@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
@@ -19,7 +19,6 @@ import { LabTestService } from 'app/shared/services/lab-test.service';
 
 @Component({
   templateUrl: './lab-test.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class LabTestPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
@@ -86,7 +85,6 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
 
     self.labTestService.getAllLabTests()
         .subscribe(result => {
-          console.log(result);
           self.labTestList = result;
         }, error => {
           this.handleError(error, "Error fetching lab tests");
@@ -98,7 +96,6 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
 
     self.labTestService.getAllLabResults()
         .subscribe(result => {
-          console.log(result);
           self.labResultList = result;
         }, error => {
           this.handleError(error, "Error fetching lab results");
@@ -110,7 +107,6 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
 
     self.labTestService.getAllLabTestUnits()
         .subscribe(result => {
-          console.log(result);
           self.labTestUnitList = result;
         }, error => {
           this.handleError(error, "Error fetching lab test units");

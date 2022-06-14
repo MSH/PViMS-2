@@ -11,25 +11,25 @@
       <div fxFlex="100" class="pr-1">
         <mat-tab-group>
           <mat-tab label="{{'Basic Information' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 450;">
+            <mat-card-content class="m-1" style="height: 400px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start">
-                <div fxFlex="100" class="pr-1 mt-24" *ngIf="viewModelForm.get('sourceDescription').value != '' && data.medicationId > 0">
+                <div fxFlex="100" class="mt-12" *ngIf="viewModelForm.get('sourceDescription').value != '' && data.medicationId > 0">
                   <mat-form-field class="full-width" appearance="fill">
                     <mat-label>{{'Medication description (As noted at source)' | translate }}</mat-label>
                     <input matInput formControlName="sourceDescription" readonly>
                   </mat-form-field>        
                 </div>
-                <div fxFlex="100" class="pr-1 mt-24">
+                <div fxFlex="100" class="mt-12">
                   <mat-form-field class="full-width" appearance="fill">
                     <mat-label>{{'Medication' | translate }}</mat-label>
                     <input matInput formControlName="medication" required readonly>
                   </mat-form-field>
                 </div>
-                <div fxFlex="100" class="pr-1" fxLayoutAlign="end">
+                <div fxFlex="100" class="mt-12" fxLayoutAlign="end">
                   <button mat-mini-fab (click)="openConceptPopup()"><mat-icon>search</mat-icon></button>
                 </div>
 
-                <div fxFlex="50" class="pr-1 mt-24">
+                <div fxFlex="50" class="pr-1 mt-12">
                   <mat-form-field class="full-width">
                     <input matInput formControlName="startDate" placeholder="{{'Start date' | translate}}" [matDatepicker]="startDateDatepicker" required>
                     <mat-datepicker-toggle matSuffix [for]="startDateDatepicker"></mat-datepicker-toggle>
@@ -39,18 +39,16 @@
                   </mat-form-field>
                   <mat-datepicker #startDateDatepicker></mat-datepicker>
                 </div>
-                <div fxFlex="50" class="pr-1 mt-24">
+                <div fxFlex="50" class="pr-1 mt-12">
                   <mat-form-field class="full-width">
                     <input matInput formControlName="endDate" placeholder="{{'End date' | translate}}" [matDatepicker]="endDateDatepicker">
                     <mat-datepicker-toggle matSuffix [for]="endDateDatepicker"></mat-datepicker-toggle>
                   </mat-form-field>
                   <mat-datepicker #endDateDatepicker></mat-datepicker>
                 </div>
-
-                <div fxFlex="50" class="pr-1 mt-24">
+                <div fxFlex="50" class="pr-1 mt-12">
                   <mat-form-field class="full-width">
                     <input matInput formControlName="dose" placeholder="{{'Dose' | translate }}">
-                    <mat-hint>{{'Maximum length' | translate}} 30</mat-hint>
                     <mat-error *ngIf="viewModelForm.get('dose').hasError('maxlength')">
                       {{'Maximum length exceeded' | translate}}
                     </mat-error>            
@@ -59,7 +57,7 @@
                     </mat-error>            
                   </mat-form-field>        
                 </div>
-                <div fxFlex="50" class="pr-1 mt-24">
+                <div fxFlex="50" class="pr-1 mt-12">
                   <mat-form-field class="full-width">
                     <mat-select formControlName="doseUnit" placeholder="{{'Dose unit' | translate}}">
                       <mat-option value=""></mat-option>
@@ -97,11 +95,9 @@
                     </mat-select>
                   </mat-form-field>
                 </div>
-
-                <div fxFlex="50" class="pr-1 mt-24">
+                <div fxFlex="50" class="pr-1 mt-12">
                   <mat-form-field class="full-width">
                     <input matInput formControlName="doseFrequency" placeholder="{{'Dose frequency' | translate }}">
-                    <mat-hint>{{'Maximum length' | translate}} 30</mat-hint>
                     <mat-error *ngIf="viewModelForm.get('doseFrequency').hasError('maxlength')">
                       {{'Maximum length exceeded' | translate}}
                     </mat-error>            
@@ -114,14 +110,11 @@
             </mat-card-content>
           </mat-tab>
           <mat-tab label="{{'Detail Information' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 450;">
+            <mat-card-content class="m-1" style="height: 400px;">
               <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutAlign="start start" formGroupName="attributes">
-                <div fxFlex="50" class="pr-1 mt-24" *ngFor="let attribute of customAttributeList">
+                <div fxFlex="100" class="mt-12" *ngFor="let attribute of customAttributeList">
                   <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'String'">
                     <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" [required]="attribute.required">
-                    <mat-hint *ngIf="attribute.stringMaxLength != null">
-                      {{'Maximum length' | translate}} {{attribute.stringMaxLength}}
-                    </mat-hint>
                   </mat-form-field>
                   <mat-form-field class="full-width" *ngIf="attribute.customAttributeType == 'Numeric'">
                     <input matInput formControlName="{{attribute.id}}" placeholder="{{attribute.attributeKey | translate}}" type="number" [required]="attribute.required">
