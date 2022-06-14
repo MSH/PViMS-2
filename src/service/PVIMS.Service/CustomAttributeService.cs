@@ -216,7 +216,7 @@ namespace PVIMS.Services
 
                 case CustomAttributeType.Selection:
                     var selection = _selectionDataItemRepository.Get(s => s.AttributeKey == configuration.AttributeKey && s.SelectionKey == val.ToString());
-                    return selection.Value;
+                    return selection?.Value;
 
                 case CustomAttributeType.DateTime:
                     return DateTime.TryParse(val.ToString(), out dttemp) ? Convert.ToDateTime(val) > DateTime.MinValue ? Convert.ToDateTime(val).ToString("yyyy-MM-dd") : string.Empty : string.Empty;
