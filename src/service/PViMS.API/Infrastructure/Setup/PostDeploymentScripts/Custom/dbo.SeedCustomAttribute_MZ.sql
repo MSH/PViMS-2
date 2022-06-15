@@ -43,9 +43,9 @@ INSERT [dbo].[CustomAttributeConfiguration] ([ExtendableTypeName], [CustomAttrib
 INSERT [dbo].[SelectionDataItem] ([AttributeKey], [SelectionKey], [Value]) 
 	VALUES (N'Condition Ongoing', N'0', N'')
 INSERT [dbo].[SelectionDataItem] ([AttributeKey], [SelectionKey], [Value]) 
-	VALUES (N'Condition Ongoing', N'Yes', N'Yes')
+	VALUES (N'Condition Ongoing', N'1', N'Yes')
 INSERT [dbo].[SelectionDataItem] ([AttributeKey], [SelectionKey], [Value]) 
-	VALUES ( N'Condition Ongoing', N'No', N'No')
+	VALUES ( N'Condition Ongoing', N'2', N'No')
 
 -- *** PATIENT LAB TEST
 INSERT [dbo].[CustomAttributeConfiguration] ([ExtendableTypeName], [CustomAttributeType], [Category], [AttributeKey], [IsRequired], [StringMaxLength], [NumericMinValue], [NumericMaxValue], [FutureDateOnly], [PastDateOnly], [IsSearchable], [AttributeDetail]) 
