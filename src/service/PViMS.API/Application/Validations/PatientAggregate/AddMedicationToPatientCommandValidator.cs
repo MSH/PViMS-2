@@ -10,7 +10,7 @@ namespace PVIMS.API.Application.Validations
         public AddMedicationToPatientCommandValidator(ILogger<AddMedicationToPatientCommandValidator> logger)
         {
             RuleFor(command => command.SourceDescription)
-                .Length(0, 200)
+                .Length(0, 200) 
                 .Matches(@"[-a-zA-Z0-9 .,()']")
                 .When(c => !string.IsNullOrEmpty(c.SourceDescription))
                 .WithMessage("Source description contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, space, period, comma, parentheses, apostrophe)");
@@ -31,9 +31,9 @@ namespace PVIMS.API.Application.Validations
 
             RuleFor(command => command.Dose)
                 .Length(0, 30)
-                .Matches(@"[a-zA-Z0-9.]")
+                .Matches(@"[a-zA-Z0-9./]")
                 .When(c => !string.IsNullOrEmpty(c.Dose))
-                .WithMessage("Dose contains invalid characters (Enter A-Z, a-z, 0-9, period)");
+                .WithMessage("Dose contains invalid characters (Enter A-Z, a-z, 0-9, period, forward slash)");
 
             RuleFor(command => command.DoseFrequency)
                 .Length(0, 30)

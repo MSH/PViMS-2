@@ -56,7 +56,7 @@
                       {{'Maximum length exceeded' | translate}}
                     </mat-error>            
                     <mat-error *ngIf="viewModelForm.get('dose').hasError('pattern')">
-                      {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, period)
+                      {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, period, forward slash)
                     </mat-error>            
                   </mat-form-field>        
                   <mat-form-field class="full-width" *ngIf="data.medicationId > 0" appearance="fill">
