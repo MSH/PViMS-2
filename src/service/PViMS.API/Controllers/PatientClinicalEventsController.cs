@@ -168,7 +168,6 @@ namespace PVIMS.API.Controllers
                     patientId,
                     id = commandResult.Id
                 }, commandResult);
-
         }
 
         /// <summary>
@@ -186,6 +185,7 @@ namespace PVIMS.API.Controllers
             if (clinicalEventForUpdate == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
             }
 
             var command = new ChangeClinicalEventDetailsCommand(patientId, id, clinicalEventForUpdate.SourceDescription, clinicalEventForUpdate.SourceTerminologyMedDraId, clinicalEventForUpdate.OnsetDate, clinicalEventForUpdate.ResolutionDate, clinicalEventForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
@@ -216,14 +216,15 @@ namespace PVIMS.API.Controllers
         [Consumes("application/json")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> ArchivePatientClinicalEvent(int patientId, int id,
-            [FromBody] ArchiveDto conditionForDelete)
+            [FromBody] ArchiveDto clinicalEventForDelete)
         {
-            if (conditionForDelete == null)
+            if (clinicalEventForDelete == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
             }
 
-            var command = new ArchivePatientClinicalEventCommand(patientId, id, conditionForDelete.Reason);
+            var command = new ArchivePatientClinicalEventCommand(patientId, id, clinicalEventForDelete.Reason);
 
             _logger.LogInformation(
                 "----- Sending command: ArchivePatientClinicalEventCommand - {patientId}: {patientClinicalEventId}",

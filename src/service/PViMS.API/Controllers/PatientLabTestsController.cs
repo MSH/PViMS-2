@@ -1,22 +1,21 @@
 ﻿using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using PVIMS.API.Application.Commands.PatientAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
-using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using System;
 using System.Linq;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
@@ -27,44 +26,29 @@ namespace PVIMS.API.Controllers
     public class PatientLabTestsController : ControllerBase
     {
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
-        private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<PatientLabTest> _patientLabTestRepository;
-        private readonly IRepositoryInt<LabTest> _labTestRepository;
-        private readonly IRepositoryInt<LabTestUnit> _labTestUnitRepository;
-        private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
-        private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IMediator _mediator;
+        private readonly ILogger<PatientLabTestsController> _logger;
         private readonly ILinkGeneratorService _linkGeneratorService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PatientLabTestsController(
             IMapper mapper,
+            IMediator mediator,
+            ILogger<PatientLabTestsController> logger,
             ILinkGeneratorService linkGeneratorService,
             ITypeExtensionHandler modelExtensionBuilder,
-            IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientLabTest> patientLabTestRepository,
-            IRepositoryInt<LabTest> labTestRepository,
-            IRepositoryInt<LabTestUnit> labTestUnitRepository,
-            IRepositoryInt<User> userRepository,
-            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
-            IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
-            IUnitOfWorkInt unitOfWork,
-            IHttpContextAccessor httpContextAccessor)
+            IRepositoryInt<SelectionDataItem> selectionDataItemRepository)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientLabTestRepository = patientLabTestRepository ?? throw new ArgumentNullException(nameof(patientLabTestRepository));
-            _labTestRepository = labTestRepository ?? throw new ArgumentNullException(nameof(labTestRepository));
-            _labTestUnitRepository = labTestUnitRepository ?? throw new ArgumentNullException(nameof(labTestUnitRepository));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         /// <summary>
@@ -132,72 +116,33 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var command = new AddLabTestToPatientCommand(patientId,
+                labTestForUpdate.LabTest,
+                labTestForUpdate.TestDate,
+                labTestForUpdate.TestResultCoded,
+                labTestForUpdate.TestResultValue,
+                labTestForUpdate.TestUnit,
+                labTestForUpdate.ReferenceLower,
+                labTestForUpdate.ReferenceUpper,
+                labTestForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
+
+            _logger.LogInformation(
+                "----- Sending command: AddLabTestToPatientCommand - {LabTest}",
+                command.LabTest);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            var labTestFromRepo = _labTestRepository.Get(lt => lt.Description == labTestForUpdate.LabTest);
-            if (labTestFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate lab test");
-            }
-
-            LabTestUnit labTestUnitFromRepo = null;
-            if(!String.IsNullOrWhiteSpace(labTestForUpdate.TestUnit))
-            {
-                labTestUnitFromRepo = _labTestUnitRepository.Get(u => u.Description == labTestForUpdate.TestUnit);
-                if (labTestUnitFromRepo == null)
+            return CreatedAtAction("GetPatientLabTestByIdentifier",
+                new
                 {
-                    ModelState.AddModelError("Message", "Unable to locate lab test unit");
-                }
-            }
-
-            ValidateLabTestForUpdateModel(patientFromRepo, labTestForUpdate);
-
-            if (ModelState.IsValid)
-            {
-                var labTestDetail = PrepareLabTestDetail(labTestForUpdate);
-                if (!labTestDetail.IsValid())
-                {
-                    labTestDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
-
-                if (ModelState.IsValid)
-                {
-                    var patientLabTest = new PatientLabTest
-                    {
-                        LabTest = labTestFromRepo,
-                        TestDate = labTestForUpdate.TestDate,
-                        TestResult = labTestForUpdate.TestResultCoded,
-                        LabValue = labTestForUpdate.TestResultValue,
-                        TestUnit = labTestUnitFromRepo,
-                        ReferenceLower = labTestForUpdate.ReferenceLower,
-                        ReferenceUpper = labTestForUpdate.ReferenceUpper,
-                        Patient = patientFromRepo
-                    };
-
-                    _modelExtensionBuilder.UpdateExtendable(patientLabTest, labTestDetail.CustomAttributes, "Admin");
-
-                    _patientLabTestRepository.Save(patientLabTest);
-                    await _unitOfWork.CompleteAsync();
-
-                    var mappedPatientLabTest = _mapper.Map<PatientLabTestIdentifierDto>(patientLabTest);
-                    if (mappedPatientLabTest == null)
-                    {
-                        return StatusCode(500, "Unable to locate newly added lab test");
-                    }
-
-                    return CreatedAtAction("GetPatientLabTestByIdentifier",
-                        new
-                        {
-                            id = mappedPatientLabTest.Id
-                        }, CreateLinksForPatientLabTest<PatientLabTestIdentifierDto>(mappedPatientLabTest));
-                }
-            }
-
-            return BadRequest(ModelState);
+                    patientId,
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -209,71 +154,39 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPut("{patientId}/labTests/{id}", Name = "UpdatePatientLabTest")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdatePatientLabTest(long patientId, long id,
+        public async Task<IActionResult> UpdatePatientLabTest(int patientId, int id,
             [FromBody] PatientLabTestForUpdateDto labTestForUpdate)
         {
             if (labTestForUpdate == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var command = new ChangeLabTestDetailsCommand(patientId, 
+                id,
+                labTestForUpdate.LabTest,
+                labTestForUpdate.TestDate,
+                labTestForUpdate.TestResultCoded,
+                labTestForUpdate.TestResultValue,
+                labTestForUpdate.TestUnit,
+                labTestForUpdate.ReferenceLower,
+                labTestForUpdate.ReferenceUpper,
+                labTestForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeLabTestDetailsCommand - {patientId}: {patientLabTestId}",
+                command.PatientId,
+                command.PatientLabTestId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            var patientLabTestFromRepo = await _patientLabTestRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (patientLabTestFromRepo == null)
-            {
-                return NotFound();
-            }
-
-            var labTestFromRepo = _labTestRepository.Get(lt => lt.Description == labTestForUpdate.LabTest);
-            if (labTestFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate lab test");
-            }
-
-            LabTestUnit labTestUnitFromRepo = null;
-            if (!String.IsNullOrWhiteSpace(labTestForUpdate.TestUnit))
-            {
-                labTestUnitFromRepo = _labTestUnitRepository.Get(u => u.Description == labTestForUpdate.TestUnit);
-                if (labTestUnitFromRepo == null)
-                {
-                    ModelState.AddModelError("Message", "Unable to locate lab test unit");
-                }
-            }
-
-            ValidateLabTestForUpdateModel(patientFromRepo, labTestForUpdate);
-
-            if (ModelState.IsValid)
-            {
-                var labTestDetail = PrepareLabTestDetail(labTestForUpdate);
-                if (!labTestDetail.IsValid())
-                {
-                    labTestDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
-
-                if (ModelState.IsValid)
-                {
-                    patientLabTestFromRepo.TestDate = labTestForUpdate.TestDate;
-                    patientLabTestFromRepo.TestResult = labTestForUpdate.TestResultCoded;
-                    patientLabTestFromRepo.LabValue = labTestForUpdate.TestResultValue;
-                    patientLabTestFromRepo.TestUnit = labTestUnitFromRepo;
-                    patientLabTestFromRepo.ReferenceLower = labTestForUpdate.ReferenceLower;
-                    patientLabTestFromRepo.ReferenceUpper = labTestForUpdate.ReferenceUpper;
-
-                    _modelExtensionBuilder.UpdateExtendable(patientLabTestFromRepo, labTestDetail.CustomAttributes, "Admin");
-
-                    _patientLabTestRepository.Update(patientLabTestFromRepo);
-                    await _unitOfWork.CompleteAsync();
-
-                    return Ok();
-                }
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -286,45 +199,27 @@ namespace PVIMS.API.Controllers
         [HttpPut("{patientId}/labTests/{id}/archive", Name = "ArchivePatientLabTest")]
         [Consumes("application/json")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<IActionResult> ArchivePatientLabTest(long patientId, long id,
+        public async Task<IActionResult> ArchivePatientLabTest(int patientId, int id,
             [FromBody] ArchiveDto labTestForDelete)
         {
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            if (labTestForDelete == null)
             {
-                return NotFound();
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
             }
 
-            var patientLabTestFromRepo = await _patientLabTestRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (patientLabTestFromRepo == null)
-            {
-                return NotFound();
-            }
-            if (patientLabTestFromRepo.LabTest == null)
-            {
-                ModelState.AddModelError("Message", "Lab test not included");
-            }
+            var command = new ArchivePatientLabTestCommand(patientId, id, labTestForDelete.Reason);
 
-            if (Regex.Matches(labTestForDelete.Reason, @"[-a-zA-Z0-9 .']").Count < labTestForDelete.Reason.Length)
-            {
-                ModelState.AddModelError("Message", "Reason contains invalid characters (Enter A-Z, a-z, space, period, apostrophe)");
-            }
+            _logger.LogInformation(
+                "----- Sending command: ArchivePatientLabTestCommand - {patientId}: {patientLabTestId}",
+                command.PatientId,
+                command.PatientLabTestId);
 
-            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var user = _userRepository.Get(u => u.UserName == userName);
-            if (user == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate user");
-            }
+            var commandResult = await _mediator.Send(command);
 
-            if (ModelState.IsValid)
+            if (!commandResult)
             {
-                patientLabTestFromRepo.Archived = true;
-                patientLabTestFromRepo.ArchivedDate = DateTime.Now;
-                patientLabTestFromRepo.ArchivedReason = labTestForDelete.Reason;
-                patientLabTestFromRepo.AuditUser = user;
-                _patientLabTestRepository.Update(patientLabTestFromRepo);
-                await _unitOfWork.CompleteAsync();
+                return BadRequest("Command not created");
             }
 
             return Ok();
@@ -391,70 +286,6 @@ namespace PVIMS.API.Controllers
             identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("PatientLabTest", identifier.Id), "self", "GET"));
 
             return identifier;
-        }
-
-        /// <summary>
-        /// Validate the input model for updating a lab test
-        /// </summary>
-        private void ValidateLabTestForUpdateModel(Patient patientFromRepo, PatientLabTestForUpdateDto labTestForUpdateDto)
-        {
-            if (labTestForUpdateDto.TestDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Test Date should be before current date");
-            }
-            if (labTestForUpdateDto.TestDate < patientFromRepo.DateOfBirth)
-            {
-                ModelState.AddModelError("Message", "Test Date should be after Date Of Birth");
-            }
-
-            if (Regex.Matches(labTestForUpdateDto.TestResultValue, @"[-a-zA-Z0-9 .]").Count < labTestForUpdateDto.TestResultValue.Length)
-            {
-                ModelState.AddModelError("Message", "Comments contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, space, period)");
-            }
-
-            if (Regex.Matches(labTestForUpdateDto.ReferenceLower, @"[-a-zA-Z0-9 .]").Count < labTestForUpdateDto.ReferenceLower.Length)
-            {
-                ModelState.AddModelError("Message", "Comments contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, space, period)");
-            }
-
-            if (Regex.Matches(labTestForUpdateDto.ReferenceUpper, @"[-a-zA-Z0-9 .]").Count < labTestForUpdateDto.ReferenceUpper.Length)
-            {
-                ModelState.AddModelError("Message", "Comments contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, space, period)");
-            }
-        }
-
-        /// <summary>
-        /// Prepare the model for the lab test
-        /// </summary>
-        private LabTestDetail PrepareLabTestDetail(PatientLabTestForUpdateDto labTestForUpdate)
-        {
-            var labTestDetail = new LabTestDetail();
-            labTestDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<PatientLabTest>();
-
-            foreach (var newAttribute in labTestForUpdate.Attributes)
-            {
-                var customAttribute = _customAttributeRepository.Get(ca => ca.Id == newAttribute.Key);
-                if (customAttribute != null)
-                {
-                // Validate attribute exists for household entity and is a PMT attribute
-                var attributeDetail = labTestDetail.CustomAttributes.SingleOrDefault(ca => ca.AttributeKey == customAttribute.AttributeKey);
-                    
-                if (attributeDetail == null)
-                    {
-                        ModelState.AddModelError("Message", $"Unable to locate custom attribute on patient labTest {newAttribute.Key}");
-                    }
-                    else
-                    {
-                        attributeDetail.Value = newAttribute.Value;
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("Message", $"Unable to locate custom attribute {newAttribute.Key}");
-                }
-            }
-            // Update patient custom attributes from source
-            return labTestDetail;
         }
 
         /// <summary>

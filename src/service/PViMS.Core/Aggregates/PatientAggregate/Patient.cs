@@ -327,14 +327,17 @@ namespace PVIMS.Core.Entities
 
         public PatientClinicalEvent AddClinicalEvent(DateTime? onsetDate, DateTime? resolutionDate, TerminologyMedDra sourceTerminology, string sourceDescription)
         {
-            if (onsetDate < DateOfBirth)
+            if (DateOfBirth.HasValue && onsetDate.HasValue)
             {
-                throw new DomainException("Onset Date should be after Date Of Birth");
+                if (onsetDate.Value.Date < DateOfBirth.Value.Date)
+                {
+                    throw new DomainException("Onset Date should be after patient Date Of Birth");
+                }
             }
 
-            if (resolutionDate.HasValue)
+            if (DateOfBirth.HasValue && resolutionDate.HasValue)
             {
-                if (resolutionDate < DateOfBirth)
+                if (resolutionDate.Value.Date < DateOfBirth.Value.Date)
                 {
                     throw new DomainException("Resolution Date should be after Date Of Birth");
                 }
@@ -386,16 +389,34 @@ namespace PVIMS.Core.Entities
             return newPatientClinicalEvent;
         }
 
-        public PatientMedication AddMedication(Concept concept, DateTime startDate, DateTime? endDate, string dose, string doseFrequency, string doseUnit, Product product, string medicationSource)
+        public PatientLabTest AddLabTest(DateTime testDate, string testResult, LabTest labTest, LabTestUnit testUnit, string labValue, string referenceLower, string referenceUpper)
         {
-            if (startDate < DateOfBirth)
+            if(DateOfBirth.HasValue)
             {
-                throw new DomainException("Start Date should be after Date Of Birth");
+                if (testDate.Date < DateOfBirth.Value.Date)
+                {
+                    throw new DomainException("Test Date should be after patient Date Of Birth");
+                }
             }
 
-            if (endDate.HasValue)
+            var newPatientLabTest = new PatientLabTest(testDate, testResult, labTest, testUnit, labValue, referenceLower, referenceUpper, labTest.Description);
+            PatientLabTests.Add(newPatientLabTest);
+            return newPatientLabTest;
+        }
+
+        public PatientMedication AddMedication(Concept concept, DateTime startDate, DateTime? endDate, string dose, string doseFrequency, string doseUnit, Product product, string medicationSource)
+        {
+            if (DateOfBirth.HasValue)
             {
-                if (endDate < DateOfBirth)
+                if (startDate.Date < DateOfBirth.Value.Date)
+                {
+                    throw new DomainException("Start Date should be after patient Date Of Birth");
+                }
+            }
+
+            if (DateOfBirth.HasValue && endDate.HasValue)
+            {
+                if (endDate.Value.Date < DateOfBirth.Value.Date)
                 {
                     throw new DomainException("End Date should be after Date Of Birth");
                 }
@@ -448,17 +469,20 @@ namespace PVIMS.Core.Entities
             var patientClinicalEvent = PatientClinicalEvents.SingleOrDefault(t => t.Id == patientClinicalEventId);
             if (patientClinicalEvent == null)
             {
-                throw new KeyNotFoundException(nameof(patientClinicalEventId));
+                throw new KeyNotFoundException($"Unable to locate clinical event {patientClinicalEventId} on patient {Id}");
             }
 
-            if (onsetDate < DateOfBirth)
+            if (DateOfBirth.HasValue && onsetDate.HasValue)
             {
-                throw new DomainException("Onset Date should be after Date Of Birth");
+                if (onsetDate.Value.Date < DateOfBirth.Value.Date)
+                {
+                    throw new DomainException("Onset Date should be after patient Date Of Birth");
+                }
             }
 
-            if (resolutionDate.HasValue)
+            if (DateOfBirth.HasValue && resolutionDate.HasValue)
             {
-                if (resolutionDate < DateOfBirth)
+                if (resolutionDate.Value.Date < DateOfBirth.Value.Date)
                 {
                     throw new DomainException("Resolution Date should be after Date Of Birth");
                 }
@@ -505,7 +529,7 @@ namespace PVIMS.Core.Entities
                 }
             }
 
-            patientClinicalEvent.ChangeClinicalEventDetails(onsetDate, resolutionDate, sourceTerminology, sourceDescription);
+            patientClinicalEvent.ChangeDetails(onsetDate, resolutionDate, sourceTerminology, sourceDescription);
         }
 
         public void ChangeConditionDetails(int patientConditionId, int sourceTerminologyMedDraId, DateTime startDate, DateTime? outcomeDate, Outcome outcome, TreatmentOutcome treatmentOutcome, string caseNumber, string comments)
@@ -513,7 +537,7 @@ namespace PVIMS.Core.Entities
             var patientCondition = PatientConditions.SingleOrDefault(t => t.Id == patientConditionId);
             if (patientCondition == null)
             {
-                throw new KeyNotFoundException(nameof(patientConditionId));
+                throw new KeyNotFoundException($"Unable to locate condition {patientConditionId} on patient {Id}");
             }
 
             if (startDate < DateOfBirth)
@@ -569,22 +593,44 @@ namespace PVIMS.Core.Entities
             patientCondition.ChangeConditionDetails(startDate, outcomeDate, outcome, treatmentOutcome, caseNumber, comments);
         }
 
+        public void ChangeLabTestDetails(int patientLabTestId, DateTime testDate, string testResult, LabTest labTest, LabTestUnit testUnit, string labValue, string referenceLower, string referenceUpper)
+        {
+            var patientLabTest = PatientLabTests.SingleOrDefault(t => t.Id == patientLabTestId);
+            if (patientLabTest == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate lab test {patientLabTestId} on patient {Id}");
+            }
+
+            if(DateOfBirth.HasValue)
+            {
+                if (testDate.Date < DateOfBirth.Value.Date)
+                {
+                    throw new DomainException("Test Date should be after patient Date Of Birth");
+                }
+            }
+
+            patientLabTest.ChangeDetails(testDate, testResult, labTest, testUnit, labValue, referenceLower, referenceUpper, labTest.Description);
+        }
+
         public void ChangeMedicationDetails(int patientMedicationId, DateTime startDate, DateTime? endDate, string dose, string doseFrequency, string doseUnit)
         {
             var patientMedication = PatientMedications.SingleOrDefault(t => t.Id == patientMedicationId);
             if (patientMedication == null)
             {
-                throw new KeyNotFoundException(nameof(patientMedicationId));
+                throw new KeyNotFoundException($"Unable to locate medication {patientMedicationId} on patient {Id}");
             }
 
-            if (startDate < DateOfBirth)
+            if (DateOfBirth.HasValue)
             {
-                throw new DomainException("Start Date should be after Date Of Birth");
+                if (startDate.Date < DateOfBirth.Value.Date)
+                {
+                    throw new DomainException("Start Date should be after patient Date Of Birth");
+                }
             }
 
-            if (endDate.HasValue)
+            if (DateOfBirth.HasValue && endDate.HasValue)
             {
-                if (endDate < DateOfBirth)
+                if (endDate.Value.Date < DateOfBirth.Value.Date)
                 {
                     throw new DomainException("End Date should be after Date Of Birth");
                 }
@@ -627,7 +673,7 @@ namespace PVIMS.Core.Entities
                 }
             }
 
-            patientMedication.ChangeMedicationDetails(startDate, endDate, dose, doseFrequency, doseUnit);
+            patientMedication.ChangeDetails(startDate, endDate, dose, doseFrequency, doseUnit);
         }
 
         public void ChangePatientDateOfBirth(DateTime dateOfBirth)
@@ -681,10 +727,21 @@ namespace PVIMS.Core.Entities
             var patientClinicalEvent = PatientClinicalEvents.SingleOrDefault(t => t.Id == patientClinicalEventId);
             if (patientClinicalEvent == null)
             {
-                throw new KeyNotFoundException(nameof(patientClinicalEventId));
+                throw new KeyNotFoundException($"Unable to locate clinical event {patientClinicalEventId} for patient {Id}");
             }
 
-            patientClinicalEvent.ArchiveClinicalEvent(user, reason);
+            patientClinicalEvent.Archive(user, reason);
+        }
+
+        public void ArchiveLabTest(int patientLabTestId, string reason, User user)
+        {
+            var patientLabTest = PatientLabTests.SingleOrDefault(t => t.Id == patientLabTestId);
+            if (patientLabTest == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate lab test {patientLabTestId} for patient {Id}");
+            }
+
+            patientLabTest.Archive(user, reason);
         }
 
         public void ArchiveMedication(int patientMedicationId, string reason, User user)
@@ -692,10 +749,10 @@ namespace PVIMS.Core.Entities
             var patientMedication = PatientMedications.SingleOrDefault(t => t.Id == patientMedicationId);
             if (patientMedication == null)
             {
-                throw new KeyNotFoundException(nameof(patientMedicationId));
+                throw new KeyNotFoundException($"Unable to locate medication {patientMedicationId} for patient {Id}");
             }
 
-            patientMedication.ArchiveMedication(user, reason);
+            patientMedication.Archive(user, reason);
         }
 
         private Boolean CheckConditionStartDateAgainstStartDateWithNoEndDate(int sourceTerminologyMedDraId, DateTime startDate, long patientConditionId)

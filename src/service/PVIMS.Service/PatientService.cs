@@ -30,6 +30,7 @@ namespace PVIMS.Services
         private readonly IRepositoryInt<Concept> _conceptRepository;
         private readonly IRepositoryInt<EncounterType> _encounterTypeRepository;
         private readonly IRepositoryInt<EncounterTypeWorkPlan> _encounterTypeWorkPlanRepository;
+        private readonly IRepositoryInt<LabTest> _labTestRepository;
         private readonly IRepositoryInt<Dataset> _datasetRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<Priority> _priorityRepository;
@@ -48,6 +49,7 @@ namespace PVIMS.Services
             IRepositoryInt<Concept> conceptRepository,
             IRepositoryInt<EncounterType> encounterTypeRepository,
             IRepositoryInt<EncounterTypeWorkPlan> encounterTypeWorkPlanRepository,
+            IRepositoryInt<LabTest> labTestRepository,
             IRepositoryInt<Dataset> datasetRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<Priority> priorityRepository,
@@ -65,6 +67,7 @@ namespace PVIMS.Services
             _conceptRepository = conceptRepository ?? throw new ArgumentNullException(nameof(conceptRepository));
             _encounterTypeRepository = encounterTypeRepository ?? throw new ArgumentNullException(nameof(encounterTypeRepository));
             _encounterTypeWorkPlanRepository = encounterTypeWorkPlanRepository ?? throw new ArgumentNullException(nameof(encounterTypeWorkPlanRepository));
+            _labTestRepository = labTestRepository ?? throw new ArgumentNullException(nameof(labTestRepository));
             _datasetRepository = datasetRepository ?? throw new ArgumentNullException(nameof(datasetRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _priorityRepository = priorityRepository ?? throw new ArgumentNullException(nameof(priorityRepository));
@@ -187,7 +190,7 @@ namespace PVIMS.Services
 
             // Clinical data
             AddConditions(newPatient, patientDetail.Conditions);
-            AddLabTests(newPatient, patientDetail.LabTests);
+            await AddLabTestsAsync(newPatient, patientDetail.LabTests);
             await AddMedicationsAsync(newPatient, patientDetail.Medications);
             AddClinicalEvents(newPatient, patientDetail.ClinicalEvents);
 
@@ -274,7 +277,7 @@ namespace PVIMS.Services
 
             // Clinical data
             AddConditions(patientFromRepo, patientDetail.Conditions);
-            AddLabTests(patientFromRepo, patientDetail.LabTests);
+            await AddLabTestsAsync(patientFromRepo, patientDetail.LabTests);
             await AddMedicationsAsync(patientFromRepo, patientDetail.Medications);
             AddClinicalEvents(patientFromRepo, patientDetail.ClinicalEvents);
 
@@ -491,7 +494,7 @@ namespace PVIMS.Services
         /// <summary>
         /// Prepare patient record with associated lab tests
         /// </summary>
-        private void AddLabTests(Patient patient, List<LabTestDetail> labTests) 
+        private async Task AddLabTestsAsync(Patient patient, List<LabTestDetail> labTests) 
         {
             if (patient == null)
             {
@@ -508,21 +511,13 @@ namespace PVIMS.Services
 
             foreach (var labTest in labTests)
             {
-                var test = _unitOfWork.Repository<LabTest>().Get(to => to.Description == labTest.LabTestSource);
-
-                var patientLabTest = new PatientLabTest
-                {
-                    Patient = patient,
-                    LabTestSource = labTest.LabTestSource,
-                    TestDate = labTest.TestDate,
-                    TestResult = labTest.TestResult,
-                    LabTest = test
-                };
+                var labTestFromRepo = await _labTestRepository.GetAsync(lt => lt.Description == labTest.LabTestSource);
+                var newLabTest = patient.AddLabTest(labTest.TestDate, labTest.TestResult, labTestFromRepo, null, string.Empty, string.Empty, string.Empty);
 
                 // Custom Property handling
-                _typeExtensionHandler.UpdateExtendable(patientLabTest, labTest.CustomAttributes, "Admin");
+                _typeExtensionHandler.UpdateExtendable(newLabTest, labTest.CustomAttributes, "Admin");
 
-                patient.PatientLabTests.Add(patientLabTest);
+                patient.PatientLabTests.Add(newLabTest);
             }
         }
 

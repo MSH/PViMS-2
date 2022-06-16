@@ -1,49 +1,55 @@
-using PVIMS.Core.Aggregates.ConceptAggregate;
+using System;
 using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Utilities;
-using System;
 
 namespace PVIMS.Core.Entities
 {
-    public class PatientMedication : EntityBase, IExtendable
+    public class PatientLabTest : EntityBase, IExtendable
 	{
-        protected PatientMedication()
+        protected PatientLabTest()
         {
         }
 
-        public PatientMedication(Concept concept, DateTime startDate, DateTime? endDate, string dose, string doseFrequency, string doseUnit, Product product, string medicationSource)
+        public PatientLabTest(DateTime testDate, string testResult, LabTest labTest, LabTestUnit testUnit, string labValue, string referenceLower, string referenceUpper, string labTestSource)
         {
-            PatientMedicationGuid = Guid.NewGuid();
+            PatientLabTestGuid = Guid.NewGuid();
             Archived = false;
 
-            Concept = concept;
-            ConceptId = concept.Id;
+            TestDate = testDate;
+            TestResult = testResult;
+            LabTestId = labTest.Id;
+            LabTest = labTest;
 
-            StartDate = startDate;
-            EndDate = endDate;
-
-            Dose = dose;
-            DoseFrequency = doseFrequency;
-            DoseUnit = doseUnit;
-
-            if(product != null)
+            if (testUnit != null)
             {
-                Product = product;
-                ProductId = product.Id;
+                TestUnitId = testUnit.Id;
+                TestUnit = testUnit;
             }
 
-            MedicationSource = SetMedicationSource(medicationSource);
+            LabValue = labValue;
+            ReferenceLower = referenceLower;
+            ReferenceUpper = referenceUpper;
+            LabTestSource = labTestSource;
         }
 
-        public void ChangeDetails(DateTime startDate, DateTime? endDate, string dose, string doseFrequency, string doseUnit)
+        public void ChangeDetails(DateTime testDate, string testResult, LabTest labTest, LabTestUnit testUnit, string labValue, string referenceLower, string referenceUpper, string labTestSource)
         {
-            StartDate = startDate;
-            EndDate = endDate;
+            TestDate = testDate;
+            TestResult = testResult;
+            LabTestId = labTest.Id;
+            LabTest = labTest;
 
-            Dose = dose;
-            DoseFrequency = doseFrequency;
-            DoseUnit = doseUnit;
+            if (testUnit != null)
+            {
+                TestUnitId = testUnit.Id;
+                TestUnit = testUnit;
+            }
+
+            LabValue = labValue;
+            ReferenceLower = referenceLower;
+            ReferenceUpper = referenceUpper;
+            LabTestSource = labTestSource;
         }
 
         public void Archive(User user, string reason)
@@ -55,41 +61,32 @@ namespace PVIMS.Core.Entities
             AuditUserId = user.Id;
         }
 
-        public DateTime StartDate { get; private set; }
-        public DateTime? EndDate { get; private set; }
-        public string Dose { get; private set; }
-        public string DoseFrequency { get; private set; }
-        public string DoseUnit { get; private set; }
-        
+        public DateTime TestDate { get; private set; }
+        public string TestResult { get; private set; }
+
+        public int LabTestId { get; private set; }
+        public virtual LabTest LabTest { get; private set; }
+
+        public int? TestUnitId { get; private set; }    
+        public virtual LabTestUnit TestUnit { get; private set; }
+
+        public string LabValue { get; private set; }
+        public string ReferenceLower { get; private set; }
+        public string ReferenceUpper { get; private set; }
+
+        public string LabTestSource { get; private set; }
+
         public int PatientId { get; private set; }
         public virtual Patient Patient { get; private set; }
 
-        public Guid PatientMedicationGuid { get; private set; }
+        public Guid PatientLabTestGuid { get; private set; }
+
         public bool Archived { get; private set; }
         public DateTime? ArchivedDate { get; private set; }
         public string ArchivedReason { get; private set; }
         
         public int? AuditUserId { get; private set; }
         public virtual User AuditUser { get; private set; }
-        
-        public string MedicationSource { get; private set; }
-        
-        public int ConceptId { get; private set; }
-        public virtual Concept Concept { get; private set; }
-
-        public int? ProductId { get; private set; }
-        public virtual Product Product { get; private set; }
-        
-        public string DisplayName
-        {
-            get
-            {
-                if(Product == null && Concept == null) { return ""; };
-                return Product != null 
-                    ? $"{Concept.ConceptName} ({Concept.MedicationForm?.Description}) ({Product.ProductName}); {Dose} {DoseUnit}" 
-                    : $"{Concept.ConceptName} ({Concept.MedicationForm?.Description}); {Dose} {DoseUnit}";
-            }
-        }
 
         private CustomAttributeSet customAttributes = new CustomAttributeSet();
 
@@ -138,16 +135,6 @@ namespace PVIMS.Core.Entities
         public string GetUpdatedByUser(string attributeKey)
         {
             return customAttributes.GetUpdatedByUser(attributeKey);
-        }
-
-        private string SetMedicationSource(string medicationSource)
-        {
-            if (!String.IsNullOrWhiteSpace(medicationSource))
-            {
-                return medicationSource;
-            }
-
-            return DisplayName;
         }
     }
 }

@@ -969,7 +969,7 @@ namespace PVIMS.API.Controllers
 
                 foreach (var patientClinicalEvent in patientFromRepo.PatientClinicalEvents.Where(x => !x.Archived))
                 {
-                    patientClinicalEvent.ArchiveClinicalEvent(user, patientForDelete.Reason);
+                    patientClinicalEvent.Archive(user, patientForDelete.Reason);
                     _patientClinicalEventRepository.Update(patientClinicalEvent);
                 }
 
@@ -984,16 +984,13 @@ namespace PVIMS.API.Controllers
 
                 foreach (var patientLabTest in patientFromRepo.PatientLabTests.Where(x => !x.Archived))
                 {
-                    patientLabTest.Archived = true;
-                    patientLabTest.ArchivedDate = DateTime.Now;
-                    patientLabTest.ArchivedReason = patientForDelete.Reason;
-                    patientLabTest.AuditUser = user;
+                    patientLabTest.Archive(user, patientForDelete.Reason);
                     _patientLabTestRepository.Update(patientLabTest);
                 }
 
                 foreach (var patientMedication in patientFromRepo.PatientMedications.Where(x => !x.Archived))
                 {
-                    patientMedication.ArchiveMedication(user, patientForDelete.Reason);
+                    patientMedication.Archive(user, patientForDelete.Reason);
                     _patientMedicationRepository.Update(patientMedication);
                 }
 

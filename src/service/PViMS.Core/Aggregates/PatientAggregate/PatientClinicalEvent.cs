@@ -28,7 +28,7 @@ namespace PVIMS.Core.Entities
             SourceDescription = sourceDescription;
         }
 
-        public void ChangeClinicalEventDetails(DateTime? onsetDate, DateTime? resolutionDate, TerminologyMedDra sourceTerminology, string sourceDescription)
+        public void ChangeDetails(DateTime? onsetDate, DateTime? resolutionDate, TerminologyMedDra sourceTerminology, string sourceDescription)
         {
             OnsetDate = onsetDate;
             ResolutionDate = resolutionDate;
@@ -39,7 +39,7 @@ namespace PVIMS.Core.Entities
             SourceDescription = sourceDescription;
         }
 
-        public void ArchiveClinicalEvent(User user, string reason)
+        public void Archive(User user, string reason)
         {
             Archived = true;
             ArchivedDate = DateTime.Now;
