@@ -45,7 +45,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         {
             var patientLabTestFromRepo = await _patientLabTestRepository.GetAsync(plt => plt.Patient.Id == message.PatientId && plt.Id == message.PatientLabTestId, new string[] {
                 "LabTest",
-                "LabTestUnit"
+                "TestUnit"
             });
 
             if (patientLabTestFromRepo == null)

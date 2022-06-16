@@ -16,6 +16,16 @@ import { LabTestIdentifierModel } from 'app/shared/models/labs/lab-test.identifi
 import { LabResultIdentifierModel } from 'app/shared/models/labs/lab-result.identifier.model';
 import { LabTestUnitIdentifierModel } from 'app/shared/models/labs/lab-test-unit.identifier.model';
 import { LabTestService } from 'app/shared/services/lab-test.service';
+import { AttributeValueForPostModel } from 'app/shared/models/custom-attribute/attribute-value-for-post.model';
+import { PatientLabTestForUpdateModel } from 'app/shared/models/patient/patient-lab-test-for-update.model';
+
+// Depending on whether rollup is used, moment needs to be imported differently.
+// Since Moment.js doesn't have a default export, we normally need to import using the `* as`
+// syntax. However, rollup creates a synthetic default module and we thus need to import it using
+// the `default as` syntax.
+import * as _moment from 'moment';
+import { forkJoin } from 'rxjs';
+const moment =  _moment;
 
 @Component({
   templateUrl: './lab-test.popup.component.html',
@@ -73,46 +83,6 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
     }
   }
 
-  loadDropDowns(): void {
-    let self = this;
-    self.getLabTestList();
-    self.getLabResultList();
-    self.getLabTestUnitList();
-  }
-
-  getLabTestList(): void {
-    let self = this;
-
-    self.labTestService.getAllLabTests()
-        .subscribe(result => {
-          self.labTestList = result;
-        }, error => {
-          this.handleError(error, "Error fetching lab tests");
-        });
-  }
-
-  getLabResultList(): void {
-    let self = this;
-
-    self.labTestService.getAllLabResults()
-        .subscribe(result => {
-          self.labResultList = result;
-        }, error => {
-          this.handleError(error, "Error fetching lab results");
-        });
-  }
-
-  getLabTestUnitList(): void {
-    let self = this;
-
-    self.labTestService.getAllLabTestUnits()
-        .subscribe(result => {
-          self.labTestUnitList = result;
-        }, error => {
-          this.handleError(error, "Error fetching lab test units");
-        });
-  }
-
   ngAfterViewInit(): void {
     let self = this;
     if (self.data.labTestId > 0) {
@@ -120,7 +90,45 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
     }
   }  
   
-  loadData(): void {
+  submit() {
+    let self = this;
+    self.setBusy(true);
+    
+    let labTestForUpdate = this.prepareLabTestForUpdateModel();
+    self.patientService.savePatientLabTest(self.data.patientId, self.data.labTestId, labTestForUpdate)
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.notify("Lab test successfully updated!", "Success");
+        this.dialogRef.close(this.viewModelForm.value);
+    }, error => {
+      this.handleError(error, "Error saving lab test");
+    });      
+  }
+
+  private loadDropDowns(): void {
+    let self = this;
+
+    const requestArray = [];
+
+    requestArray.push(self.labTestService.getAllLabTests());
+    requestArray.push(self.labTestService.getAllLabResults());
+    requestArray.push(self.labTestService.getAllLabTestUnits());
+
+    forkJoin(requestArray)
+      .subscribe(
+        data => {
+          self.labTestList =  data[0] as LabTestIdentifierModel[];
+          self.labResultList =  data[1] as LabResultIdentifierModel[];
+          self.labTestUnitList =  data[2] as LabTestUnitIdentifierModel[];
+
+          self.setBusy(false);
+        },
+        error => {
+          this.handleError(error, "Error preparing view");
+        });    
+  }  
+
+  private loadData(): void {
     let self = this;
     self.setBusy(true);
     self.patientService.getPatientLabTestDetail(self.data.patientId, self.data.labTestId)
@@ -136,7 +144,7 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
       });
   }   
 
-  getCustomAttributeList(): void {
+  private getCustomAttributeList(): void {
     let self = this;
 
     let attributes = self.viewModelForm.get('attributes') as FormGroup;
@@ -176,18 +184,43 @@ export class LabTestPopupComponent extends BasePopupComponent implements OnInit,
         });
   }
 
-  submit() {
+  private prepareLabTestForUpdateModel(): PatientLabTestForUpdateModel {
     let self = this;
     self.setBusy(true);
-    self.patientService.savePatientLabTest(self.data.patientId, self.data.labTestId, self.viewModelForm.value)
-      .pipe(finalize(() => self.setBusy(false)))
-      .subscribe(result => {
-        self.notify("Lab test successfully updated!", "Success");
-        this.dialogRef.close(this.viewModelForm.value);
-    }, error => {
-      this.handleError(error, "Error saving lab test");
-    });      
+
+    let testDate = self.viewModelForm.get('testDate').value;
+    if(moment.isMoment(self.viewModelForm.get('testDate').value)) {
+      testDate = self.viewModelForm.get('testDate').value.format('YYYY-MM-DD');
+    }
+
+    const clinicalEventForUpdate: PatientLabTestForUpdateModel = 
+    {
+      id: self.data.labTestId,
+      index: 0,
+      labTest: self.viewModelForm.get('labTest').value,
+      testDate,
+      testResultCoded: self.viewModelForm.get('testResultCoded').value,
+      testResultValue: self.viewModelForm.get('testResultValue').value,
+      testUnit: self.viewModelForm.get('testUnit').value,
+      referenceLower: self.viewModelForm.get('referenceLower').value,
+      referenceUpper: self.viewModelForm.get('referenceUpper').value,
+      attributes: this.prepareAttributeForUpdateModel()
+    };
+
+    return clinicalEventForUpdate;
   }
+
+  private prepareAttributeForUpdateModel(): AttributeValueForPostModel[] {
+    const attributesForUpdates: AttributeValueForPostModel[] = [];
+    this.customAttributeList.forEach(element => {
+      const attributeForUpdateModel: AttributeValueForPostModel = {
+        id: element.id,
+        value: this.viewModelForm.get('attributes').value[element.id]
+      }
+      attributesForUpdates.push(attributeForUpdateModel);
+    });
+    return attributesForUpdates;
+  }  
 }
 
 export interface LabTestPopupData {

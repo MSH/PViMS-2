@@ -33,12 +33,10 @@ namespace PVIMS.Core.Entities
             LabTestSource = labTestSource;
         }
 
-        public void ChangeDetails(DateTime testDate, string testResult, LabTest labTest, LabTestUnit testUnit, string labValue, string referenceLower, string referenceUpper, string labTestSource)
+        public void ChangeDetails(DateTime testDate, string testResult, LabTestUnit testUnit, string labValue, string referenceLower, string referenceUpper)
         {
             TestDate = testDate;
             TestResult = testResult;
-            LabTestId = labTest.Id;
-            LabTest = labTest;
 
             if (testUnit != null)
             {
@@ -49,7 +47,6 @@ namespace PVIMS.Core.Entities
             LabValue = labValue;
             ReferenceLower = referenceLower;
             ReferenceUpper = referenceUpper;
-            LabTestSource = labTestSource;
         }
 
         public void Archive(User user, string reason)

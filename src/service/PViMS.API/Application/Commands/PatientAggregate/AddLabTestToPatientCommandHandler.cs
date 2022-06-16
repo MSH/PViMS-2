@@ -55,7 +55,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         {
             var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] {
                 "PatientLabTests.LabTest",
-                "PatientLabTests.LabTestUnit"
+                "PatientLabTests.TestUnit"
             });
             if (patientFromRepo == null)
             {

@@ -92,7 +92,7 @@ export class ClinicalEventPopupComponent extends BasePopupComponent implements O
         self.getCustomAttributeList();
         self.markFormGroupTouched(self.viewModelForm);        
       }, error => {
-        self.throwError(error, error.statusText);
+        self.handleError(error, "Error fetching patient clinical event");
       });
   }   
 

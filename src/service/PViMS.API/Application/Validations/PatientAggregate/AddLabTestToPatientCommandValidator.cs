@@ -13,20 +13,11 @@ namespace PVIMS.API.Application.Validations
                 .NotEmpty()
                 .Length(1, 50);
 
-            RuleFor(command => command.TestResultCoded)
-                .Length(0, 50);
-
             RuleFor(command => command.TestResultValue)
                 .Length(0, 20)
                 .Matches(@"[-a-zA-Z0-9 .]")
                 .When(c => !string.IsNullOrEmpty(c.TestResultValue))
                 .WithMessage("Patient identifier contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, space, period)");
-
-            RuleFor(command => command.TestUnit)
-                .Length(0, 50)
-                .Matches(@"[-a-zA-Z0-9()']")
-                .When(c => !string.IsNullOrEmpty(c.TestUnit))
-                .WithMessage("Patient identifier contains invalid characters (Enter A-Z, a-z, 0-9, hyphen, parentheses, apostrophe)");
 
             RuleFor(command => command.ReferenceLower)
                 .Length(0, 20)

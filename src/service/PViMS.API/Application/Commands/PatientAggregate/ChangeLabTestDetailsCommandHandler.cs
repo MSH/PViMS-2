@@ -50,17 +50,11 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         {
             var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == message.PatientId, new string[] {
                 "PatientLabTests.LabTest",
-                "PatientLabTests.LabTestUnit"
+                "PatientLabTests.TestUnit"
             });
             if (patientFromRepo == null)
             {
                 throw new KeyNotFoundException($"Unable to locate patient {message.PatientId}");
-            }
-
-            var labTestFromRepo = await _labTestRepository.GetAsync(lt => lt.Description == message.LabTest);
-            if (labTestFromRepo == null)
-            {
-                throw new KeyNotFoundException($"Unable to locate lab test with a description of {message.LabTest}");
             }
 
             LabTestUnit labTestUnitFromRepo = null;
@@ -77,7 +71,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             var labTestAttributes = await PrepareAttributesWithNewValuesAsync(labTestToUpdate, message.Attributes);
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            patientFromRepo.ChangeLabTestDetails(message.PatientLabTestId, message.TestDate, message.TestResultCoded, labTestFromRepo, labTestUnitFromRepo, message.TestResultValue, message.ReferenceLower, message.ReferenceUpper);
+            patientFromRepo.ChangeLabTestDetails(message.PatientLabTestId, message.TestDate, message.TestResultCoded, labTestUnitFromRepo, message.TestResultValue, message.ReferenceLower, message.ReferenceUpper);
 
             _modelExtensionBuilder.ValidateAndUpdateExtendable(labTestToUpdate, labTestAttributes, userName);
 

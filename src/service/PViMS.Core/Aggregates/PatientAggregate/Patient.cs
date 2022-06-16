@@ -593,7 +593,7 @@ namespace PVIMS.Core.Entities
             patientCondition.ChangeConditionDetails(startDate, outcomeDate, outcome, treatmentOutcome, caseNumber, comments);
         }
 
-        public void ChangeLabTestDetails(int patientLabTestId, DateTime testDate, string testResult, LabTest labTest, LabTestUnit testUnit, string labValue, string referenceLower, string referenceUpper)
+        public void ChangeLabTestDetails(int patientLabTestId, DateTime testDate, string testResult, LabTestUnit testUnit, string labValue, string referenceLower, string referenceUpper)
         {
             var patientLabTest = PatientLabTests.SingleOrDefault(t => t.Id == patientLabTestId);
             if (patientLabTest == null)
@@ -609,7 +609,7 @@ namespace PVIMS.Core.Entities
                 }
             }
 
-            patientLabTest.ChangeDetails(testDate, testResult, labTest, testUnit, labValue, referenceLower, referenceUpper, labTest.Description);
+            patientLabTest.ChangeDetails(testDate, testResult, testUnit, labValue, referenceLower, referenceUpper);
         }
 
         public void ChangeMedicationDetails(int patientMedicationId, DateTime startDate, DateTime? endDate, string dose, string doseFrequency, string doseUnit)
