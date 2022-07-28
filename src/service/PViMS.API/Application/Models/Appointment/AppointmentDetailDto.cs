@@ -33,13 +33,13 @@ namespace PVIMS.API.Models
         public string CancellationReason { get; set; }
 
         /// <summary>
-        /// Details of the household creation
+        /// Details of the appointment creation
         /// </summary>
         [DataMember]
         public string CreatedDetail { get; set; }
 
         /// <summary>
-        /// Details of the last update to the household
+        /// Details of the last update to the appointment
         /// </summary>
         [DataMember]
         public string UpdatedDetail { get; set; }
