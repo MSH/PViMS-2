@@ -1,11 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Storage;
 using PVIMS.Core.Aggregates.ConceptAggregate;
 using PVIMS.Core.Aggregates.ContactAggregate;
 using PVIMS.Core.Aggregates.DatasetAggregate;
@@ -18,6 +14,12 @@ using PVIMS.Core.SeedWork;
 using PVIMS.Infrastructure.EntityConfigurations;
 using PVIMS.Infrastructure.EntityConfigurations.KeyLess;
 using PViMS.Infrastructure.Helpers;
+using System;
+using System.Data;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PVIMS.Infrastructure
 {
@@ -25,6 +27,8 @@ namespace PVIMS.Infrastructure
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMediator _mediator;
+
+        private IDbContextTransaction _currentTransaction;
 
         // Database entities
         public virtual DbSet<Activity> Activities { get; set; }
@@ -126,7 +130,6 @@ namespace PVIMS.Infrastructure
 
         // Database keyless entities
         public DbSet<AdverseEventList> AdverseEventLists { get; set; }
-        public DbSet<AppointmentList> AppointmentLists { get; set; }
         public DbSet<ContingencyAnalysisItem> ContingencyAnalysisItems { get; set; }
         public DbSet<ContingencyAnalysisList> ContingencyAnalysisLists { get; set; }
         public DbSet<ContingencyAnalysisPatient> ContingencyAnalysisPatients { get; set; }
@@ -148,6 +151,8 @@ namespace PVIMS.Infrastructure
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         }
 
+        public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new ActivityEntityTypeConfiguration());
@@ -156,7 +161,6 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new ActivityInstanceEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AdverseEventListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AppointmentEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new AppointmentListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AttachmentEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AttachmentTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AuditLogEntityTypeConfiguration());
@@ -328,6 +332,56 @@ namespace PVIMS.Infrastructure
             var result = base.SaveChanges();
 
             return true;
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            if (_currentTransaction != null) return null;
+
+            _currentTransaction = await Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+            return _currentTransaction;
+        }
+
+        public async Task CommitTransactionAsync(IDbContextTransaction transaction)
+        {
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+
+            try
+            {
+                await SaveChangesAsync();
+                transaction.Commit();
+            }
+            catch
+            {
+                RollbackTransaction();
+                throw;
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null;
+                }
+            }
+        }
+
+        public void RollbackTransaction()
+        {
+            try
+            {
+                _currentTransaction?.Rollback();
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null;
+                }
+            }
         }
     }
 }
