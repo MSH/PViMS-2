@@ -18,14 +18,21 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PVIMS.API;
+using PVIMS.API.Application.IntegrationEvents;
+using PVIMS.API.Application.IntegrationEvents.Events;
 using PVIMS.API.Infrastructure.Auth;
 using PVIMS.API.Infrastructure.AutofacModules;
 using PVIMS.API.Infrastructure.Configs.ExceptionHandler;
+using PVIMS.API.Infrastructure.Configs.Settings;
 using PVIMS.API.Infrastructure.Extensions;
 using PVIMS.API.Infrastructure.OperationFilters;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Infrastructure.Settings;
 using PVIMS.API.Helpers;
+using PViMS.BuildingBlocks.EventBus;
+using PViMS.BuildingBlocks.EventBus.Abstractions;
+using PViMS.BuildingBlocks.EventBusRabbitMQ;
+using PViMS.BuildingBlocks.IntegrationEventLogEF;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Infrastructure;
@@ -33,9 +40,11 @@ using PVIMS.Infrastructure.Identity;
 using PVIMS.Infrastructure.Identity.Entities;
 using PVIMS.Infrastructure.Repositories;
 using PVIMS.Services;
+using RabbitMQ.Client;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -64,6 +73,7 @@ namespace PViMS.API
                 .AddCustomSwagger(Configuration)
                 .AddCustomIntegrations(Configuration)
                 .AddCustomConfiguration(Configuration)
+                .AddEventBus(Configuration)
                 .AddCustomAuthentication(Configuration)
                 .AddDependencies(Configuration);
 
@@ -129,6 +139,20 @@ namespace PViMS.API
                 endpoints.MapDefaultControllerRoute();
                 endpoints.MapControllers();
             });
+
+            ConfigureEventBus(app);
+        }
+
+        private void ConfigureEventBus(IApplicationBuilder app)
+        {
+            var eventBus = app.ApplicationServices.GetService<IEventBus>();
+
+            if(eventBus == null)
+            {
+                return;
+            }
+
+            eventBus.Subscribe<PatientAddedIntegrationEvent, IIntegrationEventHandler<PatientAddedIntegrationEvent>>();
         }
     }
 
@@ -228,9 +252,9 @@ namespace PViMS.API
             {
                 options.AddPolicy("CorsPolicy",
                     builder => builder
-                    .SetIsOriginAllowed((host) => true)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
+                    .SetIsOriginAllowed((host) => true)
                     .AllowCredentials());
             });
 
@@ -261,6 +285,17 @@ namespace PViMS.API
                    },
                        ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
                    );
+            services.AddDbContext<IntegrationEventLogContext>(options =>
+            {
+                options.UseSqlServer(configuration["ConnectionString"],
+                        sqlServerOptionsAction: sqlOptions =>
+                        {
+                            sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                            sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                        });
+                    },
+                       ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
+                    );
 
             return services;
         }
@@ -314,9 +349,48 @@ namespace PViMS.API
 
         public static IServiceCollection AddCustomIntegrations(this IServiceCollection services, IConfiguration configuration)
         {
+            IConfigurationSection eventBusSettings = configuration.GetSection(nameof(EventBusSettings));
+
             services.AddHttpContextAccessor();
             services.AddMemoryCache();
             services.AddAutoMapper(typeof(Startup));
+
+            services.AddTransient<Func<DbConnection, IIntegrationEventLogService>>(
+                sp => (DbConnection c) => new IntegrationEventLogService(c));
+
+            services.AddTransient<IIntegrationEventService, IntegrationEventService>();
+
+            if (configuration.GetValue<bool>("EventBusEnabled"))
+            {
+                services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<DefaultRabbitMQPersistentConnection>>();
+
+                    var factory = new ConnectionFactory()
+                    {
+                        HostName = eventBusSettings[nameof(EventBusSettings.EventBusConnection)],
+                        DispatchConsumersAsync = true
+                    };
+
+                    if (!string.IsNullOrEmpty(eventBusSettings[nameof(EventBusSettings.EventBusUserName)]))
+                    {
+                        factory.UserName = eventBusSettings[nameof(EventBusSettings.EventBusUserName)];
+                    }
+
+                    if (!string.IsNullOrEmpty(eventBusSettings[nameof(EventBusSettings.EventBusPassword)]))
+                    {
+                        factory.Password = eventBusSettings[nameof(EventBusSettings.EventBusPassword)];
+                    }
+
+                    var retryCount = 5;
+                    if (!string.IsNullOrEmpty(eventBusSettings[nameof(EventBusSettings.EventBusRetryCount)]))
+                    {
+                        retryCount = int.Parse(eventBusSettings[nameof(EventBusSettings.EventBusRetryCount)]);
+                    }
+
+                    return new DefaultRabbitMQPersistentConnection(factory, logger, retryCount);
+                });
+            }
 
             return services;
         }
@@ -473,6 +547,35 @@ namespace PViMS.API
                 smtpSettings[nameof(SMTPSettings.MailboxUserName)], 
                 smtpSettings[nameof(SMTPSettings.MailboxPassword)], 
                 smtpSettings[nameof(SMTPSettings.MailboxAddress)]));
+
+            return services;
+        }
+
+        public static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration)
+        {
+            if (configuration.GetValue<bool>("EventBusEnabled"))
+            {
+                IConfigurationSection eventBusSettings = configuration.GetSection(nameof(EventBusSettings));
+
+                services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
+                {
+                    var subscriptionClientName = eventBusSettings[nameof(EventBusSettings.SubscriptionClientName)];
+                    var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
+                    var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+                    var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
+                    var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+
+                    var retryCount = 5;
+                    if (!string.IsNullOrEmpty(eventBusSettings[nameof(EventBusSettings.EventBusRetryCount)]))
+                    {
+                        retryCount = int.Parse(eventBusSettings[nameof(EventBusSettings.EventBusRetryCount)]);
+                    }
+
+                    return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubcriptionsManager, subscriptionClientName, retryCount);
+                });
+
+                services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
+            }
 
             return services;
         }
