@@ -24,7 +24,7 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateAnalyserTermPatientsResourceUri(Guid workFlowGuid, int termId, ResourceUriType type, AnalyserTermSetResourceParameters analyserTermSetResourceParameters);
 
-        string CreateAppointmentsResourceUri(ResourceUriType type, AppointmentResourceParameters appointmentResourceParameters);
+        string CreateAppointmentsResourceUri(ResourceUriType type, int pageNumber, int pageSize);
 
         string CreateAuditLogsResourceUri(ResourceUriType type, AuditLogResourceParameters auditLogResourceParameters);
 

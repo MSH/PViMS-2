@@ -245,7 +245,8 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
         public string CreateAppointmentsResourceUri(ResourceUriType type,
-            AppointmentResourceParameters appointmentResourceParameters)
+            int pageNumber,
+            int pageSize)
         {
             switch (type)
             {
@@ -253,29 +254,23 @@ namespace PVIMS.API.Infrastructure.Services
                     return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetAppointmentsByDetail",
                       new
                       {
-                          orderBy = appointmentResourceParameters.OrderBy,
-                          facilityName = appointmentResourceParameters.FacilityName,
-                          pageNumber = appointmentResourceParameters.PageNumber - 1,
-                          pageSize = appointmentResourceParameters.PageSize
+                          pageNumber = pageNumber - 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.NextPage:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetAppointmentsByDetail",
+                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetAppointmentsForSearch",
                       new
                       {
-                          orderBy = appointmentResourceParameters.OrderBy,
-                          facilityName = appointmentResourceParameters.FacilityName,
-                          pageNumber = appointmentResourceParameters.PageNumber + 1,
-                          pageSize = appointmentResourceParameters.PageSize
+                          pageNumber = pageNumber + 1,
+                          pageSize = pageSize
                       });
                 case ResourceUriType.Current:
                 default:
-                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetAppointmentsByDetail",
+                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetAppointmentsForSearch",
                       new
                       {
-                          orderBy = appointmentResourceParameters.OrderBy,
-                          facilityName = appointmentResourceParameters.FacilityName,
-                          pageNumber = appointmentResourceParameters.PageNumber,
-                          pageSize = appointmentResourceParameters.PageSize
+                          pageNumber = pageNumber,
+                          pageSize = pageSize
                       });
             }
         }
