@@ -913,7 +913,15 @@ namespace PVIMS.API.Controllers
         [Consumes("application/json")]
         public async Task<IActionResult> CreateDatasetInstance(long datasetId, [FromBody] Object[] elementValues)
         {
-            var datasetFromRepo = await _datasetRepository.GetAsync(f => f.Id == datasetId);
+            var datasetFromRepo = await _datasetRepository.GetAsync(f => f.Id == datasetId,
+                new string[] {
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.DatasetMappingValues",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.SubMappings.DestinationElement.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.SubMappings.SourceElement.Field.FieldType"
+                });
+
             if (datasetFromRepo == null)
             {
                 return NotFound();
@@ -951,7 +959,11 @@ namespace PVIMS.API.Controllers
                             if (!String.IsNullOrEmpty(value.ToString()))
                             {
                                 var id = Convert.ToInt32(name);
-                                var datasetElementFromRepo = _datasetElementRepository.Get(de => de.Id == id);
+                                var datasetElementFromRepo = _datasetElementRepository.Get(de => de.Id == id,
+                                    new string[] {
+                                    "Field.FieldType"
+                                    });
+
                                 if (datasetElementFromRepo != null)
                                 {
                                     if (datasetElementFromRepo.Field.FieldType.Description == "Table")
@@ -1000,7 +1012,7 @@ namespace PVIMS.API.Controllers
 
                 if (ModelState.IsValid)
                 {
-                    _unitOfWork.Repository<DatasetInstance>().Save(datasetInstance);
+                    await _unitOfWork.Repository<DatasetInstance>().SaveAsync(datasetInstance);
 
                     // Instantiate new instance of work flow
                     var patientIdentifier = datasetInstance.GetInstanceValue("Initials");
@@ -1199,7 +1211,14 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetDatasetAsync<T>(long id) where T : class
         {
-            var datasetFromRepo = await _datasetRepository.GetAsync(f => f.Id == id);
+            var datasetFromRepo = await _datasetRepository.GetAsync(f => f.Id == id,
+                new string[] {
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.DatasetMappingValues",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.SubMappings.DestinationElement.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.SubMappings.SourceElement.Field.FieldType"
+                });
 
             if (datasetFromRepo != null)
             {
@@ -1219,7 +1238,13 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetSpontaneousDatasetAsync<T>() where T : class
         {
-            var datasetFromRepo = await _datasetRepository.GetAsync(f => f.DatasetName == "Spontaneous Report");
+            var datasetFromRepo = await _datasetRepository.GetAsync(f => f.DatasetName == "Spontaneous Report",
+                new string[] {
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldValues",
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldValues"
+                });
 
             if (datasetFromRepo != null)
             {
