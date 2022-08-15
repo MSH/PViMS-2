@@ -9,6 +9,12 @@ namespace PVIMS.API.Models
     public class AppointmentDetailDto : AppointmentIdentifierDto
     {
         /// <summary>
+        /// The patient that the appointment has been associated to
+        /// </summary>
+        [DataMember]
+        public PatientIdentifierDto Patient { get; set; }
+
+        /// <summary>
         /// The reason for the appointment
         /// </summary>
         [DataMember]

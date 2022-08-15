@@ -15,12 +15,6 @@ namespace PVIMS.API.Models
         public int Id { get; set; }
 
         /// <summary>
-        /// The unique id of the patient
-        /// </summary>
-        [DataMember]
-        public int PatientId { get; set; }
-
-        /// <summary>
         /// The date of the appointment
         /// </summary>
         [DataMember]
