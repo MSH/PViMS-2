@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,7 +7,8 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
-import { MatDialog, MatPaginator } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subscription, forkJoin } from 'rxjs';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { GridModel } from 'app/shared/models/grid.model';
@@ -17,8 +18,6 @@ import { MetaSummaryModel } from 'app/shared/models/meta/meta-summary.model';
 
 @Component({
   templateUrl: './report-meta-view.component.html',
-  styleUrls: ['./report-meta-view.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations  
 })
 export class ReportMetaViewComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -51,9 +50,9 @@ export class ReportMetaViewComponent extends BaseComponent implements OnInit, Af
   viewModel: ViewModel = new ViewModel();;
   viewModelForm: FormGroup;
 
-  @ViewChild('tableGridPaginator', { static: false }) tableGridPaginator: MatPaginator;
-  @ViewChild('columnGridPaginator', { static: false }) columnGridPaginator: MatPaginator;
-  @ViewChild('dependencyGridPaginator', { static: false }) dependencyGridPaginator: MatPaginator;
+  @ViewChild('tableGridPaginator') tableGridPaginator: MatPaginator;
+  @ViewChild('columnGridPaginator') columnGridPaginator: MatPaginator;
+  @ViewChild('dependencyGridPaginator') dependencyGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

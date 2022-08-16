@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
@@ -49,7 +49,7 @@ export class ActivityStatusChangePopupComponent extends BasePopupComponent imple
     let self = this;
     self.setBusy(true);
 
-    self.reportInstanceService.updateStatus(self.data.workFlowId, self.data.reportInstanceId, self.itemForm.value)
+    self.reportInstanceService.updateReportInstanceActivity(self.data.workFlowId, self.data.reportInstanceId, self.itemForm.value)
     .pipe(finalize(() => self.setBusy(false)))
     .subscribe(result => {
       self.notify("Status changed successfully", "Activity");

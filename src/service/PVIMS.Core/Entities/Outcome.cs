@@ -1,13 +1,16 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace PVIMS.Core.Entities
 {
-	[Table(nameof(Outcome))]
 	public class Outcome : EntityBase
 	{
-		[Required]
-		[StringLength(50)]
-		public string Description { get; set; }
-	}
+        public Outcome()
+        {
+            PatientConditions = new HashSet<PatientCondition>();
+        }
+
+        public string Description { get; set; }
+
+        public virtual ICollection<PatientCondition> PatientConditions { get; set; }
+    }
 }

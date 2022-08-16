@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
@@ -12,7 +12,10 @@ import { PatientListModel } from 'app/shared/models/patient/patient-list.model';
 
 @Component({
   templateUrl: './patient-list.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-patient-name { flex: 0 0 40% !important; width: 40% !important; }
+  `],  
   animations: egretAnimations
 })
 export class PatientListPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {

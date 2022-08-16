@@ -1,34 +1,31 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
 using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using System.Threading.Tasks;
 using PVIMS.API.Helpers;
 using System.Xml;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Paging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using PVIMS.API.Infrastructure.Auth;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/metapages")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class MetaPagesController : ControllerBase
     {
         private readonly ITypeHelperService _typeHelperService;
@@ -37,11 +34,11 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<MetaWidgetType> _metaWidgetTypeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public MetaPagesController(ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<MetaPage> metaPageRepository,
             IRepositoryInt<MetaWidget> metaWidgetRepository,
             IRepositoryInt<MetaWidgetType> metaWidgetTypeRepository,
@@ -49,7 +46,7 @@ namespace PVIMS.API.Controllers
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _metaPageRepository = metaPageRepository ?? throw new ArgumentNullException(nameof(metaPageRepository));
             _metaWidgetRepository = metaWidgetRepository ?? throw new ArgumentNullException(nameof(metaWidgetRepository));
             _metaWidgetTypeRepository = metaWidgetTypeRepository ?? throw new ArgumentNullException(nameof(metaWidgetTypeRepository));
@@ -63,7 +60,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMetaPagesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaPageDetailDto>> GetMetaPagesByDetail(
             [FromQuery] IdResourceParameters metaResourceParameters)
@@ -90,7 +87,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<MetaPageIdentifierDto>> GetMetaPageByIdentifier(long id)
         {
@@ -112,7 +109,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MetaPageDetailDto>> GetMetaPageByDetail(long id)
@@ -135,7 +132,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MetaPageExpandedDto>> GetMetaPageByExpanded(long id)
@@ -159,7 +156,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<MetaWidgetIdentifierDto>> GetMetaWidgetByIdentifier(long metaPageId, long id)
         {
@@ -182,7 +179,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MetaWidgetDetailDto>> GetMetaWidgetByDetail(long metaPageId, long id)
@@ -253,7 +250,7 @@ namespace PVIMS.API.Controllers
                     Breadcrumb = metaPageForUpdate.Breadcrumb,
                     IsSystem = false,
                     MetaDefinition = string.Empty,
-                    metapage_guid = Guid.NewGuid(),
+                    MetaPageGuid = Guid.NewGuid(),
                     IsVisible = (metaPageForUpdate.Visible == Models.ValueTypes.YesNoValueType.Yes)
                 };
 
@@ -265,7 +262,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetMetaPageByIdentifier",
+                return CreatedAtAction("GetMetaPageByIdentifier",
                     new
                     {
                         id = mappedMetaPage.Id
@@ -337,7 +334,7 @@ namespace PVIMS.API.Controllers
                 metaPageFromRepo.IsVisible = (metaPageForUpdate.Visible == Models.ValueTypes.YesNoValueType.Yes);
 
                 _metaPageRepository.Update(metaPageFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -375,7 +372,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _metaPageRepository.Delete(metaPageFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }
@@ -483,7 +480,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetMetaWidgetByIdentifier",
+                return CreatedAtAction("GetMetaWidgetByIdentifier",
                     new
                     {
                         metaPageId,
@@ -512,13 +509,13 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var metaPageFromRepo = await _metaPageRepository.GetAsync(f => f.Id == metaPageId);
+            var metaPageFromRepo = await _metaPageRepository.GetAsync(f => f.Id == metaPageId, new string[] { "Widgets" });
             if (metaPageFromRepo == null)
             {
                 return NotFound();
             }
 
-            var metaWidgetFromRepo = await _metaWidgetRepository.GetAsync(f => f.MetaPage.Id == metaPageId && f.Id == id);
+            var metaWidgetFromRepo = await _metaWidgetRepository.GetAsync(f => f.MetaPage.Id == metaPageId && f.Id == id, new string[] { "WidgetType" });
             if (metaWidgetFromRepo == null)
             {
                 return NotFound();
@@ -590,7 +587,7 @@ namespace PVIMS.API.Controllers
                 metaWidgetFromRepo.Icon = metaWidgetForUpdate.Icon;
 
                 _metaWidgetRepository.Update(metaWidgetFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -633,7 +630,7 @@ namespace PVIMS.API.Controllers
                 metaWidgetFromRepo.MetaPage = metaDestinationPageFromRepo;
 
                 _metaWidgetRepository.Update(metaWidgetFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -660,7 +657,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _metaWidgetRepository.Delete(metaWidgetFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }
@@ -722,7 +719,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetMetaPageAsync<T>(long id) where T : class
         {
-            var metaPageFromRepo = await _metaPageRepository.GetAsync(f => f.Id == id);
+            var metaPageFromRepo = await _metaPageRepository.GetAsync(f => f.Id == id, new string[] { "Widgets.WidgetType" });
 
             if (metaPageFromRepo != null)
             {
@@ -744,7 +741,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetMetaWidgetAsync<T>(long metaPageId, long id) where T : class
         {
-            var metaWidgetFromRepo = await _metaWidgetRepository.GetAsync(f => f.MetaPage.Id == metaPageId && f.Id == id);
+            var metaWidgetFromRepo = await _metaWidgetRepository.GetAsync(f => f.MetaPage.Id == metaPageId && f.Id == id, new string[] { "WidgetType" });
 
             if (metaWidgetFromRepo != null)
             {
@@ -766,7 +763,7 @@ namespace PVIMS.API.Controllers
         {
             MetaPageIdentifierDto identifier = (MetaPageIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "MetaPage", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("MetaPage", identifier.Id), "self", "GET"));
 
             return identifier;
         }
@@ -781,7 +778,7 @@ namespace PVIMS.API.Controllers
         {
             MetaWidgetIdentifierDto identifier = (MetaWidgetIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateMetaWidgetResourceUri(_urlHelper, metaPageId, identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateMetaWidgetResourceUri(metaPageId, identifier.Id), "self", "GET"));
 
             return identifier;
         }

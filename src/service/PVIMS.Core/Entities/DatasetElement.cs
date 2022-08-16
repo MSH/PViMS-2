@@ -3,9 +3,7 @@ using PVIMS.Core.Exceptions;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
@@ -15,38 +13,39 @@ namespace PVIMS.Core.Entities
         Naranjo = 2
     }
 
-    [Table(nameof(DatasetElement))]
     public class DatasetElement : EntityBase
 	{
 		public DatasetElement()
 		{
-			DatasetCategoryElements = new HashSet<DatasetCategoryElement>();
-			DatasetElementSubs = new HashSet<DatasetElementSub>();
-            DatasetRules = new HashSet<DatasetRule>();
-
             DatasetElementGuid = Guid.NewGuid();
-
             System = false;
+
+            DatasetCategoryElements = new HashSet<DatasetCategoryElement>();
+			DatasetElementSubs = new HashSet<DatasetElementSub>();
+            DatasetInstanceValues = new HashSet<DatasetInstanceValue>();
+            DatasetRules = new HashSet<DatasetRule>();
+            DatasetXmlAttributes = new HashSet<DatasetXmlAttribute>();
+            DatasetXmlNodes = new HashSet<DatasetXmlNode>();
 		}
 
-		[StringLength(100)]
-		public string ElementName { get; set; }
-
-		public virtual ICollection<DatasetCategoryElement> DatasetCategoryElements { get; set; }
-		public virtual DatasetElementType DatasetElementType { get; set; }
-		public virtual Field Field { get; set; }
-		public virtual ICollection<DatasetElementSub> DatasetElementSubs { get; set; }
-        public virtual ICollection<DatasetRule> DatasetRules { get; set; }
-
-        [StringLength(50)]
-        public string OID { get; set; }
+        public string ElementName { get; set; }
+        public int FieldId { get; set; }
+        public int DatasetElementTypeId { get; set; }
+        public string Oid { get; set; }
         public string DefaultValue { get; set; }
+        public bool System { get; set; }
+        public string Uid { get; set; }
         public Guid DatasetElementGuid { get; set; }
 
-        [StringLength(10)]
-        public string UID { get; set; }
+		public virtual DatasetElementType DatasetElementType { get; set; }
+		public virtual Field Field { get; set; }
 
-        public bool System { get; set; }
+        public virtual ICollection<DatasetCategoryElement> DatasetCategoryElements { get; set; }
+        public virtual ICollection<DatasetElementSub> DatasetElementSubs { get; set; }
+        public virtual ICollection<DatasetInstanceValue> DatasetInstanceValues { get; set; }
+        public virtual ICollection<DatasetRule> DatasetRules { get; set; }
+        public virtual ICollection<DatasetXmlAttribute> DatasetXmlAttributes { get; set; }
+        public virtual ICollection<DatasetXmlNode> DatasetXmlNodes { get; set; }
 
         public void Validate(string instanceValue)
         {
@@ -135,7 +134,7 @@ namespace PVIMS.Core.Entities
                     },
                     FieldOrder = 0,
                     FriendlyName = elementName,
-                    OID = string.Empty,
+                    Oid = string.Empty,
                     System = true
                 };
 
@@ -143,6 +142,5 @@ namespace PVIMS.Core.Entities
             }
             return subElement;
         }
-
     }
 }

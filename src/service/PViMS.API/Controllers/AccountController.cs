@@ -1,28 +1,26 @@
-﻿using AutoMapper;
-using LinqKit;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
-using PViMS.API;
-using PVIMS.API.Attributes;
-using PVIMS.API.Auth;
-using PVIMS.API.Helpers;
+using Microsoft.Extensions.Logging;
+using PVIMS.API.Application.Queries.NotificationAggregate;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Account;
-using PVIMS.API.Services;
-using PVIMS.API.Settings;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Accounts;
-using PVIMS.Core.Utilities;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.ValueTypes;
+using PVIMS.Infrastructure.Identity.Entities;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using VPS.Common.Repositories;
 
 namespace PVIMS.API.Controllers
 {
@@ -30,38 +28,38 @@ namespace PVIMS.API.Controllers
     [Route("api/accounts")]
     public class AccountController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly ITokenFactory _tokenFactory;
         private readonly IJwtFactory _jwtFactory;
-        private readonly IRepositoryInt<User> _userRepository;
         private readonly IRepositoryInt<RefreshToken> _refreshTokenRepository;
         private readonly IRepositoryInt<AuditLog> _auditLogRepository;
-        private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
-        private readonly IRepositoryInt<Config> _configRepository;
+        private readonly IRepositoryInt<User> _userRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
-        private readonly UserInfoManager _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(ITokenFactory tokenFactory,
+        public AccountController(IMediator mediator,
+            ITokenFactory tokenFactory,
             IJwtFactory jwtFactory,
-            IRepositoryInt<User> userRepository,
             IRepositoryInt<RefreshToken> refreshTokenRepository,
             IRepositoryInt<AuditLog> auditLogRepository,
+            IRepositoryInt<User> userRepository,
             IUnitOfWorkInt unitOfWork,
-            IRepositoryInt<ReportInstance> reportInstanceRepository,
-            IRepositoryInt<Config> configRepository,
-            UserInfoManager userManager,
-            IHttpContextAccessor httpContextAccessor)
+            UserManager<ApplicationUser> userManager,
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<AccountController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _tokenFactory = tokenFactory ?? throw new ArgumentNullException(nameof(tokenFactory));
             _jwtFactory = jwtFactory ?? throw new ArgumentNullException(nameof(jwtFactory));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _refreshTokenRepository = refreshTokenRepository ?? throw new ArgumentNullException(nameof(refreshTokenRepository));
             _auditLogRepository = auditLogRepository ?? throw new ArgumentNullException(nameof(auditLogRepository));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
-            _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -70,6 +68,17 @@ namespace PVIMS.API.Controllers
         [HttpGet("ping", Name = "Ping")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult Ping()
+        {
+            return Ok();
+        }
+
+        /// <summary>
+        /// Ping service to check if API endpoint is available (must be authenticated)
+        /// </summary>
+        [HttpGet("pingauth", Name = "PingAuth")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
+        public ActionResult PingAuth()
         {
             return Ok();
         }
@@ -89,57 +98,55 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _userManager.FindAsync(request.UserName, request.Password);
-            if (user != null)
+            var userFromManager = await _userManager.FindByNameAsync(request.UserName);
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == request.UserName, new string[] { "Facilities.Facility" });
+            if (userFromManager != null && userFromRepo != null)
             {
-                var userFromRepo = await _userRepository.GetAsync(u => u.UserName == request.UserName);
-                if (userFromRepo.Active)
+                if (await _userManager.CheckPasswordAsync(userFromManager, request.Password))
                 {
-                    var audit = new AuditLog()
+                    if (userFromRepo.Active)
                     {
-                        AuditType = AuditType.UserLogin,
-                        User = userFromRepo,
-                        ActionDate = DateTime.Now,
-                        Details = "User logged in to PViMS"
-                    };
-                    _auditLogRepository.Save(audit);
 
-                    //var isAdmin = IsAdmin(user);
-                    //if (!isAdmin) return RedirectToLocal(returnUrl);
-                    //var pendingScriptsExist = AnyPendingScripts();
+                        var audit = new AuditLog()
+                        {
+                            AuditType = AuditType.UserLogin,
+                            User = userFromRepo,
+                            ActionDate = DateTime.Now,
+                            Details = "User logged in to PViMS"
+                        };
+                        _auditLogRepository.Save(audit);
 
-                    //// Send user to deployment page
-                    //if (pendingScriptsExist)
-                    //{
-                    //    return RedirectToAction("Index", "Deployment");
-                    //}
+                        //var isAdmin = IsAdmin(user);
+                        //if (!isAdmin) return RedirectToLocal(returnUrl);
+                        //var pendingScriptsExist = AnyPendingScripts();
 
-                    var refreshToken = _tokenFactory.GenerateToken();
+                        //// Send user to deployment page
+                        //if (pendingScriptsExist)
+                        //{
+                        //    return RedirectToAction("Index", "Deployment");
+                        //}
 
-                    userFromRepo.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
+                        var refreshToken = _tokenFactory.GenerateToken();
 
-                    _userRepository.Update(userFromRepo);
-                    _unitOfWork.Complete();
+                        userFromRepo.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
+                        _userRepository.Update(userFromRepo);
+                        await _unitOfWork.CompleteAsync();
 
-                    var userRoles = _unitOfWork.Repository<UserRole>().Queryable()
-                            .Include(i1 => i1.Role)
-                            .Where(r => r.User.Id == userFromRepo.Id)
-                            .OrderBy(r => r.Role.Name)
-                            .ToArray();
-
-                    var userFacilities = _unitOfWork.Repository<UserFacility>().Queryable()
-                            .Include(i1 => i1.Facility)
-                            .Where(f => f.User.Id == userFromRepo.Id)
-                            .OrderBy(f => f.Facility.FacilityName)
-                            .ToArray();
-
-                    return Ok(new LoginResponseDto(await _jwtFactory.GenerateEncodedToken(userFromRepo, userRoles, userFacilities), refreshToken, userFromRepo.EulaAcceptanceDate == null, userFromRepo.AllowDatasetDownload));
+                        return Ok(new LoginResponseDto(await _jwtFactory.GenerateEncodedToken(userFromRepo, await _userManager.GetRolesAsync(userFromManager)), refreshToken, userFromRepo.EulaAcceptanceDate == null, userFromRepo.AllowDatasetDownload));
+                    }
+                    else 
+                    {
+                        ModelState.AddModelError("Message", "User is not active.");
+                    }
                 }
-                ModelState.AddModelError("Message", "User is not active.");
+                else
+                {
+                    ModelState.AddModelError("Message", "Invalid password specified.");
+                }
             }
             else
             {
-                ModelState.AddModelError("Message", "Invalid username or password.");
+                ModelState.AddModelError("Message", "Invalid username specified.");
             }
 
             return BadRequest(ModelState);
@@ -162,40 +169,33 @@ namespace PVIMS.API.Controllers
             }
 
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var userFromRepo = _userRepository.Get(u => u.UserName == userName);
+            var userFromManager = await _userManager.FindByNameAsync(userName);
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == userName);
 
-            if (userFromRepo.Active == false)
+            if (userFromManager != null && userFromRepo != null)
             {
-                return StatusCode(401, "User no longer active");
-            }
+                if (userFromManager.Active == false)
+                {
+                    return StatusCode(401, "User no longer active");
+                }
 
-            if (userFromRepo.HasValidRefreshToken(request.RefreshToken))
-            {
-                var userRoles = _unitOfWork.Repository<UserRole>().Queryable()
-                        .Include(i1 => i1.Role)
-                        .Where(r => r.User.Id == userFromRepo.Id)
-                        .OrderBy(r => r.Role.Name)
-                        .ToArray();
+                if (userFromRepo.HasValidRefreshToken(request.RefreshToken))
+                {
 
-                var userFacilities = _unitOfWork.Repository<UserFacility>().Queryable()
-                        .Include(i1 => i1.Facility)
-                        .Where(f => f.User.Id == userFromRepo.Id)
-                        .OrderBy(f => f.Facility.FacilityName)
-                        .ToArray();
+                    var jwtToken = await _jwtFactory.GenerateEncodedToken(userFromRepo, await _userManager.GetRolesAsync(userFromManager));
 
-                var jwtToken = await _jwtFactory.GenerateEncodedToken(userFromRepo, userRoles, userFacilities);
+                    // delete existing refresh token
+                    _refreshTokenRepository.Delete(userFromRepo.RefreshTokens.Single(a => a.Token == request.RefreshToken));
 
-                // delete existing refresh token
-                _refreshTokenRepository.Delete(userFromRepo.RefreshTokens.Single(a => a.Token == request.RefreshToken));
+                    // generate refresh token
+                    var refreshToken = _tokenFactory.GenerateToken();
+                    userFromRepo.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
 
-                // generate refresh token
-                var refreshToken = _tokenFactory.GenerateToken();
-                userFromRepo.AddRefreshToken(refreshToken, HttpContext?.Connection?.RemoteIpAddress?.ToString());
+                    _userRepository.Update(userFromRepo);
+                    await _unitOfWork.CompleteAsync();
 
-                _userRepository.Update(userFromRepo);
-                _unitOfWork.Complete();
-
-                return new ExchangeRefreshTokenResponseModel() { AccessToken = jwtToken, RefreshToken = refreshToken };
+                    return new ExchangeRefreshTokenResponseModel() { AccessToken = jwtToken, RefreshToken = refreshToken };
+                }
             }
 
             return StatusCode(404, "User does not have valid refresh token");
@@ -208,80 +208,41 @@ namespace PVIMS.API.Controllers
         [HttpGet("notifications", Name = "GetNotifications")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
         public async Task<ActionResult<List<NotificationDto>>> GetNotifications()
         {
-            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var user = _userRepository.Get(u => u.UserName == userName);
-
-            var config = _configRepository.Get(c => c.ConfigType == ConfigType.ReportInstanceNewAlertCount);
-            List<NotificationDto> notifications = new List<NotificationDto>();
-
-            if (config != null && user != null)
+            var userName = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == userName);
+            if (userFromRepo == null)
             {
-                if (!String.IsNullOrEmpty(config.ConfigValue))
-                {
-                    var alertCount = Convert.ToInt32(config.ConfigValue);
-
-                    // How many instances within the last alertcount
-                    var compareDate = DateTime.Now.AddDays(alertCount * -1);
-
-                    if (await _userManager.IsInRoleAsync(user.Id, Constants.Role.Clinician))
-                    {
-                        notifications.AddRange(PrepareNotificationsForClinician(compareDate));
-                    }
-                    if (await _userManager.IsInRoleAsync(user.Id, Constants.Role.PVSpecialist))
-                    {
-                        notifications.AddRange(PrepareNotificationsForAnalyst(compareDate));
-                    }
-                }
+                throw new KeyNotFoundException("Unable to locate user");
             }
 
-            return Ok(notifications);
-        }
+            var query = new NotificationsQuery(userFromRepo.Id);
 
-        /// <summary>
-        /// Get notification messages for clinician
-        /// </summary>
-        /// <returns></returns>
-        private List<NotificationDto> PrepareNotificationsForClinician(DateTime compareDate)
-        {
-            List<NotificationDto> notifications = new List<NotificationDto>();
+            _logger.LogInformation(
+                "----- Sending query: NotificationsQuery - {userId}",
+                userFromRepo.Id);
 
-            // New active report causality notification
-            var notification = CreateNotificationForActiveCausality(compareDate);
-            if (notification != null)
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                notifications.Add(notification);
+                return BadRequest("Query not created");
             }
 
-            return notifications;
-        }
+            return Ok(queryResult);
 
-        /// <summary>
-        /// Get notification messages for analyst
-        /// </summary>
-        /// <returns></returns>
-        private List<NotificationDto> PrepareNotificationsForAnalyst(DateTime compareDate)
-        {
-            List<NotificationDto> notifications = new List<NotificationDto>();
-
-            // New active report notification
-            var notification = CreateNotificationForActiveReports(compareDate);
-            if (notification != null)
-            {
-                notifications.Add(notification);
-            }
-
-            // New spontaneous report notification
-            notification = CreateNotificationForSpontaneousReports(compareDate);
-            if (notification != null)
-            {
-                notifications.Add(notification);
-            }
-
-            return notifications;
+            //if (await _userManager.IsInRoleAsync(userFromManager, Constants.Role.Clinician))
+            //{
+            //    notifications.AddRange(PrepareNotificationsForClinician(compareDate));
+            //}
+            //if (await _userManager.IsInRoleAsync(userFromManager, Constants.Role.PVSpecialist))
+            //{
+            //    notifications.AddRange(PrepareNotificationsForAnalyst(compareDate));
+            //}
         }
 
         /// <summary>
@@ -291,26 +252,26 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private NotificationDto CreateNotificationForActiveReports(DateTime compDate)
         {
-            var workFlowGuid = new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219");
+            //var workFlowGuid = new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219");
 
-            var predicate = PredicateBuilder.New<ReportInstance>(true);
+            //var predicate = PredicateBuilder.New<ReportInstance>(true);
 
-            predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
-            predicate = predicate.And(f => f.Created >= compDate);
+            //predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
+            //predicate = predicate.And(f => f.Created >= compDate);
 
-            var newAnalyserNotificationCount = _reportInstanceRepository.List(predicate, null, new string[] { "" }).Count;
-            if (newAnalyserNotificationCount > 0)
-            {
-                return new NotificationDto()
-                {
-                    Identifier = "ActiveNotification",
-                    Color = "primary",
-                    Icon = "timer",
-                    Message = $"New ACTIVE reports for analysis ({newAnalyserNotificationCount})",
-                    Route = $"/analytical/reportsearch/{workFlowGuid.ToString().ToUpper()}",
-                    Time = DateTime.Now.ToString()
-                };
-            }
+            //var newAnalyserNotificationCount = _reportInstanceRepository.List(predicate, null, new string[] { "" }).Count;
+            //if (newAnalyserNotificationCount > 0)
+            //{
+            //    return new NotificationDto()
+            //    {
+            //        Identifier = "ActiveNotification",
+            //        Color = "primary",
+            //        Icon = "timer",
+            //        Message = $"New ACTIVE reports for analysis ({newAnalyserNotificationCount})",
+            //        Route = $"/analytical/reportsearch/{workFlowGuid.ToString().ToUpper()}",
+            //        Time = DateTime.Now.ToString()
+            //    };
+            //}
             return null;
         }
 
@@ -321,55 +282,25 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private NotificationDto CreateNotificationForSpontaneousReports(DateTime compDate)
         {
-            var workFlowGuid = new Guid("4096D0A3-45F7-4702-BDA1-76AEDE41B986");
+            //var workFlowGuid = new Guid("4096D0A3-45F7-4702-BDA1-76AEDE41B986");
 
-            var predicate = PredicateBuilder.New<ReportInstance>(true);
-            predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
-            predicate = predicate.And(f => f.Created >= compDate);
+            //var predicate = PredicateBuilder.New<ReportInstance>(true);
+            //predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == workFlowGuid);
+            //predicate = predicate.And(f => f.Created >= compDate);
 
-            var newAnalyserNotificationCount = _reportInstanceRepository.List(predicate, null, new string[] { "" }).Count;
-            if (newAnalyserNotificationCount > 0)
-            {
-                return new NotificationDto()
-                {
-                    Identifier = "SpontaneousNotification",
-                    Color = "primary",
-                    Icon = "timer",
-                    Message = $"New SPONTANEOUS reports for analysis ({newAnalyserNotificationCount})",
-                    Route = $"/analytical/reportsearch/{workFlowGuid.ToString().ToUpper()}",
-                    Time = DateTime.Now.ToString()
-                };
-            }
-            return null;
-        }
-
-        /// <summary>
-        ///  Prepare notification for active causality reports
-        /// </summary>
-        /// <param name="compDate">The paramterised date to check against</param>
-        /// <returns></returns>
-        private NotificationDto CreateNotificationForActiveCausality(DateTime compDate)
-        {
-            var activeWorkFlowGuid = new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219");
-
-            var predicate = PredicateBuilder.New<ReportInstance>(true);
-
-            predicate = predicate.And(f => f.WorkFlow.WorkFlowGuid == activeWorkFlowGuid);
-            predicate = predicate.And(f => f.Activities.Any(a => a.QualifiedName == "Set MedDRA and Causality" && a.CurrentStatus.Description == "CAUSALITYSET" && a.Created >= compDate));
-
-            var newAnalyserNotificationCount = _reportInstanceRepository.List(predicate, null, new string[] { "" }).Count;
-            if (newAnalyserNotificationCount > 0)
-            {
-                return new NotificationDto()
-                {
-                    Identifier = "ActiveCausality",
-                    Color = "primary",
-                    Icon = "timer",
-                    Message = $"New ACTIVE reports with causality and terminology set ({newAnalyserNotificationCount})",
-                    Route = "/clinical/feedbacksearch",
-                    Time = DateTime.Now.ToString()
-                };
-            }
+            //var newAnalyserNotificationCount = _reportInstanceRepository.List(predicate, null, new string[] { "" }).Count;
+            //if (newAnalyserNotificationCount > 0)
+            //{
+            //    return new NotificationDto()
+            //    {
+            //        Identifier = "SpontaneousNotification",
+            //        Color = "primary",
+            //        Icon = "timer",
+            //        Message = $"New SPONTANEOUS reports for analysis ({newAnalyserNotificationCount})",
+            //        Route = $"/analytical/reportsearch/{workFlowGuid.ToString().ToUpper()}",
+            //        Time = DateTime.Now.ToString()
+            //    };
+            //}
             return null;
         }
     }

@@ -1,67 +1,71 @@
 ﻿using AutoMapper;
 using LinqKit;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
-using PVIMS.API.Helpers;
+using PVIMS.API.Application.Queries.CohortGroupAggregate;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class CohortGroupEnrolmentsController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
+        private readonly IMediator _mediator;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
         private readonly IRepositoryInt<CohortGroupEnrolment> _cohortGroupEnrolmentRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IPatientService _patientService;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<CohortGroupEnrolmentsController> _logger;
 
-        public CohortGroupEnrolmentsController(IPropertyMappingService propertyMappingService,
+        public CohortGroupEnrolmentsController(IMediator mediator,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IUnitOfWorkInt unitOfWork,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<CohortGroup> cohortGroupRepository,
             IRepositoryInt<CohortGroupEnrolment> cohortGroupEnrolmentRepository,
             IRepositoryInt<User> userRepository,
-            IPatientService patientService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<CohortGroupEnrolmentsController> logger)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
             _cohortGroupEnrolmentRepository = cohortGroupEnrolmentRepository ?? throw new ArgumentNullException(nameof(cohortGroupEnrolmentRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -75,9 +79,9 @@ namespace PVIMS.API.Controllers
         [HttpGet("cohortgroups/{cohortGroupId}/cohortgroupenrolments", Name = "GetCohortGroupEnrolmentsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<EnrolmentDetailDto>> GetCohortGroupEnrolmentsByDetail(int cohortGroupId, 
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<EnrolmentDetailDto>>> GetCohortGroupEnrolmentsByDetail(int cohortGroupId, 
             [FromQuery] CohortGroupEnrolmentResourceParameters cohortGroupEnrolmentResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<EnrolmentDetailDto>
@@ -86,20 +90,35 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var cohortGroupFromRepo = _cohortGroupRepository.Get(f => f.Id == cohortGroupId);
-            if (cohortGroupFromRepo == null)
+            var query = new CohortGroupEnrolmentsDetailQuery(
+                cohortGroupId,
+                cohortGroupEnrolmentResourceParameters.OrderBy,
+                cohortGroupEnrolmentResourceParameters.PageNumber,
+                cohortGroupEnrolmentResourceParameters.PageSize);
+
+            _logger.LogInformation(
+                "----- Sending query: CohortGroupEnrolmentsDetailQuery");
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return BadRequest();
+                return BadRequest("Query not created");
             }
 
-            var mappedCohortGroupEnrolmentsWithLinks = GetCohortGroupEnrolments<EnrolmentDetailDto>(cohortGroupId, cohortGroupEnrolmentResourceParameters);
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = cohortGroupEnrolmentResourceParameters.PageSize,
+                currentPage = cohortGroupEnrolmentResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
 
-            // Add custom mappings to encounters
-            mappedCohortGroupEnrolmentsWithLinks.ForEach(dto => CustomCohortGroupEnrolmentMap(dto));
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<EnrolmentDetailDto>(mappedCohortGroupEnrolmentsWithLinks.TotalCount, mappedCohortGroupEnrolmentsWithLinks);
-
-            return Ok(wrapper);
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -112,7 +131,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<EnrolmentIdentifierDto>> GetPatientEnrolmentByIdentifier(long patientId, long id)
         {
@@ -178,7 +197,7 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var conditionStartDate = patientFromRepo.GetConditionForGroupAndDate(cohortGroupFromRepo.Condition.Description, DateTime.Today).DateStart;
+            var conditionStartDate = patientFromRepo.GetConditionForGroupAndDate(cohortGroupFromRepo.Condition.Description, DateTime.Today).OnsetDate;
             if (enroledDate < conditionStartDate.Date)
             {
                 ModelState.AddModelError("Message", "Enrolment Date should be after or the same date as the condition start date");
@@ -206,7 +225,7 @@ namespace PVIMS.API.Controllers
                 return StatusCode(500, "Unable to locate newly added enrolment");
             }
 
-            return CreatedAtRoute("GetPatientEnrolmentByIdentifier",
+            return CreatedAtAction("GetPatientEnrolmentByIdentifier",
                 new
                 {
                     patientId,
@@ -266,10 +285,10 @@ namespace PVIMS.API.Controllers
                 enrolmentFromRepo.DeenroledDate = deenroledDate;
 
                 _cohortGroupEnrolmentRepository.Update(enrolmentFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
-            return CreatedAtRoute("GetPatientEnrolmentByIdentifier",
+            return CreatedAtAction("GetPatientEnrolmentByIdentifier",
                 new
                 {
                     patientId,
@@ -328,7 +347,7 @@ namespace PVIMS.API.Controllers
                 enrolmentFromRepo.AuditUser = user;
 
                 _cohortGroupEnrolmentRepository.Update(enrolmentFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -336,63 +355,6 @@ namespace PVIMS.API.Controllers
             return BadRequest(ModelState);
         }
 
-        /// <summary>
-        /// Get cohort group enrolments from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="cohortGroupId">The unique identifier of the cohort group</param>
-        /// <param name="cohortGroupEnrolmentResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetCohortGroupEnrolments<T>(int cohortGroupId, CohortGroupEnrolmentResourceParameters cohortGroupEnrolmentResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = cohortGroupEnrolmentResourceParameters.PageNumber,
-                PageSize = cohortGroupEnrolmentResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<CohortGroupEnrolment>(cohortGroupEnrolmentResourceParameters.OrderBy, "asc");
-
-            var predicate = PredicateBuilder.New<CohortGroupEnrolment>(true);
-            predicate = predicate.And(f => f.CohortGroup.Id == cohortGroupId);
-
-            var pagedCohortGroupEnrolmentsFromRepo = _cohortGroupEnrolmentRepository.List(pagingInfo, predicate, orderby, "");
-            if (pagedCohortGroupEnrolmentsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedCohortGroupEnrolments = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedCohortGroupEnrolmentsFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedCohortGroupEnrolmentsFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedCohortGroupEnrolments.TotalCount,
-                    pageSize = mappedCohortGroupEnrolments.PageSize,
-                    currentPage = mappedCohortGroupEnrolments.CurrentPage,
-                    totalPages = mappedCohortGroupEnrolments.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedCohortGroupEnrolments.ForEach(dto => CreateLinksForCohortGroupEnrolment(dto));
-
-                return mappedCohortGroupEnrolments;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get single cohortGroupEnrolment from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="patientId">unique identifier of the patient </param>
-        /// <param name="id">Resource guid to search by</param>
-        /// <returns></returns>
         private async Task<T> GetCohortGroupEnrolmentAsync<T>(long patientId, long id) where T : class
         {
             var predicate = PredicateBuilder.New<CohortGroupEnrolment>(true);
@@ -415,11 +377,6 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        /// Get single appointment from repository using primary key and auto map to Dto
-        /// </summary>
-        /// <param name="enrolmentId">Primary key of the enrolment</param>
-        /// <returns></returns>
         private async Task<EnrolmentIdentifierDto> GetEnrolmentAsync(long enrolmentId)
         {
             var predicate = PredicateBuilder.New<CohortGroupEnrolment>(true);
@@ -438,27 +395,15 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="patientId">The unique identifier of the patient</param>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
         private EnrolmentIdentifierDto CreateLinksForCohortGroupEnrolment<T>(T dto)
         {
             EnrolmentIdentifierDto identifier = (EnrolmentIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateUpdateDeenrolmentForPatientResourceUri(_urlHelper, identifier.PatientId, identifier.Id), "deenrol", "PUT"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateUpdateDeenrolmentForPatientResourceUri(identifier.PatientId, identifier.Id), "deenrol", "PUT"));
 
             return identifier;
         }
 
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="patientId">The unique identifier of the patient</param>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
         private EnrolmentIdentifierDto CreateLinksForEnrolment<T>(long patientId, T dto)
         {
             EnrolmentIdentifierDto identifier = (EnrolmentIdentifierDto)(object)dto;
@@ -467,28 +412,6 @@ namespace PVIMS.API.Controllers
             //identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateRemoveHouseholdMemberForHouseholdResourceUri(_urlHelper, organisationunitId, householdId.ToGuid(), identifier.HouseholdMemberGuid), "marknotcurrent", "DELETE"));
 
             return identifier;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private EnrolmentDetailDto CustomCohortGroupEnrolmentMap(EnrolmentDetailDto dto)
-        {
-            var patientFromRepo = _patientRepository.Get(p => p.Id == dto.PatientId);
-            if (patientFromRepo == null)
-            {
-                return dto;
-            }
-
-            dto.CurrentWeight = _patientService.GetCurrentElementValueForPatient(dto.PatientId, "Weight (kg)")?.Value;
-
-            var patientEventSummary = patientFromRepo.GetEventSummary();
-            dto.NonSeriousEventCount = patientEventSummary.NonSeriesEventCount;
-            dto.SeriousEventCount = patientEventSummary.SeriesEventCount;
-
-            return dto;
         }
     }
 }

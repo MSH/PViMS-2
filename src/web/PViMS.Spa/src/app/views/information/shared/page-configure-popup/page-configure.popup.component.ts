@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -12,7 +12,6 @@ import { MetaPageService } from 'app/shared/services/meta-page.service';
 
 @Component({
   templateUrl: './page-configure.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class PageConfigurePopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {

@@ -19,6 +19,7 @@ const moment =  _moment;
 @Injectable()
 export class BaseService {
     private _baseUrl: string;
+    private _baseUrlBase: string;
     protected apiController: string;
     
     private JwtObject: JwtModel;
@@ -39,6 +40,7 @@ export class BaseService {
         self.JwtObject = new JwtModel();
         self._baseUrl = getBaseUrl();
         self._baseUrl = environment.apiURL;
+        self._baseUrlBase = environment.apiURLBase;
         self.loadToken();
         self.lastAction = new Date();
     }
@@ -70,8 +72,8 @@ export class BaseService {
     }
 
     public GetByAddress<T>(address: string, header: string): Observable<unknown> {
-        
-      return this.httpClient.get<T>(address, { headers: { 'Accept': header } })
+
+      return this.httpClient.get<T>(`${this._baseUrlBase}${address}`, { headers: { 'Accept': header } })
           .pipe(catchError(error => Promise.reject(error)));
     }
 
@@ -83,8 +85,6 @@ export class BaseService {
     }
 
     public PostFile<T>(address: string, data: any): Observable<unknown> {
-      console.log(`${this._baseUrl}${this.apiController}/${address}`);
-
       return this.httpClient.post<T>(`${this._baseUrl}${this.apiController}/${address}`, data)
           .pipe(catchError(error => Promise.reject(error)));
     }

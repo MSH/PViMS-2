@@ -1,41 +1,37 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(DatasetCategoryElement))]
     public class DatasetCategoryElement : EntityBase
 	{
         public DatasetCategoryElement()
         {
-            Conditions = new HashSet<DatasetCategoryElementCondition>();
+            Acute = false;
+            Chronic = false;
+            Public = false;
+            System = false;
+
+            DatasetCategoryElementConditions = new HashSet<DatasetCategoryElementCondition>();
             SourceMappings = new HashSet<DatasetMapping>();
             DestinationMappings = new HashSet<DatasetMapping>();
         }
 
-		public short FieldOrder { get; set; }
+        public short FieldOrder { get; set; }
+        public int DatasetCategoryId { get; set; }
+        public int DatasetElementId { get; set; }
+        public bool Acute { get; set; }
+        public bool Chronic { get; set; }
+        public string Uid { get; set; }
+        public bool System { get; set; }
+        public bool Public { get; set; }
+        public string FriendlyName { get; set; }
+        public string Help { get; set; }
+
 		public virtual DatasetCategory DatasetCategory { get; set; }
 		public virtual DatasetElement DatasetElement { get; set; }
 
-        [StringLength(150)]
-        public string FriendlyName { get; set; }
-        [StringLength(350)]
-        public string Help { get; set; }
-
-        [StringLength(10)]
-        public string UID { get; set; }
-
-        public bool System { get; set; }
-        public bool Public { get; set; }
-        public bool Acute { get; set; }
-        public bool Chronic { get; set; }
-
-        public virtual ICollection<DatasetCategoryElementCondition> Conditions { get; set; }
-
-        [InverseProperty("SourceElement")]
+        public virtual ICollection<DatasetCategoryElementCondition> DatasetCategoryElementConditions { get; set; }
         public virtual ICollection<DatasetMapping> SourceMappings { get; set; }
-        [InverseProperty("DestinationElement")]
         public virtual ICollection<DatasetMapping> DestinationMappings { get; set; }
 	}
 }

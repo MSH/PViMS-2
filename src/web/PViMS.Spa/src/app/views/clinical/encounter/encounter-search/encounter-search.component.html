@@ -30,7 +30,7 @@
   
           <div fxFlex="19" class="pr-1">
             <mat-form-field class="p-8 full-width">
-              <input matInput formControlName="patientId" placeholder="{{'Unique ID' | translate}}" type="number">
+              <input matInput formControlName="patientId" placeholder="{{'Patient ID' | translate}}" type="number">
             </mat-form-field>
           </div>
   
@@ -127,7 +127,7 @@
         <mat-table [dataSource]="viewModel?.mainGrid?.records"
                     [@animate]="{value:'50'}">
 
-            <ng-container matColumnDef="Id">
+            <ng-container matColumnDef="id">
                 <mat-header-cell *matHeaderCellDef>Id</mat-header-cell>
                 <mat-cell *matCellDef="let record">
                     <p>{{record.id}}</p>
@@ -197,7 +197,7 @@
         <mat-table [dataSource]="viewModel?.appointmentGrid?.records"
                     [@animate]="{value:'50'}">
 
-            <ng-container matColumnDef="Id">
+            <ng-container matColumnDef="id">
                 <mat-header-cell *matHeaderCellDef>Id</mat-header-cell>
                 <mat-cell *matCellDef="let record">
                     <p>{{record.id}}</p>

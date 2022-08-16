@@ -1,5 +1,5 @@
 ﻿using System.Security.Principal;
-using PVIMS.Core.Entities;
+using PVIMS.Core.Aggregates.UserAggregate;
 
 namespace PVIMS.Core
 {

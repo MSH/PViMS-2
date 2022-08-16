@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -12,7 +12,6 @@ import { DatasetService } from 'app/shared/services/dataset.service';
 
 @Component({
   templateUrl: './dataset-category-element-delete.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class DatasetCategoryElementDeletePopupComponent extends BasePopupComponent implements OnInit {

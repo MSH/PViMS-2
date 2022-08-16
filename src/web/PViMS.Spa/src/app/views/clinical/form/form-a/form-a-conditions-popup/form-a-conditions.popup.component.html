@@ -9,14 +9,14 @@
           <input type="text" placeholder="{{'Condition' | translate}}" aria-label="Number" matInput formControlName="condition" [matAutocomplete]="autoCondition" required>
           <mat-autocomplete #autoCondition="matAutocomplete">
               <mat-option value="Diabetes">Diabetes</mat-option>
-              <mat-option value="Doenças Cardiovasculares">Doenças Cardiovasculares</mat-option>
-              <mat-option value="Coinfecção com Hepatite B">Coinfecção com Hepatite B</mat-option>
-              <mat-option value="Coinfeccao com Hepatitis C">Coinfeccao com Hepatitis C</mat-option>
-              <mat-option value="Insuficiência Hepática">Insuficiência Hepática</mat-option>
-              <mat-option value="Insuficiência Renal (aguda ou crónica)">Insuficiência Renal (aguda ou crónica)</mat-option>
-              <mat-option value="Tuberculoses DS (TB)">Tuberculoses DS (TB)</mat-option>
+              <mat-option value="Cardiovascular disease">Cardiovascular disease</mat-option>
+              <mat-option value="Hepatitis B Co infection">Hepatitis B Co infection</mat-option>
+              <mat-option value="Hepatitis C Co infection">Hepatitis C Co infection</mat-option>
+              <mat-option value="Hepatic insufficiency">Hepatic insufficiency</mat-option>
+              <mat-option value="Renal insufficiency (acute or chronic)">Renal insufficiency (acute or chronic)</mat-option>
+              <mat-option value="DS Tuberculosis (TB)">DS Tuberculosis (TB)</mat-option>
               <mat-option value="MDR - TB">MDR - TB</mat-option>
-              <mat-option value="Problemas mentais">Problemas mentais</mat-option>
+              <mat-option value="Mental disorder ">Mental disorder</mat-option>
           </mat-autocomplete>
           <mat-error *ngIf="itemForm.get('condition').hasError('required')">
             {{'This is a required field' | translate}}

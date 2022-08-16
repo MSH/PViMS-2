@@ -5,14 +5,31 @@
   <form [formGroup]="itemForm" (ngSubmit)="submit()">
     <div fxLayout="row wrap" fxLayout.lt-sm="column">
       <div fxFlex="100" class="pr-1">
-          <mat-form-field class="p-8 full-width">
-              <input matInput formControlName="contactType" placeholder="{{'Contact type' | translate }}" readonly>
+          <mat-form-field class="full-width" appearance="fill">
+            <mat-label>{{'Contact type' | translate }}</mat-label>
+            <input matInput formControlName="contactType" readonly>
           </mat-form-field>        
       </div>
 
       <div fxFlex="100" class="pr-1">
-        <mat-form-field class="p-8 full-width">
-            <input matInput formControlName="organisationName" placeholder="{{'Organisation name' | translate }}">
+        <mat-form-field class="full-width">
+          <mat-select formControlName="organisationType" placeholder="{{'Organisation type' | translate}}" required>
+            <mat-option value="PharmaceuticalCompany">Pharmaceutical Company</mat-option>
+            <mat-option value="RegulatoryAuthority">Regulatory Authority</mat-option>
+            <mat-option value="Healthprofessional">Health professional</mat-option>
+            <mat-option value="RegionalPharmacovigilanceCenter">Regional Pharmacovigilance Center</mat-option>
+            <mat-option value="WHOCollaboratingCenterForInternationalDrugMonitoring">WHO Collaborating Center for International Drug Monitoring</mat-option>
+            <mat-option value="Other">Other</mat-option>
+          </mat-select>               
+          <mat-error *ngIf="itemForm.get('organisationType').hasError('required')">
+            {{'This is a required field' | translate}}
+          </mat-error>
+        </mat-form-field>
+      </div>      
+
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="full-width">
+            <input matInput formControlName="organisationName" placeholder="{{'Organisation name' | translate }}" required>
             <mat-error *ngIf="itemForm.get('organisationName').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            
@@ -25,9 +42,24 @@
         </mat-form-field>
       </div>
 
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="full-width">
+            <input matInput formControlName="departmentName" placeholder="{{'Department name' | translate }}" required>
+            <mat-error *ngIf="itemForm.get('departmentName').hasError('required')">
+              {{'This is a required field' | translate}}
+            </mat-error>            
+            <mat-error *ngIf="itemForm.get('departmentName').hasError('maxlength')">
+              {{'Maximum length exceeded' | translate}}
+            </mat-error>            
+            <mat-error *ngIf="itemForm.get('departmentName').hasError('pattern')">
+              {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, space)
+            </mat-error>            
+        </mat-form-field>
+      </div>
+
       <div fxFlex="50" class="pr-1">
-        <mat-form-field class="p-8 full-width">
-            <input matInput formControlName="contactFirstName" placeholder="{{'Contact first name' | translate }}">
+        <mat-form-field class="full-width">
+            <input matInput formControlName="contactFirstName" placeholder="{{'Contact first name' | translate }}" required>
             <mat-error *ngIf="itemForm.get('contactFirstName').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            
@@ -41,8 +73,8 @@
       </div>
 
       <div fxFlex="50" class="pr-1">
-        <mat-form-field class="p-8 full-width">
-            <input matInput formControlName="contactLastName" placeholder="{{'Contact last name' | translate }}">
+        <mat-form-field class="full-width">
+            <input matInput formControlName="contactLastName" placeholder="{{'Contact last name' | translate }}" required>
             <mat-error *ngIf="itemForm.get('contactLastName').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            
@@ -55,9 +87,9 @@
         </mat-form-field>
       </div>
 
-      <div fxFlex="50" class="pr-1">
-        <mat-form-field class="p-8 full-width">
-            <input matInput formControlName="streetAddress" placeholder="{{'Street address' | translate }}">
+      <div fxFlex="100" class="pr-1">
+        <mat-form-field class="full-width">
+            <input matInput formControlName="streetAddress" placeholder="{{'Street address' | translate }}" required>
             <mat-error *ngIf="itemForm.get('streetAddress').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            
@@ -71,8 +103,8 @@
       </div>
 
       <div fxFlex="50" class="pr-1">
-        <mat-form-field class="p-8 full-width">
-            <input matInput formControlName="city" placeholder="{{'City' | translate }}">
+        <mat-form-field class="full-width">
+            <input matInput formControlName="city" placeholder="{{'City' | translate }}" required>
             <mat-error *ngIf="itemForm.get('city').hasError('required')">
               {{'This is a required field' | translate}}
             </mat-error>            
@@ -86,7 +118,7 @@
       </div>
 
       <div fxFlex="50" class="pr-1">
-        <mat-form-field class="p-8 full-width">
+        <mat-form-field class="full-width">
             <input matInput formControlName="state" placeholder="{{'State' | translate }}">
             <mat-error *ngIf="itemForm.get('state').hasError('maxlength')">
               {{'Maximum length exceeded' | translate}}
@@ -98,7 +130,7 @@
       </div>
 
       <div fxFlex="50" class="pr-1">
-        <mat-form-field class="p-8 full-width">
+        <mat-form-field class="full-width">
             <input matInput formControlName="countryCode" placeholder="{{'Country code' | translate }}">
             <mat-error *ngIf="itemForm.get('state').hasError('maxlength')">
               {{'Maximum length exceeded' | translate}}
@@ -110,7 +142,7 @@
       </div>
 
       <div fxFlex="50" class="pr-1">
-        <mat-form-field class="p-8 full-width">
+        <mat-form-field class="full-width">
             <input matInput formControlName="postCode" placeholder="{{'Post code' | translate }}">
             <mat-error *ngIf="itemForm.get('state').hasError('maxlength')">
               {{'Maximum length exceeded' | translate}}
@@ -122,7 +154,7 @@
       </div>
 
       <div fxFlex="50" class="pr-1">
-        <mat-form-field class="p-8 full-width">
+        <mat-form-field class="full-width">
             <input matInput formControlName="contactNumber" placeholder="{{'Contact number' | translate }}">
             <mat-error *ngIf="itemForm.get('state').hasError('maxlength')">
               {{'Maximum length exceeded' | translate}}
@@ -134,7 +166,7 @@
       </div>
 
       <div fxFlex="50" class="pr-1">
-        <mat-form-field class="p-8 full-width">
+        <mat-form-field class="full-width">
             <input matInput formControlName="contactEmail" placeholder="{{'Contact email' | translate }}">
             <mat-error *ngIf="itemForm.get('state').hasError('maxlength')">
               {{'Maximum length exceeded' | translate}}

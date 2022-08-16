@@ -17,12 +17,15 @@ export interface ReportInstanceDetailModel {
     sourceIdentifier: string;
     terminologyMedDra?: TerminologyMedDraModel;
     patientIdentifier: string;
+    reportClassification: string;
     patientId: number;
     patientClinicalEventId: number;
     activityExecutionStatusEventId: number;
     e2BInstance?: DatasetInstanceModel;
     spontaneousInstance?: DatasetInstanceModel;
     attachmentId: number;
+    taskCount: number;
+    activeTaskCount: number;
     createdDetail: string;
     updatedDetail: string;
     qualifiedName: string;

@@ -1,25 +1,29 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
+using PVIMS.Core.Aggregates.UserAggregate;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
+using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
 {
@@ -27,19 +31,18 @@ namespace PVIMS.API.Controllers
     [Route("api")]
     public class MetaController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IInfrastructureService _infrastructureService;
+        private readonly IRepositoryInt<DatasetCategoryElement> _datasetCategoryElementRepository;
         private readonly IRepositoryInt<MetaTable> _metaTableRepository;
         private readonly IRepositoryInt<MetaTableType> _metaTableTypeRepository;
         private readonly IRepositoryInt<MetaColumn> _metaColumnRepository;
         private readonly IRepositoryInt<MetaColumnType> _metaColumnTypeRepository;
         private readonly IRepositoryInt<MetaDependency> _metaDependencyRepository;
-        private readonly IRepositoryInt<MetaPage> _metaPageRepository;
-        private readonly IRepositoryInt<MetaWidget> _metaWidgetRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
+        private readonly PVIMSDbContext _context;
 
         private List<String> _entities = new List<String>() { 
             "Patient", 
@@ -52,33 +55,32 @@ namespace PVIMS.API.Controllers
             "CohortGroupEnrolment" 
         };
 
-        public MetaController(IPropertyMappingService propertyMappingService,
+        public MetaController(
             ITypeHelperService typeHelperService,
             IInfrastructureService infrastructureService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
+            IRepositoryInt<DatasetCategoryElement> datasetCategoryElementRepository,
             IRepositoryInt<MetaTable> metaTableRepository,
             IRepositoryInt<MetaTableType> metaTableTypeRepository,
             IRepositoryInt<MetaColumn> metaColumnRepository,
             IRepositoryInt<MetaColumnType> metaColumnTypeRepository,
             IRepositoryInt<MetaDependency> metaDependencyRepository,
-            IRepositoryInt<MetaPage> metaPageRepository,
-            IRepositoryInt<MetaWidget> metaWidgetRepository,
-            IUnitOfWorkInt unitOfWork)
+            IUnitOfWorkInt unitOfWork,
+            PVIMSDbContext dbContext)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _infrastructureService = infrastructureService ?? throw new ArgumentNullException(nameof(infrastructureService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
+            _datasetCategoryElementRepository = datasetCategoryElementRepository ?? throw new ArgumentNullException(nameof(datasetCategoryElementRepository));
             _metaTableRepository = metaTableRepository ?? throw new ArgumentNullException(nameof(metaTableRepository));
             _metaTableTypeRepository = metaTableTypeRepository ?? throw new ArgumentNullException(nameof(metaTableTypeRepository));
             _metaColumnRepository = metaColumnRepository ?? throw new ArgumentNullException(nameof(metaColumnRepository));
             _metaColumnTypeRepository = metaColumnTypeRepository ?? throw new ArgumentNullException(nameof(metaColumnTypeRepository));
             _metaDependencyRepository = metaDependencyRepository ?? throw new ArgumentNullException(nameof(metaDependencyRepository));
-            _metaPageRepository = metaPageRepository ?? throw new ArgumentNullException(nameof(metaPageRepository));
-            _metaWidgetRepository = metaWidgetRepository ?? throw new ArgumentNullException(nameof(metaWidgetRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         /// <summary>
@@ -89,7 +91,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public ActionResult<MetaSummaryDto> GetMetaSummary()
         {
@@ -99,7 +101,10 @@ namespace PVIMS.API.Controllers
                 SELECT Id FROM MetaPatient;
                 ");
 
-            metaSummary.PatientCount = _unitOfWork.Repository<ScalarInt>().ExecuteSqlScalar(sql, new SqlParameter[0]);
+            var resultsFromService = _context.MetaPatientLists
+                .FromSqlRaw("SELECT Id FROM MetaPatient");
+
+            metaSummary.PatientCount = resultsFromService.Count();
 
             var config = _infrastructureService.GetOrCreateConfig(ConfigType.MetaDataLastUpdated);
             metaSummary.LatestRefreshDate = config.ConfigValue;
@@ -114,10 +119,10 @@ namespace PVIMS.API.Controllers
         [HttpGet("metatables", Name = "GetMetaTablesByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaTableIdentifierDto>> GetMetaTablesByIdentifier(
-            [FromQuery] MetaResourceParameters metaResourceParameters)
+            [FromQuery] IdResourceParameters metaResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<MetaTableIdentifierDto>
                 (metaResourceParameters.OrderBy))
@@ -141,11 +146,11 @@ namespace PVIMS.API.Controllers
         [HttpGet("metatables", Name = "GetMetaTablesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaTableDetailDto>> GetMetaTablesByDetail(
-            [FromQuery] MetaResourceParameters metaResourceParameters)
+            [FromQuery] IdResourceParameters metaResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<MetaTableDetailDto>
                 (metaResourceParameters.OrderBy))
@@ -169,10 +174,10 @@ namespace PVIMS.API.Controllers
         [HttpGet("metacolumns", Name = "GetMetaColumnsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaColumnDetailDto>> GetMetaColumnsByDetail(
-            [FromQuery] MetaResourceParameters metaResourceParameters)
+            [FromQuery] IdResourceParameters metaResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<MetaColumnDetailDto>
                 (metaResourceParameters.OrderBy))
@@ -194,10 +199,10 @@ namespace PVIMS.API.Controllers
         [HttpGet("metadependencies", Name = "GetMetaDependenciesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaDependencyDetailDto>> GetMetaDependenciesByDetail(
-            [FromQuery] MetaResourceParameters metaResourceParameters)
+            [FromQuery] IdResourceParameters metaResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<MetaDependencyDetailDto>
                 (metaResourceParameters.OrderBy))
@@ -218,7 +223,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPost("meta", Name = "RefreshMeta")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult RefreshMeta()
+        public async Task<IActionResult> RefreshMetaAsync()
         {
             // Ensure all meta definitions exist
             CheckEntitiesExist();
@@ -234,7 +239,7 @@ namespace PVIMS.API.Controllers
             UpdateCustomAttributes();
             CreateMetaDependencies();
 
-            _infrastructureService.SetConfigValue(ConfigType.MetaDataLastUpdated, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+            await _infrastructureService.SetConfigValueAsync(ConfigType.MetaDataLastUpdated, DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
 
             return NoContent();
         }
@@ -245,7 +250,7 @@ namespace PVIMS.API.Controllers
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
         /// <param name="metaResourceParameters">Standard parameters for representing resource</param>
         /// <returns></returns>
-        private PagedCollection<T> GetMetaTables<T>(MetaResourceParameters metaResourceParameters) where T : class
+        private PagedCollection<T> GetMetaTables<T>(IdResourceParameters metaResourceParameters) where T : class
         {
             var pagingInfo = new PagingInfo()
             {
@@ -255,7 +260,7 @@ namespace PVIMS.API.Controllers
 
             var orderby = Extensions.GetOrderBy<MetaTable>(metaResourceParameters.OrderBy, "asc");
 
-            var pagedMetaTablesFromRepo = _metaTableRepository.List(pagingInfo, null, orderby, "");
+            var pagedMetaTablesFromRepo = _metaTableRepository.List(pagingInfo, null, orderby, new string[] { "TableType" });
             if (pagedMetaTablesFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -291,7 +296,7 @@ namespace PVIMS.API.Controllers
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
         /// <param name="metaResourceParameters">Standard parameters for representing resource</param>
         /// <returns></returns>
-        private PagedCollection<T> GetMetaColumns<T>(MetaResourceParameters metaResourceParameters) where T : class
+        private PagedCollection<T> GetMetaColumns<T>(IdResourceParameters metaResourceParameters) where T : class
         {
             var pagingInfo = new PagingInfo()
             {
@@ -301,7 +306,7 @@ namespace PVIMS.API.Controllers
 
             var orderby = Extensions.GetOrderBy<MetaColumn>(metaResourceParameters.OrderBy, "asc");
 
-            var pagedMetaColumnsFromRepo = _metaColumnRepository.List(pagingInfo, null, orderby, "");
+            var pagedMetaColumnsFromRepo = _metaColumnRepository.List(pagingInfo, null, orderby, new string[] { "Table", "ColumnType" });
             if (pagedMetaColumnsFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -337,7 +342,7 @@ namespace PVIMS.API.Controllers
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
         /// <param name="metaResourceParameters">Standard parameters for representing resource</param>
         /// <returns></returns>
-        private PagedCollection<T> GetMetaDependencies<T>(MetaResourceParameters metaResourceParameters) where T : class
+        private PagedCollection<T> GetMetaDependencies<T>(IdResourceParameters metaResourceParameters) where T : class
         {
             var pagingInfo = new PagingInfo()
             {
@@ -347,7 +352,7 @@ namespace PVIMS.API.Controllers
 
             var orderby = Extensions.GetOrderBy<MetaDependency>(metaResourceParameters.OrderBy, "asc");
 
-            var pagedMetaDependenciesFromRepo = _metaDependencyRepository.List(pagingInfo, null, orderby, "");
+            var pagedMetaDependenciesFromRepo = _metaDependencyRepository.List(pagingInfo, null, orderby, new string[] { "ParentTable", "ReferenceTable" });
             if (pagedMetaDependenciesFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -387,26 +392,28 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private LinkedResourceBaseDto CreateLinksForTables(
             LinkedResourceBaseDto wrapper,
-            MetaResourceParameters metaResourceParameters,
+            IdResourceParameters metaResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateMetaTablesResourceUri(_urlHelper, ResourceUriType.Current, metaResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaTablesByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateMetaTablesResourceUri(_urlHelper, ResourceUriType.NextPage, metaResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaTablesByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateMetaTablesResourceUri(_urlHelper, ResourceUriType.PreviousPage, metaResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaTablesByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -428,7 +435,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Core patient table",
                                 FriendlyName = "Patient",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "Core")
                             };
@@ -439,7 +446,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient adverse event history",
                                 FriendlyName = "Patient Adverse Events",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "CoreChild")
                             };
@@ -450,7 +457,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient condition history",
                                 FriendlyName = "Patient Conditions",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType =  _metaTableTypeRepository.Get(mtt => mtt.Description == "CoreChild")
                             };
@@ -461,7 +468,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Current facility",
                                 FriendlyName = "Current Facility",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "History")
                             };
@@ -472,7 +479,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient evaluation history",
                                 FriendlyName = "Patien Lab Tests",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "CoreChild")
                             };
@@ -483,7 +490,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient medication history",
                                 FriendlyName = "Patient Medications",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "CoreChild")
                             };
@@ -494,7 +501,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient encounter history",
                                 FriendlyName = "Patient Encounters",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "Child")
                             };
@@ -505,7 +512,7 @@ namespace PVIMS.API.Controllers
                             {
                                 FriendlyDescription = "Patient cohort enrolments",
                                 FriendlyName = "Cohort Enrolment",
-                                metatable_guid = Guid.NewGuid(),
+                                MetaTableGuid = Guid.NewGuid(),
                                 TableName = entity,
                                 TableType = _metaTableTypeRepository.Get(mtt => mtt.Description == "CoreChild")
                             };
@@ -525,12 +532,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> PatientClinicalEvent
             var referenceTable = _metaTableRepository.Get(mt => mt.TableName == "PatientClinicalEvent");
-            var metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            var metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -541,12 +548,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> PatientCondition
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "PatientCondition");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -557,12 +564,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> PatientFacility
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "PatientFacility");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -573,12 +580,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> PatientLabTest
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "PatientLabTest");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -589,12 +596,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> PatientMedication
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "PatientMedication");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -605,12 +612,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency Patient --> Encounter
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "Encounter");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -621,12 +628,12 @@ namespace PVIMS.API.Controllers
 
             // Dependency  --> CohortGroupEnrolment
             referenceTable = _metaTableRepository.Get(mt => mt.TableName == "CohortGroupEnrolment");
-            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.metatable_guid == parentTable.metatable_guid && md.ReferenceTable.metatable_guid == referenceTable.metatable_guid);
+            metaDependency = _metaDependencyRepository.Get(md => md.ParentTable.MetaTableGuid == parentTable.MetaTableGuid && md.ReferenceTable.MetaTableGuid == referenceTable.MetaTableGuid);
             if (metaDependency == null)
             {
                 metaDependency = new MetaDependency()
                 {
-                    metadependency_guid = Guid.NewGuid(),
+                    MetaDependencyGuid = Guid.NewGuid(),
                     ParentColumnName = "Id",
                     ParentTable = parentTable,
                     ReferenceColumnName = "Patient_Id",
@@ -638,34 +645,28 @@ namespace PVIMS.API.Controllers
 
         private void CheckColumnsExist()
         {
-            ProcessEntity(new Patient(), "Patient");
-            ProcessEntity(new PatientMedication(), "PatientMedication");
-            ProcessEntity(new PatientClinicalEvent(), "PatientClinicalEvent");
-            ProcessEntity(new PatientCondition(), "PatientCondition");
-            ProcessEntity(new PatientLabTest(), "PatientLabTest");
-            ProcessEntity(new Encounter(new Patient()), "Encounter");
-            ProcessEntity(new CohortGroupEnrolment(), "CohortGroupEnrolment");
-            ProcessEntity(new PatientFacility(), "PatientFacility");
+            ProcessEntity(typeof(Patient), "Patient");
+            ProcessEntity(typeof(PatientMedication), "PatientMedication");
+            ProcessEntity(typeof(PatientClinicalEvent), "PatientClinicalEvent");
+            ProcessEntity(typeof(PatientCondition), "PatientCondition");
+            ProcessEntity(typeof(PatientLabTest), "PatientLabTest");
+            ProcessEntity(typeof(Encounter), "Encounter");
+            ProcessEntity(typeof(CohortGroupEnrolment), "CohortGroupEnrolment");
+            ProcessEntity(typeof(PatientFacility), "PatientFacility");
         }
 
-        private void ProcessEntity(Object obj, string entityName)
+        private void ProcessEntity(Type type, string entityName)
         {
-            Type type = obj.GetType();
             PropertyInfo[] properties = type.GetProperties();
             var invalidProperties = new[] { "CustomAttributesXmlSerialised", "Archived", "ArchivedReason", "ArchivedDate", "AuditUser", "Age", "FullName", "DisplayName", "CurrentFacilityName", "LatestEncounterDate" };
 
             var metaTable = _metaTableRepository.Get(mt => mt.TableName == entityName);
             var attributes = _unitOfWork.Repository<CustomAttributeConfiguration>().Queryable().Where(c => c.ExtendableTypeName == entityName).OrderBy(c => c.Id).ToList();
 
-            List<DatasetCategoryElement> elements = null;
+            ICollection<DatasetCategoryElement> elements = null;
             if (entityName == "Encounter")
             {
-                elements = _unitOfWork.Repository<DatasetCategoryElement>()
-                    .Queryable()
-                    .Where(dce => dce.DatasetCategory.Dataset.DatasetName == "Chronic Treatment")
-                    .OrderBy(dce => dce.DatasetCategory.CategoryOrder)
-                    .ThenBy(dce => dce.FieldOrder)
-                    .ToList();
+                elements = _datasetCategoryElementRepository.List(dce => dce.DatasetCategory.Dataset.DatasetName == "Chronic Treatment", null, new string[] { "DatasetElement.Field.FieldType" });
             }
 
             MetaColumn metaColumn;
@@ -745,7 +746,7 @@ namespace PVIMS.API.Controllers
                                 IsIdentity = (property.Name == "Id"),
                                 //IsNullable = Nullable.GetUnderlyingType(property.PropertyType) != null,
                                 IsNullable = property.Name == "Id" ? false : true,
-                                metacolumn_guid = Guid.NewGuid(),
+                                MetaColumnGuid = Guid.NewGuid(),
                                 Table = metaTable,
                                 Range = range
                             };
@@ -764,10 +765,10 @@ namespace PVIMS.API.Controllers
                     metaColumnType = null;
                     range = "";
 
-                    if (attribute.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.DateTime) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "datetime"); };
-                    if (attribute.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.Numeric) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "int"); };
-                    if (attribute.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.String) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "varchar"); };
-                    if (attribute.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.Selection)
+                    if (attribute.CustomAttributeType == CustomAttributeType.DateTime) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "datetime"); };
+                    if (attribute.CustomAttributeType == CustomAttributeType.Numeric) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "int"); };
+                    if (attribute.CustomAttributeType == CustomAttributeType.String) { metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "varchar"); };
+                    if (attribute.CustomAttributeType == CustomAttributeType.Selection)
                     {
                         metaColumnType = _metaColumnTypeRepository.Get(mct => mct.Description == "varchar");
                         var selectionItems = _unitOfWork.Repository<SelectionDataItem>().Queryable().Where(sd => sd.AttributeKey == attribute.AttributeKey).Select(s => s.Value).ToList();
@@ -782,7 +783,7 @@ namespace PVIMS.API.Controllers
                             ColumnType = metaColumnType,
                             IsIdentity = false,
                             IsNullable = true,
-                            metacolumn_guid = Guid.NewGuid(),
+                            MetaColumnGuid = Guid.NewGuid(),
                             Table = metaTable,
                             Range = range
                         };
@@ -826,7 +827,7 @@ namespace PVIMS.API.Controllers
                                 ColumnType = metaColumnType,
                                 IsIdentity = false,
                                 IsNullable = true,
-                                metacolumn_guid = Guid.NewGuid(),
+                                MetaColumnGuid = Guid.NewGuid(),
                                 Table = metaTable,
                                 Range = range
                             };
@@ -861,7 +862,7 @@ namespace PVIMS.API.Controllers
             StringBuilder sb;
             var valid = new[] { "varchar", "nvarchar" };
 
-            var metaTables = _unitOfWork.Repository<MetaTable>().Queryable().OrderBy(mt => mt.TableName).ToList();
+            var metaTables = _metaTableRepository.List(null, null, new string[] { "Columns.ColumnType" });
             foreach (MetaTable metaTable in metaTables)
             {
 
@@ -899,14 +900,14 @@ namespace PVIMS.API.Controllers
 
         private void PopulateMetaTables()
         {
-            ProcessInsertEntity(new Patient(), "Patient");
-            ProcessInsertEntity(new PatientMedication(), "PatientMedication");
-            ProcessInsertEntity(new PatientClinicalEvent(), "PatientClinicalEvent");
-            ProcessInsertEntity(new PatientCondition(), "PatientCondition");
-            ProcessInsertEntity(new PatientLabTest(), "PatientLabTest");
-            ProcessInsertEntity(new Encounter(new Patient()), "Encounter");
-            ProcessInsertEntity(new CohortGroupEnrolment(), "CohortGroupEnrolment");
-            ProcessInsertEntity(new PatientFacility(), "PatientFacility");
+            ProcessInsertEntity(typeof(Patient), "Patient");
+            ProcessInsertEntity(typeof(PatientMedication), "PatientMedication");
+            ProcessInsertEntity(typeof(PatientClinicalEvent), "PatientClinicalEvent");
+            ProcessInsertEntity(typeof(PatientCondition), "PatientCondition");
+            ProcessInsertEntity(typeof(PatientLabTest), "PatientLabTest");
+            ProcessInsertEntity(typeof(Encounter), "Encounter");
+            ProcessInsertEntity(typeof(CohortGroupEnrolment), "CohortGroupEnrolment");
+            ProcessInsertEntity(typeof(PatientFacility), "PatientFacility");
         }
 
         private void UpdateCustomAttributes()
@@ -924,11 +925,10 @@ namespace PVIMS.API.Controllers
             ProcessUpdateSelection("PatientLabTest", "mplt");
         }
 
-        private void ProcessInsertEntity(Object obj, string entityName)
+        private void ProcessInsertEntity(Type type, string entityName)
         {
-            Type type = obj.GetType();
             PropertyInfo[] properties = type.GetProperties();
-            var invalidProperties = new[] { "CustomAttributesXmlSerialised", "Archived", "ArchivedReason", "ArchivedDate", "AuditUser", "Age", "FullName", "AgeGroup", "DisplayName", "CurrentFacilityName", "LatestEncounterDate" };
+            var invalidProperties = new[] { "CustomAttributesXmlSerialised", "Archived", "ArchivedReason", "ArchivedDate", "AuditUser", "Age", "FullName", "AgeGroup", "DisplayName", "CurrentFacilityName", "CurrentFacilityCode", "CurrentFacilityOrganisationUnit", "LatestEncounterDate", "CreatedById" , "ConceptId", "PatientId", "LabTestId", "PriorityId", "EncounterTypeId", "CohortGroupId", "FacilityId" };
 
             var metaTable = _metaTableRepository.Get(mt => mt.TableName == entityName);
 
@@ -1036,13 +1036,13 @@ namespace PVIMS.API.Controllers
 
                 switch (attribute.CustomAttributeType)
                 {
-                    case VPS.CustomAttributes.CustomAttributeType.Numeric:
-                    case VPS.CustomAttributes.CustomAttributeType.String:
+                    case CustomAttributeType.Numeric:
+                    case CustomAttributeType.String:
                         attributeType = "CustomStringAttribute";
                         break;
 
-                    case VPS.CustomAttributes.CustomAttributeType.Selection:
-                    case VPS.CustomAttributes.CustomAttributeType.DateTime:
+                    case CustomAttributeType.Selection:
+                    case CustomAttributeType.DateTime:
                         attributeType = "CustomSelectionAttribute";
                         break;
                 }
@@ -1063,7 +1063,7 @@ namespace PVIMS.API.Controllers
                 .Where(c => c.ExtendableTypeName == entityName)
                 .OrderBy(c => c.Id).ToList();
 
-            foreach (CustomAttributeConfiguration attribute in attributes.Where(ca => ca.CustomAttributeType == VPS.CustomAttributes.CustomAttributeType.Selection))
+            foreach (CustomAttributeConfiguration attribute in attributes.Where(ca => ca.CustomAttributeType == CustomAttributeType.Selection))
             {
                 sbMain.Clear();
                 sbMain.AppendFormat(@"UPDATE {0} SET {0}.[{1}] = sdi.Value from Meta{2} as {0} inner join SelectionDataItem as sdi on sdi.AttributeKey = '{3}' and SelectionKey collate Latin1_General_CI_AS = {0}.[{1}] collate Latin1_General_CI_AS", alias, attribute.AttributeKey.Replace(" ", "").Replace("(", "").Replace(")", "").Replace("&", ""), entityName, attribute.AttributeKey);

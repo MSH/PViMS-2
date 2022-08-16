@@ -2,29 +2,30 @@
 using Ionic.Zip;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/meddraterms")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class MeddraTermsController : ControllerBase
     {
         private readonly IPropertyMappingService _propertyMappingService;
@@ -32,20 +33,20 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<TerminologyMedDra> _termsRepository;
         private readonly IMedDraService _medDraService;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public MeddraTermsController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMedDraService medDraService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<TerminologyMedDra> termsRepository)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _medDraService = medDraService ?? throw new ArgumentNullException(nameof(medDraService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _termsRepository = termsRepository ?? throw new ArgumentNullException(nameof(termsRepository));
         }
 
@@ -58,7 +59,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MeddraTermIdentifierDto>> GetMeddraTermByIdentifier(long id)
@@ -81,7 +82,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MeddraTermDetailDto>> GetMeddraTermByDetail(long id)
@@ -102,7 +103,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMeddraTermsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MeddraTermIdentifierDto>> GetMeddraTermsByIdentifier(
             [FromQuery] MeddraTermResourceParameters meddraTermResourceParameters)
@@ -129,7 +130,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetCommonMeddraTerms")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.commonmeddra.v1+json", "application/vnd.pvims.commonmeddra.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.commonmeddra.v1+json", "application/vnd.pvims.commonmeddra.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MeddraTermIdentifierDto>> GetCommonMeddraTerms(
@@ -157,7 +158,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMeddraTermsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MeddraTermDetailDto>> GetMeddraTermsByDetail(
@@ -246,7 +247,10 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetMeddraTermAsync<T>(long id) where T : class
         {
-            var meddraTermFromRepo = await _termsRepository.GetAsync(t => t.Id == id);
+            var meddraTermFromRepo = await _termsRepository.GetAsync(t => t.Id == id, new string[] { 
+                "Children",
+                "Parent"
+            });
 
             if (meddraTermFromRepo != null)
             {
@@ -293,7 +297,10 @@ namespace PVIMS.API.Controllers
                 predicate = predicate.And(mt => mt.MedDraCode.Contains(meddraTermResourceParameters.SearchCode));
             }
 
-            var pagedTermsFromRepo = _termsRepository.List(pagingInfo, predicate, orderby, "");
+            var pagedTermsFromRepo = _termsRepository.List(pagingInfo, predicate, orderby, new string[] {
+                "Children",
+                "Parent"
+            });
             if (pagedTermsFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -381,7 +388,7 @@ namespace PVIMS.API.Controllers
         {
             MeddraTermIdentifierDto identifier = (MeddraTermIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "MeddraTerm", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("MeddraTerm", identifier.Id), "self", "GET"));
 
             return identifier;
         }

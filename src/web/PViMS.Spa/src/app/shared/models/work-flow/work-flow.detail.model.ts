@@ -10,6 +10,6 @@ export interface WorkFlowDetailModel {
     workFlowGuid: string;
     workFlowName: string;
     newReportInstanceCount: number;
-    newFeedbackInstanceCount: number;
-    activityItems: ActivitySummaryModel[];
+    analysisActivity: ActivitySummaryModel[];
+    feedbackActivity: ActivitySummaryModel[];
 }

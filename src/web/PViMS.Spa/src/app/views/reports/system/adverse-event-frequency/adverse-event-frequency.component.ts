@@ -1,9 +1,9 @@
-import { Component, OnInit, ViewChild, OnDestroy, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { MatPaginator } from '@angular/material';
-import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
+import { MatPaginator } from '@angular/material/paginator';
+import { ActivatedRoute, Router } from '@angular/router';
 import { EventService } from 'app/shared/services/event.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -27,8 +27,9 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './adverse-event-frequency.component.html',
-  styleUrls: ['./adverse-event-frequency.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-system-organ-class { flex: 0 0 20% !important; width: 20% !important; }
+  `],  
   animations: egretAnimations
 })
 export class AdverseEventFrequencyComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -53,18 +54,7 @@ export class AdverseEventFrequencyComponent extends BaseComponent implements OnI
           //this.setupTable();
       }
     });
-
-    // Force an event to refresh the page if the paramter changes (but not the route)
-    this.navigationSubscription = this._router.events.subscribe((e: any) => {
-      // If it is a NavigationEnd event re-initalise the component
-      if (e instanceof NavigationEnd) {
-        this.initialiseReport();
-      }
-    });     
   }
-
-  navigationSubscription;
-  frequencyType: string = null;
 
   currentScreenWidth: string = '';
   flexMediaWatcher: Subscription;
@@ -74,33 +64,17 @@ export class AdverseEventFrequencyComponent extends BaseComponent implements OnI
 
   metaDate: string = '';
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;
-    self.initialiseReport();
 
     self.viewModelForm = self._formBuilder.group({
+      criteriaId: [this.viewModel.criteriaId || '1', Validators.required],
       searchFrom: [this.viewModel.searchFrom || moment().subtract(3, 'months'), Validators.required],
       searchTo: [this.viewModel.searchTo || moment(), Validators.required],
     });
   }
-
-  // Force an event to refresh the page if the paramter changes (but not the route)
-  initialiseReport(): void {
-    // Set default values and re-fetch any data you need.
-    const self = this;
-
-    self.frequencyType = self._activatedRoute.snapshot.paramMap.get('frequency');
-
-    self.viewModelForm = self._formBuilder.group({
-      searchFrom: [self.viewModel.searchFrom || moment().subtract(3, 'months'), Validators.required],
-      searchTo: [self.viewModel.searchTo || moment(), Validators.required],
-    });
-
-    self.viewModel.mainGrid.clearDataSource();
-    self.loadGrid();
-  }  
 
   ngAfterViewInit(): void {
     let self = this;
@@ -120,31 +94,19 @@ export class AdverseEventFrequencyComponent extends BaseComponent implements OnI
     let self = this;
     self.setBusy(true);
 
-    if(self.frequencyType == 'Quarterly') {
-      self.patientService.getAdverseEventQuarterlyReport(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
-      .pipe(takeUntil(self._unsubscribeAll))
-      .pipe(finalize(() => self.setBusy(false)))
-      .subscribe(result => {
-        self.viewModel.mainGrid.updateAdvance(result);
-      }, error => {
-        self.handleError(error, "Error fetching quarterly adverse event report");
-      });
-    }
-    else {
-      self.patientService.getAdverseEventAnnualReport(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
-      .pipe(takeUntil(self._unsubscribeAll))
-      .pipe(finalize(() => self.setBusy(false)))
-      .subscribe(result => {
-        self.viewModel.mainGrid.updateAdvance(result);
-      }, error => {
-        self.handleError(error, "Error fetching annual adverse event report");
-      });
-    }
+    self.patientService.getAdverseEventFrequencyReport(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
+    .pipe(takeUntil(self._unsubscribeAll))
+    .pipe(finalize(() => self.setBusy(false)))
+    .subscribe(result => {
+      self.viewModel.mainGrid.updateAdvance(result);
+    }, error => {
+      self.handleError(error, "Error fetching adverse event frequency report");
+    });
   }  
 
   loadMetaDate(): void {
     let self = this;
-    self.configService.getConfigIdentifier(7)
+    self.configService.getConfigIdentifier(2)
       .subscribe(result => {
         self.metaDate = result.configValue
       });
@@ -154,7 +116,7 @@ export class AdverseEventFrequencyComponent extends BaseComponent implements OnI
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['system-organ-class', 'period', 'facility', 'grade-1', 'grade-2', 'grade-3', 'grade-4', 'grade-5', 'grade-unknown']);
+          (['system-organ-class', 'period', 'grade-1', 'grade-2', 'grade-3', 'grade-4', 'grade-5', 'grade-unknown']);
 
   criteriaId: number;
   stratifyId: number;
@@ -165,7 +127,6 @@ class ViewModel {
 class GridRecordModel {
   systemOrganClass: string;
   periodDisplay: string;
-  facilityName: string;
   grade1Count: number;
   grade2Count: number;
   grade3Count: number;

@@ -1,8 +1,8 @@
-import { Component, OnInit, ViewChild, OnDestroy, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { MatPaginator } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventService } from 'app/shared/services/event.service';
 import { FacilityService } from 'app/shared/services/facility.service';
@@ -29,8 +29,6 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './causality.component.html',
-  styleUrls: ['./causality.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class CausalityComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -68,7 +66,7 @@ export class CausalityComponent extends BaseComponent implements OnInit, AfterVi
 
   facilityList: FacilityIdentifierModel[] = [];
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;
@@ -128,7 +126,7 @@ export class CausalityComponent extends BaseComponent implements OnInit, AfterVi
 
   loadMetaDate(): void {
     let self = this;
-    self.configService.getConfigIdentifier(7)
+    self.configService.getConfigIdentifier(2)
       .subscribe(result => {
         self.metaDate = result.configValue
       });

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +8,8 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatPaginator, MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { AppointmentService } from 'app/shared/services/appointment.service';
@@ -27,7 +28,6 @@ const moment =  _moment;
 @Component({
   templateUrl: './appointment-search.component.html',
   styleUrls: ['./appointment-search.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class AppointmentSearchComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -60,7 +60,7 @@ export class AppointmentSearchComponent extends BaseComponent implements OnInit,
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

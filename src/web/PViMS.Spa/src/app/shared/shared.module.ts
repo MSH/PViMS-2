@@ -14,17 +14,17 @@ import { SharedPipesModule } from './pipes/shared-pipes.module';
 import { SharedDirectivesModule } from './directives/shared-directives.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
     CommonModule,
+    FlexLayoutModule,
+    ReactiveFormsModule,
     SharedComponentsModule,
     SharedPipesModule,
     SharedDirectivesModule,
-    ReactiveFormsModule,
-    FlexLayoutModule,
-    NgxChartsModule
+    TranslateModule
   ],
   providers: [
     ThemeService,
@@ -35,12 +35,12 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
     AppLoaderService
   ],
   exports: [
-    SharedComponentsModule,
-    SharedPipesModule,
-    SharedDirectivesModule,
-    ReactiveFormsModule,
     FlexLayoutModule,
-    NgxChartsModule
+    ReactiveFormsModule,
+    SharedComponentsModule,
+    SharedDirectivesModule,
+    SharedPipesModule,
+    TranslateModule
   ]
 })
 export class SharedModule { }

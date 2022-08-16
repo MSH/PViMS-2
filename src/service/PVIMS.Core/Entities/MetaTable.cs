@@ -1,34 +1,27 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(MetaTable))]
     public class MetaTable : EntityBase
     {
         public MetaTable()
         {
             Columns = new HashSet<MetaColumn>();
+            MetaDependencyParentTables = new HashSet<MetaDependency>();
+            MetaDependencyReferenceTables = new HashSet<MetaDependency>();
         }
 
-        [Required]
-        public Guid metatable_guid { get; set; }
-
-        [Required]
-        [StringLength(50)]
+        public Guid MetaTableGuid { get; set; }
         public string TableName { get; set; }
+        public string FriendlyName { get; set; }
+        public string FriendlyDescription { get; set; }
+        public int TableTypeId { get; set; }
 
-        [Required]
         public virtual MetaTableType TableType { get; set; }
 
-        [StringLength(100)]
-        public string FriendlyName { get; set; }
-
-        [StringLength(250)]
-        public string FriendlyDescription { get; set; }
-
         public virtual ICollection<MetaColumn> Columns { get; set; }
+        public virtual ICollection<MetaDependency> MetaDependencyParentTables { get; set; }
+        public virtual ICollection<MetaDependency> MetaDependencyReferenceTables { get; set; }
     }
 }

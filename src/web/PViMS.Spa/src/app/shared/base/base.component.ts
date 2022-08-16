@@ -6,7 +6,10 @@ import { EventService } from '../services/event.service';
 import { Subject } from 'rxjs';
 import { Router } from '@angular/router';
 import { FormGroup, ValidationErrors } from '@angular/forms';
+import { Directive } from "@angular/core";
+import { AttributeValueModel } from '../models/attributevalue.model';
 
+@Directive()
 export class BaseComponent {
 
     protected _unsubscribeAll: Subject<any>;
@@ -78,10 +81,19 @@ export class BaseComponent {
 
     protected handleError(errorObject: any, title: string = "Exception")
     {
-      console.log(errorObject);
+      this.CLog(errorObject, title);
 
-      let message = '';
-      if(errorObject.message) {
+      let message = "Unknown error experienced. Please contact your system administrator. ";
+      if(errorObject.error) {
+        if(Array.isArray(errorObject.error.Message)) {
+          message = errorObject.error.Message[0];
+        }
+        else {
+          message = errorObject.error.Message;
+        }
+      }
+  
+      if(!errorObject.error && errorObject.message) {
         if(Array.isArray(errorObject.message)) {
           message = errorObject.message[0];
         }
@@ -89,15 +101,11 @@ export class BaseComponent {
           message = errorObject.message;
         }
       }
-      else {
-        message = "Unknown error experienced. Please contact your system administrator. ";
-      }
-
+  
       if(errorObject.ReferenceCode) {
         message += `Reference Code: ${errorObject.ReferenceCode}`;
       }
-
-      this.CLog(errorObject, title);
+  
       this.showError(message, title);
     }    
 
@@ -111,5 +119,23 @@ export class BaseComponent {
 
     public resetForm(form: FormGroup): void {
         form.reset();
+    }
+
+    public markFormGroupTouched(formGroup: FormGroup) {
+      (<any>Object).values(formGroup.controls).forEach(control => {
+        control.markAsTouched();
+  
+        if (control.controls) {
+          this.markFormGroupTouched(control);
+        }
+      });
+    }
+
+    public getValueOrSelectedValueFromAttribute(attributes: AttributeValueModel[], key: string): string {
+      let attribute = attributes.find(a => a.key == key);
+      if(attribute?.selectionValue != '') {
+        return attribute?.selectionValue;
+      }
+       return attribute?.value;
     }
 }

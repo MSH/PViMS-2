@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-
-using VPS.CustomAttributes;
+using System.Threading.Tasks;
+using PVIMS.Core.CustomAttributes;
 
 using PVIMS.Core.Models;
 
@@ -36,25 +36,25 @@ namespace PVIMS.Core.Services
         /// </summary>
         /// <param name="customAttribute"></param>
         /// <returns></returns>
-        void AddCustomAttribute(CustomAttributeConfigDetail customAttribute);
+        Task AddCustomAttributeAsync(CustomAttributeConfigDetail customAttribute);
 
         /// <summary>
         /// Updates CustomAttributeConfigDetail record
         /// </summary>
         /// <param name="customAttribute"></param>
         /// <returns></returns>
-        void UpdateCustomAttribute(CustomAttributeConfigDetail customAttribute);
+        Task UpdateCustomAttributeAsync(CustomAttributeConfigDetail customAttribute);
 
         /// <summary>
         /// Adds SelectionDataItem record
         /// </summary>
         /// <param name="selectionItem"></param>
-        void AddSelectionDataItem(SelectionDataItemDetail selectionItem);
+        Task AddSelectionDataItemAsync(SelectionDataItemDetail selectionItem);
 
         /// <summary>
         /// Get custom attribute value
         /// </summary>
         /// <param name="selectionItem"></param>
-        string GetCustomAttributeValue(string extendableTypeName, string attributeKey, IExtendable extended);
+        Task<string> GetCustomAttributeValueAsync(string extendableTypeName, string attributeKey, IExtendable extended);
     }
 }

@@ -1,29 +1,31 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/metaforms")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class MetaFormsController : ControllerBase
     {
         private readonly ITypeHelperService _typeHelperService;
@@ -64,7 +66,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMetaFormsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaFormDetailDto>> GetMetaFormsByDetail(
@@ -164,8 +166,8 @@ namespace PVIMS.API.Controllers
                     };
                     await _auditLogRepository.SaveAsync(auditLog);
 
-                    _formHandler.ProcessFormForCreationOrUpdate();
-                    _unitOfWork.Complete();
+                    await _formHandler.ProcessFormForCreationOrUpdateAsync();
+                    await _unitOfWork.CompleteAsync();
 
                     return Ok();
                 }

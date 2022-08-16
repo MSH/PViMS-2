@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { PopupService } from 'app/shared/services/popup.service';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { AccountService } from 'app/shared/services/account.service';
@@ -51,7 +51,7 @@ export class AttachmentPopupComponent extends BasePopupComponent implements OnIn
     let self = this;
     self.setBusy(true);
 
-    self.patientService.saveAttachment(self.data.patientId, self.fileToUpload, self.itemForm.value)
+    self.patientService.saveAttachment(self.data.patientId, self.fileToUpload, self.itemForm.get('description').value)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
         self.notify("Attachment successfully uploaded!", "Success");

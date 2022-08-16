@@ -1,33 +1,29 @@
-﻿using System;
+﻿using PVIMS.Core.CustomAttributes;
+using PVIMS.Core.Entities;
+using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using VPS.Common.Repositories;
-using VPS.Common.Utilities;
-using VPS.CustomAttributes;
-using PVIMS.Core.Models;
-using PVIMS.Core.Services;
-
-using CustomAttributeConfiguration = PVIMS.Core.Entities.CustomAttributeConfiguration;
-using SelectionDataItem = PVIMS.Core.Entities.SelectionDataItem;
+using System.Threading.Tasks;
 
 namespace PVIMS.Services
 {
     public class CustomAttributeService : ICustomAttributeService
     {
-        private readonly IRepositoryInt<CustomAttributeConfiguration> customAttributeConfigRepository;
-        private readonly IRepositoryInt<SelectionDataItem> selectionDataRepository;
-
+        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeConfigRepository;
+        private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
 
-        public CustomAttributeService(IUnitOfWorkInt unitOfWork)
+        public CustomAttributeService(
+            IUnitOfWorkInt unitOfWork,
+            IRepositoryInt<CustomAttributeConfiguration> customAttributeConfigRepository,
+            IRepositoryInt<SelectionDataItem> selectionDataItemRepository)
         {
-            Check.IsNotNull(unitOfWork, "unitOfWork may not be null");
-
-            customAttributeConfigRepository = unitOfWork.Repository<CustomAttributeConfiguration>();
-            selectionDataRepository = unitOfWork.Repository<SelectionDataItem>();
-
-            _unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _customAttributeConfigRepository = customAttributeConfigRepository ?? throw new ArgumentNullException(nameof(customAttributeConfigRepository));
+            _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
         }
 
         /// <summary>
@@ -49,7 +45,7 @@ namespace PVIMS.Services
 
         public IList<CustomAttributeConfigListItem> ListCustomAttributes(string entityName)
         {
-            var customAttributes = customAttributeConfigRepository.List();
+            var customAttributes = _customAttributeConfigRepository.List();
 
             IList<CustomAttributeConfigListItem> attributesOfEntity =
                 (from c in customAttributes
@@ -73,7 +69,7 @@ namespace PVIMS.Services
             return attributesOfEntity;
         }
 
-        public void AddCustomAttribute(CustomAttributeConfigDetail customAttribute)
+        public async Task AddCustomAttributeAsync(CustomAttributeConfigDetail customAttribute)
         {
             var newCustomAttribute = new CustomAttributeConfiguration()
             {
@@ -113,7 +109,7 @@ namespace PVIMS.Services
                     break;
             }
 
-            customAttributeConfigRepository.Save(newCustomAttribute);
+            await _customAttributeConfigRepository.SaveAsync(newCustomAttribute);
 
             if(newCustomAttribute.CustomAttributeType == CustomAttributeType.Selection)
             {
@@ -124,11 +120,11 @@ namespace PVIMS.Services
                     SelectionKey = "0"
                 };
 
-                selectionDataRepository.Save(newSelectionDataItem);
+                await _selectionDataItemRepository.SaveAsync(newSelectionDataItem);
             }
         }
 
-        public void UpdateCustomAttribute(CustomAttributeConfigDetail customAttribute)
+        public async Task UpdateCustomAttributeAsync(CustomAttributeConfigDetail customAttribute)
         {
             var updateCustomAttribute = _unitOfWork.Repository<CustomAttributeConfiguration>().Queryable().Single(ca => ca.ExtendableTypeName == customAttribute.EntityName && ca.AttributeKey == customAttribute.AttributeName);
 
@@ -164,13 +160,13 @@ namespace PVIMS.Services
                     break;
             }
 
-            customAttributeConfigRepository.Update(updateCustomAttribute);
-            _unitOfWork.Complete();
+            _customAttributeConfigRepository.Update(updateCustomAttribute);
+            await _unitOfWork.CompleteAsync();
         }
 
         public IList<SelectionDataItemDetail> ListSelectionDataItems(string attributeName)
         {
-            var referenceData = selectionDataRepository.Queryable()
+            var referenceData = _selectionDataItemRepository.Queryable()
                 .Where(di => di.AttributeKey == attributeName)
                 .ToList();
 
@@ -187,7 +183,7 @@ namespace PVIMS.Services
             return selectionDataItems;
         }
 
-        public void AddSelectionDataItem(SelectionDataItemDetail selectionDataItem)
+        public async Task AddSelectionDataItemAsync(SelectionDataItemDetail selectionDataItem)
         {
             var newSelectionDataItem = new SelectionDataItem()
             {
@@ -196,13 +192,12 @@ namespace PVIMS.Services
                 SelectionKey = selectionDataItem.SelectionKey
             };
 
-            selectionDataRepository.Save(newSelectionDataItem);
+            await _selectionDataItemRepository.SaveAsync(newSelectionDataItem);
         }
 
-        public string GetCustomAttributeValue(string extendableTypeName, string attributeKey, IExtendable extended)
+        public async Task<string> GetCustomAttributeValueAsync(string extendableTypeName, string attributeKey, IExtendable extended)
         {
-            var configuration = customAttributeConfigRepository.Get(c => c.ExtendableTypeName == extendableTypeName && c.AttributeKey == attributeKey);
-
+            var configuration = await _customAttributeConfigRepository.GetAsync(c => c.ExtendableTypeName == extendableTypeName && c.AttributeKey == attributeKey);
             if (configuration == null) return "";
 
             DateTime dttemp;
@@ -220,8 +215,8 @@ namespace PVIMS.Services
                     return val.ToString();
 
                 case CustomAttributeType.Selection:
-                    var selection = selectionDataRepository.Get(s => s.AttributeKey == configuration.AttributeKey && s.SelectionKey == val.ToString());
-                    return selection.Value;
+                    var selection = _selectionDataItemRepository.Get(s => s.AttributeKey == configuration.AttributeKey && s.SelectionKey == val.ToString());
+                    return selection?.Value;
 
                 case CustomAttributeType.DateTime:
                     return DateTime.TryParse(val.ToString(), out dttemp) ? Convert.ToDateTime(val) > DateTime.MinValue ? Convert.ToDateTime(val).ToString("yyyy-MM-dd") : string.Empty : string.Empty;

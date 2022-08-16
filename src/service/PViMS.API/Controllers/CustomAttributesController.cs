@@ -1,22 +1,23 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using LinqKit;
+﻿using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
-using PVIMS.API.Helpers;
+using PVIMS.API.Application.Commands.CustomAttributeAggregate;
+using PVIMS.API.Application.Queries.CustomAttributeAggregate;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
+using PVIMS.Core.Repositories;
+using System;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
 {
@@ -26,26 +27,33 @@ namespace PVIMS.API.Controllers
     /// </summary>
     [Route("api/customattributes")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class CustomAttributesController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
+        private readonly ILogger<CustomAttributesController> _logger;
 
-        public CustomAttributesController(ITypeHelperService typeHelperService,
-                IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
-                IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
-                IMapper mapper,
-                IUrlHelper urlHelper)
+        public CustomAttributesController(
+            IMediator mediator, 
+            ITypeHelperService typeHelperService,
+            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
+            IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
+            IMapper mapper,
+            ILinkGeneratorService linkGeneratorService,
+            ILogger<CustomAttributesController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -58,9 +66,9 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetCustomAttributesByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<CustomAttributeIdentifierDto>> GetCustomAttributesByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<CustomAttributeIdentifierDto>>> GetCustomAttributesByIdentifier(
             [FromQuery] CustomAttributeResourceParameters customAttributeResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<CustomAttributeIdentifierDto>
@@ -69,13 +77,37 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedCustomAttributesWithLinks = GetCustomAttributes<CustomAttributeIdentifierDto>(customAttributeResourceParameters);
+            var query = new CustomAttributesIdentifierQuery(
+                customAttributeResourceParameters.OrderBy,
+                customAttributeResourceParameters.ExtendableTypeName,
+                customAttributeResourceParameters.CustomAttributeType,
+                customAttributeResourceParameters.IsSearchable,
+                customAttributeResourceParameters.PageNumber,
+                customAttributeResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<CustomAttributeIdentifierDto>(mappedCustomAttributesWithLinks.TotalCount, mappedCustomAttributesWithLinks);
-            var wrapperWithLinks = CreateLinksForCustomAttributes(wrapper, customAttributeResourceParameters,
-                mappedCustomAttributesWithLinks.HasNext, mappedCustomAttributesWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: CustomAttributesIdentifierQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = customAttributeResourceParameters.PageSize,
+                currentPage = customAttributeResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -88,10 +120,10 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetCustomAttributesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<CustomAttributeDetailDto>> GetCustomAttributesByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<CustomAttributeDetailDto>>> GetCustomAttributesByDetail(
             [FromQuery] CustomAttributeResourceParameters customAttributeResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<CustomAttributeIdentifierDto>
@@ -100,16 +132,37 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedCustomAttributesWithLinks = GetCustomAttributes<CustomAttributeDetailDto>(customAttributeResourceParameters);
+            var query = new CustomAttributesDetailQuery(
+                customAttributeResourceParameters.OrderBy,
+                customAttributeResourceParameters.ExtendableTypeName,
+                customAttributeResourceParameters.CustomAttributeType,
+                customAttributeResourceParameters.IsSearchable,
+                customAttributeResourceParameters.PageNumber,
+                customAttributeResourceParameters.PageSize);
 
-            // For each selection attribute, populate the list of selection values
-            mappedCustomAttributesWithLinks.ForEach(dto => CreateSelectionValues(dto));
+            _logger.LogInformation(
+                "----- Sending query: CustomAttributesDetailQuery");
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<CustomAttributeDetailDto>(mappedCustomAttributesWithLinks.TotalCount, mappedCustomAttributesWithLinks);
-            var wrapperWithLinks = CreateLinksForCustomAttributes(wrapper, customAttributeResourceParameters,
-                mappedCustomAttributesWithLinks.HasNext, mappedCustomAttributesWithLinks.HasPrevious);
+            var queryResult = await _mediator.Send(query);
 
-            return Ok(wrapperWithLinks);
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = customAttributeResourceParameters.PageSize,
+                currentPage = customAttributeResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -121,9 +174,9 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public async Task<ActionResult<CustomAttributeIdentifierDto>> GetCustomAttributeByIdentifier(long id)
+        public async Task<ActionResult<CustomAttributeIdentifierDto>> GetCustomAttributeByIdentifier(int id)
         {
             var mappedCustomAttribute = await GetCustomAttributeAsync<CustomAttributeIdentifierDto>(id);
             if (mappedCustomAttribute == null)
@@ -143,78 +196,196 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<CustomAttributeDetailDto>> GetCustomAttributeByDetail(long id)
+        public async Task<ActionResult<CustomAttributeDetailDto>> GetCustomAttributeByDetail(int id)
         {
-            var mappedCustomAttribute = await GetCustomAttributeAsync<CustomAttributeDetailDto>(id);
-            if (mappedCustomAttribute == null)
+            var query = new CustomAttributeDetailQuery(id);
+
+            _logger.LogInformation($"----- Sending query: CustomAttributeDetailQuery - {id}");
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForCustomAttribute<CustomAttributeDetailDto>(CreateSelectionValues(mappedCustomAttribute)));
+            return Ok(queryResult);
         }
 
         /// <summary>
-        /// Get custom attributes from repository and auto map to Dto
+        /// Create a new custom attribute
         /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="customAttributeResourceParameters">Standard parameters for representing resource</param>
+        /// <param name="customAttributeForCreation">The custom attribute payload</param>
         /// <returns></returns>
-        private PagedCollection<T> GetCustomAttributes<T>(CustomAttributeResourceParameters customAttributeResourceParameters) where T : class
+        [HttpPost(Name = "CreateCustomAttribute")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [Consumes("application/json")]
+        public async Task<IActionResult> CreateCustomAttribute(
+            [FromBody] CustomAttributeForCreationDto customAttributeForCreation)
         {
-            var pagingInfo = new PagingInfo()
+            if (customAttributeForCreation == null)
             {
-                PageNumber = customAttributeResourceParameters.PageNumber,
-                PageSize = customAttributeResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<CustomAttributeConfiguration>(customAttributeResourceParameters.OrderBy, "asc");
-
-            var predicate = PredicateBuilder.New<CustomAttributeConfiguration>(true);
-            if (customAttributeResourceParameters.ExtendableTypeName != ExtendableTypeNames.All)
-            {
-                predicate = predicate.And(f => f.ExtendableTypeName == customAttributeResourceParameters.ExtendableTypeName.ToString());
-            }
-            if (customAttributeResourceParameters.CustomAttributeType != CustomAttributeTypes.All)
-            {
-                predicate = predicate.And(f => f.CustomAttributeType.ToString() == customAttributeResourceParameters.CustomAttributeType.ToString());
-            }
-            if (customAttributeResourceParameters.IsSearchable.HasValue)
-            {
-                predicate = predicate.And(f => f.IsSearchable == customAttributeResourceParameters.IsSearchable);
+                ModelState.AddModelError("Message", "Unable to locate payload for new attribute");
+                return BadRequest(ModelState);
             }
 
-            var pagedCustomAttributesFromRepo = _customAttributeRepository.List(pagingInfo, predicate, orderby, "");
-            if (pagedCustomAttributesFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedCustomAttributes = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedCustomAttributesFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedCustomAttributesFromRepo.TotalCount);
+            var command = new AddCustomAttributeCommand(
+                customAttributeForCreation.ExtendableTypeName.ToString(),
+                MapCustomAttributeType(customAttributeForCreation.CustomAttributeType),
+                customAttributeForCreation.Category,
+                customAttributeForCreation.AttributeKey,
+                customAttributeForCreation.AttributeDetail,
+                customAttributeForCreation.IsRequired == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForCreation.MaxLength,
+                customAttributeForCreation.MinValue,
+                customAttributeForCreation.MaxValue,
+                customAttributeForCreation.FutureDateOnly == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForCreation.PastDateOnly == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForCreation.IsSearchable == Models.ValueTypes.YesNoValueType.Yes
+            );
 
-                // Prepare pagination data for response
-                var paginationMetadata = new
+            _logger.LogInformation($"----- Sending command: AddCustomAttributeCommand - {customAttributeForCreation.AttributeKey}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return CreatedAtAction("GetCustomAttributeByIdentifier",
+                new
                 {
-                    totalCount = mappedCustomAttributes.TotalCount,
-                    pageSize = mappedCustomAttributes.PageSize,
-                    currentPage = mappedCustomAttributes.CurrentPage,
-                    totalPages = mappedCustomAttributes.TotalPages,
-                };
+                    id = commandResult.Id
+                }, commandResult);
+        }
 
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedCustomAttributes.ForEach(dto => CreateLinksForCustomAttribute(dto));
-
-                return mappedCustomAttributes;
+        /// <summary>
+        /// Update an existing custom attribute
+        /// </summary>
+        /// <param name="id">The unique id of the custom attribute</param>
+        /// <param name="customAttributeForUpdate">The custom attribute payload</param>
+        /// <returns></returns>
+        [HttpPut("{id}", Name = "UpdateCustomAttribute")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdateCustomAttribute(int id,
+            [FromBody] CustomAttributeForUpdateDto customAttributeForUpdate)
+        {
+            if (customAttributeForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for custom attribute");
+                return BadRequest(ModelState);
             }
 
-            return null;
+            var command = new ChangeCustomAttributeDetailsCommand(
+                id,
+                customAttributeForUpdate.ExtendableTypeName,
+                customAttributeForUpdate.Category,
+                customAttributeForUpdate.AttributeKey,
+                customAttributeForUpdate.AttributeDetail,
+                customAttributeForUpdate.IsRequired == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForUpdate.StringMaxLength,
+                customAttributeForUpdate.NumericMinValue,
+                customAttributeForUpdate.NumericMaxValue,
+                customAttributeForUpdate.FutureDateOnly == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForUpdate.PastDateOnly == Models.ValueTypes.YesNoValueType.Yes,
+                customAttributeForUpdate.IsSearchable == Models.ValueTypes.YesNoValueType.Yes
+             );
+
+            _logger.LogInformation($"----- Sending command: ChangeCustomAttributeDetailsCommand - {command.Id}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Delete an existing custom attribute
+        /// </summary>
+        /// <param name="id">The unique id of the custom attribute</param>
+        /// <returns></returns>
+        [HttpDelete("{id}", Name = "DeleteCustomAttribute")]
+        public async Task<IActionResult> DeleteCustomAttribute(int id)
+        {
+            var command = new DeleteCustomAttributeCommand(id);
+
+            _logger.LogInformation($"----- Sending command: DeleteCustomAttributeCommand - {command.Id}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Create a new selection value
+        /// </summary>
+        /// <param name="customAttributeId">The unique id of the custom attribute</param>
+        /// <param name="selectionDataItemForCreation">The selection data item payload</param>
+        /// <returns></returns>
+        [HttpPost("{customAttributeId}/selection", Name = "CreateSelectionDataItem")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [Consumes("application/json")]
+        public async Task<IActionResult> CreateSelectionDataItem(int customAttributeId,
+            [FromBody] SelectionDataItemForCreationDto selectionDataItemForCreation)
+        {
+            if (selectionDataItemForCreation == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new value");
+                return BadRequest(ModelState);
+            }
+
+            var command = new AddSelectionValueCommand(
+                selectionDataItemForCreation.AttributeKey,
+                selectionDataItemForCreation.SelectionKey,
+                selectionDataItemForCreation.DataItemValue
+            );
+
+            _logger.LogInformation($"----- Sending command: AddSelectionValueCommand - {selectionDataItemForCreation.AttributeKey}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Delete an existing selection data item
+        /// </summary>
+        /// <param name="customAttributeId">The unique id of the custom attribute</param>
+        /// <param name="key">The unique id of the selection data item key</param>
+        /// <returns></returns>
+        [HttpDelete("{customAttributeId}/selection/{key}", Name = "DeleteSelectionDataItem")]
+        public async Task<IActionResult> DeleteSelectionDataItem(int customAttributeId, string key)
+        {
+            var command = new DeleteSelectionValueCommand(customAttributeId, key);
+
+            _logger.LogInformation($"----- Sending command: DeleteSelectionValueCommand - {key}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return NoContent();
         }
 
         /// <summary>
@@ -239,44 +410,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="customAttributeResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForCustomAttributes(
-            LinkedResourceBaseDto wrapper,
-            CustomAttributeResourceParameters customAttributeResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            // self 
-            wrapper.Links.Add(
-               new LinkDto(CreateCustomAttributesResourceUri(customAttributeResourceParameters,
-               ResourceUriType.Current)
-               , "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                  new LinkDto(CreateCustomAttributesResourceUri(customAttributeResourceParameters,
-                  ResourceUriType.NextPage),
-                  "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                    new LinkDto(CreateCustomAttributesResourceUri(customAttributeResourceParameters,
-                    ResourceUriType.PreviousPage),
-                    "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        /// <summary>
         ///  Prepare HATEOAS links for a single resource
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
@@ -285,85 +418,31 @@ namespace PVIMS.API.Controllers
         {
             CustomAttributeIdentifierDto identifier = (CustomAttributeIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateCustomAttributeResourceUri(identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("CustomAttribute", identifier.Id), "self", "GET"));
 
             return identifier;
         }
 
-        /// <summary>
-        /// Create a Uri for a single representation
-        /// </summary>
-        private string CreateCustomAttributeResourceUri(long customAttributeConfigurationId)
+        private CustomAttributeType MapCustomAttributeType(CustomAttributeTypes sourceAttributeType)
         {
-            return _urlHelper.Link("GetCustomAttributeByIdentifier",
-              new { id = customAttributeConfigurationId });
-        }
-
-        /// <summary>
-        /// Create a Uri for a collection based representation
-        /// </summary>
-        private string CreateCustomAttributesResourceUri(
-            CustomAttributeResourceParameters customAttributeResourceParameters,
-            ResourceUriType type)
-        {
-            switch (type)
+            switch (sourceAttributeType)
             {
-                case ResourceUriType.PreviousPage:
-                    return _urlHelper.Link("GetCustomAttributesByIdentifier",
-                      new
-                      {
-                          orderBy = customAttributeResourceParameters.OrderBy,
-                          ExtendableTypeName = customAttributeResourceParameters.ExtendableTypeName.ToString(),
-                          CustomAttributeType = customAttributeResourceParameters.CustomAttributeType.ToString(),
-                          isSearchable = customAttributeResourceParameters.IsSearchable,
-                          pageNumber = customAttributeResourceParameters.PageNumber - 1,
-                          pageSize = customAttributeResourceParameters.PageSize
-                      });
-                case ResourceUriType.NextPage:
-                    return _urlHelper.Link("GetCustomAttributesByIdentifier",
-                      new
-                      {
-                          orderBy = customAttributeResourceParameters.OrderBy,
-                          ExtendableTypeName = customAttributeResourceParameters.ExtendableTypeName.ToString(),
-                          CustomAttributeType = customAttributeResourceParameters.CustomAttributeType.ToString(),
-                          isSearchable = customAttributeResourceParameters.IsSearchable,
-                          pageNumber = customAttributeResourceParameters.PageNumber + 1,
-                          pageSize = customAttributeResourceParameters.PageSize
-                      });
-                case ResourceUriType.Current:
-                default:
-                    return _urlHelper.Link("GetCustomAttributesByIdentifier",
-                    new
-                    {
-                        orderBy = customAttributeResourceParameters.OrderBy,
-                        ExtendableTypeName = customAttributeResourceParameters.ExtendableTypeName.ToString(),
-                        CustomAttributeType = customAttributeResourceParameters.CustomAttributeType.ToString(),
-                        isSearchable = customAttributeResourceParameters.IsSearchable,
-                        pageNumber = customAttributeResourceParameters.PageNumber,
-                        pageSize = customAttributeResourceParameters.PageSize
-                    });
+                case CustomAttributeTypes.All:
+                    return CustomAttributeType.String;
+                case CustomAttributeTypes.None:
+                    return CustomAttributeType.String;
+                case CustomAttributeTypes.Numeric:
+                    return CustomAttributeType.Numeric;
+                case CustomAttributeTypes.String:
+                    return CustomAttributeType.String;
+                case CustomAttributeTypes.Selection:
+                    return CustomAttributeType.Selection;
+                case CustomAttributeTypes.DateTime:
+                    return CustomAttributeType.DateTime;
+                case CustomAttributeTypes.FirstClassProperty:
+                    return CustomAttributeType.FirstClassProperty;
             }
+            return CustomAttributeType.String;
         }
-
-        /// <summary>
-        /// Prepare the list of selection reference values for look up
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private CustomAttributeDetailDto CreateSelectionValues(CustomAttributeDetailDto dto)
-        {
-            if (dto.CustomAttributeType != "Selection") { return dto; };
-
-            dto.SelectionDataItems = _selectionDataItemRepository.List(s => s.AttributeKey == dto.AttributeKey, null, "")
-                .Select(ss => new SelectionDataItemDto()
-                {
-                    SelectionKey = ss.SelectionKey,
-                    Value = ss.Value
-                })
-                .ToList();
-
-            return dto;
-        }
-
     }
 }

@@ -1,57 +1,42 @@
-﻿using System;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using AutoMapper;
-using LinqKit;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
-using PVIMS.API.Helpers;
+using PVIMS.API.Application.Commands.ConceptAggregate;
+using PVIMS.API.Application.Queries.ConceptAggregate;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
+using System;
+using System.Threading.Tasks;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class ConceptsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
-        private readonly IRepositoryInt<Product> _productRepository;
-        private readonly IRepositoryInt<Concept> _conceptRepository;
-        private readonly IRepositoryInt<MedicationForm> _medicationFormRepository;
-        private readonly IUnitOfWorkInt _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILogger<ConceptsController> _logger;
 
-        public ConceptsController(IPropertyMappingService propertyMappingService, 
+        public ConceptsController(IMediator mediator,
+            IPropertyMappingService propertyMappingService, 
             ITypeHelperService typeHelperService,
-            IMapper mapper,
-            IUrlHelper urlHelper,
-            IRepositoryInt<Product> productRepository,
-            IRepositoryInt<Concept> conceptRepository,
-            IRepositoryInt<MedicationForm> medicationFormRepository,
-            IUnitOfWorkInt unitOfWork)
+            ILogger<ConceptsController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
-            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            _conceptRepository = conceptRepository ?? throw new ArgumentNullException(nameof(conceptRepository));
-            _medicationFormRepository = medicationFormRepository ?? throw new ArgumentNullException(nameof(medicationFormRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -64,9 +49,9 @@ namespace PVIMS.API.Controllers
         [HttpGet("concepts", Name = "GetConceptsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ConceptIdentifierDto>> GetConceptsByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ConceptIdentifierDto>>> GetConceptsByIdentifier(
             [FromQuery] ConceptResourceParameters conceptResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<ConceptIdentifierDto>
@@ -75,13 +60,36 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedConceptsWithLinks = GetConcepts<ConceptIdentifierDto>(conceptResourceParameters);
+            var query = new ConceptsIdentifierQuery(
+                conceptResourceParameters.OrderBy,
+                conceptResourceParameters.SearchTerm,
+                conceptResourceParameters.Active,
+                conceptResourceParameters.PageNumber,
+                conceptResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ConceptIdentifierDto>(mappedConceptsWithLinks.TotalCount, mappedConceptsWithLinks);
-            var wrapperWithLinks = CreateLinksForConcepts(wrapper, conceptResourceParameters,
-                mappedConceptsWithLinks.HasNext, mappedConceptsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: ConceptsIdentifierQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = conceptResourceParameters.PageSize,
+                currentPage = conceptResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -94,10 +102,10 @@ namespace PVIMS.API.Controllers
         [HttpGet("concepts", Name = "GetConceptsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ConceptDetailDto>> GetConceptsByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ConceptDetailDto>>> GetConceptsByDetail(
             [FromQuery] ConceptResourceParameters conceptResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<ConceptDetailDto>
@@ -106,13 +114,36 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedConceptsWithLinks = GetConcepts<ConceptDetailDto>(conceptResourceParameters);
+            var query = new ConceptsDetailQuery(
+                conceptResourceParameters.OrderBy,
+                conceptResourceParameters.SearchTerm,
+                conceptResourceParameters.Active,
+                conceptResourceParameters.PageNumber,
+                conceptResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ConceptDetailDto>(mappedConceptsWithLinks.TotalCount, mappedConceptsWithLinks);
-            var wrapperWithLinks = CreateLinksForConcepts(wrapper, conceptResourceParameters,
-                mappedConceptsWithLinks.HasNext, mappedConceptsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: ConceptsDetailQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = conceptResourceParameters.PageSize,
+                currentPage = conceptResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -125,9 +156,9 @@ namespace PVIMS.API.Controllers
         [HttpGet("products", Name = "GetProductsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ProductIdentifierDto>> GetProductsByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ProductIdentifierDto>>> GetProductsByIdentifier(
             [FromQuery] ProductResourceParameters productResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<ProductIdentifierDto>
@@ -136,13 +167,36 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedProductsWithLinks = GetProducts<ProductIdentifierDto>(productResourceParameters);
+            var query = new ProductsIdentifierQuery(
+                productResourceParameters.OrderBy,
+                productResourceParameters.SearchTerm,
+                productResourceParameters.Active,
+                productResourceParameters.PageNumber,
+                productResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ProductIdentifierDto>(mappedProductsWithLinks.TotalCount, mappedProductsWithLinks);
-            var wrapperWithLinks = CreateLinksForProducts(wrapper, productResourceParameters,
-                mappedProductsWithLinks.HasNext, mappedProductsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: ProductsIdentifierQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = productResourceParameters.PageSize,
+                currentPage = productResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -155,10 +209,10 @@ namespace PVIMS.API.Controllers
         [HttpGet("products", Name = "GetProductsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ProductDetailDto>> GetProductsByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ProductDetailDto>>> GetProductsByDetail(
             [FromQuery] ProductResourceParameters productResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<ProductDetailDto>
@@ -167,13 +221,36 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedProductsWithLinks = GetProducts<ProductDetailDto>(productResourceParameters);
+            var query = new ProductsDetailQuery(
+                productResourceParameters.OrderBy,
+                productResourceParameters.SearchTerm,
+                productResourceParameters.Active,
+                productResourceParameters.PageNumber,
+                productResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ProductDetailDto>(mappedProductsWithLinks.TotalCount, mappedProductsWithLinks);
-            var wrapperWithLinks = CreateLinksForProducts(wrapper, productResourceParameters,
-                mappedProductsWithLinks.HasNext, mappedProductsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: ProductsDetailQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = productResourceParameters.PageSize,
+                currentPage = productResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -183,9 +260,9 @@ namespace PVIMS.API.Controllers
         [HttpGet("medicationforms", Name = "GetMedicationFormsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<MedicationFormIdentifierDto>> GetMedicationFormsByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<MedicationFormIdentifierDto>>> GetMedicationFormsByIdentifier(
             [FromQuery] MedicationFormResourceParameters medicationFormResourceParameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<MedicationFormIdentifierDto, MedicationForm>
@@ -194,13 +271,34 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedMedicationFormsWithLinks = GetMedicationForms<MedicationFormIdentifierDto>(medicationFormResourceParameters);
+            var query = new MedicationFormsIdentifierQuery(
+                medicationFormResourceParameters.OrderBy,
+                medicationFormResourceParameters.PageNumber,
+                medicationFormResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<MedicationFormIdentifierDto>(mappedMedicationFormsWithLinks.TotalCount, mappedMedicationFormsWithLinks);
-            //var wrapperWithLinks = CreateLinksForFacilities(wrapper, medicationResourceParameters,
-            //    mappedMedicationsWithLinks.HasNext, mappedMedicationsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: MedicationFormsIdentifierQuery");
 
-            return Ok(wrapper);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = medicationFormResourceParameters.PageSize,
+                currentPage = medicationFormResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -212,17 +310,24 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public async Task<ActionResult<ConceptIdentifierDto>> GetConceptByIdentifier(long id)
+        public async Task<ActionResult<ConceptIdentifierDto>> GetConceptByIdentifier(int id)
         {
-            var mappedConcept = await GetConceptAsync<ConceptIdentifierDto>(id);
-            if (mappedConcept == null)
+            var query = new ConceptIdentifierQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: ConceptIdentifierQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForConcept<ConceptIdentifierDto>(mappedConcept));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -234,17 +339,23 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public async Task<ActionResult<ProductIdentifierDto>> GetProductByIdentifier(long id)
+        public async Task<ActionResult<ProductIdentifierDto>> GetProductByIdentifier(int id)
         {
-            var mappedProduct = await GetProductAsync<ProductIdentifierDto>(id);
-            if (mappedProduct == null)
+            var query = new ProductIdentifierQuery(id);
+
+            _logger.LogInformation(
+                @"----- Sending query: ProductIdentifierQuery - {id}");
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForProduct<ProductIdentifierDto>(mappedProduct));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -256,18 +367,24 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<ProductDetailDto>> GetProductByDetail(long id)
+        public async Task<ActionResult<ProductDetailDto>> GetProductByDetail(int id)
         {
-            var mappedProduct = await GetProductAsync<ProductDetailDto>(id);
-            if (mappedProduct == null)
+            var query = new ProductDetailQuery(id);
+
+            _logger.LogInformation(
+                $"----- Sending query: ProductDetailQuery - {id}");
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForProduct<ProductDetailDto>(mappedProduct));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -285,56 +402,26 @@ namespace PVIMS.API.Controllers
             if (conceptForUpdate == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
             }
 
-            if (Regex.Matches(conceptForUpdate.ConceptName, @"[a-zA-Z0-9 .,()%/]").Count < conceptForUpdate.ConceptName.Length)
+            var command = new AddConceptCommand(conceptForUpdate.ConceptName, conceptForUpdate.Strength, conceptForUpdate.MedicationForm);
+
+            _logger.LogInformation(
+                $"----- Sending command: AddConceptCommand - {command.ConceptName}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                ModelState.AddModelError("Message", "Concept name contains invalid characters (Enter A-Z, a-z, 0-9, space, period, comma, brackets, percentage, forward slash)");
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(conceptForUpdate.MedicationForm, @"[-a-zA-Z0-9 ,]").Count < conceptForUpdate.MedicationForm.Length)
-            {
-                ModelState.AddModelError("Message", "Medication form contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, comma)");
-            }
-
-            var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == conceptForUpdate.MedicationForm);
-            if (medicationFormFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate medication form");
-            }
-
-            if (_unitOfWork.Repository<Concept>().Queryable().
-                Where(l => l.ConceptName == conceptForUpdate.ConceptName && l.MedicationForm.Id == medicationFormFromRepo.Id)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Item with same name already exists");
-            }
-
-            if (ModelState.IsValid)
-            {
-                var newConcept = new Concept()
+            return CreatedAtAction("GetConceptByIdentifier",
+                new
                 {
-                    ConceptName = conceptForUpdate.ConceptName,
-                    MedicationForm = medicationFormFromRepo,
-                    Active = (conceptForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes)
-                };
-
-                _conceptRepository.Save(newConcept);
-
-                var mappedConcept = await GetConceptAsync<ConceptIdentifierDto>(newConcept.Id);
-                if (mappedConcept == null)
-                {
-                    return StatusCode(500, "Unable to locate newly added item");
-                }
-
-                return CreatedAtRoute("GetConceptByIdentifier",
-                    new
-                    {
-                        id = mappedConcept.Id
-                    }, CreateLinksForConcept<ConceptIdentifierDto>(mappedConcept));
-            }
-
-            return BadRequest(ModelState);
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -346,56 +433,29 @@ namespace PVIMS.API.Controllers
         [HttpPut("concepts/{id}", Name = "UpdateConcept")]
         [Consumes("application/json")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateConcept(long id,
+        public async Task<IActionResult> UpdateConcept(int id,
             [FromBody] ConceptForUpdateDto conceptForUpdate)
         {
             if (conceptForUpdate == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
             }
 
-            if (Regex.Matches(conceptForUpdate.ConceptName, @"[-a-zA-Z0-9 .,()%/]").Count < conceptForUpdate.ConceptName.Length)
+            var command = new ChangeConceptDetailsCommand(id, conceptForUpdate.ConceptName, conceptForUpdate.Strength, conceptForUpdate.MedicationForm, conceptForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeFacilityDetailsCommand - {Id}",
+                command.Id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                ModelState.AddModelError("Message", "Concept name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage, forward slash)");
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(conceptForUpdate.MedicationForm, @"[-a-zA-Z0-9 ,]").Count < conceptForUpdate.MedicationForm.Length)
-            {
-                ModelState.AddModelError("Message", "Medication form contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, comma)");
-            }
-
-            var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == conceptForUpdate.MedicationForm);
-            if (medicationFormFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate medication form");
-            }
-
-            if (_unitOfWork.Repository<Concept>().Queryable().
-                Where(l => l.ConceptName == conceptForUpdate.ConceptName && l.MedicationForm.Id == medicationFormFromRepo.Id && l.Id != id)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Item with same name already exists");
-            }
-
-            var conceptFromRepo = await _conceptRepository.GetAsync(f => f.Id == id);
-            if (conceptFromRepo == null)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                conceptFromRepo.ConceptName = conceptForUpdate.ConceptName;
-                conceptFromRepo.MedicationForm = medicationFormFromRepo;
-                conceptFromRepo.Active = (conceptForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
-
-                _conceptRepository.Update(conceptFromRepo);
-                _unitOfWork.Complete();
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -404,28 +464,22 @@ namespace PVIMS.API.Controllers
         /// <param name="id">The unique id of the concept</param>
         /// <returns></returns>
         [HttpDelete("concepts/{id}", Name = "DeleteConcept")]
-        public async Task<IActionResult> DeleteConcept(long id)
+        public async Task<IActionResult> DeleteConcept(int id)
         {
-            var conceptFromRepo = await _conceptRepository.GetAsync(f => f.Id == id);
-            if (conceptFromRepo == null)
+            var command = new DeleteConceptCommand(id);
+
+            _logger.LogInformation(
+                "----- Sending command: DeleteConceptCommand - {Id}",
+                command.Id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            if (_unitOfWork.Repository<Product>().Queryable().Any(p => p.Concept.Id == id))
-            {
-                ModelState.AddModelError("Message", "Unable to delete as item is in use.");
-            }
-
-            if (ModelState.IsValid)
-            {
-                _conceptRepository.Delete(conceptFromRepo);
-                _unitOfWork.Complete();
-
-                return NoContent();
-            }
-
-            return BadRequest(ModelState);
+            return NoContent();
         }
 
         /// <summary>
@@ -437,93 +491,32 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [Consumes("application/json")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateProduct(
+        public async Task<IActionResult> CreateProduct( 
             [FromBody] ProductForUpdateDto productForUpdate)
         {
             if (productForUpdate == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
-            }
-
-            if (Regex.Matches(productForUpdate.ConceptName, @"[-a-zA-Z0-9 .,()%/]").Count < productForUpdate.ConceptName.Length)
-            {
-                ModelState.AddModelError("Message", "Concept name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage, forward slash)");
                 return BadRequest(ModelState);
             }
 
-            if (Regex.Matches(productForUpdate.MedicationForm, @"[-a-zA-Z0-9 ,]").Count < productForUpdate.MedicationForm.Length)
+            var command = new AddProductCommand(productForUpdate.ConceptName, productForUpdate.ProductName, productForUpdate.Manufacturer, productForUpdate.Description);
+
+            _logger.LogInformation(
+                $"----- Sending command: AddProductCommand - {command.ProductName}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                ModelState.AddModelError("Message", "Medication form contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, comma)");
-                return BadRequest(ModelState);
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(productForUpdate.ProductName, @"[-a-zA-Z0-9 .,()%]").Count < productForUpdate.ProductName.Length)
-            {
-                ModelState.AddModelError("Message", "Product name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage)");
-                return BadRequest(ModelState);
-            }
-
-            if (Regex.Matches(productForUpdate.Manufacturer, @"[-a-zA-Z0-9 .,()%]").Count < productForUpdate.Manufacturer.Length)
-            {
-                ModelState.AddModelError("Message", "Manufacturer contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage)");
-                return BadRequest(ModelState);
-            }
-
-            if (_unitOfWork.Repository<Product>().Queryable().
-                Where(l => l.Concept.ConceptName == productForUpdate.ConceptName && l.ProductName == productForUpdate.ProductName)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Item with same name already exists");
-            }
-
-            var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == productForUpdate.MedicationForm);
-            if (medicationFormFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate medication form");
-                return BadRequest(ModelState);
-            }
-
-            var conceptFromRepo = await _conceptRepository.GetAsync(f => f.ConceptName == productForUpdate.ConceptName && f.MedicationForm.Id == medicationFormFromRepo.Id);
-
-            if (ModelState.IsValid)
-            {
-                // Create concept first if necessary
-                if (conceptFromRepo == null)
+            return CreatedAtAction("GetProductByIdentifier",
+                new
                 {
-                    conceptFromRepo = new Concept()
-                    {
-                        ConceptName = productForUpdate.ConceptName,
-                        MedicationForm = medicationFormFromRepo,
-                        Active = (productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes)
-                    };
-                    _conceptRepository.Save(conceptFromRepo);
-                }
-
-                var newProduct = new Product()
-                {
-                    ProductName = productForUpdate.ProductName,
-                    Concept = conceptFromRepo,
-                    Manufacturer = productForUpdate.Manufacturer,
-                    Description = productForUpdate.Description,
-                    Active = (productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes)
-                };
-
-                _productRepository.Save(newProduct);
-
-                var mappedProduct = await GetProductAsync<ProductIdentifierDto>(newProduct.Id);
-                if (mappedProduct == null)
-                {
-                    return StatusCode(500, "Unable to locate newly added item");
-                }
-
-                return CreatedAtRoute("GetProductByIdentifier",
-                    new
-                    {
-                        id = mappedProduct.Id
-                    }, CreateLinksForProduct<ProductIdentifierDto>(mappedProduct));
-            }
-
-            return BadRequest(ModelState);
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -535,87 +528,28 @@ namespace PVIMS.API.Controllers
         [HttpPut("products/{id}", Name = "UpdateProduct")]
         [Consumes("application/json")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateProduct(long id,
+        public async Task<IActionResult> UpdateProduct(int id, 
             [FromBody] ProductForUpdateDto productForUpdate)
         {
             if (productForUpdate == null)
             {
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
-            }
-
-            if (Regex.Matches(productForUpdate.ConceptName, @"[-a-zA-Z0-9 .,()%/]").Count < productForUpdate.ConceptName.Length)
-            {
-                ModelState.AddModelError("Message", "Concept name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage, forward slash)");
                 return BadRequest(ModelState);
             }
 
-            if (Regex.Matches(productForUpdate.MedicationForm, @"[-a-zA-Z0-9 ,]").Count < productForUpdate.MedicationForm.Length)
+            var command = new ChangeProductDetailsCommand(id, productForUpdate.ConceptName, productForUpdate.ProductName, productForUpdate.Manufacturer, productForUpdate.Description, productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
+
+            _logger.LogInformation(
+                $"----- Sending command: ChangeProductDetailsCommand - {command.ProductId}");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                ModelState.AddModelError("Message", "Medication form contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, comma)");
-                return BadRequest(ModelState);
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(productForUpdate.ProductName, @"[-a-zA-Z0-9 .,()%]").Count < productForUpdate.ProductName.Length)
-            {
-                ModelState.AddModelError("Message", "Product name contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage)");
-                return BadRequest(ModelState);
-            }
-
-            if (Regex.Matches(productForUpdate.Manufacturer, @"[-a-zA-Z0-9 .,()%]").Count < productForUpdate.Manufacturer.Length)
-            {
-                ModelState.AddModelError("Message", "Manufacturer contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen, period, comma, brackets, percentage)");
-                return BadRequest(ModelState);
-            }
-
-            var medicationFormFromRepo = await _medicationFormRepository.GetAsync(f => f.Description == productForUpdate.MedicationForm);
-            if (medicationFormFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate medication form");
-                return BadRequest(ModelState);
-            }
-
-            if (_unitOfWork.Repository<Product>().Queryable().
-                Where(l => l.Concept.ConceptName == productForUpdate.ConceptName && l.ProductName == productForUpdate.ProductName && l.Id != id)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Item with same name already exists");
-            }
-
-            var conceptFromRepo = await _conceptRepository.GetAsync(f => f.ConceptName == productForUpdate.ConceptName && f.MedicationForm.Id == medicationFormFromRepo.Id);
-
-            var productFromRepo = await _productRepository.GetAsync(f => f.Id == id);
-            if (productFromRepo == null)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                // Create concept first if necessary
-                if (conceptFromRepo == null)
-                {
-                    conceptFromRepo = new Concept()
-                    {
-                        ConceptName = productForUpdate.ConceptName,
-                        MedicationForm = medicationFormFromRepo,
-                        Active = (productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes)
-                    };
-                    _conceptRepository.Save(conceptFromRepo);
-                }
-
-                productFromRepo.ProductName = productForUpdate.ProductName;
-                productFromRepo.Concept = conceptFromRepo;
-                productFromRepo.Manufacturer = productForUpdate.Manufacturer;
-                productFromRepo.Description = productForUpdate.Description;
-                productFromRepo.Active = (productForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
-
-                _productRepository.Update(productFromRepo);
-                _unitOfWork.Complete();
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -624,333 +558,21 @@ namespace PVIMS.API.Controllers
         /// <param name="id">The unique id of the product</param>
         /// <returns></returns>
         [HttpDelete("products/{id}", Name = "DeleteProduct")]
-        public async Task<IActionResult> DeleteProduct(long id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
-            var productFromRepo = await _productRepository.GetAsync(f => f.Id == id);
-            if (productFromRepo == null)
-            {
-                return NotFound();
-            }
+            var command = new DeleteProductCommand(id);
 
-            if (_unitOfWork.Repository<ConditionMedication>().Queryable().Any(cm => cm.Product.Id == id) ||
-                _unitOfWork.Repository<PatientMedication>().Queryable().Any(pm => pm.Product.Id == id))
-            {
-                ModelState.AddModelError("Message", "Unable to delete as item is in use.");
-                return BadRequest(ModelState);
-            }
+            _logger.LogInformation(
+                $"----- Sending command: DeleteProductCommand - {id}");
 
-            if (ModelState.IsValid)
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                _productRepository.Delete(productFromRepo);
-                _unitOfWork.Complete();
+                return BadRequest("Command not created");
             }
 
             return NoContent();
         }
-
-        /// <summary>
-        /// Get single product from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private async Task<T> GetProductAsync<T>(long id) where T : class
-        {
-            var productFromRepo = await _productRepository.GetAsync(f => f.Id == id);
-
-            if (productFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedProduct = _mapper.Map<T>(productFromRepo);
-
-                return mappedProduct;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get single concept from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private async Task<T> GetConceptAsync<T>(long id) where T : class
-        {
-            var conceptFromRepo = await _conceptRepository.GetAsync(f => f.Id == id);
-
-            if (conceptFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedConcept = _mapper.Map<T>(conceptFromRepo);
-
-                return mappedConcept;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get concepts from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="conceptResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetConcepts<T>(ConceptResourceParameters conceptResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = conceptResourceParameters.PageNumber,
-                PageSize = conceptResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<Concept>(conceptResourceParameters.OrderBy, "asc");
-
-            var predicate = PredicateBuilder.New<Concept>(true);
-            if (!String.IsNullOrWhiteSpace(conceptResourceParameters.SearchTerm))
-            {
-                predicate = predicate.And(f => f.ConceptName.Contains(conceptResourceParameters.SearchTerm.Trim()));
-            }
-            if (conceptResourceParameters.Active != Models.ValueTypes.YesNoBothValueType.Both)
-            {
-                predicate = predicate.And(f => f.Active == (conceptResourceParameters.Active == Models.ValueTypes.YesNoBothValueType.Yes));
-            }
-
-            var pagedConceptsFromRepo = _conceptRepository.List(pagingInfo, predicate, orderby, "");
-            if (pagedConceptsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedConcepts = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedConceptsFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedConceptsFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedConcepts.TotalCount,
-                    pageSize = mappedConcepts.PageSize,
-                    currentPage = mappedConcepts.CurrentPage,
-                    totalPages = mappedConcepts.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedConcepts.ForEach(dto => CreateLinksForConcept(dto));
-
-                return mappedConcepts;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get products from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="productResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetProducts<T>(ProductResourceParameters productResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = productResourceParameters.PageNumber,
-                PageSize = productResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<Product>(productResourceParameters.OrderBy, "asc");
-
-            var predicate = PredicateBuilder.New<Product>(true);
-            if(productResourceParameters.Active != Models.ValueTypes.YesNoBothValueType.Both)
-            {
-                predicate = predicate.And(f => f.Active == (productResourceParameters.Active == Models.ValueTypes.YesNoBothValueType.Yes));
-            }
-
-            if (!String.IsNullOrWhiteSpace(productResourceParameters.SearchTerm))
-            {
-                predicate = predicate.And(f => f.ProductName.Contains(productResourceParameters.SearchTerm.Trim()) ||
-                        f.Concept.ConceptName.Contains(productResourceParameters.SearchTerm.Trim()));
-            }
-            if (productResourceParameters.Active != Models.ValueTypes.YesNoBothValueType.Both)
-            {
-                predicate = predicate.And(f => f.Active == (productResourceParameters.Active == Models.ValueTypes.YesNoBothValueType.Yes));
-            }
-
-            var pagedProductsFromRepo = _productRepository.List(pagingInfo, predicate, orderby, "");
-            if (pagedProductsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedProducts = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedProductsFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedProductsFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedProducts.TotalCount,
-                    pageSize = mappedProducts.PageSize,
-                    currentPage = mappedProducts.CurrentPage,
-                    totalPages = mappedProducts.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedProducts.ForEach(dto => CreateLinksForProduct(dto));
-
-                return mappedProducts;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get medication forms from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="medicationFormResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetMedicationForms<T>(MedicationFormResourceParameters medicationFormResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = medicationFormResourceParameters.PageNumber,
-                PageSize = medicationFormResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<MedicationForm>(medicationFormResourceParameters.OrderBy, "asc");
-
-            var pagedMedicationFormsFromRepo = _medicationFormRepository.List(pagingInfo, null, orderby, "");
-            if (pagedMedicationFormsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedMedicationForms = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedMedicationFormsFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedMedicationFormsFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedMedicationForms.TotalCount,
-                    pageSize = mappedMedicationForms.PageSize,
-                    currentPage = mappedMedicationForms.CurrentPage,
-                    totalPages = mappedMedicationForms.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                //mappedMedications.ForEach(dto => CreateLinksForFacility(dto));
-
-                return mappedMedicationForms;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="conceptResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForConcepts(
-            LinkedResourceBaseDto wrapper,
-            ConceptResourceParameters conceptResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            // self 
-            wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateConceptsResourceUri(_urlHelper, ResourceUriType.Current, conceptResourceParameters),
-               "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateConceptsResourceUri(_urlHelper, ResourceUriType.NextPage, conceptResourceParameters),
-                  "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateConceptsResourceUri(_urlHelper, ResourceUriType.PreviousPage, conceptResourceParameters),
-                    "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="productResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForProducts(
-            LinkedResourceBaseDto wrapper,
-            ProductResourceParameters productResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            // self 
-            wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateProductsResourceUri(_urlHelper, ResourceUriType.Current, productResourceParameters),
-               "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateProductsResourceUri(_urlHelper, ResourceUriType.NextPage, productResourceParameters),
-                  "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateProductsResourceUri(_urlHelper, ResourceUriType.PreviousPage, productResourceParameters),
-                    "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private ProductIdentifierDto CreateLinksForProduct<T>(T dto)
-        {
-            ProductIdentifierDto identifier = (ProductIdentifierDto)(object)dto;
-
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Product", identifier.Id), "self", "GET"));
-
-            return identifier;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private ConceptIdentifierDto CreateLinksForConcept<T>(T dto)
-        {
-            ConceptIdentifierDto identifier = (ConceptIdentifierDto)(object)dto;
-
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Concept", identifier.Id), "self", "GET"));
-
-            return identifier;
-        }
-
     }
 }

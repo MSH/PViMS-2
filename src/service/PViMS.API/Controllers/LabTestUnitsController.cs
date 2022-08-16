@@ -1,29 +1,30 @@
 ﻿using AutoMapper;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/labtestunits")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class LabTestUnitsController : ControllerBase
     {
         private readonly IPropertyMappingService _propertyMappingService;
@@ -31,19 +32,19 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<LabTestUnit> _labTestUnitRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public LabTestUnitsController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<LabTestUnit> labTestUnitRepository,
             IUnitOfWorkInt unitOfWork)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _labTestUnitRepository = labTestUnitRepository ?? throw new ArgumentNullException(nameof(labTestUnitRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
@@ -55,7 +56,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetLabTestUnitsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<LabTestUnitIdentifierDto>> GetLabTestUnitsByIdentifier(
             [FromQuery] LabTestUnitResourceParameters labTestUnitResourceParameters)
@@ -84,7 +85,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<LabTestUnitIdentifierDto>> GetLabTestUnitByIdentifier(long id)
         {
@@ -144,7 +145,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetLabTestUnitByIdentifier",
+                return CreatedAtAction("GetLabTestUnitByIdentifier",
                     new
                     {
                         id = mappedLabTestUnit.Id
@@ -194,7 +195,7 @@ namespace PVIMS.API.Controllers
                 labTestUnitFromRepo.Description = labTestUnitForUpdate.LabTestUnitName;
 
                 _labTestUnitRepository.Update(labTestUnitFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -219,7 +220,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _labTestUnitRepository.Delete(labTestUnitFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();
@@ -308,7 +309,7 @@ namespace PVIMS.API.Controllers
         {
             LabTestUnitIdentifierDto identifier = (LabTestUnitIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "LabTestUnit", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("LabTestUnit", identifier.Id), "self", "GET"));
 
             return identifier;
         }

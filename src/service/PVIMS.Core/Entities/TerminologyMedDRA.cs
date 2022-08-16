@@ -1,54 +1,42 @@
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-	[Table(nameof(TerminologyMedDra))]
 	public class TerminologyMedDra : EntityBase
 	{
 		public TerminologyMedDra()
 		{
-			PatientClinicalEvents = new HashSet<PatientClinicalEvent>();
-			Children = new HashSet<TerminologyMedDra>();
-            Scales = new HashSet<MedDRAScale>();
+            Children = new HashSet<TerminologyMedDra>();
             ConditionMedDras = new HashSet<ConditionMedDra>();
+            PatientClinicalEvents = new HashSet<PatientClinicalEvent>();
+            PatientConditions = new HashSet<PatientCondition>();
+            ReportInstances = new HashSet<ReportInstance>();
+            Scales = new HashSet<MedDRAScale>();
 
             Common = false;
 		}
 
-		[Required]
-		[StringLength(100)]
-		public string MedDraTerm { get; set; }
-
-		[Required]
-		[StringLength(10)]
-		public string MedDraCode { get; set; }
-
-		[Required]
-		[StringLength(4)]
-		public string MedDraTermType { get; set; }
-
-        [StringLength(7)]
+        public string MedDraTerm { get; set; }
+        public string MedDraCode { get; set; }
+        public string MedDraTermType { get; set; }
+        public int? ParentId { get; set; }
         public string MedDraVersion { get; set; }
-
-        [Required]
         public bool Common { get; set; }
 
         public virtual TerminologyMedDra Parent { get; set; }
 
-		public virtual ICollection<PatientClinicalEvent> PatientClinicalEvents { get; set; }
-		[InverseProperty("Parent")]
 		public virtual ICollection<TerminologyMedDra> Children { get; set; }
         public virtual ICollection<ConditionMedDra> ConditionMedDras { get; set; }
+        public virtual ICollection<PatientClinicalEvent> PatientClinicalEvents { get; set; }
+        public virtual ICollection<PatientCondition> PatientConditions { get; set; }
+        public virtual ICollection<ReportInstance> ReportInstances { get; set; }
         public virtual ICollection<MedDRAScale> Scales { get; set; }
 
-        [NotMapped]
         public string DisplayName
         {
             get
             {
-                //return MedDraTerm + '(' + MedDraCode + ')';
                 return MedDraTerm;
             }
         }

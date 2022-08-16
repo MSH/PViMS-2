@@ -1,8 +1,8 @@
 import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
-import { finalize, startWith, map, takeUntil } from 'rxjs/operators';
+import { finalize, startWith, map } from 'rxjs/operators';
 import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { ConceptService } from 'app/shared/services/concept.service';
@@ -47,8 +47,7 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
     self.loadDropDowns();
 
     self.itemForm = this._formBuilder.group({
-      conceptName: [this.data.payload.conceptName || '', [Validators.required, Validators.maxLength(250), Validators.pattern('[-a-zA-Z0-9 .,()%/]*')]],
-      medicationForm: [this.data.payload.formName || '', Validators.required],
+      conceptName: [this.data.payload.conceptDisplayName || '', [Validators.required, Validators.maxLength(250), Validators.pattern('[-a-zA-Z0-9 .;,()%/]*')]],
       productName: [this.data.payload.productName || '', [Validators.required, Validators.maxLength(200), Validators.pattern('[-a-zA-Z0-9 .,()%]*')]],
       manufacturer: [this.data.payload.manufacturer || '', [Validators.required, Validators.maxLength(200), Validators.pattern('[-a-zA-Z0-9 .,()%]*')]],
       active: [this.data.payload.active, Validators.required]
@@ -64,27 +63,6 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
   loadDropDowns(): void {
     let self = this;
     self.getConceptList();
-    self.getMedicationFormList();
-  }
-
-  getMedicationFormList(): void {
-    let self = this;
-    self.conceptService.getAllMedicationForms()
-        .subscribe(result => {
-            self.formList = result;
-        }, error => {
-            self.handleError(error, "Error fetching medication forms");
-        });
-  }
-
-  getConceptList(): void {
-    let self = this;
-    self.conceptService.getAllConcepts()
-        .subscribe(result => {
-            self.conceptList = result;
-        }, error => {
-            self.handleError(error, "Error fetching concept list");
-        });
   }
 
   submit() {
@@ -94,11 +72,21 @@ export class MedicationPopupComponent extends BasePopupComponent implements OnIn
     self.conceptService.saveProduct(self.data.productId, self.itemForm.value)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
-        self.notify("Medication saved successfully", "Medications");
+        self.notify("Product saved successfully", "Products");
         this.dialogRef.close(this.itemForm.value);
     }, error => {
-        self.handleError(error, "Error saving medication");
+        self.handleError(error, "Error saving product");
     });
+  }
+
+  private getConceptList(): void {
+    let self = this;
+    self.conceptService.getAllConcepts()
+      .subscribe(result => {
+        self.conceptList = result;
+      }, error => {
+        self.handleError(error, "Error fetching concept list");
+      });
   }
 
   private _conceptFilter(value: string): ConceptIdentifierModel[] {

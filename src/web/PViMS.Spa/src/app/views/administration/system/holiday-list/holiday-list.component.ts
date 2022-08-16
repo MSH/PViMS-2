@@ -8,7 +8,8 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatDialogRef, MatDialog, MatPaginator } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { HolidayService } from 'app/shared/services/holiday.service';
@@ -47,7 +48,7 @@ export class HolidayListComponent extends BaseComponent implements OnInit, After
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
   
   ngOnInit(): void {
     const self = this;

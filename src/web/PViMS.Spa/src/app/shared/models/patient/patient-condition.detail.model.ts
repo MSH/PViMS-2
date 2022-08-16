@@ -10,5 +10,6 @@ export interface PatientConditionDetailModel {
     outcomeDate: any;
     outcome: string;
     treatmentOutcome: string;
+    caseNumber: string;
     conditionAttributes: AttributeValueModel[];
 }

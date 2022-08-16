@@ -1,23 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml;
-using AutoMapper;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Models;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Paging;
+using PVIMS.Infrastructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml;
+
 
 namespace PVIMS.API.Controllers
 {
@@ -26,29 +32,32 @@ namespace PVIMS.API.Controllers
     /// </summary>
     [Route("api")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class AnalysisTermsController : ControllerBase
     {
         private readonly IRepositoryInt<WorkFlow> _workFlowRepository;
         private readonly IRepositoryInt<TerminologyMedDra> _termsRepository;
         private readonly IRepositoryInt<RiskFactor> _riskFactorRepository;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IUnitOfWorkInt _unitOfWork;
+        private readonly PVIMSDbContext _context;
 
         public AnalysisTermsController(IRepositoryInt<WorkFlow> workFlowRepository,
                 IRepositoryInt<TerminologyMedDra> termsRepository,
                 IRepositoryInt<RiskFactor> riskFactorRepository,
                 IMapper mapper,
                 IUnitOfWorkInt unitOfWork,
-                IUrlHelper urlHelper)
+                ILinkGeneratorService linkGeneratorService,
+                PVIMSDbContext dbContext)
         {
             _workFlowRepository = workFlowRepository ?? throw new ArgumentNullException(nameof(workFlowRepository));
             _termsRepository = termsRepository ?? throw new ArgumentNullException(nameof(termsRepository));
             _riskFactorRepository = riskFactorRepository ?? throw new ArgumentNullException(nameof(riskFactorRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         /// <summary>
@@ -63,7 +72,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<AnalyserTermIdentifierDto>> GetAnalyserTermsByIdentifier(Guid workFlowGuid,
                         [FromQuery] AnalyserTermSetResourceParameters analyserTermSetResourceParameters)
@@ -96,7 +105,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         public async Task<ActionResult<AnalyserTermDetailDto>> GetAnalyserTermByDetail(Guid workFlowGuid, int id, 
             [FromQuery] AnalyserTermSetResourceParameters analyserTermSetResourceParameters)
@@ -129,7 +138,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.analyserpatientset.v1+json", "application/vnd.pvims.analyserpatientset.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.analyserpatientset.v1+json", "application/vnd.pvims.analyserpatientset.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<AnalyserPatientDto>> GetAnalyserTermPatients(Guid workFlowGuid, int id, 
                         [FromQuery] AnalyserTermSetResourceParameters analyserTermSetResourceParameters)
@@ -236,9 +245,9 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@RiskFactorXml", riskFactorXml));
             parameters.Add(new SqlParameter("@DebugMode", "False"));
 
-            var resultsFromService = _unitOfWork.Repository<ContingencyAnalysisList>()
-                .ExecuteSql("spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
-                        parameters.ToArray());
+            var resultsFromService = _context.ContingencyAnalysisLists
+                .FromSqlRaw($"EXECUTE spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
+                        parameters.ToArray()).ToList();
 
             if (resultsFromService != null)
             {
@@ -321,9 +330,9 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@RiskFactorXml", riskFactorXml));
             parameters.Add(new SqlParameter("@DebugMode", "False"));
 
-            var resultsFromService = _unitOfWork.Repository<ContingencyAnalysisItem>()
-                .ExecuteSql("spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
-                        parameters.ToArray());
+            var resultsFromService = _context.ContingencyAnalysisItems
+                .FromSqlRaw($"Exec spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
+                        parameters.ToArray()).ToList();
 
             if (resultsFromService != null)
             {
@@ -395,9 +404,10 @@ namespace PVIMS.API.Controllers
             parameters.Add(new SqlParameter("@RiskFactorXml", riskFactorXml));
             parameters.Add(new SqlParameter("@DebugMode", "False"));
 
-            var resultsFromService = PagedCollection<ContingencyAnalysisPatient>.Create(_unitOfWork.Repository<ContingencyAnalysisPatient>()
-                .ExecuteSql("spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
-                        parameters.ToArray()), pagingInfo.PageNumber, pagingInfo.PageSize);
+            var resultsFromService = PagedCollection<ContingencyAnalysisPatient>.Create(
+                _context.ContingencyAnalysisPatients
+                    .FromSqlRaw($"Exec spGenerateAnalysis @ConditionId, @CohortId, @StartDate, @FinishDate, @TermID, @IncludeRiskFactor, @RateByCount, @DebugPatientList, @RiskFactorXml, @DebugMode",
+                            parameters.ToArray()).ToList(), pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (resultsFromService != null)
             {
@@ -440,23 +450,25 @@ namespace PVIMS.API.Controllers
             AnalyserTermSetResourceParameters analyserTermSetResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateAnalyserTermSetsResourceUri(_urlHelper, workFlowGuid, ResourceUriType.Current, analyserTermSetResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateAnalyserTermSetsResourceUri(workFlowGuid, ResourceUriType.Current, analyserTermSetResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateAnalyserTermSetsResourceUri(_urlHelper, workFlowGuid, ResourceUriType.NextPage, analyserTermSetResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAnalyserTermSetsResourceUri(workFlowGuid, ResourceUriType.NextPage, analyserTermSetResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateAnalyserTermSetsResourceUri(_urlHelper, workFlowGuid, ResourceUriType.PreviousPage, analyserTermSetResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAnalyserTermSetsResourceUri(workFlowGuid, ResourceUriType.PreviousPage, analyserTermSetResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -479,23 +491,25 @@ namespace PVIMS.API.Controllers
             AnalyserTermSetResourceParameters analyserTermSetResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateAnalyserTermPatientsResourceUri(_urlHelper, workFlowGuid, termId, ResourceUriType.Current, analyserTermSetResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateAnalyserTermPatientsResourceUri(workFlowGuid, termId, ResourceUriType.Current, analyserTermSetResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateAnalyserTermPatientsResourceUri(_urlHelper, workFlowGuid, termId, ResourceUriType.NextPage, analyserTermSetResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAnalyserTermPatientsResourceUri(workFlowGuid, termId, ResourceUriType.NextPage, analyserTermSetResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateAnalyserTermPatientsResourceUri(_urlHelper, workFlowGuid, termId, ResourceUriType.PreviousPage, analyserTermSetResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAnalyserTermPatientsResourceUri(workFlowGuid, termId, ResourceUriType.PreviousPage, analyserTermSetResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -561,7 +575,7 @@ namespace PVIMS.API.Controllers
         {
             AnalyserTermIdentifierDto identifier = (AnalyserTermIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "MeddraTerm", identifier.TerminologyMeddraId), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("MeddraTerm", identifier.TerminologyMeddraId), "self", "GET"));
 
             return identifier;
         }

@@ -43,15 +43,7 @@ export class NavigationService {
     protected metaPageService: MetaPageService,
     protected metaReportService: MetaReportService,
     protected routePartsService: RoutePartsService
-  ) 
-  {
-    this.prepareClinicalMenus();
-    this.prepareInfoMenus();
-    this.prepareReportMenus();
-   }
-
-  initialiseMenus(): void {
-  }
+  ) { }
 
   currentPortal: string;
 
@@ -109,12 +101,21 @@ export class NavigationService {
       icon: "extension",
       state: "administration/reference",
       sub: [
-        { name: "Active Ingredients", state: "concept" },
         { name: "Condition Groups", state: "condition" },
         { name: "MedDRA Terms", state: "meddra" },
-        { name: "Medications", state: "medicine" },
         { name: "Tests and Procedures", state: "labtest" },
         { name: "Test Results", state: "labresult" }
+      ]
+    },
+    {
+      name: "Medicines",
+      type: "dropDown",
+      tooltip: "",
+      icon: "local_hospital",
+      state: "administration/reference",
+      sub: [
+        { name: "Active Ingredients", state: "concept" },
+        { name: "Products", state: "medicine" },
       ]
     },
     {
@@ -149,6 +150,7 @@ export class NavigationService {
       icon: "folder",
       state: "administration/work",
       sub: [
+        { name: "Attributes", state: "attributes" },
         { name: "Care Events", state: "careevent" },
         { name: "Datasets", state: "dataset" },
         { name: "Dataset Elements", state: "datasetelement" },
@@ -157,14 +159,6 @@ export class NavigationService {
       ]
     }
   ];
-
-  // {
-  //   name: "INFORMATION",
-  //   type: "icon",
-  //   tooltip: "Information Portal",
-  //   icon: "content_copy",
-  //   state: "information"
-  // },
 
   // Icon menu TITLE at the very top of navigation.
   // This title will appear if any icon type item is present in menu.
@@ -177,7 +171,6 @@ export class NavigationService {
   // Supply different menu for different user type.
   publishNavigationChange(menuType: string) 
   {
-    console.log('publish');
     switch (menuType) {
       case "clinical-menu":
         this.prepareClinicalMenus();
@@ -225,27 +218,22 @@ export class NavigationService {
               // user has no roles, do nothing
               }
               else {
-                // route to formns list
-                this.routeToFormsList();
+                this.routeToFormsLanding();
               }
             }
             else {
-              // route to admin landing page
               this.routeToAdminLanding();
             }
           }
           else {
-            // route to information home page
             this.routeToPublisherHome();
           }
         }
         else {
-          // route to patient treatment report
           this.routeToPatientTreatmentReport();
         }
       }
       else {
-        // route to analyser landing
         this.routeToAnalyticalLanding();
       }
     }
@@ -259,8 +247,8 @@ export class NavigationService {
     this._router.navigate([_routes.clinical.patients.search]);
   }
 
-  routeToFormsList() : void {
-    this._router.navigate([_routes.clinical.forms.list]);
+  routeToFormsLanding() : void {
+    this._router.navigate([_routes.clinical.forms.landing]);
   }
 
   routeToAnalyticalLanding() : void {
@@ -299,6 +287,20 @@ export class NavigationService {
         state: "clinical/patientsearch"
       };      
       this.clinicalMenu.push(newMenu);
+    }
+
+    if(this.accountService.hasRole('DataCap'))
+    {
+      let newMenu: IMenuItem = {
+        name: "Forms",
+        type: "link",
+        tooltip: "View Forms for Capture",
+        icon: "content_copy",
+        state: "clinical/form-landing"
+      };      
+      this.clinicalMenu.push(newMenu);
+
+      this.menuItems.next(this.clinicalMenu);
     }
 
     if(this.accountService.hasRole('Clinician'))
@@ -342,33 +344,13 @@ export class NavigationService {
       };      
       this.clinicalMenu.push(newMenu);
     }
-
-    if(this.accountService.hasRole('DataCap'))
-    {
-      let newMenu: IMenuItem = {
-        name: "Forms",
-        type: "link",
-        tooltip: "View Forms for Capture",
-        icon: "content_copy",
-        state: "clinical/formlist"
-      };      
-      this.clinicalMenu.push(newMenu);
-
-      newMenu = {
-        name: "Synchronise",
-        type: "link",
-        tooltip: "Synchronise",
-        icon: "sync",
-        state: "clinical/synchronise"
-      };      
-      this.clinicalMenu.push(newMenu);
-
-      this.menuItems.next(this.clinicalMenu);
-    }
   }
 
   private prepareInfoMenus(): void {
     this.infoMenu = [];
+    this.menuItems.next([]);
+
+    console.log('prepare info');
     
     let metaPageList: MetaPageDetailModel[] = [];
 
@@ -408,6 +390,7 @@ export class NavigationService {
           };      
           this.infoMenu.push(newMenu);
         }
+
         this.menuItems.next(this.infoMenu);
       }, error => {
           console.log(error + ' ' + error.statusText);
@@ -416,6 +399,7 @@ export class NavigationService {
 
   private prepareReportMenus(): void {
     this.reportMenu = [];
+    this.menuItems.next([]);
     
     let metaReportList: MetaReportDetailModel[] = [];
 
@@ -439,10 +423,8 @@ export class NavigationService {
             sub: [
               { name: "Patients on Treatment", state: "system/patienttreatment" },
               { name: "Adverse Events", state: "system/adverseevent" },
-              { name: "Quarterly Adverse Events", state: "system/adverseeventfrequency", parameter: "Quarterly" },
-              { name: "Annual Adverse Events", state: "system/adverseeventfrequency", parameter: "Annual" },
+              { name: "Adverse Events Frequency", state: "system/adverseeventfrequency" },
               { name: "Causality", state: "system/causality" },
-              { name: "Patients by Drug", state: "system/patientsdrugreport" },
               { name: "Outstanding Visits", state: "system/outstandingvisit" }
             ]
           };      

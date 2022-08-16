@@ -9,6 +9,7 @@ export interface PatientDetailModel {
     id: number;
     patientGuid: string;
     facilityName: string;
+    organisationUnit: string;
     firstName: string;
     middleName: string;
     lastName: string;
@@ -20,5 +21,6 @@ export interface PatientDetailModel {
     latestEncounterDate: any;
     currentStatus: string;
     medicalRecordNumber: string;
+    caseNumber: string[];
     patientAttributes: AttributeValueModel[];
 }

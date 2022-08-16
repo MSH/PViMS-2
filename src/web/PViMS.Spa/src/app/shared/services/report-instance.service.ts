@@ -6,6 +6,8 @@ import { ParameterKeyValueModel } from '../models/parameter.keyvalue.model';
 import { CausalityReportWrapperModel } from '../models/causality.report.model';
 import { ActivityChangeModel } from '../models/activity/activity-change.model';
 import { ReportInstanceDetailWrapperModel } from '../models/report-instance/report-instance.detail.model';
+import { ReportInstanceExpandedModel } from '../models/report-instance/report-instance.expanded.model';
+import { TaskModel } from '../models/report-instance/task.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReportInstanceService extends BaseService {
@@ -50,9 +52,29 @@ export class ReportInstanceService extends BaseService {
       return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.detail.v1+json', parameters);
     }
 
+    getNewReportInstancesByDetail(workFlowGuid: string, filterModel: any): any {
+      let parameters: ParameterKeyValueModel[] = [];
+
+      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
+      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
+
+      return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.new.v1+json', parameters);
+    }
+
+    getAnalysisReportInstancesByDetail(workFlowGuid: string, filterModel: any): any {
+      let parameters: ParameterKeyValueModel[] = [];
+
+      parameters.push(<ParameterKeyValueModel> { key: 'qualifiedName', value: filterModel.qualifiedName });
+      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
+      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
+
+      return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.analysis.v1+json', parameters);
+    }
+
     getFeedbackReportInstancesByDetail(workFlowGuid: string, filterModel: any): any {
       let parameters: ParameterKeyValueModel[] = [];
 
+      parameters.push(<ParameterKeyValueModel> { key: 'qualifiedName', value: filterModel.qualifiedName });
       parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
       parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
 
@@ -69,20 +91,25 @@ export class ReportInstanceService extends BaseService {
       return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.feedback.v1+json', parameters);
     }
 
-    getNewReportInstancesByDetail(workFlowGuid: string, filterModel: any): any {
-      let parameters: ParameterKeyValueModel[] = [];
-
-      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
-      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
-
-      return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.newreports.v1+json', parameters);
-    }
-
     getReportInstanceDetail(workFlowGuid: string, id: number): any {
       let parameters: ParameterKeyValueModel[] = [];
       parameters.push(<ParameterKeyValueModel> { key: 'id', value: id.toString() });
 
       return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.detail.v1+json', parameters);
+    } 
+
+    getReportInstanceExpanded(workFlowGuid: string, id: number): any {
+      let parameters: ParameterKeyValueModel[] = [];
+      parameters.push(<ParameterKeyValueModel> { key: 'id', value: id.toString() });
+
+      return this.Get<ReportInstanceExpandedModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.expanded.v1+json', parameters);
+    } 
+
+    getReportInstanceTaskDetail(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number): any {
+      let parameters: ParameterKeyValueModel[] = [];
+      parameters.push(<ParameterKeyValueModel> { key: 'id', value: reportInstanceTaskId.toString() });
+
+      return this.Get<TaskModel>(`/workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks`, 'application/vnd.pvims.detail.v1+json', parameters);
     } 
 
     getActivityChangeStatus(workFlowGuid: string, reportInstanceId: number, id: number, activityExecutionStatusId: number): any {
@@ -96,12 +123,6 @@ export class ReportInstanceService extends BaseService {
         header = 'application/vnd.pvims.activitystatusconfirm.v1+json';
       }
       return this.Get<ActivityChangeModel>(`/workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/activity`, header, parameters);
-    }
-
-    getReportInstanceActivity(workFlowGuid: string, reportInstanceId: number): any {
-        let parameters: ParameterKeyValueModel[] = [];
-
-        return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/activity`, 'application/vnd.pvims.detail.v1+json', parameters);
     }
 
     getCausalityReport(filterModel: any): any {
@@ -131,15 +152,31 @@ export class ReportInstanceService extends BaseService {
       return this.Download(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.patientsummary.v1+json', parameters);
     }
 
-    updateStatus(workFlowGuid: string, reportInstanceId: number, model: any): any {
-      return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/status`, model);
+    addTaskToReportInstanceCommand(workFlowGuid: string, reportInstanceId: number, model: any): any {
+      return this.Post(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks`, model);
+    }
+
+    addCommentToReportInstanceTaskCommand(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number, model: any): any {
+      return this.Post(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks/${reportInstanceTaskId}/comments`, model);
+    }
+
+    changeTaskDetailsCommand(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number, model: any): any {
+      return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks/${reportInstanceTaskId}/details`, model);
+    }
+
+    changeTaskStatusCommand(workFlowGuid: string, reportInstanceId: number, reportInstanceTaskId: number, model: any): any {
+      return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/tasks/${reportInstanceTaskId}/status`, model);
+    }
+
+    updateReportInstanceActivity(workFlowGuid: string, reportInstanceId: number, model: any): any {
+      return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/activity`, model);
     }
 
     updateTerminology(workFlowGuid: string, reportInstanceId: number, model: any): any {
       return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/terminology`, model);
     }
 
-    updateCausality(workFlowGuid: string, reportInstanceId: number, medicationId: number, model: any): any {
+    updateReportInstanceMedicationCausality(workFlowGuid: string, reportInstanceId: number, medicationId: number, model: any): any {
       return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/medications/${medicationId}/causality`, model);
     }
 
@@ -147,4 +184,7 @@ export class ReportInstanceService extends BaseService {
       return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/createe2b`, null);
     }
 
+    updateReportInstanceClassification(workFlowGuid: string, reportInstanceId: number, model: any): any {
+      return this.Put(`workflow/${workFlowGuid}/reportinstances/${reportInstanceId}/classification`, model);
+    }
 }

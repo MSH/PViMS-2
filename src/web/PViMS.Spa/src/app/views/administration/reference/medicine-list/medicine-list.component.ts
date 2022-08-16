@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +8,8 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
@@ -18,8 +19,9 @@ import { MedicationDeletePopupComponent } from './medication-delete-popup/medica
 
 @Component({
   templateUrl: './medicine-list.component.html',
-  styleUrls: ['./medicine-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 10% !important; width: 10% !important; }
+  `],
   animations: egretAnimations
 })
 export class MedicineListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -52,7 +54,7 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;
@@ -84,18 +86,18 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
     self.setBusy(true);
 
     self.conceptService.searchProductsByDetail(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
-        .pipe(takeUntil(self._unsubscribeAll))
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-            self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-            self.handleError(error, "Error searching for products");
-        });
+      .pipe(takeUntil(self._unsubscribeAll))
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.viewModel.mainGrid.updateAdvance(result);
+      }, error => {
+        self.handleError(error, "Error searching for products");
+      });
   }
 
   openPopUp(data: any = {}, isNew?) {
     let self = this;
-    let title = isNew ? 'Add Medication' : 'Update Medication';
+    let title = isNew ? 'Add Product' : 'Update Product';
     let dialogRef: MatDialogRef<any> = self.dialog.open(MedicationPopupComponent, {
       width: '720px',
       disableClose: true,
@@ -134,7 +136,7 @@ export class MedicineListComponent extends BaseComponent implements OnInit, Afte
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['id', 'product', 'active-ingredient', 'form', 'manufacturer', 'active', 'actions']);
+          (['id', 'product', 'active-ingredient', 'strength', 'form', 'manufacturer', 'active', 'actions']);
 
   searchTerm: string;
 }
@@ -143,6 +145,7 @@ class GridRecordModel {
   id: number;
   productName: string;
   conceptName: string;
+  strength: string;
   formName: string;
   manufacturer: string;
   active: string;

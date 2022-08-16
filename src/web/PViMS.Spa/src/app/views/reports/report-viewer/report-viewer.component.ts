@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
@@ -14,11 +14,13 @@ import { NavigationService } from 'app/shared/services/navigation.service';
 import { MetaReportExpandedModel } from 'app/shared/models/meta/meta-report.expanded.model';
 import { MetaReportService } from 'app/shared/services/meta-report.service';
 import { ConfigService } from 'app/shared/services/config.service';
+import { GridModel } from 'app/shared/models/grid.model';
 
 @Component({
   templateUrl: './report-viewer.component.html',
-  styleUrls: ['./report-viewer.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mainButton { display: flex; justify-content: flex-end; button { margin-left: auto; } }
+  `],  
   animations: egretAnimations
 })
 export class ReportViewerComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -110,10 +112,19 @@ export class ReportViewerComponent extends BaseComponent implements OnInit, OnDe
 
   loadMetaDate(): void {
     let self = this;
-    self.configService.getConfigIdentifier(7)
+    self.configService.getConfigIdentifier(2)
       .subscribe(result => {
         self.metaDate = result.configValue
       });
   }
-
 }
+
+// class ViewModel {
+//   mainGrid: GridModel<GridRecordModel> =
+//       new GridModel<GridRecordModel>
+//           (['facility', 'patient-count', 'patient-serious-count', 'patient-non-serious-count', 'event-percentage', 'actions']);
+
+//   criteriaId: number;
+//   searchFrom: Moment;
+//   searchTo: Moment;
+// }

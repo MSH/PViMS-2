@@ -1,76 +1,77 @@
 ﻿using AutoMapper;
-using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
-using PVIMS.API.Helpers;
+using PVIMS.API.Infrastructure.Attributes;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using PVIMS.API.Application.Queries.ConditionAggregate;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Repositories;
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
+using MediatR;
+using PVIMS.Core.Aggregates.ConceptAggregate;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/conditions")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class ConditionsController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
+        private readonly IMediator _mediator;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<Condition> _conditionRepository;
         private readonly IRepositoryInt<ConditionLabTest> _conditionLabTestRepository;
         private readonly IRepositoryInt<ConditionMedication> _conditionMedicationRepository;
         private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
-        private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
         private readonly IRepositoryInt<LabTest> _labTestRepository;
+        private readonly IRepositoryInt<Concept> _conceptRepository;
         private readonly IRepositoryInt<Product> _productRepository;
         private readonly IRepositoryInt<TerminologyMedDra> _terminologyMeddraRepository;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IUnitOfWorkInt _unitOfWork;
+        private readonly ILogger<ConditionsController> _logger;
 
-        public ConditionsController(IPropertyMappingService propertyMappingService,
+        public ConditionsController(IMediator mediator, 
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<Condition> conditionRepository,
             IRepositoryInt<ConditionLabTest> conditionLabTestRepository,
             IRepositoryInt<ConditionMedication> conditionMedicationRepository,
             IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
-            IRepositoryInt<CohortGroup> cohortGroupRepository,
             IRepositoryInt<LabTest> labTestRepository,
+            IRepositoryInt<Concept> conceptRepository,
             IRepositoryInt<Product> productRepository,
             IRepositoryInt<TerminologyMedDra> terminologyMeddraRepository,
-            IUnitOfWorkInt unitOfWork)
+            IUnitOfWorkInt unitOfWork,
+            ILogger<ConditionsController> logger)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _conditionRepository = conditionRepository ?? throw new ArgumentNullException(nameof(conditionRepository));
             _conditionLabTestRepository = conditionLabTestRepository ?? throw new ArgumentNullException(nameof(conditionLabTestRepository));
             _conditionMedicationRepository = conditionMedicationRepository ?? throw new ArgumentNullException(nameof(conditionMedicationRepository));
             _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
-            _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
             _labTestRepository = labTestRepository ?? throw new ArgumentNullException(nameof(labTestRepository));
+            _conceptRepository = conceptRepository ?? throw new ArgumentNullException(nameof(conceptRepository));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _terminologyMeddraRepository = terminologyMeddraRepository ?? throw new ArgumentNullException(nameof(terminologyMeddraRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -80,9 +81,9 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetConditionsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ConditionIdentifierDto>> GetConditionsByIdentifier(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ConditionIdentifierDto>>> GetConditionsByIdentifier(
             [FromQuery] ConditionResourceParameters conditionResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<ConditionIdentifierDto>
@@ -91,26 +92,48 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedConditionsWithLinks = GetConditions<ConditionIdentifierDto>(conditionResourceParameters);
+            var query = new ConditionsIdentifierQuery(
+                conditionResourceParameters.OrderBy,
+                conditionResourceParameters.Active,
+                conditionResourceParameters.PageNumber,
+                conditionResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ConditionIdentifierDto>(mappedConditionsWithLinks.TotalCount, mappedConditionsWithLinks);
-            var wrapperWithLinks = CreateLinksForConditions(wrapper, conditionResourceParameters,
-                mappedConditionsWithLinks.HasNext, mappedConditionsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: ConditionsIdentifierQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = conditionResourceParameters.PageSize,
+                currentPage = conditionResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
         /// Get all conditions using a valid media type 
         /// </summary>
         /// <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of ConditionDetailDto</returns>
-        [HttpGet(Name = "GetConditionsByIdentifier")]
+        [HttpGet(Name = "GetConditionsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<ConditionDetailDto>> GetConditionsByDetail(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<ConditionDetailDto>>> GetConditionsByDetail(
             [FromQuery] ConditionResourceParameters conditionResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<ConditionDetailDto>
@@ -119,16 +142,35 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedConditionsWithLinks = GetConditions<ConditionDetailDto>(conditionResourceParameters);
+            var query = new ConditionsDetailQuery(
+                conditionResourceParameters.OrderBy,
+                conditionResourceParameters.Active,
+                conditionResourceParameters.PageNumber,
+                conditionResourceParameters.PageSize);
 
-            // Add custom mappings to conditions
-            mappedConditionsWithLinks.ForEach(dto => CustomConditionMap(dto));
+            _logger.LogInformation(
+                "----- Sending query: ConditionsDetailQuery");
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<ConditionDetailDto>(mappedConditionsWithLinks.TotalCount, mappedConditionsWithLinks);
-            var wrapperWithLinks = CreateLinksForConditions(wrapper, conditionResourceParameters,
-                mappedConditionsWithLinks.HasNext, mappedConditionsWithLinks.HasPrevious);
+            var queryResult = await _mediator.Send(query);
 
-            return Ok(wrapperWithLinks);
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = conditionResourceParameters.PageSize,
+                currentPage = conditionResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -140,7 +182,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<ConditionIdentifierDto>> GetConditionByIdentifier(int id)
         {
@@ -162,7 +204,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<ConditionDetailDto>> GetConditionByDetail(int id)
@@ -229,8 +271,8 @@ namespace PVIMS.API.Controllers
                 // ensure products are linked to condition
                 foreach (var productId in conditionForUpdate.ConditionMedications)
                 {
-                    var product = _productRepository.Get(f => f.Id == productId);
-                    newCondition.ConditionMedications.Add(new ConditionMedication() { Product = product, Concept = product.Concept });
+                    var concept = _conceptRepository.Get(c => c.Id == productId, new string[] { "" });
+                    newCondition.ConditionMedications.Add(new ConditionMedication() { Product = null, Concept = concept });
                 }
 
                 // ensure meddra terms are linked to condition
@@ -240,7 +282,7 @@ namespace PVIMS.API.Controllers
                 }
 
                 _conditionRepository.Save(newCondition);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 var mappedCondition = await GetConditionAsync<ConditionIdentifierDto>(newCondition.Id);
                 if (mappedCondition == null)
@@ -248,7 +290,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetConditionByIdentifier",
+                return CreatedAtAction("GetConditionByIdentifier",
                     new
                     {
                         id = mappedCondition.Id
@@ -311,7 +353,7 @@ namespace PVIMS.API.Controllers
                 AddOrUpdateConditionMeddras(conditionForUpdate, conditionFromRepo);
                 AddOrUpdateConditionMedications(conditionForUpdate, conditionFromRepo);
 
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -345,62 +387,10 @@ namespace PVIMS.API.Controllers
                 meddraValues.ForEach(conditionMedication => _conditionMeddraRepository.Delete(conditionMedication));
 
                 _conditionRepository.Delete(conditionFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();
-        }
-
-        /// <summary>
-        /// Get conditions from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="conditionResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetConditions<T>(ConditionResourceParameters conditionResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = conditionResourceParameters.PageNumber,
-                PageSize = conditionResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<Condition>(conditionResourceParameters.OrderBy, "asc");
-
-            var predicate = PredicateBuilder.New<Condition>(true);
-            if (conditionResourceParameters.Active != Models.ValueTypes.YesNoBothValueType.Both)
-            {
-                predicate = predicate.And(f => f.Active == (conditionResourceParameters.Active == Models.ValueTypes.YesNoBothValueType.Yes));
-            }
-
-            var pagedConditionsFromRepo = _conditionRepository.List(pagingInfo, predicate, orderby, "");
-            if (pagedConditionsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedConditions = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedConditionsFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedConditionsFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedConditions.TotalCount,
-                    pageSize = mappedConditions.PageSize,
-                    currentPage = mappedConditions.CurrentPage,
-                    totalPages = mappedConditions.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedConditions.ForEach(dto => CreateLinksForCondition(dto));
-
-                return mappedConditions;
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -411,7 +401,11 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetConditionAsync<T>(int id) where T : class
         {
-            var conditionFromRepo = await _conditionRepository.GetAsync(f => f.Id == id);
+            var conditionFromRepo = await _conditionRepository.GetAsync(f => f.Id == id, new string[] { 
+                "ConditionLabTests.LabTest",
+                "ConditionMedications.Concept.MedicationForm",
+                "ConditionMedDras.TerminologyMedDra"
+            });
 
             if (conditionFromRepo != null)
             {
@@ -425,41 +419,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="conditionResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForConditions(
-            LinkedResourceBaseDto wrapper,
-            ConditionResourceParameters conditionResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            // self 
-            wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateConditionsResourceUri(_urlHelper, ResourceUriType.Current, conditionResourceParameters),
-               "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateConditionsResourceUri(_urlHelper, ResourceUriType.NextPage, conditionResourceParameters),
-                  "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateConditionsResourceUri(_urlHelper, ResourceUriType.PreviousPage, conditionResourceParameters),
-                    "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
-        /// <summary>
         ///  Prepare HATEOAS links for a single resource
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
@@ -468,22 +427,9 @@ namespace PVIMS.API.Controllers
         {
             ConditionIdentifierDto identifier = (ConditionIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Condition", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("", identifier.Id), "self", "GET"));
 
             return identifier;
-        }
-
-        /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private ConditionDetailDto CustomConditionMap(ConditionDetailDto dto)
-        {
-            var cohortGroupsFromRepo = _cohortGroupRepository.List(cg => cg.Condition.Id == dto.Id);
-            dto.CohortGroups = _mapper.Map<PagedCollection<CohortGroupIdentifierDto>>(cohortGroupsFromRepo);
-
-            return dto;
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewEncapsulation } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { Component, OnInit, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -8,7 +8,6 @@ import { DatasetService } from 'app/shared/services/dataset.service';
 
 @Component({
   templateUrl: './dataset.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class DatasetPopupComponent implements OnInit {

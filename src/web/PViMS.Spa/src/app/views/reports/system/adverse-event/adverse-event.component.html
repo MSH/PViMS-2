@@ -12,28 +12,24 @@
 
   <mat-card-content>
     <form [formGroup]="viewModelForm">
-      <div class="p-0 default-light-bg rounded">
+      <div class="p-12 default-light-bg rounded">
         <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start">
           <div fxFlex="24" class="pr-1">
-            <mat-form-field class="p-8 full-width">
-              <mat-select formControlName="criteriaId" placeholder="{{'Criteria' | translate }}" required>
-                  <mat-option value="1">{{'Report source' | translate }}</mat-option>
-                  <mat-option value="2">{{'MedDRA term' | translate }}</mat-option>
-                </mat-select>                        
-            </mat-form-field>
-          </div>
-          <div fxFlex="24" class="pr-1">
-            <mat-form-field class="p-8 full-width">
+            <mat-form-field class="full-width">
               <mat-select formControlName="stratifyId" placeholder="{{'Stratify by' | translate }}" required>
                   <mat-option value="1">{{'Age group' | translate }}</mat-option>
-                  <mat-option value="2">{{'Facility' | translate }}</mat-option>
-                  <mat-option value="3">{{'Medication' | translate }}</mat-option>
-                  <mat-option value="4">{{'Cohort' | translate }}</mat-option>
+                  <mat-option value="11">{{'Classification' | translate }}</mat-option>
+                  <mat-option value="7">{{'Gender' | translate }}</mat-option>
+                  <mat-option value="9">{{'Is Serious' | translate }}</mat-option>
+                  <mat-option value="6">{{'Outcome' | translate }}</mat-option>
+                  <mat-option value="8">{{'Regimen' | translate }}</mat-option>
+                  <mat-option value="5">{{'Region' | translate }}</mat-option>
+                  <mat-option value="10">{{'Seriousness' | translate }}</mat-option>
                 </mat-select>                        
             </mat-form-field>
           </div>
           <div fxFlex="24" class="pr-1">
-            <mat-form-field class="p-8 full-width">
+            <mat-form-field class="full-width">
               <input matInput formControlName="searchFrom" placeholder="{{'Search from' | translate }}" [matDatepicker]="searchFromDatepicker" required>
               <mat-datepicker-toggle matSuffix [for]="searchFromDatepicker"></mat-datepicker-toggle>
               <mat-error *ngIf="viewModelForm.get('searchFrom').hasError('required')">
@@ -43,7 +39,7 @@
             <mat-datepicker #searchFromDatepicker></mat-datepicker>
           </div>
           <div fxFlex="24" class="pr-1">
-            <mat-form-field class="p-8 full-width">
+            <mat-form-field class="full-width">
               <input matInput formControlName="searchTo" placeholder="{{'Search to' | translate }}" [matDatepicker]="searchToDatepicker" required>
               <mat-datepicker-toggle matSuffix [for]="searchToDatepicker"></mat-datepicker-toggle>
               <mat-error *ngIf="viewModelForm.get('searchTo').hasError('required')">
@@ -52,7 +48,129 @@
             </mat-form-field>
             <mat-datepicker #searchToDatepicker></mat-datepicker>
           </div>
+          <div fxFlex="24" class="pr-1">
+            <mat-form-field class="full-width">
+              <mat-select formControlName="ageGroupCriteria" placeholder="{{'Age group' | translate }}">
+                  <mat-option value="0"></mat-option>
+                  <mat-option value="1">0 - 4</mat-option>
+                  <mat-option value="2">5 - 14</mat-option>
+                  <mat-option value="3">15 - 24</mat-option>
+                  <mat-option value="4">25 - 34</mat-option>
+                  <mat-option value="5">35 - 44</mat-option>
+                  <mat-option value="6">45 - 54</mat-option>
+                  <mat-option value="7">55 - 64</mat-option>
+                  <mat-option value="8">Greater 64</mat-option>
+                </mat-select>                        
+            </mat-form-field>
+          </div>
         </div>
+        <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start">
+          <div fxFlex="24" class="pr-1">
+            <mat-form-field class="full-width">
+              <mat-select formControlName="genderId" placeholder="{{'Gender' | translate }}">
+                  <mat-option value="0"></mat-option>
+                  <mat-option value="1">{{'Male' | translate }}</mat-option>
+                  <mat-option value="2">{{'Female' | translate }}</mat-option>
+                </mat-select>                        
+            </mat-form-field>
+          </div>
+          <div fxFlex="24" class="pr-1">
+            <mat-form-field class="full-width">
+              <mat-select formControlName="regimenId" placeholder="{{'Regimen' | translate }}">
+                  <mat-option value="0"></mat-option>
+                  <mat-option value="1">SSOR (3)</mat-option>
+                  <mat-option value="2">SLOR FQ-S (4)</mat-option>
+                  <mat-option value="3">SLOR FQ-R (5)</mat-option>
+                  <mat-option value="4">ITR</mat-option>
+                  <mat-option value="5">FQ susceptible MDR TB (6a)</mat-option>
+                  <mat-option value="6">FQ susceptible MDR TB (6b)</mat-option>
+                  <mat-option value="7">FQ susceptible MDR TB (6c)</mat-option>
+                  <mat-option value="8">FQ resistant MDR TB (7a)</mat-option>
+                  <mat-option value="9">FQ resistant MDR TB (7b)</mat-option>
+                  <mat-option value="10">FQ resistant MDR TB (7c)</mat-option>
+                  <mat-option value="11">BPaL</mat-option>
+                </mat-select>                        
+            </mat-form-field>
+          </div>
+          <div fxFlex="24" class="pr-1">
+            <mat-form-field class="full-width">
+              <mat-select formControlName="organisationUnitId" placeholder="{{'Region' | translate }}">
+                  <mat-option value="0"></mat-option>
+                  <mat-option value="1">NCR</mat-option>
+                  <mat-option value="2">CAR</mat-option>
+                  <mat-option value="3">Region 1</mat-option>
+                  <mat-option value="4">Region 2</mat-option>
+                  <mat-option value="5">Region 3</mat-option>
+                  <mat-option value="6">MIMAROPA</mat-option>
+                  <mat-option value="7">CaLaBaRZon</mat-option>
+                  <mat-option value="8">Region 5</mat-option>
+                  <mat-option value="9">Region 6</mat-option>
+                  <mat-option value="10">Region 7</mat-option>
+                  <mat-option value="11">Region 8</mat-option>
+                  <mat-option value="12">Region 9</mat-option>
+                  <mat-option value="13">Region 10</mat-option>
+                  <mat-option value="14">Region 11</mat-option>
+                  <mat-option value="15">Region 12</mat-option>
+                  <mat-option value="16">Region 13</mat-option>
+                  <mat-option value="17">BARMM</mat-option>
+                </mat-select>                        
+            </mat-form-field>
+          </div>
+          <div fxFlex="24" class="pr-1">
+            <mat-form-field class="full-width">
+              <mat-select formControlName="outcomeId" placeholder="{{'Outcome' | translate }}">
+                  <mat-option value="0"></mat-option>
+                  <mat-option value="1">Resolved</mat-option>
+                  <mat-option value="2">Resolved with sequelae</mat-option>
+                  <mat-option value="3">Fatal</mat-option>
+                  <mat-option value="4">Resolving</mat-option>
+                  <mat-option value="5">Not resolved</mat-option>
+                  <mat-option value="6">Unknown</mat-option>
+                </mat-select>                        
+            </mat-form-field>
+          </div>
+        </div>
+        <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start">
+          <div fxFlex="24" class="pr-1">
+            <mat-form-field class="full-width">
+              <mat-select formControlName="isSeriousId" placeholder="{{'Is AE Serious' | translate }}">
+                  <mat-option value="0"></mat-option>
+                  <mat-option value="1">{{'Yes' | translate }}</mat-option>
+                  <mat-option value="2">{{'No' | translate }}</mat-option>
+                  <mat-option value="3">{{'Unknown' | translate }}</mat-option>
+                </mat-select>                        
+            </mat-form-field>
+          </div>
+          <div fxFlex="24" class="pr-1">
+            <mat-form-field class="full-width">
+              <mat-select formControlName="seriousnessId" placeholder="{{'Seriousness' | translate }}">
+                  <mat-option value="0"></mat-option>
+                  <mat-option value="1">A congenital anomaly or birth defect</mat-option>
+                  <mat-option value="2">Persistent or significant disability or incapacity</mat-option>
+                  <mat-option value="3">Death</mat-option>
+                  <mat-option value="4">Hospitalisation</mat-option>
+                  <mat-option value="5">Prolonged hospitalisation</mat-option>
+                  <mat-option value="6">Life threatening</mat-option>
+                  <mat-option value="7">A medically important event</mat-option>
+                </mat-select>                        
+            </mat-form-field>
+          </div>
+          <div fxFlex="24" class="pr-1">
+            <mat-form-field class="full-width">
+              <mat-select formControlName="classificationId" placeholder="{{'Classification' | translate }}">
+                  <mat-option value="0"></mat-option>
+                  <mat-option value="1">AESI</mat-option>
+                  <mat-option value="2">SAE</mat-option>
+                  <mat-option value="3">Clinically Significant</mat-option>
+                </mat-select>                        
+            </mat-form-field>
+          </div>
+        </div>
+        <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="start" class="p-8">
+          <div class="light-mat-gray rounded p-24">
+            {{ 'Please note that report uses MedDra term set by the PV specialist and AE onset date for stratification ...' | translate }}
+          </div>
+        </div>        
         <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="end" class="p-8">
           <button mat-raised-button color="primary" (click)="loadGrid()" [disabled]="viewModelForm.invalid">{{'Search' | translate }}</button>
         </div>
@@ -71,17 +189,10 @@
                 </mat-cell>
             </ng-container>
 
-            <ng-container matColumnDef="criteria">
+            <ng-container matColumnDef="stratification-criteria">
                 <mat-header-cell *matHeaderCellDef>{{'Criteria' | translate }}</mat-header-cell>
                 <mat-cell *matCellDef="let record">
-                    <p>{{record.criteria}}</p>
-                </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="serious">
-                <mat-header-cell *matHeaderCellDef>{{'Serious' | translate }}</mat-header-cell>
-                <mat-cell *matCellDef="let record">
-                    <p>{{record.serious}}</p>
+                    <p>{{record.stratificationCriteria}}</p>
                 </mat-cell>
             </ng-container>
 

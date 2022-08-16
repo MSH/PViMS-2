@@ -54,5 +54,11 @@ export const egretAnimations = [
     ),
     transition("0 => 1", animate("300ms")),
     transition("1 => 0", animate("300ms"))
-  ])
+  ]),
+  trigger('fadeInOut2', [
+    state('void', style({
+      opacity: 0
+    })),
+    transition('void <=> *', animate(1000)),
+  ])  
 ];

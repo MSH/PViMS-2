@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -11,9 +11,7 @@ import { Router } from '@angular/router';
 import { AccountService } from 'app/shared/services/account.service';
 
 @Component({
-  selector: 'contactdetail-popup',
   templateUrl: './contact-detail.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class ContactDetailPopupComponent extends BasePopupComponent  implements OnInit, AfterViewInit {
@@ -39,15 +37,17 @@ export class ContactDetailPopupComponent extends BasePopupComponent  implements 
 
     self.itemForm = this._formBuilder.group({
       contactType: [this.data.payload.contactType || ''],
-      organisationName: [this.data.payload.organisationName || '', [Validators.required, Validators.maxLength(50), Validators.pattern('[a-zA-Z0-9 ]*')]],
-      contactFirstName: [this.data.payload.contactFirstName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z ]*')]],
-      contactLastName: [this.data.payload.contactLastName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z ]*')]],
+      organisationType: ['', [Validators.required]],
+      organisationName: [this.data.payload.organisationName || '', [Validators.required, Validators.maxLength(60), Validators.pattern('[a-zA-Z0-9 ]*')]],
+      departmentName: [this.data.payload.departmentName || '', [Validators.required, Validators.maxLength(60), Validators.pattern('[a-zA-Z0-9 ]*')]],
+      contactFirstName: [this.data.payload.contactFirstName || '', [Validators.required, Validators.maxLength(35), Validators.pattern('[a-zA-Z ]*')]],
+      contactLastName: [this.data.payload.contactLastName || '', [Validators.required, Validators.maxLength(35), Validators.pattern('[a-zA-Z ]*')]],
       streetAddress: [this.data.payload.streetAddress || '', [Validators.required, Validators.maxLength(100), Validators.pattern('[a-zA-Z0-9 ]*')]],
       city: [this.data.payload.city || '', [Validators.required, Validators.maxLength(50), Validators.pattern('[a-zA-Z ]*')]],
       state: [this.data.payload.state || '', [Validators.maxLength(50), Validators.pattern('[a-zA-Z ]*')]],
-      countryCode: [this.data.payload.countryCode || '', [Validators.maxLength(10), Validators.pattern('[0-9 ]*')]],
-      postCode: [this.data.payload.postCode || '', [Validators.maxLength(20), Validators.pattern('[a-zA-Z0-9 ]*')]],
-      contactNumber: [this.data.payload.contactNumber || '', [Validators.maxLength(50), Validators.pattern('[0-9 ]*')]],
+      countryCode: [this.data.payload.countryCode || '', [Validators.maxLength(10), Validators.pattern('[0-9]*')]],
+      postCode: [this.data.payload.postCode || '', [Validators.maxLength(20), Validators.pattern('[a-zA-Z0-9]*')]],
+      contactNumber: [this.data.payload.contactNumber || '', [Validators.maxLength(50), Validators.pattern('[-0-9]*')]],
       contactEmail: [this.data.payload.contactEmail || '', [Validators.maxLength(50), Validators.pattern('[-a-zA-Z0-9@._]*')]]
     })
   }
@@ -65,6 +65,7 @@ export class ContactDetailPopupComponent extends BasePopupComponent  implements 
     self.contactDetailService.getContactDetail(self.data.contactId)
       .pipe(finalize(() => self.setBusy(false)))
       .subscribe(result => {
+        self.CLog(result);
         self.updateForm(self.itemForm, (self.data.payload = result));
       }, error => {
         self.handleError(error, "Error fetching contact details");

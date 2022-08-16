@@ -1,35 +1,39 @@
-using System.ComponentModel.DataAnnotations;
 using PVIMS.Core.Exceptions;
 using PVIMS.Core.ValueTypes;
 using PVIMS.Core.Extensions;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(DatasetElementSub))]
     public class DatasetElementSub : EntityBase
 	{
         public DatasetElementSub()
 		{
-		}
+            System = false;
 
-		[Required]
-		[StringLength(100)]
-		public string ElementName { get; set; }
+            DatasetInstanceSubValues = new HashSet<DatasetInstanceSubValue>();
+            DatasetMappingSubDestinationElements = new HashSet<DatasetMappingSub>();
+            DatasetMappingSubSourceElements = new HashSet<DatasetMappingSub>();
+            DatasetXmlNodes = new HashSet<DatasetXmlNode>();
+        }
 
-        [StringLength(150)]
-        public string FriendlyName { get; set; }
-        [StringLength(350)]
-        public string Help { get; set; }
-
-		public short FieldOrder { get; set; }
-		public virtual DatasetElement DatasetElement { get; set; }
-		public virtual Field Field { get; set; }
-
-        [StringLength(50)]
-        public string OID { get; set; }
+        public string ElementName { get; set; }
+        public short FieldOrder { get; set; }
+        public int DatasetElementId { get; set; }
+        public int FieldId { get; set; }
+        public string Oid { get; set; }
         public string DefaultValue { get; set; }
         public bool System { get; set; }
+        public string FriendlyName { get; set; }
+        public string Help { get; set; }
+
+		public virtual DatasetElement DatasetElement { get; set; }
+        public virtual Field Field { get; set; }
+
+        public virtual ICollection<DatasetInstanceSubValue> DatasetInstanceSubValues { get; set; }
+        public virtual ICollection<DatasetMappingSub> DatasetMappingSubDestinationElements { get; set; }
+        public virtual ICollection<DatasetMappingSub> DatasetMappingSubSourceElements { get; set; }
+        public virtual ICollection<DatasetXmlNode> DatasetXmlNodes { get; set; }
 
         public void Validate(string instanceSubValue)
         {

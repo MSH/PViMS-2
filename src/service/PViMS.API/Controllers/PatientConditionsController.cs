@@ -1,34 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using AutoMapper;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using PVIMS.API.Application.Commands.PatientAggregate;
+using PVIMS.API.Application.Queries.PatientAggregate;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
+using PVIMS.API.Models;
+using PVIMS.Core.Entities;
+using PVIMS.Core.Models;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Services;
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
-using PVIMS.API.Attributes;
-using PVIMS.API.Helpers;
-using PVIMS.API.Models;
-using PVIMS.API.Services;
-using PVIMS.Core.Entities;
-using PVIMS.Core.Models;
-using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
-using VPS.Common.Repositories;
+using PVIMS.Core.Aggregates.UserAggregate;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/patients")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class PatientConditionsController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
-        private readonly ITypeHelperService _typeHelperService;
+        private readonly IMediator _mediator;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
@@ -37,17 +38,16 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<Outcome> _outcomeRepository;
         private readonly IRepositoryInt<TreatmentOutcome> _treatmentOutcomeRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IRepositoryInt<Core.Entities.CustomAttributeConfiguration> _customAttributeRepository;
-        private readonly IRepositoryInt<Core.Entities.SelectionDataItem> _selectionDataItemRepository;
+        private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<PatientConditionsController> _logger;
 
-        public PatientConditionsController(IPropertyMappingService propertyMappingService,
-            ITypeHelperService typeHelperService,
+        public PatientConditionsController(IMediator mediator,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             ITypeExtensionHandler modelExtensionBuilder,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientCondition> patientConditionRepository,
@@ -56,15 +56,14 @@ namespace PVIMS.API.Controllers
             IRepositoryInt<Outcome> outcomeRepository,
             IRepositoryInt<TreatmentOutcome> treatmentOutcomeRepository,
             IRepositoryInt<User> userRepository,
-            IRepositoryInt<Core.Entities.CustomAttributeConfiguration> customAttributeRepository,
-            IRepositoryInt<Core.Entities.SelectionDataItem> selectionDataItemRepository,
+            IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IUnitOfWorkInt unitOfWork,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<PatientConditionsController> logger)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
-            _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
@@ -74,9 +73,9 @@ namespace PVIMS.API.Controllers
             _treatmentOutcomeRepository = treatmentOutcomeRepository ?? throw new ArgumentNullException(nameof(treatmentOutcomeRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
-            _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -89,7 +88,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<PatientConditionIdentifierDto>> GetPatientConditionByIdentifier(long patientId, long id)
         {
@@ -112,18 +111,26 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<ActionResult<PatientConditionDetailDto>> GetPatientConditionByDetail(long patientId, long id)
+        public async Task<ActionResult<PatientConditionDetailDto>> GetPatientConditionByDetail(int patientId, int id)
         {
-            var mappedPatientCondition = await GetPatientConditionAsync<PatientConditionDetailDto>(patientId, id);
-            if (mappedPatientCondition == null)
+            var query = new PatientConditionDetailQuery(patientId, id);
+
+            _logger.LogInformation(
+                "----- Sending query: PatientConditionDetailQuery - {patientId} : {id}",
+                patientId,
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForPatientCondition<PatientConditionDetailDto>(CustomPatientConditionMap(mappedPatientCondition)));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -207,6 +214,7 @@ namespace PVIMS.API.Controllers
                                 conditionForUpdate.OutcomeDate, 
                                 outcomeFromRepo, 
                                 treatmentOutcomeFromRepo, 
+                                conditionForUpdate.CaseNumber,
                                 conditionForUpdate.Comments, 
                                 conditionForUpdate.SourceDescription,
                                 _patientStatusRepository.Get(ps => ps.Description == "Died"));
@@ -215,7 +223,7 @@ namespace PVIMS.API.Controllers
                     _modelExtensionBuilder.UpdateExtendable(patientCondition, conditionDetail.CustomAttributes, "Admin");
 
                     _patientConditionRepository.Save(patientCondition);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 
                     var mappedPatientCondition = _mapper.Map<PatientConditionIdentifierDto>(patientCondition);
                     if (mappedPatientCondition == null)
@@ -223,7 +231,7 @@ namespace PVIMS.API.Controllers
                         return StatusCode(500, "Unable to locate newly added condition");
                     }
 
-                    return CreatedAtRoute("GetPatientConditionByIdentifier",
+                    return CreatedAtAction("GetPatientConditionByIdentifier",
                         new
                         {
                             id = mappedPatientCondition.Id
@@ -243,7 +251,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpPut("{patientId}/conditions/{id}", Name = "UpdatePatientCondition")]
         [Consumes("application/json")]
-        public async Task<IActionResult> UpdatePatientCondition(long patientId, long id,
+        public async Task<IActionResult> UpdatePatientCondition(int patientId, int id,
             [FromBody] PatientConditionForUpdateDto conditionForUpdate)
         {
             if (conditionForUpdate == null)
@@ -251,90 +259,21 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(f => f.Id == patientId);
-            if (patientFromRepo == null)
+            var command = new ChangeConditionDetailsCommand(patientId, id, conditionForUpdate.SourceTerminologyMedDraId, conditionForUpdate.StartDate, conditionForUpdate.OutcomeDate, conditionForUpdate.Outcome, conditionForUpdate.TreatmentOutcome, conditionForUpdate.CaseNumber, conditionForUpdate.Comments, conditionForUpdate.Attributes);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeConditionDetailsCommand - {patientId}: {patientConditionId}",
+                command.PatientId,
+                command.PatientConditionId);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            var conditionFromRepo = await _patientConditionRepository.GetAsync(f => f.Patient.Id == patientId && f.Id == id);
-            if (conditionFromRepo == null)
-            {
-                return NotFound();
-            }
-
-            var sourceTermFromRepo = _terminologyMeddraRepository.Get(conditionForUpdate.SourceTerminologyMedDraId);
-            if (sourceTermFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate source term");
-            }
-
-            Outcome outcomeFromRepo = null;
-            if (!String.IsNullOrWhiteSpace(conditionForUpdate.Outcome))
-            {
-                outcomeFromRepo = _outcomeRepository.Get(o => o.Description == conditionForUpdate.Outcome);
-                if (outcomeFromRepo == null)
-                {
-                    ModelState.AddModelError("Message", "Unable to locate outcome");
-                }
-            }
-
-            TreatmentOutcome treatmentOutcomeFromRepo = null;
-            if (!String.IsNullOrWhiteSpace(conditionForUpdate.TreatmentOutcome))
-            {
-                treatmentOutcomeFromRepo = _treatmentOutcomeRepository.Get(to => to.Description == conditionForUpdate.TreatmentOutcome);
-                if (treatmentOutcomeFromRepo == null)
-                {
-                    ModelState.AddModelError("Message", "Unable to locate treatment outcome");
-                }
-            }
-
-            ValidateConditionForUpdateModel(patientFromRepo, conditionForUpdate, id);
-
-            // Custom validation
-            if (outcomeFromRepo != null && treatmentOutcomeFromRepo != null)
-            {
-                if (outcomeFromRepo.Description == "Fatal" && treatmentOutcomeFromRepo.Description != "Died")
-                {
-                    ModelState.AddModelError("Message", "Treatment Outcome not consistent with Condition Outcome");
-                }
-                if (outcomeFromRepo.Description != "Fatal" && treatmentOutcomeFromRepo.Description == "Died")
-                {
-                    ModelState.AddModelError("Message", "Condition Outcome not consistent with Treatment Outcome");
-                }
-            }
-
-            if (ModelState.IsValid)
-            {
-                var conditionDetail = PrepareConditionDetail(conditionForUpdate);
-                if (!conditionDetail.IsValid())
-                {
-                    conditionDetail.InvalidAttributes.ForEach(element => ModelState.AddModelError("Message", element));
-                }
-
-                if (ModelState.IsValid)
-                {
-                    var patientCondition = patientFromRepo.AddOrUpdatePatientCondition(conditionFromRepo.Id,
-                                sourceTermFromRepo,
-                                conditionForUpdate.StartDate,
-                                conditionForUpdate.OutcomeDate,
-                                outcomeFromRepo,
-                                treatmentOutcomeFromRepo,
-                                conditionForUpdate.Comments,
-                                conditionForUpdate.SourceDescription,
-                                _patientStatusRepository.Get(ps => ps.Description == "Died"));
-
-                    //throw new Exception(JsonConvert.SerializeObject(patientCondition));
-                    _modelExtensionBuilder.UpdateExtendable(patientCondition, conditionDetail.CustomAttributes, "Admin");
-
-                    _patientConditionRepository.Update(patientCondition);
-                    _unitOfWork.Complete();
-
-                    return Ok();
-                }
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -381,7 +320,7 @@ namespace PVIMS.API.Controllers
                 conditionFromRepo.ArchivedReason = conditionForDelete.Reason;
                 conditionFromRepo.AuditUser = user;
                 _patientConditionRepository.Update(conditionFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -412,33 +351,6 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
-        ///  Map additional dto detail elements not handled through automapper
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private PatientConditionDetailDto CustomPatientConditionMap(PatientConditionDetailDto dto)
-        {
-            var patientCondition = _patientConditionRepository.Get(p => p.Id == dto.Id);
-            if (patientCondition == null)
-            {
-                return dto;
-            }
-            VPS.CustomAttributes.IExtendable patientConditionExtended = patientCondition;
-
-            // Map all custom attributes
-            dto.ConditionAttributes = _modelExtensionBuilder.BuildModelExtension(patientConditionExtended)
-                .Select(h => new AttributeValueDto()
-                {
-                    Key = h.AttributeKey,
-                    Value = h.TransformValueToString(),
-                    Category = h.Category,
-                    SelectionValue = (h.Type == VPS.CustomAttributes.CustomAttributeType.Selection) ? GetSelectionValue(h.AttributeKey, h.Value.ToString()) : string.Empty
-                }).Where(s => (s.Value != "0" && !String.IsNullOrWhiteSpace(s.Value)) || !String.IsNullOrWhiteSpace(s.SelectionValue)).ToList();
-
-            return dto;
-        }
-
-        /// <summary>
         ///  Prepare HATEOAS links for a single resource
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
@@ -447,7 +359,7 @@ namespace PVIMS.API.Controllers
         {
             PatientConditionIdentifierDto identifier = (PatientConditionIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "PatientCondition", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("PatientCondition", identifier.Id), "self", "GET"));
 
             return identifier;
         }
@@ -486,50 +398,6 @@ namespace PVIMS.API.Controllers
                     ModelState.AddModelError("Message", "Outcome Date should be after Start Date");
                 }
             }
-
-            // validate source term, check condition overlapping - START DATE
-            if (patientFromRepo.CheckConditionStartDateAgainstStartDateWithNoEndDate(conditionForUpdateDto.SourceTerminologyMedDraId, conditionForUpdateDto.StartDate, patientConditionId))
-            {
-                ModelState.AddModelError("Message", "Duplication of condition. Please check condition start and outcome dates...");
-            }
-            else
-            {
-                if (patientFromRepo.CheckConditionStartDateWithinRange(conditionForUpdateDto.SourceTerminologyMedDraId, conditionForUpdateDto.StartDate, patientConditionId))
-                {
-                    ModelState.AddModelError("Message", "Duplication of condition. Please check condition start and outcome dates...");
-                }
-                else
-                {
-                    if (conditionForUpdateDto.OutcomeDate.HasValue)
-                    {
-                        if (patientFromRepo.CheckConditionStartDateWithNoEndDateBeforeStart(conditionForUpdateDto.SourceTerminologyMedDraId, conditionForUpdateDto.StartDate, patientConditionId))
-                        {
-                            ModelState.AddModelError("Message", "Duplication of condition. Please check condition start and outcome dates...");
-                        }
-                    }
-                }
-            }
-
-            // Check condition overlapping - END DATE
-            if (conditionForUpdateDto.OutcomeDate.HasValue)
-            {
-                if (patientFromRepo.CheckConditionEndDateAgainstStartDateWithNoEndDate(conditionForUpdateDto.SourceTerminologyMedDraId, Convert.ToDateTime(conditionForUpdateDto.OutcomeDate), patientConditionId))
-                {
-                    ModelState.AddModelError("Message", "Duplication of condition. Please check condition start and outcome dates...");
-                }
-                else
-                {
-                    if (patientFromRepo.CheckConditionEndDateWithinRange(conditionForUpdateDto.SourceTerminologyMedDraId, Convert.ToDateTime(conditionForUpdateDto.OutcomeDate), patientConditionId))
-                    {
-                        ModelState.AddModelError("Message", "Duplication of condition. Please check condition start and outcome dates...");
-                    }
-                }
-            }
-
-            if (Regex.Matches(conditionForUpdateDto.Comments, @"[-a-zA-Z0-9 .']").Count < conditionForUpdateDto.Comments.Length)
-            {
-                ModelState.AddModelError("Message", "Comments contains invalid characters (Enter A-Z, a-z, space, period, apostrophe)");
-            }
         }
 
         /// <summary>
@@ -565,19 +433,6 @@ namespace PVIMS.API.Controllers
             }
             // Update patient custom attributes from source
             return conditionDetail;
-        }
-
-        /// <summary>
-        /// Get the corresponding selection value
-        /// </summary>
-        /// <param name="attributeKey">The custom attribute key look up value</param>
-        /// <param name="selectionKey">The selection key look up value</param>
-        /// <returns></returns>
-        private string GetSelectionValue(string attributeKey, string selectionKey)
-        {
-            var selectionitem = _selectionDataItemRepository.Get(s => s.AttributeKey == attributeKey && s.SelectionKey == selectionKey);
-
-            return (selectionitem == null) ? string.Empty : selectionitem.Value;
         }
     }
 }

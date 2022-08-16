@@ -28,20 +28,35 @@ import { RiskFactorDetailModel } from 'app/shared/models/risk-factor/risk-factor
 import { AnalysisService } from 'app/shared/services/analysis.service';
 import { AnalyserTermIdentifierModel } from 'app/shared/models/analysis/analyser-term.identifier.model';
 import { SeriesValueListModel } from 'app/shared/models/dataset/series-value-list.model';
-import { MatPaginator } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
 import { WorkFlowService } from 'app/shared/services/work-flow.service';
 import { ProgressStatusEnum, ProgressStatus } from 'app/shared/models/program-status.model';
 import { HttpEventType } from '@angular/common/http';
+import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexLegend, ApexPlotOptions, ApexStroke, ApexTooltip, ApexXAxis, ApexYAxis, ChartComponent } from 'ng-apexcharts';
 
 const moment =  _moment;
 
+export type ChartOptions = {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  dataLabels: ApexDataLabels;
+  plotOptions: ApexPlotOptions;
+  yaxis: ApexYAxis;
+  xaxis: ApexXAxis;
+  fill: ApexFill;
+  tooltip: ApexTooltip;
+  stroke: ApexStroke;
+  legend: ApexLegend;
+};
+
 @Component({
   templateUrl: './active-analyser.component.html',
-  styleUrls: ['./active-analyser.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class ActiveAnalyserComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild("chart") chart: ChartComponent;
+  public exposedChartOptions: Partial<ChartOptions>;
+  public relativeChartOptions: Partial<ChartOptions>;
 
   constructor(
     protected _activatedRoute: ActivatedRoute,
@@ -93,19 +108,10 @@ export class ActiveAnalyserComponent extends BaseComponent implements OnInit, Af
   exposedSeries: SeriesValueListModel[];
   riskSeries: SeriesValueListModel[];
 
-  // exposed chart options
-  xAxisLabel: string = 'Medication';
-
-  yExposedAxisLabel: string = 'Exposed cases';
-  yRiskAxisLabel: string = 'Unadjusted relative risk';
-  colorScheme = {
-    domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
-  };  
-
   percentage: number;
   showProgress: boolean;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
     
   setStep(index: number) {
     this.step = index;

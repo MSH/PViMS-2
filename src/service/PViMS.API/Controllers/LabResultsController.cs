@@ -1,45 +1,46 @@
 ﻿using AutoMapper;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class LabResultsController : ControllerBase
     {
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly IRepositoryInt<LabResult> _labResultRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public LabResultsController(IPropertyMappingService propertyMappingService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<LabResult> labResultRepository,
             IUnitOfWorkInt unitOfWork)
         {
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _labResultRepository = labResultRepository ?? throw new ArgumentNullException(nameof(labResultRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
@@ -51,7 +52,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("labresults", Name = "GetLabResultsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<LabResultIdentifierDto>> GetLabResultsByIdentifier(
             [FromQuery] LabResultResourceParameters labResultResourceParameters)
@@ -80,7 +81,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<LabResultIdentifierDto>> GetLabResultByIdentifier(long id)
         {
@@ -138,7 +139,7 @@ namespace PVIMS.API.Controllers
                 return StatusCode(500, "Unable to locate newly added item");
             }
 
-            return CreatedAtRoute("GetLabResultByIdentifier",
+            return CreatedAtAction("GetLabResultByIdentifier",
                 new
                 {
                     id = mappedLabResult.Id
@@ -182,7 +183,7 @@ namespace PVIMS.API.Controllers
                 labResultFromRepo.Active = (labResultForUpdate.Active == Models.ValueTypes.YesNoValueType.Yes);
 
                 _labResultRepository.Update(labResultFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -205,7 +206,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _labResultRepository.Delete(labResultFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return NoContent();
@@ -298,7 +299,7 @@ namespace PVIMS.API.Controllers
         {
             LabResultIdentifierDto identifier = (LabResultIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "LabResult", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("LabResult", identifier.Id), "self", "GET"));
 
             return identifier;
         }

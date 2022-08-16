@@ -66,8 +66,19 @@
             </mat-form-field>
             <mat-datepicker #appDatepicker></mat-datepicker>
           </div>
-  
           <div fxFlex="24" class="pr-1">
+            <mat-form-field class="p-8 full-width">
+              <input matInput formControlName="caseNumber" placeholder="{{'Condition case number' | translate}}">
+              <mat-hint>{{'Maximum length' | translate}} 50</mat-hint>
+              <mat-error *ngIf="viewModelForm.get('caseNumber').hasError('maxlength')">
+                {{'Maximum length exceeded' | translate}}
+              </mat-error>            
+              <mat-error *ngIf="viewModelForm.get('caseNumber').hasError('pattern')">
+                {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9, hyphen, space, period, parentheses)
+              </mat-error>            
+            </mat-form-field>
+          </div>
+          <div fxFlex="24" class="pr-1" *ngIf="customAttributeList?.length > 0 && viewModelForm.get('customAttributeId').value > 0">
             <mat-form-field class="p-8 full-width">
               <mat-select formControlName="customAttributeId" placeholder="{{'Custom attribute' | translate}}">
                 <mat-option value="0">
@@ -78,7 +89,6 @@
               </mat-select>                        
             </mat-form-field>
           </div>
-
           <div fxFlex="24" class="pr-1" *ngIf="viewModelForm.get('customAttributeId').value > 0">
             <mat-form-field class="p-8 full-width">
               <input matInput formControlName="customAttributeValue" placeholder="{{'Search value' | translate}}">
@@ -137,6 +147,13 @@
                 <mat-cell *matCellDef="let record">
                     <p>{{record.medicalRecordNumber}}</p>
                 </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="case-number">
+              <mat-header-cell *matHeaderCellDef>{{'Case number' | translate}}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <p>{{record.caseNumber}}</p>
+              </mat-cell>
             </ng-container>
 
             <ng-container matColumnDef="date-of-birth">

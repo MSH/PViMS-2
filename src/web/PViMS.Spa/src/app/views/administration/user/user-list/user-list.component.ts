@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +8,8 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
@@ -17,11 +18,15 @@ import { UserDeletePopupComponent } from './user-delete-popup/user-delete.popup.
 import { UserAddPopupComponent } from './user-add-popup/user-add.popup.component';
 import { UserUpdatePopupComponent } from './user-update-popup/user-update.popup.component';
 import { PasswordResetPopupComponent } from './password-reset-popup/password-reset.popup.component';
+import { UserRolePopupComponent } from './user-role-popup/user-role.popup.component';
+import { UserFacilityPopupComponent } from './user-facility-popup/user-facility.popup.component';
 
 @Component({
   templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-actions { flex: 0 0 15% !important; width: 15% !important; }
+  `],  
   animations: egretAnimations
 })
 export class UserListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -54,7 +59,7 @@ export class UserListComponent extends BaseComponent implements OnInit, AfterVie
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;
@@ -67,8 +72,8 @@ export class UserListComponent extends BaseComponent implements OnInit, AfterVie
   ngAfterViewInit(): void {
     let self = this;
     self.viewModel.mainGrid.setupAdvance(
-       null, null, self.mainGridPaginator)
-       .subscribe(() => { self.loadGrid(); });
+      null, null, self.mainGridPaginator)
+      .subscribe(() => { self.loadGrid(); });
     self.loadGrid();
   }  
 
@@ -85,13 +90,13 @@ export class UserListComponent extends BaseComponent implements OnInit, AfterVie
     self.setBusy(true);
 
     self.userService.getUsers(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
-        .pipe(takeUntil(self._unsubscribeAll))
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-            self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
+      .pipe(takeUntil(self._unsubscribeAll))
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.viewModel.mainGrid.updateAdvance(result);
+      }, error => {
+        self.handleError(error, 'Error fetching users');
+      });
   }    
 
   openAddPopUp(data: any = {}) {
@@ -164,7 +169,43 @@ export class UserListComponent extends BaseComponent implements OnInit, AfterVie
         }
         self.loadGrid();
       })
-  }   
+  }
+
+  openRolePopUp(data: any = {}) {
+    let self = this;
+    let title = 'Manage Roles';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(UserRolePopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { userId: data.id, title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+      })
+  }
+
+  openFacilityPopUp(data: any = {}) {
+    let self = this;
+    let title = 'Manage Facilities';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(UserFacilityPopupComponent, {
+      width: '720px',
+      disableClose: true,
+      data: { userId: data.id, title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+        self.loadGrid();
+      })
+  }
 }
 
 class ViewModel {

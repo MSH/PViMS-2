@@ -11,6 +11,7 @@ import { Form } from '../indexed-db/appdb';
 import { FilterModel } from '../models/grid.model';
 import { expand, map, reduce } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
+import { FormAttachmentModel } from '../models/form/form-attachment.model';
 
 @Injectable({ providedIn: 'root' })
 export class MetaFormService extends BaseService {
@@ -25,7 +26,6 @@ export class MetaFormService extends BaseService {
     }
 
     getAllMetaForms(): any {
-      // Return all outcomes from the API
       let filter = new FilterModel();
       filter.recordsPerPage = 50;
       filter.currentPage = 1;
@@ -68,9 +68,9 @@ export class MetaFormService extends BaseService {
         return Promise.resolve(false);
     }
 
-    searchForms(filterModel: any): Promise<FormWrapperModel> {
+    getFilteredFormsByType(type: string, synchStatus: boolean, compStatus: boolean): Promise<FormWrapperModel> {
         return new Promise((resolve, reject) => {
-            this.indexdbService.getAllForms(filterModel).then(result => {
+            this.indexdbService.getFilteredFormsByType(type, synchStatus, compStatus).then(result => {
                 let wrapper: FormWrapperModel = {
                     value: result.map(({ id, created, formIdentifier, patientIdentifier, patientName, completeStatus, synchStatus, formType, hasAttachment, hasSecondAttachment }) => ({ id, created, formIdentifier, patientIdentifier, patientName, completeStatus, synchStatus, formType, hasAttachment, hasSecondAttachment })),
                     recordCount: result.length
@@ -81,19 +81,31 @@ export class MetaFormService extends BaseService {
         });
     }
 
-    searchUnsynchedForms(): Promise<FormWrapperModel> {
-        return new Promise((resolve, reject) => {
-            this.indexdbService.getAllUnsynchedForms().then(result => {
+    searchFormsByType(type: string, searchTerm: string): Promise<FormWrapperModel> {
+      return new Promise((resolve, reject) => {
+          this.indexdbService.searchFormsForType(type, searchTerm).then(result => {
+              let wrapper: FormWrapperModel = {
+                  value: result.map(({ id, created, formIdentifier, patientIdentifier, patientName, completeStatus, synchStatus, formType, hasAttachment, hasSecondAttachment }) => ({ id, created, formIdentifier, patientIdentifier, patientName, completeStatus, synchStatus, formType, hasAttachment, hasSecondAttachment })),
+                  recordCount: result.length
+                };                
 
-                let wrapper: FormWrapperModel = {
-                    value: result,
-                    recordCount: result.length
-                  };                
-
-                resolve(wrapper);
-            });
-        });
+              resolve(wrapper);
+          });
+      });
     }    
+
+    getAllFormsForType(type: string): Promise<FormWrapperModel> {
+      return new Promise((resolve, reject) => {
+          this.indexdbService.getAllFormsForType(type).then(result => {
+              let wrapper: FormWrapperModel = {
+                  value: result.map(({ id, created, formIdentifier, patientIdentifier, patientName, completeStatus, synchStatus, formType, hasAttachment, hasSecondAttachment }) => ({ id, created, formIdentifier, patientIdentifier, patientName, completeStatus, synchStatus, formType, hasAttachment, hasSecondAttachment })),
+                  recordCount: result.length
+                };                
+
+              resolve(wrapper);
+          });
+      });
+    }
 
     getForm(id: number): Promise<Form> {
         return new Promise((resolve, reject) => {
@@ -103,9 +115,9 @@ export class MetaFormService extends BaseService {
         });
     }    
     
-    saveFormToDatabase(type: string, modelForm: any, patientForm: any, otherModels: any[]): Promise<string> {
+    saveFormToDatabase(type: string, modelForm: any, patientForm: any, attachments: FormAttachmentModel[], otherModels: any[]): Promise<number> {
         return new Promise((resolve, reject) => {
-            this.indexdbService.addNewForm(type, modelForm, patientForm, otherModels).then(result => {
+            this.indexdbService.addNewForm(type, modelForm, patientForm, attachments, otherModels).then(result => {
                 resolve(result);
             });
         });
@@ -115,9 +127,9 @@ export class MetaFormService extends BaseService {
         return this.Put(`metaforms`, model);
     }
 
-    updateForm(id: number, modelForm: any, patientForm: any, otherModels: any[]): Promise<boolean> {
+    updateForm(id: number, modelForm: any, patientForm: any, attachments: FormAttachmentModel[], otherModels: any[]): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            this.indexdbService.updateForm(id, modelForm, patientForm, otherModels).then(result => {
+            this.indexdbService.updateForm(id, modelForm, patientForm, attachments, otherModels).then(result => {
                 resolve(true);
             });
         });        
@@ -131,13 +143,21 @@ export class MetaFormService extends BaseService {
       });        
     }
 
+    markFormAsCompleted(id: number): Promise<boolean> {
+      return new Promise((resolve, reject) => {
+          this.indexdbService.markFormAsCompleted(id).then(result => {
+              resolve(true);
+          });
+      });        
+    }
+
     markFormAsSynched(id: number): Promise<boolean> {
       return new Promise((resolve, reject) => {
           this.indexdbService.markFormAsSynched(id).then(result => {
               resolve(true);
           });
       });        
-    }    
+    }
 
     updateAttachment(id: number, imagebin: any, index: number): Promise<boolean> {
       return new Promise((resolve, reject) => {

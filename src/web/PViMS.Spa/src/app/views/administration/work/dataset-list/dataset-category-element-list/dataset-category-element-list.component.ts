@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewEncapsulation, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,7 +7,8 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
-import { MatDialog, MatPaginator, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { GridModel } from 'app/shared/models/grid.model';
@@ -21,7 +22,6 @@ import { DatasetCategoryElementPopupComponent } from './dataset-category-element
 @Component({
   templateUrl: './dataset-category-element-list.component.html',
   styleUrls: ['./dataset-category-element-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations  
 })
 export class DatasetCategoryElementListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -57,7 +57,7 @@ export class DatasetCategoryElementListComponent extends BaseComponent implement
   viewModelForm: FormGroup;
   newElementForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
     
   ngOnInit(): void {
     const self = this;

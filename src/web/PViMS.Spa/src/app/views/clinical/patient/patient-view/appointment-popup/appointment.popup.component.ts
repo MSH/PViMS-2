@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { AppointmentService } from 'app/shared/services/appointment.service';
 import { finalize } from 'rxjs/operators';
@@ -17,6 +17,10 @@ export class AppointmentPopupComponent extends BasePopupComponent implements OnI
   
   public itemForm: FormGroup;
   protected busy: boolean = false;
+
+  currentDate = new Date();
+  minDate = new Date();
+  maxDate = new Date(this.currentDate.getFullYear() + 2, this.currentDate.getMonth(), this.currentDate.getDate());
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: AppointmentPopupData,

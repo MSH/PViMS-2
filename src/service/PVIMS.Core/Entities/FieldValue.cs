@@ -1,18 +1,20 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace PVIMS.Core.Entities
 {
-	[Table(nameof(FieldValue))]
 	public class FieldValue : EntityBase
 	{
-		[Required]
-		[StringLength(100)]
-		public string Value { get; set; }
+		public FieldValue()
+		{
+			Default = true;
+			Other = false;
+			Unknown = false;
+		}
 
+		public string Value { get; set; }
 		public bool Default { get; set; }
 		public bool Other { get; set; }
 		public bool Unknown { get; set; }
+		public int FieldId { get; set; }
+
 		public virtual Field Field { get; set; }
 	}
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { BaseComponent } from 'app/shared/base/base.component';
@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 import { PatientService } from 'app/shared/services/patient.service';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { AppointmentPopupComponent } from './appointment-popup/appointment.popup.component';
 import { _routes } from 'app/config/routes';
@@ -28,15 +28,38 @@ import { ClinicalEventPopupComponent } from '../../shared/clinical-event-popup/c
 import { GenericDeletePopupComponent } from '../../shared/generic-delete-popup/generic-delete.popup.component';
 import { ConditionViewPopupComponent } from '../../shared/condition-view-popup/condition-view.popup.component';
 import { GenericArchivePopupComponent } from '../../shared/generic-archive-popup/generic-archive.popup.component';
-import { ClinicalEventViewPopupComponent } from '../../shared/clinical-event-view-popup/clinical-event-view.popup.component';
 import { MedicationPopupComponent } from '../../shared/medication-popup/medication.popup.component';
 import { LabTestPopupComponent } from '../../shared/lab-test-popup/lab-test.popup.component';
 import { EnrolmentIdentifierModel } from 'app/shared/models/cohort/enrolment.identifier.model';
+import { ClinicalEventViewPopupComponent } from '../../shared/clinical-event-view-popup/clinical-event-view.popup.component';
 
 @Component({
   templateUrl: './patient-view.component.html',
-  styleUrls: ['./patient-view.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-case-number { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-encounter-date { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-effective-date { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-start-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-end-date { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-onset-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-test-date { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-outcome-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-outcome { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-reported-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-resolution-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-is-serious { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-enroled-date { flex: 0 0 15% !important; width: 20% !important; }
+    .mat-column-de-enroled-date { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-dose { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-dose-unit { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-dose-frequency { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-test-result-coded { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-test-result-value { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-test-unit { flex: 0 0 15% !important; width: 15% !important; }
+    .mat-column-clinical-event { flex: 0 0 20% !important; width: 20% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }  
+  `],  
   animations: egretAnimations
 })
 export class PatientViewComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -349,7 +372,7 @@ export class PatientViewComponent extends BaseComponent implements OnInit, After
     let self = this;
     let title = 'Delete ' + type;
     let dialogRef: MatDialogRef<any> = self.dialog.open(GenericDeletePopupComponent, {
-      width: '720px',
+      width: '920px',
       disableClose: true,
       data: { id: id, patientId: self.id, type: type, title: title, name: name }
     })
@@ -367,7 +390,7 @@ export class PatientViewComponent extends BaseComponent implements OnInit, After
     let self = this;
     let title = 'Delete ' + type;
     let dialogRef: MatDialogRef<any> = self.dialog.open(GenericArchivePopupComponent, {
-      width: '720px',
+      width: '920px',
       disableClose: true,
       data: { id: id, parentId: self.id, type: type, title: title, name: name }
     })
@@ -389,7 +412,7 @@ export class PatientViewComponent extends BaseComponent implements OnInit, After
     let title = 'Cohort De-enrolment';
 
     let dialogRef: MatDialogRef<any> = self.dialog.open(DeenrolmentPopupComponent, {
-      width: '720px',
+      width: '920px',
       disableClose: true,
       data: { patientId: self.id, cohortGroupEnrolmentId: cohortGroupEnrolmentId, cohort: `${cohortName} (${cohortCode})`, enroledDate: enroledDate, deenroledDate: Date.now, title: title, payload: data }
     })
@@ -563,7 +586,7 @@ class ViewGridModel {
 
   conditionGrid: GridModel<ConditionGridRecordModel> =
   new GridModel<ConditionGridRecordModel>
-      (['condition-name', 'start-date', 'outcome-date', 'outcome', 'actions']);
+      (['condition-name', 'case-number', 'start-date', 'outcome-date', 'outcome', 'actions']);
 
   clinicalEventGrid: GridModel<ClinicalEventGridRecordModel> =
   new GridModel<ClinicalEventGridRecordModel>

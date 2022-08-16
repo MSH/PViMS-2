@@ -7,7 +7,8 @@
     <div fxLayout="row wrap" fxLayout.lt-sm="column">
       <div fxFlex="100" class="pr-1">
         <mat-form-field class="p-8 full-width">
-          <input matInput formControlName="datasetName" placeholder="{{'Element name' | translate }}">
+          <mat-label>{{'Dataset name' | translate }}</mat-label>
+          <input matInput formControlName="datasetName">
           <mat-error *ngIf="itemForm.get('datasetName').hasError('required')">
             {{'This is a required field' | translate}}
           </mat-error>            
@@ -22,7 +23,8 @@
 
       <div fxFlex="100" class="pr-1">
         <mat-form-field class="p-8 full-width">
-          <input matInput formControlName="help" placeholder="{{'Help' | translate }}">
+          <mat-label>{{'Help' | translate }}</mat-label>
+          <input matInput formControlName="help">
           <mat-error *ngIf="itemForm.get('help').hasError('maxlength')">
             {{'Maximum length exceeded' | translate}}
           </mat-error>

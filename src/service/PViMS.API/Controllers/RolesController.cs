@@ -1,48 +1,44 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
-using PVIMS.Core.Entities;
-using System;
-using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
+using PVIMS.Core.Repositories;
+using PVIMS.Core.Paging;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using PVIMS.API.Infrastructure.Auth;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class RolesController : ControllerBase
     {
-        private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
-        private readonly IRepositoryInt<Role> _roleRepository;
-        private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
+        private readonly RoleManager<IdentityRole<Guid>> _roleManager;
 
-        public RolesController(IPropertyMappingService propertyMappingService,
-            ITypeHelperService typeHelperService,
+        public RolesController(ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
-            IRepositoryInt<Role> roleRepository,
-            IUnitOfWorkInt unitOfWork)
+            ILinkGeneratorService linkGeneratorService,
+            RoleManager<IdentityRole<Guid>> roleManager)
         {
-            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
-            _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
+            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
 
         /// <summary>
@@ -52,7 +48,7 @@ namespace PVIMS.API.Controllers
         [HttpGet("roles", Name = "GetRolesByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<RoleIdentifierDto>> GetRolesByIdentifier(
             [FromQuery] IdResourceParameters baseResourceParameters)
@@ -81,7 +77,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<RoleIdentifierDto>> GetRoleByIdentifier(long id)
         {
@@ -91,7 +87,7 @@ namespace PVIMS.API.Controllers
                 return NotFound();
             }
 
-            return Ok(CreateLinksForRole<RoleIdentifierDto>(mappedRole));
+            return Ok(mappedRole);
         }
 
         /// <summary>
@@ -108,16 +104,16 @@ namespace PVIMS.API.Controllers
                 PageSize = baseResourceParameters.PageSize
             };
 
-            var orderby = Extensions.GetOrderBy<Role>(baseResourceParameters.OrderBy, "asc");
+            var orderby = Extensions.GetOrderBy<IdentityRole<Guid>>(baseResourceParameters.OrderBy, "asc");
 
-            var pagedRolesFromRepo = _roleRepository.List(pagingInfo, null, orderby, "");
-            if (pagedRolesFromRepo != null)
+            var rolesFromManager = _roleManager.Roles.ToList();
+            if (rolesFromManager != null)
             {
                 // Map EF entity to Dto
-                var mappedRoles = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedRolesFromRepo),
+                var mappedRoles = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(rolesFromManager),
                     pagingInfo.PageNumber,
                     pagingInfo.PageSize,
-                    pagedRolesFromRepo.TotalCount);
+                    rolesFromManager.Count);
 
                 // Prepare pagination data for response
                 var paginationMetadata = new
@@ -130,9 +126,6 @@ namespace PVIMS.API.Controllers
 
                 Response.Headers.Add("X-Pagination",
                     JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedRoles.ForEach(dto => CreateLinksForRole(dto));
 
                 return mappedRoles;
             }
@@ -148,12 +141,12 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetRoleAsync<T>(long id) where T : class
         {
-            var roleFromRepo = await _roleRepository.GetAsync(f => f.Id == id);
+            var roleFromManager = await _roleManager.FindByIdAsync(id.ToString());
 
-            if (roleFromRepo != null)
+            if (roleFromManager != null)
             {
                 // Map EF entity to Dto
-                var mappedRole = _mapper.Map<T>(roleFromRepo);
+                var mappedRole = _mapper.Map<T>(roleFromManager);
 
                 return mappedRole;
             }
@@ -161,18 +154,5 @@ namespace PVIMS.API.Controllers
             return null;
         }
 
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private RoleIdentifierDto CreateLinksForRole<T>(T dto)
-        {
-            RoleIdentifierDto identifier = (RoleIdentifierDto)(object)dto;
-
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "Role", identifier.Id), "self", "GET"));
-
-            return identifier;
-        }
     }
 }

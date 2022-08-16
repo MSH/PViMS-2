@@ -1,33 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using PVIMS.Core.Entities;
+using System.Threading.Tasks;
+using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Models;
 
 namespace PVIMS.Core.Services
 {
     public interface IWorkFlowService
     {
-        void AddOrUpdateMedicationsForWorkFlowInstance(Guid contextGuid, List<ReportInstanceMedicationListItem> medications);
+        Task AddOrUpdateMedicationsForWorkFlowInstanceAsync(Guid contextGuid, List<ReportInstanceMedicationListItem> medications);
 
-        void CreateWorkFlowInstance(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier);
+        Task CreateWorkFlowInstanceAsync(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier, string facilityIdentifier);
 
-        int CheckWorkFlowInstanceCount(string workFlowName);
+        Task<ActivityExecutionStatusEvent> ExecuteActivityAsync(Guid contextGuid, string newExecutionStatus, string comments, DateTime? contextDate, string contextCode);
 
-        void DeleteMedicationsFromWorkFlowInstance(Guid contextGuid, List<ReportInstanceMedicationListItem> medications);
+        Task<bool> ValidateExecutionStatusForCurrentActivityAsync(Guid contextGuid, string executionStatusToBeValidated);
 
-        ActivityExecutionStatusEvent ExecuteActivity(Guid contextGuid, string newStatus, string comments, DateTime? contextDate, string contextCode);
+        Task UpdatePatientIdentifierForReportInstanceAsync(Guid contextGuid, string patientIdentifier);
 
-        TerminologyMedDra GetCurrentAdverseReaction(Patient patient);
-
-        bool ValidateExecutionStatusForCurrentActivity(Guid contextGuid, string validateStatus);
-
-        List<ActivityExecutionStatusForPatient> GetExecutionStatusEventsForPatientView(Patient patient);
-
-        List<ActivityExecutionStatusForPatient> GetExecutionStatusEventsForEventView(PatientClinicalEvent clinicalEvent);
-
-        TerminologyMedDra GetTerminologyMedDraForReportInstance(Guid contextGuid);
-
-        void UpdateIdentifiersForWorkFlowInstance(Guid contextGuid, string patientIdentifier, string sourceIdentifier);
+        Task UpdateSourceIdentifierForReportInstanceAsync(Guid contextGuid, string sourceIdentifier);
     }
 }

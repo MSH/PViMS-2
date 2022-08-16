@@ -1,7 +1,7 @@
-import { Component, OnInit, Inject, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material';
-import { FormBuilder, Validators, FormGroup, FormControl, ValidationErrors } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
 import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { AccountService } from 'app/shared/services/account.service';
@@ -19,7 +19,6 @@ import { MeddraSelectPopupComponent } from 'app/shared/components/popup/meddra-s
 
 @Component({
   templateUrl: './condition.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class ConditionPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
@@ -65,6 +64,7 @@ export class ConditionPopupComponent extends BasePopupComponent implements OnIni
       outcomeDate: [''],
       outcome: [''],
       treatmentOutcome: [''],
+      caseNumber: ['', [Validators.required, Validators.maxLength(50), Validators.pattern("[-a-zA-Z0-9 .()]*")]],
       comments: ['', [Validators.maxLength(500), Validators.pattern("[-a-zA-Z0-9 ']*")]],
       attributes: this._formBuilder.group([])
     })
@@ -119,6 +119,7 @@ export class ConditionPopupComponent extends BasePopupComponent implements OnIni
         self.conditionAttributes = result.conditionAttributes;
 
         self.getCustomAttributeList();
+        self.markFormGroupTouched(self.viewModelForm);
       }, error => {
         self.throwError(error, error.statusText);
       });

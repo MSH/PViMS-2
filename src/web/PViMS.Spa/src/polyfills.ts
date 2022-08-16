@@ -1,3 +1,7 @@
+/***************************************************************************************************
+ * Load `$localize` onto the global scope - used if i18n tags appear in Angular templates.
+ */
+import '@angular/localize/init';
 /**
  * This file includes polyfills needed by Angular and is loaded before the app.
  * You can add your own extra polyfills to this file.
@@ -53,12 +57,8 @@ import 'zone.js/dist/zone';  // Included with Angular CLI.
 // import './vendor/pace/pace.min.js';
 // // Charts
 import './vendor/Chart.min.js';
-// // User tour
-import 'hopscotch';
 // // Rich Text Editor
 // import 'quill';
-
-import '../node_modules/hammerjs/hammer.js';
 
 /**
  * Date, currency, decimal and percent pipes.

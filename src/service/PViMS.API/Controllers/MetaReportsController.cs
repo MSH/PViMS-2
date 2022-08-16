@@ -1,58 +1,59 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using System.Xml;
+using PVIMS.API.Helpers;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Services;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.ValueTypes;
 using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
 using Extensions = PVIMS.Core.Utilities.Extensions;
 using System.Threading.Tasks;
-using PVIMS.API.Helpers;
-using System.Xml;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Authorization;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/metareports")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class MetaReportsController : ControllerBase
     {
         private readonly ITypeHelperService _typeHelperService;
+        private readonly ILinkGeneratorService _linkGeneratorService;
+        private readonly IRepositoryInt<MetaColumn> _metaColumnRepository;
+        private readonly IRepositoryInt<MetaDependency> _metaDependencyRepository;
         private readonly IRepositoryInt<MetaReport> _metaReportRepository;
         private readonly IRepositoryInt<MetaTable> _metaTableRepository;
-        private readonly IRepositoryInt<MetaColumn> _metaColumnRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
 
         public MetaReportsController(ITypeHelperService typeHelperService,
+            ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            IRepositoryInt<MetaColumn> metaColumnTypeRepository,
+            IRepositoryInt<MetaDependency> metaDependencyRepository,
             IRepositoryInt<MetaReport> metaReportRepository,
             IRepositoryInt<MetaTable> metaTableRepository,
-            IRepositoryInt<MetaColumn> metaColumnTypeRepository,
             IUnitOfWorkInt unitOfWork)
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _metaColumnRepository = metaColumnTypeRepository ?? throw new ArgumentNullException(nameof(metaColumnTypeRepository));
+            _metaDependencyRepository = metaDependencyRepository ?? throw new ArgumentNullException(nameof(metaDependencyRepository));
             _metaReportRepository = metaReportRepository ?? throw new ArgumentNullException(nameof(metaReportRepository));
             _metaTableRepository = metaTableRepository ?? throw new ArgumentNullException(nameof(metaTableRepository));
-            _metaColumnRepository = metaColumnTypeRepository ?? throw new ArgumentNullException(nameof(metaColumnTypeRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
@@ -63,7 +64,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMetaReportsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaReportIdentifierDto>> GetMetaReportsByIdentifier(
             [FromQuery] IdResourceParameters metaResourceParameters)
@@ -90,7 +91,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetMetaReportsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<MetaReportDetailDto>> GetMetaReportsByDetail(
@@ -120,7 +121,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<MetaReportIdentifierDto>> GetMetaReportByIdentifier(long id)
         {
@@ -142,7 +143,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MetaReportDetailDto>> GetMetaReportByDetail(long id)
@@ -165,7 +166,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.expanded.v1+json", "application/vnd.pvims.expanded.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<MetaReportExpandedDto>> GetMetaReportByExpanded(long id)
@@ -238,7 +239,7 @@ namespace PVIMS.API.Controllers
                     ReportDefinition = metaReportForUpdate.ReportDefinition,
                     Breadcrumb = metaReportForUpdate.Breadcrumb,
                     IsSystem = false,
-                    metareport_guid = Guid.NewGuid(),
+                    MetaReportGuid = Guid.NewGuid(),
                     ReportStatus = metaReportForUpdate.ReportStatus,
                     MetaDefinition = PrepareMetaDefinition(metaReportForUpdate)
                 };
@@ -251,7 +252,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetMetaReportByIdentifier",
+                return CreatedAtAction("GetMetaReportByIdentifier",
                     new
                     {
                         id = mappedMetaReport.Id
@@ -327,7 +328,7 @@ namespace PVIMS.API.Controllers
                 metaReportFromRepo.MetaDefinition = PrepareMetaDefinition(metaReportForUpdate);
 
                 _metaReportRepository.Update(metaReportFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -358,7 +359,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 _metaReportRepository.Delete(metaReportFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }
@@ -375,7 +376,7 @@ namespace PVIMS.API.Controllers
         [HttpPut("{id}/attributes", Name = "UpdateMetaReportAttributes")]
         [Consumes("application/json")]
         [Authorize(Roles = "ReporterAdmin")]
-        public async Task<IActionResult> UpdateMetaReportAttributes(long metaPageId, long id,
+        public async Task<IActionResult> UpdateMetaReportAttributes(long id,
             [FromBody] MetaReportForAttributeUpdateDto metaReportForAttributeUpdate)
         {
             if (metaReportForAttributeUpdate == null)
@@ -394,7 +395,7 @@ namespace PVIMS.API.Controllers
                 PrepareMetaDefinitionForAttribute(metaReportForAttributeUpdate, metaReportFromRepo);
 
                 _metaReportRepository.Update(metaReportFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return Ok();
             }
@@ -456,7 +457,7 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         private async Task<T> GetMetaReportAsync<T>(long id) where T : class
         {
-            var metaReportFromRepo = await _metaReportRepository.GetAsync(f => f.Id == id);
+            var metaReportFromRepo = await _metaReportRepository.GetAsync(f => f.Id == id, new string[] { "" });
 
             if (metaReportFromRepo != null)
             {
@@ -478,7 +479,7 @@ namespace PVIMS.API.Controllers
         {
             MetaReportIdentifierDto identifier = (MetaReportIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "MetaReport", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("MetaReport", identifier.Id), "self", "GET"));
 
             return identifier;
         }
@@ -631,7 +632,7 @@ namespace PVIMS.API.Controllers
             {
                 sql = PrepareListQueryForPublication(metaReportForAttributeUpdate);
             }
-            metaReport.SQLDefinition = sql;
+            metaReport.SqlDefinition = sql;
         }
 
         /// <summary>
@@ -649,9 +650,7 @@ namespace PVIMS.API.Controllers
             string ocriteria = ""; // orders
             string wcriteria = ""; // wheres
 
-            var metaTable = _unitOfWork.Repository<MetaTable>()
-                .Queryable()
-                .SingleOrDefault(mt => mt.TableName == metaReportForAttributeUpdate.CoreEntity);
+            var metaTable = _metaTableRepository.Get(mt => mt.TableName == metaReportForAttributeUpdate.CoreEntity, new string[] { "TableType" });
 
             // FROM
             switch ((MetaTableTypes)metaTable.TableType.Id)
@@ -688,9 +687,7 @@ namespace PVIMS.API.Controllers
                 case MetaTableTypes.History:
                 case MetaTableTypes.CoreChild:
                     // get parent
-                    metaDependency = _unitOfWork.Repository<MetaDependency>()
-                        .Queryable()
-                        .SingleOrDefault(md => md.ReferenceTable.TableName == metaReportForAttributeUpdate.CoreEntity);
+                    metaDependency = _metaDependencyRepository.Get(md => md.ReferenceTable.TableName == metaReportForAttributeUpdate.CoreEntity, new string[] { "ParentTable" });
 
                     jcriteria += String.Format(" LEFT JOIN [Meta{0}] P ON P.{1} = C.{2} ", metaDependency.ParentTable.TableName, metaDependency.ParentColumnName, metaDependency.ReferenceColumnName);
 
@@ -917,7 +914,7 @@ namespace PVIMS.API.Controllers
             }
 
             // Map core entity
-            var metaTableFromRepo = _metaTableRepository.Get(p => p.TableName == dto.CoreEntity);
+            var metaTableFromRepo = _metaTableRepository.Get(p => p.TableName == dto.CoreEntity, new string[] { "TableType", "Columns.ColumnType" });
             if (metaTableFromRepo == null)
             {
                 return dto;
@@ -1012,23 +1009,25 @@ namespace PVIMS.API.Controllers
             IdResourceParameters metaResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateMetaReportsResourceUri(_urlHelper, ResourceUriType.Current, metaResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.Current, "GetMetaReportsByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateMetaReportsResourceUri(_urlHelper, ResourceUriType.NextPage, metaResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.NextPage, "GetMetaReportsByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateMetaReportsResourceUri(_urlHelper, ResourceUriType.PreviousPage, metaResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateIdResourceUriForWrapper(ResourceUriType.PreviousPage, "GetMetaReportsByIdentifier", metaResourceParameters.OrderBy, metaResourceParameters.PageNumber, metaResourceParameters.PageSize),
+                       "previousPage", "GET"));
             }
 
             return wrapper;

@@ -10,6 +10,8 @@ import { AuditLogDetailWrapperModel } from '../models/user/audit-log.detail.mode
 import { Observable, EMPTY } from 'rxjs';
 import { FilterModel } from '../models/grid.model';
 import { expand, map, reduce } from 'rxjs/operators';
+import { UserRoleForUpdateModel } from '../models/user/user-role-for-update.model';
+import { UserFacilityForUpdateModel } from '../models/user/user-facility-for-update.model';
 
 @Injectable({ providedIn: 'root' })
 export class UserService extends BaseService {
@@ -119,6 +121,24 @@ export class UserService extends BaseService {
     else {
       return this.Put(`users/${id}`, model);
     }
+  }
+
+  saveUserRole(userId: number, role: any): any {
+    const roleForUpdate: UserRoleForUpdateModel = { role };
+    return this.Post(`users/${userId}/roles`, roleForUpdate);
+  }
+
+  deleteUserRole(userId: number, role: string): any {
+    return this.Delete(`users/${userId}/roles/${role}`);
+  }
+
+  saveUserFacility(userId: number, facilityId: any): any {
+    const facilityForUpdate: UserFacilityForUpdateModel = { facilityId };
+    return this.Post(`users/${userId}/facilities`, facilityForUpdate);
+  }
+
+  deleteUserFacility(userId: number, facilityId: number): any {
+    return this.Delete(`users/${userId}/facilities/${facilityId}`);
   }
 
   resetPassword(id: number, model: any): any {

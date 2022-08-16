@@ -15,7 +15,6 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { LoginComponent } from './login/login.component';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedModule } from 'app/shared/shared.module';
-import { TranslateModule } from '@ngx-translate/core';
 import { AcceptEulaPopupComponent } from './accept-eula/accept-eula.popup.component';
 import { LandingComponent } from './landing/landing.component';
 
@@ -27,7 +26,6 @@ import { LandingComponent } from './landing/landing.component';
     SharedMaterialModule,
     SharedComponentsModule,
     SharedModule,
-    TranslateModule,
     FlexLayoutModule,
     PerfectScrollbarModule,
     RouterModule.forChild(SecurityRoutes)

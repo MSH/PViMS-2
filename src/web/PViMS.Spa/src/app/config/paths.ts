@@ -34,10 +34,13 @@ export const _paths = {
           view: `cohortenrolment/:cohortGroupId`
       },
       forms: {
-          list: `formlist`,
+          list: `form-list/:type`,
+          synchronise: `synchronise/:type`,
+          landing: `form-landing`,
           forma: `forma/:formId`,
           formb: `formb/:formId`,
-          formc: `formc/:formId`
+          formc: `formc/:formId`,
+          formadr: `formadr/:formId`,
       }
   },
   analytical: `analytical`,
@@ -45,7 +48,10 @@ export const _paths = {
     landing: `landing`,
     reports: {
       search: `reportsearch/:wuid`,
-      activity: `activityhistory/:wuid/:reportinstanceid`
+      searchqualified: `reportsearch/:wuid/:qualifiedName`,
+      activity: `activityhistory/:wuid/:reportinstanceid`,
+      clinical: `clinicaldetails/:patientId/:clinicalEventId`,
+      task: `reporttask/:wuid/:reportinstanceid`
     }
   },
   reports: `reports`,

@@ -6,7 +6,7 @@
   
   <mat-card-title class="">
       <div class="card-title-text">
-        <button mat-raised-button (click)="goBack()" color="accent" class="mr-48">
+        <button mat-raised-button (click)="navigateToReportSearch()" color="accent" class="mr-48">
           <mat-icon>arrow_back</mat-icon>
         </button>
         {{'Activities' | translate}}</div>
@@ -64,14 +64,14 @@
               </ng-container>
       
               <ng-container matColumnDef="receipt-date">
-              <mat-header-cell *matHeaderCellDef>{{'Receipt date' | translate}}</mat-header-cell>
+              <mat-header-cell *matHeaderCellDef>{{'FDA DTN date' | translate}}</mat-header-cell>
               <mat-cell *matCellDef="let record">
                   {{record.receiptDate | date:'yyyy-MM-dd'}}
               </mat-cell>
               </ng-container>
       
               <ng-container matColumnDef="receipt-code">
-              <mat-header-cell *matHeaderCellDef>{{'Receipt code' | translate}}</mat-header-cell>
+              <mat-header-cell *matHeaderCellDef>{{'FDA DTN code' | translate}}</mat-header-cell>
               <mat-cell *matCellDef="let record">
                   {{record.receiptCode}}
               </mat-cell>

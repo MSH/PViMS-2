@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AccountService } from 'app/shared/services/account.service';
 import { Subscription, interval } from 'rxjs';
@@ -11,7 +11,7 @@ import { _events } from 'app/config/events';
   templateUrl: './notifications.component.html',
   styleUrls: ["./notifications.component.scss"]
 })
-export class NotificationsComponent {
+export class NotificationsComponent implements OnInit {
   isNotificationOpen: boolean = false;
 
   subscription: Subscription;
@@ -20,6 +20,8 @@ export class NotificationsComponent {
 
   notifications: NotificationModel[] = [];
   readNotifications: NotificationModel[] = [];
+
+  viewModel: ViewModel = new ViewModel();  
 
   constructor(
     private router: Router,
@@ -35,9 +37,18 @@ export class NotificationsComponent {
     
     this.subscription = source.subscribe(val => 
       {
-        this.getNotifications();
+        if (this.viewModel.connected) {
+          this.getNotifications();
+        }        
       });     
   }
+
+  ngOnInit() {
+    const self = this;
+    self.accountService.connected$.subscribe(val => {
+      self.viewModel.connected = val;
+    });
+  }  
 
   getNotifications(): void {
     // Only execute if user is not logged out
@@ -50,6 +61,7 @@ export class NotificationsComponent {
     this.eventService.broadcast(_events.check_notification_event);
     this.accountService.getNotifications()
       .subscribe(result => {
+        console.log(result);
         this.notifications = result;
         this.checking = false;
       }, error => {
@@ -61,4 +73,8 @@ export class NotificationsComponent {
     this.isNotificationOpen = false;
     this.router.navigate([route]);
   }
+}
+
+class ViewModel {
+  connected: boolean = true;
 }

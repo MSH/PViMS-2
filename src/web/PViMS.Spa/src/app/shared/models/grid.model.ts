@@ -1,8 +1,11 @@
-import { ElementRef, EventEmitter, Output } from '@angular/core';
-import { MatTableDataSource, MatSort, MatPaginator } from '@angular/material';
+import { ElementRef, EventEmitter, Output, Directive } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { fromEvent } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
+@Directive()
 export class GridModel<T> {
     constructor(displayColumns: string[]) {
         this.updateDisplayedColumns(displayColumns);
@@ -45,9 +48,7 @@ export class GridModel<T> {
     setupAdvance(filter: ElementRef, matSort: MatSort, matPaginator: MatPaginator): EventEmitter<void> {
         let self = this;
         self.isBasic = false;
-        console.log('paginator was ' + matPaginator);
         self.setupBasic(filter, matSort, matPaginator);
-        console.log('paginator set ' + self.paginator);
 
         if (self.sort) {
             self.sort.sortChange
@@ -108,9 +109,7 @@ export class GridModel<T> {
     filterModel(): FilterModel {
         let self = this;
         let filterModel = new FilterModel();
-        console.log('in filter');
         if (self.paginator) {
-            console.log('in pag');
             filterModel.currentPage = self.paginator.pageIndex + 1;
             filterModel.recordsPerPage = self.paginator.pageSize;
         }

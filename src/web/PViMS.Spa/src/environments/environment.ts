@@ -6,8 +6,12 @@
 export const environment = {
   production: false,
   apiURL: 'http://localhost:5000/api',
-  //apiURL: 'https://pvims-api.pharmadexmz.org/api',
-  appVersion: '2.0.0',
+  //apiURL: 'https://localhost:44380/api',
+  //apiURL: 'https://pvims-training-api.doh.gov.ph/api',
+  apiURLBase: 'http://localhost:5000',
+  //apiURLBase: 'https://pvims-training-api.doh.gov.ph',
+  appVersion: '2.1.0',
   appName: 'PViMS Training',
-  installationDate: '2020-06-24'
+  installationDate: '2020-06-24',
+  countryISOCode: 'za'
 };

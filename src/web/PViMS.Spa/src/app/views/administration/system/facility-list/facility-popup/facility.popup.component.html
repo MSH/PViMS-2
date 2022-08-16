@@ -41,8 +41,8 @@
         </mat-select>               
         <mat-error *ngIf="itemForm.get('facilityType').hasError('required')">
           {{'This is a required field' | translate}}
-        </mat-error>            
-      </mat-form-field>       
+        </mat-error>
+      </mat-form-field>
     </div>
     <div fxFlex="50" class="pr-1">
         <mat-form-field class="p-8 full-width">
@@ -76,6 +76,16 @@
               {{'Value contains invalid characters' | translate}} (A-Z, a-z, 0-9)
             </mat-error>            
         </mat-form-field>        
+    </div>
+    <div fxFlex="50" class="pr-1">
+      <mat-form-field class="p-8 full-width">
+        <mat-select formControlName="orgUnitId" placeholder="{{'Region' | translate}}">
+          <mat-option value="0"></mat-option>
+          <mat-option *ngFor="let orgUnit of orgUnitList" [value]="orgUnit.id">
+              {{orgUnit.orgUnitName}}
+          </mat-option>
+        </mat-select>               
+      </mat-form-field>
     </div>
 
     <div fxFlex="100" class="mt-1">

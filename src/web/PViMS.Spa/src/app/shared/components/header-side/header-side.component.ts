@@ -5,7 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { AccountService } from 'app/shared/services/account.service';
 import { Router } from '@angular/router';
 import { _routes } from 'app/config/routes';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { UserProfilePopupComponent } from 'app/views/security/user-profile/user-profile.popup.component';
 import { PwaService } from 'app/shared/services/pwa.service';
 import { AboutPopupComponent } from '../about/about.popup.component';
@@ -14,18 +14,31 @@ import { MetaService } from 'app/shared/services/meta.service';
 
 @Component({
   selector: 'app-header-side',
+  styles: [`
+    .error-status { color: red; }
+    .connected-status { color: green; }
+    .checking-status { color: black; } 
+  `],  
   templateUrl: './header-side.template.html'
 })
 export class HeaderSideComponent implements OnInit, AfterViewInit {
+  
+  viewModel: ViewModel = new ViewModel();
   
   public availableLangs = [{
     name: 'EN',
     code: 'en',
     flag: 'flag-icon-us'
-  }, {
+  }, 
+  {
     name: 'Mz',
     code: 'mz',
     flag: 'flag-icon-mz'
+  },
+  {
+    name: 'Fr',
+    code: 'fr',
+    flag: 'flag-icon-fr'
   }]
   currentLang = this.availableLangs[0];
 
@@ -122,13 +135,16 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
 
   refreshMeta(): void {
     let self = this;
-
+    self.viewModel.checking = true;
+    self.viewModel.refreshError = false;
     self.metaService.refresh()
-        .subscribe(result => {
-          //self.notify("Meta data refreshed successfully", "Success");          
-        }, error => {
-          //self.handleError(error, "Error refreshing meta data");
-        });
+      .subscribe(result => {
+        self.viewModel.checking = false;
+        self.viewModel.refreshError = false;
+      }, error => {
+        self.viewModel.checking = false;
+        self.viewModel.refreshError = true;
+      });
   }   
 
   installPwa(): void {
@@ -178,4 +194,9 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
         }
       })
   }  
+}
+
+class ViewModel {
+  refreshError: boolean = false;
+  checking: boolean = false;
 }

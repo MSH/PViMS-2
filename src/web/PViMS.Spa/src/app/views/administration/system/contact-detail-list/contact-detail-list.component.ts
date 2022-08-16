@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +8,7 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { ContactDetailService } from 'app/shared/services/contact-detail.service';
@@ -16,8 +16,9 @@ import { ContactDetailPopupComponent } from './contact-detail-popup/contact-deta
 
 @Component({
   templateUrl: './contact-detail-list.component.html',
-  styleUrls: ['./contact-detail-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-actions { flex: 0 0 5% !important; width: 5% !important; }
+  `],  
   animations: egretAnimations
 })
 export class ContactDetailListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -63,9 +64,9 @@ export class ContactDetailListComponent extends BaseComponent implements OnInit,
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-            self.viewModel.mainGrid.updateAdvance(result);
+          self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-            self.throwError(error, error.statusText);
+          self.handleError(error, "Error fetching contacts");
         });
   }
 
@@ -91,13 +92,15 @@ export class ContactDetailListComponent extends BaseComponent implements OnInit,
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['contact-type', 'contact-first-name', 'contact-last-name', 'city', 'actions']);
+          (['contact-type', 'organisation-name', 'contact-first-name', 'contact-last-name', 'contact-number', 'contact-email', 'actions']);
 }
 
 class GridRecordModel {
   id: number;
   contactType: string;
+  organisationName: string;
   contactFirstName: string;
   contactLastName: string;
-  city: string;
+  contactNumber: string;
+  contactEmail: string;
 }

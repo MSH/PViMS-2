@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,15 +8,17 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { WorkPlanService } from 'app/shared/services/work-plan.service';
 
 @Component({
   templateUrl: './work-plan-list.component.html',
-  styleUrls: ['./work-plan-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+  `],  
   animations: egretAnimations
 })
 export class WorkPlanListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -40,7 +42,7 @@ export class WorkPlanListComponent extends BaseComponent implements OnInit, Afte
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;
@@ -67,51 +69,14 @@ export class WorkPlanListComponent extends BaseComponent implements OnInit, Afte
     self.setBusy(true);
 
     self.workPlanService.getWorkPlans(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
-        .pipe(takeUntil(self._unsubscribeAll))
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-            self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
+      .pipe(takeUntil(self._unsubscribeAll))
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.viewModel.mainGrid.updateAdvance(result);
+      }, error => {
+        self.handleError(error, "Error fetching work plans");
+      });
   }
-
-  openPopUp(data: any = {}, isNew?) {
-    let self = this;
-    let title = isNew ? 'Add Work Plan' : 'Update Work Plan';
-    // let dialogRef: MatDialogRef<any> = self.dialog.open(EncounterTypePopupComponent, {
-    //   width: '720px',
-    //   disableClose: true,
-    //   data: { encounterTypeId: isNew ? 0: data.id, title: title, payload: data }
-    // })
-    // dialogRef.afterClosed()
-    //   .subscribe(res => {
-    //     if(!res) {
-    //       // If user press cancel
-    //       return;
-    //     }
-    //     self.loadGrid();
-    //   })
-  }
-
-  openDeletePopUp(data: any = {}) {
-    let self = this;
-    let title = 'Delete Work Plan';
-    // let dialogRef: MatDialogRef<any> = self.dialog.open(CareEventDeletePopupComponent, {
-    //   width: '720px',
-    //   disableClose: true,
-    //   data: { encounterTypeId: data.id, title: title, payload: data }
-    // })
-    // dialogRef.afterClosed()
-    //   .subscribe(res => {
-    //     if(!res) {
-    //       // If user press cancel
-    //       return;
-    //     }
-    //     self.loadGrid();
-    //   })
-  }  
-
 }
 
 class ViewModel {

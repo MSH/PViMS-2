@@ -36,7 +36,7 @@
 
       <div fxFlex="100" class="pr-1" *ngIf="itemForm.get('newExecutionStatus').value == 'E2BSUBMITTED'">
         <mat-form-field class="p-8 full-width">
-          <input matInput formControlName="contextDate" placeholder="{{'Receipt date' | translate}}" [matDatepicker]="receiptDatepicker">
+          <input matInput formControlName="contextDate" placeholder="{{'FDA DTN receipt date' | translate}}" [matDatepicker]="receiptDatepicker">
           <mat-datepicker-toggle matSuffix [for]="receiptDatepicker"></mat-datepicker-toggle>
         </mat-form-field>
         <mat-datepicker #receiptDatepicker></mat-datepicker>
@@ -44,7 +44,7 @@
 
       <div fxFlex="100" class="pr-1" *ngIf="itemForm.get('newExecutionStatus').value == 'E2BSUBMITTED'">
         <mat-form-field class="p-8 full-width">
-          <input matInput formControlName="contextCode" placeholder="{{'Receipt code' | translate }}">
+          <input matInput formControlName="contextCode" placeholder="{{'FDA DTN code' | translate }}">
           <mat-hint>{{'Maximum length' | translate}} 20</mat-hint>
           <mat-error *ngIf="itemForm.get('contextCode').hasError('maxlength')">
             {{'Maximum length exceeded' | translate}}

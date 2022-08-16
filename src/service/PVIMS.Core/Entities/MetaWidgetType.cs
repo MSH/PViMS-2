@@ -1,17 +1,18 @@
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(MetaWidgetType))]
     public class MetaWidgetType : EntityBase
     {
-        [Required]
-        public Guid metawidgettype_guid { get; set; }
+        public MetaWidgetType()
+        {
+            MetaWidgets = new HashSet<MetaWidget>();
+        }
 
-        [Required]
-        [StringLength(50)]
+        public Guid MetaWidgetTypeGuid { get; set; }
         public string Description { get; set; }
+
+        public virtual ICollection<MetaWidget> MetaWidgets { get; set; }
     }
 }

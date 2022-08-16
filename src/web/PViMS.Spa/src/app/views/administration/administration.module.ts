@@ -6,7 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { SharedComponentsModule } from 'app/shared/components/shared-components.module';
 import { SharedMaterialModule } from 'app/shared/shared-material.module';
 import { SharedModule } from 'app/shared/shared.module';
-import { TranslateModule } from '@ngx-translate/core';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { RouterModule } from '@angular/router';
 import { ConfigListComponent } from './system/config-list/config-list.component';
@@ -46,11 +45,31 @@ import { MedicationPopupComponent } from './reference/medicine-list/medication-p
 import { MedicationDeletePopupComponent } from './reference/medicine-list/medication-delete-popup/medication-delete.popup.component';
 import { ConceptPopupComponent } from './reference/concept-list/concept-popup/concept.popup.component';
 import { GenericDeletePopupComponent } from './shared/generic-delete-popup/generic-delete.popup.component';
+import { CareEventPopupComponent } from './work/care-event-list/care-event-popup/care-event.popup.component';
+import { HolidayDeletePopupComponent } from './system/holiday-list/holiday-delete-popup/holiday-delete.popup.component';
+import { HolidayPopupComponent } from './system/holiday-list/holiday-popup/holiday.popup.component';
+import { FacilityPopupComponent } from './system/facility-list/facility-popup/facility.popup.component';
+import { CareEventDeletePopupComponent } from './work/care-event-list/care-event-delete-popup/care-event-delete.popup.component';
+import { FacilityDeletePopupComponent } from './system/facility-list/facility-delete-popup/facility-delete.popup.component';
+import { DatasetElementDeletePopupComponent } from './work/dataset-element-list/dataset-element-delete-popup/dataset-element-delete.popup.component';
+import { UserRolePopupComponent } from './user/user-list/user-role-popup/user-role.popup.component';
+import { PasswordResetPopupComponent } from './user/user-list/password-reset-popup/password-reset.popup.component';
+import { UserAddPopupComponent } from './user/user-list/user-add-popup/user-add.popup.component';
+import { UserDeletePopupComponent } from './user/user-list/user-delete-popup/user-delete.popup.component';
+import { UserUpdatePopupComponent } from './user/user-list/user-update-popup/user-update.popup.component';
+import { UserFacilityPopupComponent } from './user/user-list/user-facility-popup/user-facility.popup.component';
+import { CustomAttributeListComponent } from './work/custom-attribute-list/custom-attribute-list.component';
+import { CustomAttributeAddPopupComponent } from './work/custom-attribute-list/custom-attribute-add-popup/custom-attribute-add.popup.component';
+import { CustomAttributeDeletePopupComponent } from './work/custom-attribute-list/custom-attribute-delete-popup/custom-attribute-delete.popup.component';
+import { CustomAttributeEditPopupComponent } from './work/custom-attribute-list/custom-attribute-edit-popup/custom-attribute-edit.popup.component';
+import { SelectionItemPopupComponent } from './work/custom-attribute-list/selection-item-popup/selection-item.popup.component';
 
 @NgModule({
   declarations: [
     AuditLogListComponent,
+    CareEventDeletePopupComponent,
     CareEventListComponent,
+    CareEventPopupComponent,
     ConceptListComponent,
     ConceptPopupComponent,
     ConfigListComponent,
@@ -58,34 +77,50 @@ import { GenericDeletePopupComponent } from './shared/generic-delete-popup/gener
     ConditionDeletePopupComponent,
     ConditionPopupComponent,
     ContactDetailListComponent,
+    CustomAttributeListComponent,
+    CustomAttributeAddPopupComponent,
+    CustomAttributeEditPopupComponent,
+    CustomAttributeDeletePopupComponent,
     DatasetCategoryListComponent,
     DatasetCategoryDeletePopupComponent,
     DatasetCategoryElementPopupComponent,
     DatasetCategoryElementListComponent,
     DatasetCategoryElementDeletePopupComponent,
     DatasetListComponent,
+    DatasetElementDeletePopupComponent,
     DatasetElementListComponent,
     DatasetElementSelectPopupComponent,
+    EncounterTypeListComponent,
     FacilityListComponent, 
+    FacilityPopupComponent,
+    FacilityDeletePopupComponent,
     FormListComponent,
     FormDeletePopupComponent,
     FormPopupComponent,
+    GenericDeletePopupComponent,
     HolidayListComponent,
+    HolidayDeletePopupComponent,
+    HolidayPopupComponent,
+    ImportMeddraPopupComponent,
     LabResultListComponent,
     LabTestListComponent,
     LabTestSelectPopupComponent,
+    LandingComponent,
     MeddraListComponent,
-    ImportMeddraPopupComponent,
     MedicineListComponent,
     MedicationPopupComponent,
     MedicationDeletePopupComponent,
-    RoleListComponent,
-    UserListComponent, 
-    WorkPlanListComponent,
     ReportMetaViewComponent,
-    EncounterTypeListComponent,
-    LandingComponent,
-    GenericDeletePopupComponent
+    RoleListComponent,
+    PasswordResetPopupComponent,
+    SelectionItemPopupComponent,
+    UserAddPopupComponent,
+    UserDeletePopupComponent,
+    UserListComponent,
+    UserFacilityPopupComponent,
+    UserRolePopupComponent,
+    UserUpdatePopupComponent,
+    WorkPlanListComponent
   ],
   imports: [
     CommonModule,
@@ -93,24 +128,40 @@ import { GenericDeletePopupComponent } from './shared/generic-delete-popup/gener
     SharedComponentsModule,
     SharedMaterialModule,
     SharedModule,    
-    TranslateModule,
     PerfectScrollbarModule,
     RouterModule.forChild(ReportRoutes)
   ],
   entryComponents:
   [
+    CareEventPopupComponent,
+    CareEventDeletePopupComponent,
     ConceptPopupComponent,
     ConditionPopupComponent,
     ConditionDeletePopupComponent,
+    CustomAttributeAddPopupComponent,
+    CustomAttributeEditPopupComponent,
+    CustomAttributeDeletePopupComponent,
     DatasetCategoryDeletePopupComponent,
     DatasetCategoryElementPopupComponent,
     DatasetCategoryElementDeletePopupComponent,
     DatasetElementSelectPopupComponent,
+    DatasetElementDeletePopupComponent,
+    FacilityPopupComponent,
+    FacilityDeletePopupComponent,
     GenericDeletePopupComponent,
+    HolidayDeletePopupComponent,
+    HolidayPopupComponent,
     ImportMeddraPopupComponent,
     LabTestSelectPopupComponent,
     MedicationPopupComponent,
-    MedicationDeletePopupComponent
+    MedicationDeletePopupComponent,
+    PasswordResetPopupComponent,
+    SelectionItemPopupComponent,
+    UserAddPopupComponent,
+    UserDeletePopupComponent,
+    UserFacilityPopupComponent,
+    UserRolePopupComponent,
+    UserUpdatePopupComponent
   ]  
 })
 export class AdministrationModule { }

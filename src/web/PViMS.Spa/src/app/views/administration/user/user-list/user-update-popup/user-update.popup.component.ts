@@ -1,29 +1,22 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { PopupService } from 'app/shared/services/popup.service';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
-import { RoleIdentifierModel } from 'app/shared/models/user/role.identifier.model';
-import { FacilityIdentifierModel } from 'app/shared/models/facility/facility.identifier.model';
 import { UserService } from 'app/shared/services/user.service';
-import { FacilityService } from 'app/shared/services/facility.service';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { Router } from '@angular/router';
 import { AccountService } from 'app/shared/services/account.service';
 
 @Component({
   templateUrl: './user-update.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class UserUpdatePopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
   
   public itemForm: FormGroup;
-
-  roleList: RoleIdentifierModel[] = [];
-  facilityList: FacilityIdentifierModel[] = [];
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: UserPopupData,
@@ -33,25 +26,21 @@ export class UserUpdatePopupComponent extends BasePopupComponent implements OnIn
     protected _formBuilder: FormBuilder,
     protected popupService: PopupService,
     protected accountService: AccountService,
-    protected userService: UserService,
-    protected facilityService: FacilityService,
+    protected userService: UserService
   ) { 
     super(_router, _location, popupService, accountService);        
   }
 
   ngOnInit(): void {
     const self = this;
-    self.loadDropDowns();
 
     self.itemForm = this._formBuilder.group({
       firstName: [this.data.payload.firstName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z ]*')]],
       lastName: [this.data.payload.lastName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z ]*')]],
       userName: [this.data.payload.userName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z0-9 ]*')]],
-      email: ['', [Validators.maxLength(150), Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$")]],
+      email: ['', [Validators.required, Validators.maxLength(150), Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$")]],
       allowDatasetDownload: ['', Validators.required],
-      active: ['', Validators.required],
-      roles: ['', Validators.required],
-      facilities: ['', Validators.required],
+      active: ['', Validators.required]
     })
   }
 
@@ -61,32 +50,6 @@ export class UserUpdatePopupComponent extends BasePopupComponent implements OnIn
         self.loadData();
     }
   }
-
-  loadDropDowns(): void {
-    let self = this;
-    self.getFacilityList();
-    self.getRoleList();
-  }
-
-  getFacilityList(): void {
-    let self = this;
-    self.facilityService.getAllFacilities()
-        .subscribe(result => {
-            self.facilityList = result;
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
-  }
-
-  getRoleList(): void {
-    let self = this;
-    self.userService.getRoleList()
-        .subscribe(result => {
-            self.roleList = result.value;
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
-  }  
 
   loadData(): void {
     let self = this;

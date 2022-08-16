@@ -1,5 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatProgressBar, MatButton, MatDialog, MatDialogRef } from '@angular/material';
+import { MatButton } from '@angular/material/button';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatProgressBar } from '@angular/material/progress-bar';
 import { Validators, FormGroup, FormControl } from '@angular/forms';
 import { AccountService } from 'app/shared/services/account.service';
 import { Router } from '@angular/router';
@@ -8,6 +10,7 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { finalize } from 'rxjs/operators';
 import { NavigationService } from 'app/shared/services/navigation.service';
 import { AcceptEulaPopupComponent } from '../accept-eula/accept-eula.popup.component';
+import { environment } from 'environments/environment';
 
 @Component({
   selector: 'app-signin',
@@ -15,8 +18,8 @@ import { AcceptEulaPopupComponent } from '../accept-eula/accept-eula.popup.compo
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  @ViewChild(MatProgressBar, {static: false}) progressBar: MatProgressBar;
-  @ViewChild(MatButton, {static: false}) submitButton: MatButton;
+  @ViewChild(MatProgressBar) progressBar: MatProgressBar;
+  @ViewChild(MatButton) submitButton: MatButton;
 
   viewModelForm: FormGroup;
 
@@ -43,18 +46,17 @@ export class LoginComponent implements OnInit {
     self.accountService.login(self.viewModelForm.value)
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
-            self.accountService.setSessionToken(result as any);
+          self.accountService.setSessionToken(result as any);
 
-            if(self.accountService.eulaAcceptanceRequired) {
-              self.openEulaPopUp();
-            }
-            else {
-              self.notify("Successfully authenticated!", "Login");
-              self.navigationService.initialiseMenus();
-              self.navigationService.determineRouteToLanding();
-            }
+          if(self.accountService.eulaAcceptanceRequired) {
+            self.openEulaPopUp();
+          }
+          else {
+            self.notify("Successfully authenticated!", "Login");
+            self.navigationService.determineRouteToLanding();
+          }
         }, error => {
-            self.showInfo(error.error.message[0], "");
+          self.handleError(error, "Error logging in");
         });
   }
 
@@ -91,6 +93,40 @@ export class LoginComponent implements OnInit {
     return this.popupService.notify(message, action);
   }
 
+  public CLog(object: any, title: string = undefined) {
+    if (!environment.production) {
+        console.log({ title: title, object });
+    }
+  }  
+
+  private handleError(errorObject: any, title: string = "Exception")
+  {
+    let message = "Unknown error experienced. Please contact your system administrator. ";
+    if(errorObject.error) {
+      if(Array.isArray(errorObject.error.Message)) {
+        message = errorObject.error.Message[0];
+      }
+      else {
+        message = errorObject.error.Message;
+      }
+    }
+
+    if(!errorObject.error && errorObject.message) {
+      if(Array.isArray(errorObject.message)) {
+        message = errorObject.message[0];
+      }
+      else {
+        message = errorObject.message;
+      }
+    }
+
+    if(errorObject.ReferenceCode) {
+      message += `Reference Code: ${errorObject.ReferenceCode}`;
+    }
+
+    this.showError(message, title);
+  }
+    
   private showError(errorMessage: any, title: string = "Error") {
     this.popupService.showErrorMessage(errorMessage, title);
   }

@@ -24,12 +24,19 @@
                 </mat-cell>
             </ng-container>
 
+            <ng-container matColumnDef="organisation-name">
+              <mat-header-cell *matHeaderCellDef>{{'Organisation name' | translate }}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <p>{{record.organisationName}}</p>
+              </mat-cell>
+            </ng-container>
+
             <ng-container matColumnDef="contact-first-name">
               <mat-header-cell *matHeaderCellDef>{{'Contact first name' | translate }}</mat-header-cell>
               <mat-cell *matCellDef="let record">
                   <p>{{record.contactFirstName}}</p>
               </mat-cell>
-            </ng-container>            
+            </ng-container>
 
             <ng-container matColumnDef="contact-last-name">
               <mat-header-cell *matHeaderCellDef>{{'Contact last name' | translate }}</mat-header-cell>
@@ -38,10 +45,17 @@
               </mat-cell>
             </ng-container>
 
-            <ng-container matColumnDef="city">
-              <mat-header-cell *matHeaderCellDef>{{'City' | translate }}</mat-header-cell>
+            <ng-container matColumnDef="contact-number">
+              <mat-header-cell *matHeaderCellDef>{{'Contact number' | translate }}</mat-header-cell>
               <mat-cell *matCellDef="let record">
-                  <p>{{record.city}}</p>
+                  <p>{{record.contactNumber}}</p>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="contact-email">
+              <mat-header-cell *matHeaderCellDef>{{'Contact email' | translate }}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <p>{{record.contactEmail}}</p>
               </mat-cell>
             </ng-container>
 
@@ -60,8 +74,6 @@
             <mat-row *matRowDef="let record; columns: viewModel?.mainGrid?.displayedColumns;"></mat-row>
         </mat-table>
       </div>
-
     </div>
-      
   </mat-card-content>
 </mat-card>

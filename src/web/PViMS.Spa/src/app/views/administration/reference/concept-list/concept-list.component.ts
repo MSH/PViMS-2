@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { BaseComponent } from 'app/shared/base/base.component';
@@ -8,7 +8,8 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { ConceptService } from 'app/shared/services/concept.service';
-import { MatDialog, MatPaginator, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
@@ -18,8 +19,9 @@ import { GenericDeletePopupComponent } from '../../shared/generic-delete-popup/g
 
 @Component({
   templateUrl: './concept-list.component.html',
-  styleUrls: ['./concept-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 10% !important; width: 10% !important; }
+  `],  
   animations: egretAnimations
 })
 export class ConceptListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -52,7 +54,7 @@ export class ConceptListComponent extends BaseComponent implements OnInit, After
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;
@@ -133,7 +135,7 @@ export class ConceptListComponent extends BaseComponent implements OnInit, After
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['id', 'active-ingredient', 'form', 'active', 'actions']);
+          (['id', 'active-ingredient', 'strength', 'form', 'active', 'actions']);
 
   searchTerm: string;
 }
@@ -141,6 +143,7 @@ class ViewModel {
 class GridRecordModel {
   id: number;
   conceptName: string;
+  strength: string;
   formName: string;
   active: string;
 }

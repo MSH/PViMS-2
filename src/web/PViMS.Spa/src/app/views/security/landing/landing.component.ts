@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { _routes } from 'app/config/routes';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AboutPopupComponent } from 'app/shared/components/about/about.popup.component';
+import { environment } from 'environments/environment';
 
 @Component({
   selector: 'app-landing',
@@ -11,10 +12,16 @@ import { AboutPopupComponent } from 'app/shared/components/about/about.popup.com
 })
 export class LandingComponent implements OnInit {
 
+  logo = '';
+
   constructor(
     protected _router: Router,
     protected dialog: MatDialog
-  ) { }
+  ) 
+  { 
+    let self = this;
+    self.logo = `assets/images/site_logo_${environment.countryISOCode}.png`;
+  }
 
   ngOnInit() {
   }

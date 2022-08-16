@@ -23,8 +23,6 @@ namespace PVIMS.Core.Utilities
 
         static public void WriteXML(string xmlFileName, string xmlText)
         {
-            string line = "********************************************************************";
-
             // Write the string to a file.
             StreamWriter file = new System.IO.StreamWriter(xmlFileName);
 

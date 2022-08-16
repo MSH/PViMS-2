@@ -6,7 +6,7 @@
   
     <div fxLayout="row wrap" fxLayout.lt-sm="column">
       <div fxFlex="100" class="pr-1">
-        <mat-form-field class="p-8 full-width">
+        <mat-form-field class="p-2 full-width">
           <mat-select formControlName="termType" placeholder="{{'Term type' | translate}}" required>
               <mat-option value="SOC">{{'System Organ Class' | translate}}</mat-option>
               <mat-option value="HLGT">{{'High Level Group Term' | translate}}</mat-option>
@@ -17,17 +17,20 @@
         </mat-form-field>
       </div>
       <div fxFlex="100" class="pr-1">
-        <mat-form-field class="p-8 full-width">
+        <mat-form-field class="p-2 full-width">
             <input matInput formControlName="searchTerm" placeholder="{{'Find by term' | translate }}" required>
         </mat-form-field>
       </div>
       <div fxFlex="100" class="pr-1" fxLayoutAlign="center">
-        <div class="p-8">
+        <div class="p-2 mb-05">
           <button mat-mini-fab (click)="loadGrid()" [disabled]="itemForm.invalid"><mat-icon>search</mat-icon></button>
         </div>
       </div>
-      <div fxFlex="100" class="pr-1">
-        <div class="table-container">
+      <div fxFlex="100" class="pr-1" style="height: 350px; overflow-y: auto;">
+        <div class="text-red text-center mt-12 font-weight-bold" *ngIf="viewModel?.mainGrid?.records?.data?.length == 0 && viewModel?.searched">
+          No records found ...
+        </div>
+        <div class="table-container" >
           <mat-table [dataSource]="viewModel?.mainGrid?.records"
                     [@animate]="{value:'50'}">
 
@@ -55,8 +58,8 @@
           </mat-table>
         </div>
         <mat-paginator #mainGridPaginator="matPaginator" [length]="viewModel?.mainGrid?.count"
-                    [pageIndex]="0" [pageSize]="5"
-                    [pageSizeOptions]="[5]">
+                    [pageIndex]="0" [pageSize]="50"
+                    [pageSizeOptions]="[5, 10, 25, 50]">
         </mat-paginator>
       </div>
       

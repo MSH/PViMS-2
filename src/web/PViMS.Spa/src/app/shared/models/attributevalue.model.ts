@@ -1,6 +1,7 @@
 export interface AttributeValueModel {
-    category: string;
-    key: string;
-    value: string; 
-    selectionValue: string;
+  id: number;  
+  category: string;
+  key: string;
+  value: string; 
+  selectionValue: string;
 }

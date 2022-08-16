@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +8,8 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { Subscription } from 'rxjs';
-import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { GridModel } from 'app/shared/models/grid.model';
 import { EncounterService } from 'app/shared/services/encounter.service';
 import { takeUntil, finalize } from 'rxjs/operators';
@@ -31,8 +32,10 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './encounter-search.component.html',
-  styleUrls: ['./encounter-search.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }  
+  `],   
   animations: egretAnimations
 })
 export class EncounterSearchComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -71,7 +74,7 @@ export class EncounterSearchComponent extends BaseComponent implements OnInit, A
   facilityList: string[] = [];
   customAttributeList: CustomAttributeIdentifierModel[] = [];
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;
@@ -195,11 +198,11 @@ export class EncounterSearchComponent extends BaseComponent implements OnInit, A
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['Id', 'first-name', 'last-name', 'facility', 'encounter-type', 'encounter-date', 'actions']);
+          (['id', 'first-name', 'last-name', 'facility', 'encounter-type', 'encounter-date', 'actions']);
 
   appointmentGrid: GridModel<AppointmentGridRecordModel> =
   new GridModel<AppointmentGridRecordModel>
-      (['Id', 'first-name', 'last-name', 'facility', 'appointment-date', 'appointment-status', 'actions']);
+      (['id', 'first-name', 'last-name', 'facility', 'appointment-date', 'appointment-status', 'actions']);
     
   facilityName: string;
   patientId: number;

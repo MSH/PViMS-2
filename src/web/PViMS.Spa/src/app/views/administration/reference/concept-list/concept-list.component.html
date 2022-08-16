@@ -7,7 +7,7 @@
   <mat-card-title class="">
       <div class="card-title-text">
         {{'Active Ingredients' | translate}}
-        <div class="addButton">
+        <div fxLayout="row" fxLayout.xs="column" fxLayoutWrap fxLayoutGap="0.1%" fxLayoutAlign="end" class="p-0">
           <button mat-raised-button class="mb-05" color="accent" (click)="openPopUp({}, true)">{{'Add Active Ingredient' | translate }}</button>
         </div>
       </div>
@@ -38,6 +38,13 @@
               <mat-header-cell *matHeaderCellDef>{{'Active ingredient' | translate }}</mat-header-cell>
               <mat-cell *matCellDef="let record">
                   <p>{{record.conceptName}}</p>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="strength">
+              <mat-header-cell *matHeaderCellDef>{{'Strength' | translate }}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <p>{{record.strength}}</p>
               </mat-cell>
             </ng-container>
 

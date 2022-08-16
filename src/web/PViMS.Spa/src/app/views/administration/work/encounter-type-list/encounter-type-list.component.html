@@ -7,9 +7,6 @@
   <mat-card-title class="">
     <div class="card-title-text">
       {{'Encounter Types' | translate}}
-      <div class="addButton">
-        <button mat-raised-button class="mb-05" color="accent" (click)="openPopUp({}, true)">{{'Add Encounter Type' | translate }}</button>
-      </div>
     </div>
   </mat-card-title>
 
@@ -53,14 +50,6 @@
                     {{"Actions" | translate }}
                 </mat-header-cell>
                 <mat-cell *matCellDef="let record">
-                    <button mat-icon-button color="primary" matTooltip="{{'Update Encounter Type' | translate }}"
-                            (click)="openPopUp(record, false)">
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" matTooltip="{{'Delete Encounter Type' | translate }}"
-                            (click)="openDeletePopUp(record)">
-                        <mat-icon>delete</mat-icon>
-                    </button>
                 </mat-cell>
             </ng-container>
 

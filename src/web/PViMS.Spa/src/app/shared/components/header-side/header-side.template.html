@@ -5,16 +5,26 @@
   </button>
   
   <span fxFlex></span>
-  <button mat-icon-button matTooltip="{{'Refresh meta' | translate }}">
+  <button mat-icon-button matTooltip="{{'Refresh meta' | translate }}" (click)="refreshMeta()" [ngClass]="{'error-status': viewModel?.refreshError && !viewModel?.checking, 'connected-status': !viewModel?.refreshError && !viewModel?.checking, 'checking-status': viewModel?.checking, 'spin' : viewModel?.checking}">
     <mat-icon>refresh</mat-icon>
   </button>  
   <button mat-icon-button matTooltip="{{'Install to device' | translate }}" *ngIf="pwaService.promptEvent" (click)="installPwa()">
     <mat-icon>system_update</mat-icon>
   </button>  
+
+  <app-notifications></app-notifications>
   <app-timeout></app-timeout>
   <app-ping></app-ping>
   <app-customizer></app-customizer>
-  <!-- Language Switcher -->
+  
+  <button mat-icon-button class="topbar-button-right img-button" matTooltip="{{'About PViMS' | translate }}" (click)="openAboutPopUp()">
+    <img src="assets/images/pvims_logo.png" alt="" />
+  </button>
+
+  <button mat-icon-button class="topbar-button-right img-button" matTooltip="{{'Pharmadex' | translate }}" (click)="navigateToPharmadex()" *ngIf="pharmadexLink != '' && pharmadexLink != '-- not specified --'">
+    <img src="assets/images/pharmadex_logo.png" alt="" />
+  </button>
+
   <button mat-button [matMenuTriggerFor]="menu" matTooltip="{{'Select language' | translate }}">
     <span class="flag-icon {{currentLang.flag}} mr-05"></span>
     <span>{{currentLang.name}}</span>
@@ -26,18 +36,6 @@
     </button>
   </mat-menu>
 
-  <!-- Notification toggle button -->
-  <app-notifications></app-notifications>
-
-  <button mat-icon-button class="topbar-button-right img-button" matTooltip="{{'About PViMS' | translate }}" (click)="openAboutPopUp()">
-    <img src="assets/images/pvims_logo.png" alt="" />
-  </button>
-
-  <button mat-icon-button class="topbar-button-right img-button" matTooltip="{{'Pharmadex' | translate }}" (click)="navigateToPharmadex()" *ngIf="pharmadexLink != '' && pharmadexLink != '-- not specified --'">
-    <img src="assets/images/pharmadex_logo.png" alt="" />
-  </button>
-
-  <!-- Top left user menu -->
   <button mat-icon-button [matMenuTriggerFor]="accountMenu" class="topbar-button-right img-button" matTooltip="{{'Profile' | translate }}">
     <img src="assets/images/profile.jpg" alt="" />
   </button>

@@ -9,9 +9,12 @@ export interface PatientMedicationDetailModel {
     medication: string;
     dose: string;
     doseUnit: string;
-    dosefrequency: string;
+    doseFrequency: string;
     startDate: any;
     endDate: any;
     indicationType: string;
+    reasonForStopping: string;
+    clinicianAction: string;
+    challengeEffect: string;
     medicationAttributes: AttributeValueModel[];
 }

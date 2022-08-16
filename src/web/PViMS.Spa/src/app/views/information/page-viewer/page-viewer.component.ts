@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
@@ -7,7 +7,7 @@ import { PopupService } from 'app/shared/services/popup.service';
 import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { MetaPageExpandedModel } from 'app/shared/models/meta/meta-page.expanded.model';
@@ -22,8 +22,9 @@ import { WidgetMovePopupComponent } from './widget-move-popup/widget-move.popup.
 
 @Component({
   templateUrl: './page-viewer.component.html',
-  styleUrls: ['./page-viewer.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mainButton { display: flex; justify-content: flex-end; button { margin-left: auto; } }  
+  `],  
   animations: egretAnimations
 })
 export class PageViewerComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -80,7 +81,9 @@ export class PageViewerComponent extends BaseComponent implements OnInit, OnDest
     const self = this;
 
     self.id = +self._activatedRoute.snapshot.paramMap.get('id');
-    self.loadData();
+    if(self.accountService.hasToken()) {
+      self.loadData();
+    }
   }  
 
   ngOnDestroy(): void {

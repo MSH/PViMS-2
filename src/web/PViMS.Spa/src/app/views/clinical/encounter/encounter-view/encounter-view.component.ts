@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,7 +10,7 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver, MediaChange } from '@angular/flex-layout';
 import { EncounterService } from 'app/shared/services/encounter.service';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AppLoaderService } from 'app/shared/services/app-loader/app-loader.service';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { PatientDetailModel } from 'app/shared/models/patient/patient.detail.model';
@@ -30,7 +30,6 @@ import { LabTestPopupComponent } from '../../shared/lab-test-popup/lab-test.popu
 @Component({
   templateUrl: './encounter-view.component.html',
   styleUrls: ['./encounter-view.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class EncounterViewComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {

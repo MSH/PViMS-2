@@ -13,6 +13,12 @@ import { PatientClinicalEventExpandedModel } from '../models/patient/patient-cli
 import { PatientLabTestDetailModel } from '../models/patient/patient-lab-test.detail.model';
 import { PatientMedicationReportWrapperModel } from '../models/patient/patient-medication.report.model';
 import { PatientTreatmentReportWrapperModel } from '../models/patient/patient-treatment.report.model';
+import { PatientCustomAttributesForUpdateModel } from '../models/patient/patient-custom-attributes-for-update.model';
+import { PatientDateOfBirthForUpdateModel } from '../models/patient/patient-date-of-birth-for-update.model';
+import { PatientFacilityForUpdateModel } from '../models/patient/patient-facility-for-update.model';
+import { PatientNotesForUpdateModel } from '../models/patient/patient-notes-for-update.model';
+import { PatientNameForUpdateModel } from '../models/patient/patient-name-for-update.model';
+import { PatientForCreationModel } from '../models/patient/patient-for-creation.model';
 
 @Injectable({ providedIn: 'root' })
 export class PatientService extends BaseService {
@@ -25,7 +31,6 @@ export class PatientService extends BaseService {
 
     searchPatient(filterModel: any): any {
       let parameters: ParameterKeyValueModel[] = [];
-      console.log(filterModel);
       parameters.push(<ParameterKeyValueModel> { key: 'facilityName', value: filterModel.facilityName });
       if (filterModel.patientId != null && filterModel.patientId != '') {
           parameters.push(<ParameterKeyValueModel> { key: 'patientId', value: filterModel.patientId });
@@ -35,6 +40,9 @@ export class PatientService extends BaseService {
       }
       if (filterModel.lastName != null) {
           parameters.push(<ParameterKeyValueModel> { key: 'lastName', value: filterModel.lastName });
+      }
+      if (filterModel.caseNumber != null) {
+        parameters.push(<ParameterKeyValueModel> { key: 'caseNumber', value: filterModel.caseNumber });
       }
       if (filterModel.dateOfBirth != null) {
           parameters.push(<ParameterKeyValueModel> { key: 'dateOfBirth', value: filterModel.dateOfBirth.format("YYYY-MM-DD") });
@@ -48,6 +56,16 @@ export class PatientService extends BaseService {
 
       return this.Get<PatientDetailWrapperModel>('', 'application/vnd.pvims.detail.v1+json', parameters);
     }
+
+    getPatientByCondition(filterModel: any): any {
+      let parameters: ParameterKeyValueModel[] = [];
+
+      parameters.push(<ParameterKeyValueModel> { key: 'caseNumber', value: filterModel.caseNumber });
+      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: '1'});
+      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: '10'});
+
+      return this.Get<PatientExpandedModel>('', 'application/vnd.pvims.expanded.v1+json', parameters);
+    }    
 
     getPatientExpanded(id: number): any {
         let parameters: ParameterKeyValueModel[] = [];
@@ -101,38 +119,35 @@ export class PatientService extends BaseService {
     getAdverseEventReport(filterModel: any): any {
         let parameters: ParameterKeyValueModel[] = [];
 
-        parameters.push(<ParameterKeyValueModel> { key: 'adverseEventCriteria', value: filterModel.criteriaId == null ? 1 : filterModel.criteriaId });
         parameters.push(<ParameterKeyValueModel> { key: 'adverseEventStratifyCriteria', value: filterModel.stratifyId == null ? 1 : filterModel.stratifyId });
         parameters.push(<ParameterKeyValueModel> { key: 'searchFrom', value: filterModel.searchFrom.format("YYYY-MM-DD") });
         parameters.push(<ParameterKeyValueModel> { key: 'searchTo', value: filterModel.searchTo.format("YYYY-MM-DD") });
         parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
         parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
+        parameters.push(<ParameterKeyValueModel> { key: 'ageGroupCriteria', value: filterModel.ageGroupCriteria == null ? 0 : filterModel.ageGroupCriteria });
+        parameters.push(<ParameterKeyValueModel> { key: 'genderId', value: filterModel.genderId == null ? '' : filterModel.genderId });
+        parameters.push(<ParameterKeyValueModel> { key: 'regimenId', value: filterModel.regimenId == null ? '' : filterModel.regimenId });
+        parameters.push(<ParameterKeyValueModel> { key: 'organisationUnitId', value: filterModel.organisationUnitId == null ? 0 : filterModel.organisationUnitId });
+        parameters.push(<ParameterKeyValueModel> { key: 'outcomeId', value: filterModel.outcomeId == null ? 0 : filterModel.outcomeId });
+        parameters.push(<ParameterKeyValueModel> { key: 'isSeriousId', value: filterModel.isSeriousId == null ? 0 : filterModel.isSeriousId });
+        parameters.push(<ParameterKeyValueModel> { key: 'seriousnessId', value: filterModel.seriousnessId == null ? 0 : filterModel.seriousnessId });
+        parameters.push(<ParameterKeyValueModel> { key: 'classificationId', value: filterModel.classificationId == null ? 0 : filterModel.classificationId });
 
         return this.Get<AdverseEventReportWrapperModel>('/patients', 'application/vnd.pvims.adverseventreport.v1+json', parameters);
     }    
 
-    getAdverseEventQuarterlyReport(filterModel: any): any {
+    getAdverseEventFrequencyReport(filterModel: any): any {
         let parameters: ParameterKeyValueModel[] = [];
 
+        parameters.push(<ParameterKeyValueModel> { key: 'frequencyCriteria', value: filterModel.criteriaId == null ? 1 : filterModel.criteriaId });
         parameters.push(<ParameterKeyValueModel> { key: 'searchFrom', value: filterModel.searchFrom.format("YYYY-MM-DD") });
         parameters.push(<ParameterKeyValueModel> { key: 'searchTo', value: filterModel.searchTo.format("YYYY-MM-DD") });
         parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
         parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
 
-        return this.Get<AdverseEventFrequencyReportWrapperModel>('/patients', 'application/vnd.pvims.quarterlyadverseventreport.v1+json', parameters);
+        return this.Get<AdverseEventFrequencyReportWrapperModel>('/patients', 'application/vnd.pvims.adverseventfrequencyreport.v1+json', parameters);
     }    
 
-    getAdverseEventAnnualReport(filterModel: any): any {
-        let parameters: ParameterKeyValueModel[] = [];
-
-        parameters.push(<ParameterKeyValueModel> { key: 'searchFrom', value: filterModel.searchFrom.format("YYYY-MM-DD") });
-        parameters.push(<ParameterKeyValueModel> { key: 'searchTo', value: filterModel.searchTo.format("YYYY-MM-DD") });
-        parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
-        parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
-
-        return this.Get<AdverseEventFrequencyReportWrapperModel>('/patients', 'application/vnd.pvims.annualadverseventreport.v1+json', parameters);
-    }    
-    
     getPatientTreatmentReport(filterModel: any): any {
         let parameters: ParameterKeyValueModel[] = [];
 
@@ -168,14 +183,45 @@ export class PatientService extends BaseService {
       return this.Download(`/patients/${patientId}/attachments`, 'application/vnd.pvims.attachment.v1+xml', parameters);
     }
 
-    savePatient(id: number, model: any): any {
+    savePatient(model: PatientForCreationModel): any {
+      let shallowModel = this.transformModelForDate(model);
+      return this.Post('', shallowModel);
+    }
+
+    updatePatientCustomAttributes(id: number, model: PatientCustomAttributesForUpdateModel): any {
       let shallowModel = this.transformModelForDate(model);
       if(id == 0) {
-        return this.Post('', shallowModel);
+        return null;
       }
-      else {
-        return this.Put(`${id}`, shallowModel);
+      return this.Put(`${id}/custom`, shallowModel);
+    }
+
+    updatePatientDateOfBirth(id: number, model: PatientDateOfBirthForUpdateModel): any {
+      if(id == 0) {
+        return null;
       }
+      return this.Put(`${id}/dateofbirth`, model);
+    }
+
+    updatePatientFacility(id: number, model: PatientFacilityForUpdateModel): any {
+      if(id == 0) {
+        return null;
+      }
+      return this.Put(`${id}/facility`, model);
+    }
+
+    updatePatientName(id: number, model: PatientNameForUpdateModel): any {
+      if(id == 0) {
+        return null;
+      }
+      return this.Put(`${id}/name`, model);
+    }
+
+    updatePatientNotes(id: number, model: PatientNotesForUpdateModel): any {
+      if(id == 0) {
+        return null;
+      }
+      return this.Put(`${id}/notes`, model);
     }
 
     savePatientCondition(patientId: number, id: number, model: any): any {
@@ -218,9 +264,9 @@ export class PatientService extends BaseService {
       }
     }    
 
-    saveAttachment(patientId: number, fileToUpload: File, model: any): any {
+    saveAttachment(patientId: number, fileToUpload: File, description: string): any {
       const formData: FormData = new FormData();
-      formData.append('description', model.description);
+      formData.append('description', description);
       formData.append('attachment', fileToUpload, fileToUpload.name);
 
       return this.PostFile(`${patientId}/attachments`, formData);

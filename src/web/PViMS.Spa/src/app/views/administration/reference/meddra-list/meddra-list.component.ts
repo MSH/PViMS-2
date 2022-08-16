@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from 'app/shared/base/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +8,8 @@ import { AccountService } from 'app/shared/services/account.service';
 import { EventService } from 'app/shared/services/event.service';
 import { MediaObserver } from '@angular/flex-layout';
 import { GridModel } from 'app/shared/models/grid.model';
-import { MatPaginator, MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { MeddraTermService } from 'app/shared/services/meddra-term.service';
@@ -16,8 +17,12 @@ import { ImportMeddraPopupComponent } from './import-meddra-popup/import-meddra.
 
 @Component({
   templateUrl: './meddra-list.component.html',
-  styleUrls: ['./meddra-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-code { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-term-type { flex: 0 0 10% !important; width: 10% !important; }
+    .mat-column-version { flex: 0 0 10% !important; width: 10% !important; }
+  `],  
   animations: egretAnimations
 })
 export class MeddraListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -41,7 +46,7 @@ export class MeddraListComponent extends BaseComponent implements OnInit, AfterV
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;

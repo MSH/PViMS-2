@@ -1,13 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { Error401Component } from './401/error.401.component';
 import { Error403Component } from './403/error.403.component';
 import { Error404Component } from './404/error.404.component';
 import { Error500Component } from './500/error.500.component';
 import { ErrorGeneralComponent } from './general/error.general.component';
 import { _paths } from '../../config/paths';
-import { MatIconModule } from '@angular/material';
+import { MatIconModule } from '@angular/material/icon';
 import { Error501Component } from './501/error.501.component';
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -30,7 +29,6 @@ const routes = [
         ErrorGeneralComponent
     ],
     imports: [
-        TranslateModule,
         MatIconModule,
         SharedModule,
         RouterModule.forChild(routes),

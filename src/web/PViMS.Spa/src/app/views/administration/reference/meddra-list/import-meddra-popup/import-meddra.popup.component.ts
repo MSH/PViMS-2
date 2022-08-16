@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { PopupService } from 'app/shared/services/popup.service';
 import { BasePopupComponent } from 'app/shared/base/base.popup.component';
 import { AccountService } from 'app/shared/services/account.service';
@@ -12,7 +12,6 @@ import { MeddraTermService } from 'app/shared/services/meddra-term.service';
 
 @Component({
   templateUrl: './import-meddra.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class ImportMeddraPopupComponent extends BasePopupComponent implements OnInit {

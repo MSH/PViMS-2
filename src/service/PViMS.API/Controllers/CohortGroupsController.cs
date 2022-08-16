@@ -1,53 +1,39 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
-using PVIMS.API.Attributes;
-using PVIMS.API.Helpers;
+using Microsoft.Extensions.Logging;
+using PVIMS.API.Application.Commands.CohortGroupAggregate;
+using PVIMS.API.Application.Queries.CohortGroupAggregate;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
-using PVIMS.Core.Entities;
 using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
+using MediatR;
+using Newtonsoft.Json;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/cohortgroups")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class CohortGroupsController : ControllerBase
     {
+        private readonly IMediator _mediator;
         private readonly ITypeHelperService _typeHelperService;
-        private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
-        private readonly IRepositoryInt<CohortGroupEnrolment> _cohortGroupEnrolmentRepository;
-        private readonly IRepositoryInt<Condition> _conditionRepository;
-        private readonly IUnitOfWorkInt _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILogger<CohortGroupsController> _logger;
 
-        public CohortGroupsController(ITypeHelperService typeHelperService,
-            IMapper mapper,
-            IUrlHelper urlHelper,
-            IRepositoryInt<CohortGroup> cohortGroupRepository,
-            IRepositoryInt<CohortGroupEnrolment> cohortGroupEnrolmentRepository,
-            IRepositoryInt<Condition> conditionRepository,
-            IUnitOfWorkInt unitOfWork)
+        public CohortGroupsController(IMediator mediator,
+            ITypeHelperService typeHelperService,
+            ILogger<CohortGroupsController> logger)
         {
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
-            _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
-            _cohortGroupEnrolmentRepository = cohortGroupEnrolmentRepository ?? throw new ArgumentNullException(nameof(cohortGroupEnrolmentRepository));
-            _conditionRepository = conditionRepository ?? throw new ArgumentNullException(nameof(conditionRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -60,10 +46,10 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetCohortGroupsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        public ActionResult<LinkedCollectionResourceWrapperDto<CohortGroupIdentifierDto>> GetCohortGroupsByIdentifier(
-            [FromQuery] CohortGroupResourceParameters cohortGroupResourceParameters)
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<CohortGroupIdentifierDto>>> GetCohortGroupsByIdentifier(
+            [FromQuery] IdResourceParameters cohortGroupResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<CohortGroupIdentifierDto>
                 (cohortGroupResourceParameters.OrderBy))
@@ -71,13 +57,34 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedCohortGroupsWithLinks = GetCohortGroups<CohortGroupIdentifierDto>(cohortGroupResourceParameters);
+            var query = new CohortGroupsIdentifierQuery(
+                cohortGroupResourceParameters.OrderBy,
+                cohortGroupResourceParameters.PageNumber,
+                cohortGroupResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<CohortGroupIdentifierDto>(mappedCohortGroupsWithLinks.TotalCount, mappedCohortGroupsWithLinks);
-            var wrapperWithLinks = CreateLinksForCohortGroups(wrapper, cohortGroupResourceParameters,
-                mappedCohortGroupsWithLinks.HasNext, mappedCohortGroupsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: CohortGroupsIdentifierQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = cohortGroupResourceParameters.PageSize,
+                currentPage = cohortGroupResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -90,11 +97,11 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetCohortGroupsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<CohortGroupDetailDto>> GetCohortGroupsByDetail(
-            [FromQuery] CohortGroupResourceParameters cohortGroupResourceParameters)
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<CohortGroupDetailDto>>> GetCohortGroupsByDetail(
+            [FromQuery] IdResourceParameters cohortGroupResourceParameters)
         {
             if (!_typeHelperService.TypeHasProperties<CohortGroupDetailDto>
                 (cohortGroupResourceParameters.OrderBy))
@@ -102,13 +109,34 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var mappedCohortGroupsWithLinks = GetCohortGroups<CohortGroupDetailDto>(cohortGroupResourceParameters);
+            var query = new CohortGroupsDetailQuery(
+                cohortGroupResourceParameters.OrderBy,
+                cohortGroupResourceParameters.PageNumber,
+                cohortGroupResourceParameters.PageSize);
 
-            var wrapper = new LinkedCollectionResourceWrapperDto<CohortGroupDetailDto>(mappedCohortGroupsWithLinks.TotalCount, mappedCohortGroupsWithLinks);
-            var wrapperWithLinks = CreateLinksForCohortGroups(wrapper, cohortGroupResourceParameters,
-                mappedCohortGroupsWithLinks.HasNext, mappedCohortGroupsWithLinks.HasPrevious);
+            _logger.LogInformation(
+                "----- Sending query: CohortGroupsDetailQuery");
 
-            return Ok(wrapperWithLinks);
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
+            {
+                return BadRequest("Query not created");
+            }
+
+            // Prepare pagination data for response
+            var paginationMetadata = new
+            {
+                totalCount = queryResult.RecordCount,
+                pageSize = cohortGroupResourceParameters.PageSize,
+                currentPage = cohortGroupResourceParameters.PageNumber,
+                totalPages = queryResult.PageCount
+            };
+
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -120,17 +148,24 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<CohortGroupIdentifierDto>> GetCohortGroupByIdentifier(int id)
         {
-            var mappedCohortGroup = await GetCohortGroupAsync<CohortGroupIdentifierDto>(id);
-            if (mappedCohortGroup == null)
+            var query = new CohortGroupIdentifierQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: CohortGroupIdentifierQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForCohortGroup<CohortGroupIdentifierDto>(mappedCohortGroup));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -142,18 +177,25 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<CohortGroupDetailDto>> GetCohortGroupByDetail(int id)
         {
-            var mappedCohortGroup = await GetCohortGroupAsync<CohortGroupDetailDto>(id);
-            if (mappedCohortGroup == null)
+            var query = new CohortGroupDetailQuery(id);
+
+            _logger.LogInformation(
+                "----- Sending query: CohortGroupDetailQuery - {id}",
+                id);
+
+            var queryResult = await _mediator.Send(query);
+
+            if (queryResult == null)
             {
-                return NotFound();
+                return BadRequest("Query not created");
             }
 
-            return Ok(CreateLinksForCohortGroup<CohortGroupDetailDto>(mappedCohortGroup));
+            return Ok(queryResult);
         }
 
         /// <summary>
@@ -173,75 +215,24 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            if (Regex.Matches(cohortGroupForUpdate.CohortName, @"[a-zA-Z0-9 ']").Count < cohortGroupForUpdate.CohortName.Length)
+            var command = new AddCohortGroupCommand(cohortGroupForUpdate.CohortName, cohortGroupForUpdate.CohortCode, cohortGroupForUpdate.StartDate, cohortGroupForUpdate.FinishDate, cohortGroupForUpdate.ConditionName);
+
+            _logger.LogInformation(
+                "----- Sending command: AddCohortGroupCommand - {cohortName}",
+                command.CohortName);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (commandResult == null)
             {
-                ModelState.AddModelError("Message", "Cohort name contains invalid characters (Enter A-Z, a-z, 0-9, space, apostrophe)");
-                return BadRequest(ModelState);
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(cohortGroupForUpdate.CohortCode, @"[-a-zA-Z0-9 ]").Count < cohortGroupForUpdate.CohortCode.Length)
-            {
-                ModelState.AddModelError("Message", "Cohort code contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen)");
-                return BadRequest(ModelState);
-            }
-
-            if (cohortGroupForUpdate.StartDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Start Date should be before current date");
-            }
-
-            if (cohortGroupForUpdate.FinishDate.HasValue)
-            {
-                if (cohortGroupForUpdate.FinishDate < cohortGroupForUpdate.StartDate)
+            return CreatedAtAction("GetCohortGroupByDetail",
+                new
                 {
-                    ModelState.AddModelError("Message", "Finish Date should be after Start Date");
-                }
-            }
-
-            Condition conditionFromRepo = null;
-            conditionFromRepo = _conditionRepository.Get(c => c.Description == cohortGroupForUpdate.ConditionName);
-            if (conditionFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate primary condition group");
-            }
-
-            if (_unitOfWork.Repository<CohortGroup>().Queryable().
-                Where(l => l.CohortName == cohortGroupForUpdate.CohortName || l.CohortCode == cohortGroupForUpdate.CohortCode)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Item with same name already exists");
-            }
-
-            if (ModelState.IsValid)
-            {
-                var newCohortGroup = new CohortGroup()
-                {
-                    CohortName = cohortGroupForUpdate.CohortName,
-                    CohortCode = cohortGroupForUpdate.CohortCode,
-                    Condition = conditionFromRepo,
-                    StartDate = cohortGroupForUpdate.StartDate,
-                    FinishDate = cohortGroupForUpdate.FinishDate,
-                    MaxEnrolment = 0,
-                    MinEnrolment = 0, 
-                    LastPatientNo = 0
-                };
-
-                _cohortGroupRepository.Save(newCohortGroup);
-
-                var mappedCohortGroup = await GetCohortGroupAsync<CohortGroupIdentifierDto>(newCohortGroup.Id);
-                if (mappedCohortGroup == null)
-                {
-                    return StatusCode(500, "Unable to locate newly added item");
-                }
-
-                return CreatedAtRoute("GetCohortGroupByIdentifier",
-                    new
-                    {
-                        id = mappedCohortGroup.Id
-                    }, CreateLinksForCohortGroup<CohortGroupIdentifierDto>(mappedCohortGroup));
-            }
-
-            return BadRequest(ModelState);
+                    id = commandResult.Id
+                }, commandResult);
         }
 
         /// <summary>
@@ -253,7 +244,7 @@ namespace PVIMS.API.Controllers
         [HttpPut("{id}", Name = "UpdateCohortGroup")]
         [Consumes("application/json")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateCohortGroup(long id,
+        public async Task<IActionResult> UpdateCohortGroup(int id,
             [FromBody] CohortGroupForUpdateDto cohortGroupForUpdate)
         {
             if (cohortGroupForUpdate == null)
@@ -261,66 +252,20 @@ namespace PVIMS.API.Controllers
                 ModelState.AddModelError("Message", "Unable to locate payload for new request");
             }
 
-            var cohortGroupFromRepo = await _cohortGroupRepository.GetAsync(f => f.Id == id);
-            if (cohortGroupFromRepo == null)
+            var command = new ChangeCohortGroupDetailsCommand(id, cohortGroupForUpdate.CohortName, cohortGroupForUpdate.CohortCode, cohortGroupForUpdate.StartDate, cohortGroupForUpdate.FinishDate, cohortGroupForUpdate.ConditionName);
+
+            _logger.LogInformation(
+                "----- Sending command: ChangeCohortGroupDetailsCommand - {Id}",
+                command.Id);
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                return NotFound();
+                return BadRequest("Command not created");
             }
 
-            if (Regex.Matches(cohortGroupForUpdate.CohortName, @"[a-zA-Z0-9 ']").Count < cohortGroupForUpdate.CohortName.Length)
-            {
-                ModelState.AddModelError("Message", "Cohort name contains invalid characters (Enter A-Z, a-z, 0-9, space, apostrophe)");
-                return BadRequest(ModelState);
-            }
-
-            if (Regex.Matches(cohortGroupForUpdate.CohortCode, @"[-a-zA-Z0-9 ]").Count < cohortGroupForUpdate.CohortCode.Length)
-            {
-                ModelState.AddModelError("Message", "Cohort code contains invalid characters (Enter A-Z, a-z, 0-9, space, hyphen)");
-                return BadRequest(ModelState);
-            }
-
-            if (cohortGroupForUpdate.StartDate > DateTime.Today)
-            {
-                ModelState.AddModelError("Message", "Start Date should be before current date");
-            }
-
-            if (cohortGroupForUpdate.FinishDate.HasValue)
-            {
-                if (cohortGroupForUpdate.FinishDate < cohortGroupForUpdate.StartDate)
-                {
-                    ModelState.AddModelError("Message", "Finish Date should be after Start Date");
-                }
-            }
-
-            Condition conditionFromRepo = null;
-            conditionFromRepo = _conditionRepository.Get(c => c.Description == cohortGroupForUpdate.ConditionName);
-            if (conditionFromRepo == null)
-            {
-                ModelState.AddModelError("Message", "Unable to locate primary condition group");
-            }
-
-            if (_unitOfWork.Repository<CohortGroup>().Queryable().
-                Where(l => (l.CohortName == cohortGroupForUpdate.CohortName || l.CohortCode == cohortGroupForUpdate.CohortCode) && l.Id != id)
-                .Count() > 0)
-            {
-                ModelState.AddModelError("Message", "Item with same name already exists");
-            }
-
-            if (ModelState.IsValid)
-            {
-                cohortGroupFromRepo.CohortName = cohortGroupForUpdate.CohortName;
-                cohortGroupFromRepo.CohortCode = cohortGroupForUpdate.CohortCode;
-                cohortGroupFromRepo.StartDate = cohortGroupForUpdate.StartDate;
-                cohortGroupFromRepo.FinishDate = cohortGroupForUpdate.FinishDate;
-                cohortGroupFromRepo.Condition = conditionFromRepo;
-
-                _cohortGroupRepository.Update(cohortGroupFromRepo);
-                _unitOfWork.Complete();
-
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            return Ok();
         }
 
         /// <summary>
@@ -330,143 +275,22 @@ namespace PVIMS.API.Controllers
         /// <returns></returns>
         [HttpDelete("{id}", Name = "DeleteCohortGroup")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteCohortGroup(long id)
+        public async Task<IActionResult> DeleteCohortGroup(int id)
         {
-            var cohortGroupFromRepo = await _cohortGroupRepository.GetAsync(f => f.Id == id);
-            if (cohortGroupFromRepo == null)
-            {
-                return NotFound();
-            }
+            var command = new DeleteCohortGroupCommand(id);
 
-            if (_cohortGroupEnrolmentRepository.Exists(cge => cge.CohortGroup.Id == id))
-            {
-                ModelState.AddModelError("Message", "Unable to delete the Cohort Group as it is currently in use");
-            }
+            _logger.LogInformation(
+                "----- Sending command: DeleteCohortGroupCommand - {Id}",
+                command.Id);
 
-            if (ModelState.IsValid)
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
             {
-                _cohortGroupRepository.Delete(cohortGroupFromRepo);
-                _unitOfWork.Complete();
+                return BadRequest("Command not created");
             }
 
             return NoContent();
         }
-
-        /// <summary>
-        /// Get single cohort group from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier, detail or expanded Dto</typeparam>
-        /// <param name="id">Resource id to search by</param>
-        /// <returns></returns>
-        private async Task<T> GetCohortGroupAsync<T>(int id) where T : class
-        {
-            var cohortGroupFromRepo = await _cohortGroupRepository.GetAsync(f => f.Id == id);
-
-            if (cohortGroupFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedCohortGroup = _mapper.Map<T>(cohortGroupFromRepo);
-
-                return mappedCohortGroup;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get cohort groups from repository and auto map to Dto
-        /// </summary>
-        /// <typeparam name="T">Identifier or detail Dto</typeparam>
-        /// <param name="cohortGroupResourceParameters">Standard parameters for representing resource</param>
-        /// <returns></returns>
-        private PagedCollection<T> GetCohortGroups<T>(CohortGroupResourceParameters cohortGroupResourceParameters) where T : class
-        {
-            var pagingInfo = new PagingInfo()
-            {
-                PageNumber = cohortGroupResourceParameters.PageNumber,
-                PageSize = cohortGroupResourceParameters.PageSize
-            };
-
-            var orderby = Extensions.GetOrderBy<CohortGroup>(cohortGroupResourceParameters.OrderBy, "asc");
-
-            var pagedCohortGroupsFromRepo = _cohortGroupRepository.List(pagingInfo, null, orderby, "");
-            if (pagedCohortGroupsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedCohortGroups = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedCohortGroupsFromRepo),
-                    pagingInfo.PageNumber,
-                    pagingInfo.PageSize,
-                    pagedCohortGroupsFromRepo.TotalCount);
-
-                // Prepare pagination data for response
-                var paginationMetadata = new
-                {
-                    totalCount = mappedCohortGroups.TotalCount,
-                    pageSize = mappedCohortGroups.PageSize,
-                    currentPage = mappedCohortGroups.CurrentPage,
-                    totalPages = mappedCohortGroups.TotalPages,
-                };
-
-                Response.Headers.Add("X-Pagination",
-                    JsonConvert.SerializeObject(paginationMetadata));
-
-                // Add HATEOAS links to each individual resource
-                mappedCohortGroups.ForEach(dto => CreateLinksForCohortGroup(dto));
-
-                return mappedCohortGroups;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        ///  Prepare HATEOAS links for a single resource
-        /// </summary>
-        /// <param name="dto">The dto that the link has been added to</param>
-        /// <returns></returns>
-        private CohortGroupIdentifierDto CreateLinksForCohortGroup<T>(T dto)
-        {
-            CohortGroupIdentifierDto identifier = (CohortGroupIdentifierDto)(object)dto;
-
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "CohortGroup", identifier.Id), "self", "GET"));
-
-            return identifier;
-        }
-
-        /// <summary>
-        /// Prepare HATEOAS links for a identifier based collection resource
-        /// </summary>
-        /// <param name="wrapper">The linked dto wrapper that will host each link</param>
-        /// <param name="cohortGroupResourceParameters">Standard parameters for representing resource</param>
-        /// <param name="hasNext">Are there additional pages</param>
-        /// <param name="hasPrevious">Are there previous pages</param>
-        /// <returns></returns>
-        private LinkedResourceBaseDto CreateLinksForCohortGroups(
-            LinkedResourceBaseDto wrapper,
-            CohortGroupResourceParameters cohortGroupResourceParameters,
-            bool hasNext, bool hasPrevious)
-        {
-            // self 
-            wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateCohortGroupsResourceUri(_urlHelper, ResourceUriType.Current, cohortGroupResourceParameters),
-               "self", "GET"));
-
-            if (hasNext)
-            {
-                wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateCohortGroupsResourceUri(_urlHelper, ResourceUriType.NextPage, cohortGroupResourceParameters),
-                  "nextPage", "GET"));
-            }
-
-            if (hasPrevious)
-            {
-                wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateCohortGroupsResourceUri(_urlHelper, ResourceUriType.PreviousPage, cohortGroupResourceParameters),
-                    "previousPage", "GET"));
-            }
-
-            return wrapper;
-        }
-
     }
 }

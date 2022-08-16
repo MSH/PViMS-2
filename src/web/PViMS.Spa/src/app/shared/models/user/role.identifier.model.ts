@@ -4,7 +4,6 @@ export interface RoleIdentifierWrapperModel {
 }
 
 export interface RoleIdentifierModel {
-    id: number;
-    name: string
-    key: string
+    id: string;
+    name: string;
 }

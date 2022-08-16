@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators, FormGroup, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { PopupService } from 'app/shared/services/popup.service';
@@ -15,7 +15,6 @@ import { AccountService } from 'app/shared/services/account.service';
 
 @Component({
   templateUrl: './user-add.popup.component.html',
-  encapsulation: ViewEncapsulation.None,
   animations: egretAnimations
 })
 export class UserAddPopupComponent extends BasePopupComponent implements OnInit, AfterViewInit {
@@ -36,7 +35,7 @@ export class UserAddPopupComponent extends BasePopupComponent implements OnInit,
     protected userService: UserService,
     protected facilityService: FacilityService,
   ) { 
-    super(_router, _location, popupService, accountService);        
+    super(_router, _location, popupService, accountService);
   }
 
   ngOnInit(): void {
@@ -47,7 +46,7 @@ export class UserAddPopupComponent extends BasePopupComponent implements OnInit,
       firstName: [this.data.payload.firstName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z ]*')]],
       lastName: [this.data.payload.lastName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z ]*')]],
       userName: [this.data.payload.userName || '', [Validators.required, Validators.maxLength(30), Validators.pattern('[a-zA-Z0-9 ]*')]],
-      email: ['', [Validators.maxLength(150), Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$")]],
+      email: ['', [Validators.required, Validators.maxLength(150), Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$")]],
       password: ['', [Validators.required, Validators.maxLength(100)]],
       confirmPassword: ['', [Validators.required, Validators.maxLength(100), confirmPasswordValidator]],
       roles: ['', Validators.required],

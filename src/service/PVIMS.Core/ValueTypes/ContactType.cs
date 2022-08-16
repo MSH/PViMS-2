@@ -2,7 +2,7 @@
 {
     public enum ContactType
     {
-        RegulatoryAuthority = 1,
-        ReportingAuthority = 2
+        SendingAuthority = 1,
+        ReceivingAuthority = 2
     }
 }

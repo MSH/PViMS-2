@@ -1,17 +1,21 @@
 ﻿using AutoMapper;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Services;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
@@ -19,42 +23,39 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/auditlogs")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class AuditLogsController : ControllerBase
     {
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<AuditLog> _auditLogRepository;
         private readonly IRepositoryInt<Attachment> _attachmentRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly IArtefactService _artefactService;
+        private readonly IExcelDocumentService _excelDocumentService;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AuditLogsController(ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<AuditLog> auditLogRepository,
             IRepositoryInt<Attachment> attachmentRepository,
             IRepositoryInt<User> userRepository,
-            IArtefactService artefactService,
+            IExcelDocumentService excelDocumentService,
             IHttpContextAccessor httpContextAccessor)
         {
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _auditLogRepository = auditLogRepository ?? throw new ArgumentNullException(nameof(auditLogRepository));
             _attachmentRepository = attachmentRepository ?? throw new ArgumentNullException(nameof(attachmentRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _artefactService = artefactService ?? throw new ArgumentNullException(nameof(artefactService));
+            _excelDocumentService = excelDocumentService ?? throw new ArgumentNullException(nameof(excelDocumentService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
@@ -65,7 +66,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetAuditLogsByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<AuditLogIdentifierDto>> GetAuditLogsByIdentifier(
             [FromQuery] AuditLogResourceParameters auditLogResourceParameters)
@@ -92,7 +93,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetAuditLogsByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<AuditLogDetailDto>> GetAuditLogsByDetail(
@@ -124,7 +125,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.dataset.v1+json")]
         [ApiExplorerSettings(IgnoreApi = true)]
         [Authorize(Roles = "Admin")]
@@ -148,7 +149,7 @@ namespace PVIMS.API.Controllers
 
             var patientIds = GetPatientsFromAuditLogs(auditLogResourceParameters);
 
-            var model = _artefactService.CreateActiveDatasetForDownload(patientIds.ToArray(), 0);
+            var model = _excelDocumentService.CreateActiveDatasetForDownload(patientIds.ToArray(), 0);
 
             return PhysicalFile(model.FullPath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         }
@@ -162,7 +163,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<AuditLogIdentifierDto>> GetAuditLogByIdentifier(int id)
         {
@@ -184,7 +185,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.auditlog.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.auditlog.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult> DownloadAuditLog(int id)
@@ -265,7 +266,7 @@ namespace PVIMS.API.Controllers
                 predicate = predicate.And(au => au.User.Facilities.Any(uf => uf.Facility.Id == auditLogResourceParameters.FacilityId));
             }
 
-            var pagedAuditLogsFromRepo = _auditLogRepository.List(pagingInfo, predicate, orderby, "");
+            var pagedAuditLogsFromRepo = _auditLogRepository.List(pagingInfo, predicate, orderby, new string[] { "User" });
             if (pagedAuditLogsFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -433,23 +434,25 @@ namespace PVIMS.API.Controllers
             AuditLogResourceParameters auditLogResourceParameters,
             bool hasNext, bool hasPrevious)
         {
-            // self 
             wrapper.Links.Add(
-               new LinkDto(CreateResourceUriHelper.CreateAuditLogsResourceUri(_urlHelper, ResourceUriType.Current, auditLogResourceParameters),
-               "self", "GET"));
+               new LinkDto(
+                   _linkGeneratorService.CreateAuditLogsResourceUri(ResourceUriType.Current, auditLogResourceParameters),
+                   "self", "GET"));
 
             if (hasNext)
             {
                 wrapper.Links.Add(
-                  new LinkDto(CreateResourceUriHelper.CreateAuditLogsResourceUri(_urlHelper, ResourceUriType.NextPage, auditLogResourceParameters),
-                  "nextPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAuditLogsResourceUri(ResourceUriType.NextPage, auditLogResourceParameters),
+                       "nextPage", "GET"));
             }
 
             if (hasPrevious)
             {
                 wrapper.Links.Add(
-                    new LinkDto(CreateResourceUriHelper.CreateAuditLogsResourceUri(_urlHelper, ResourceUriType.PreviousPage, auditLogResourceParameters),
-                    "previousPage", "GET"));
+                   new LinkDto(
+                       _linkGeneratorService.CreateAuditLogsResourceUri(ResourceUriType.PreviousPage, auditLogResourceParameters),
+                       "previousPage", "GET"));
             }
 
             return wrapper;
@@ -464,7 +467,7 @@ namespace PVIMS.API.Controllers
         {
             AuditLogIdentifierDto identifier = (AuditLogIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "AuditLog", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("AuditLog", identifier.Id), "self", "GET"));
 
             return identifier;
         }

@@ -1,27 +1,26 @@
-﻿using System.Linq;
-
-using VPS.Common.Repositories;
-using VPS.Common.Utilities;
-
-using PVIMS.Core.Entities;
+﻿using PVIMS.Core.Entities;
+using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
 using PVIMS.Core.ValueTypes;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PVIMS.Services
 {
     public class InfrastructureService : IInfrastructureService 
     {
         private readonly IUnitOfWorkInt _unitOfWork;
-
         private readonly IRepositoryInt<DatasetInstanceValue> _instanceValueRepository;
+        private readonly IRepositoryInt<Config> _configRepository;
 
-        public InfrastructureService(IUnitOfWorkInt unitOfWork)
+        public InfrastructureService(IUnitOfWorkInt unitOfWork,
+            IRepositoryInt<DatasetInstanceValue> instanceValueRepository,
+            IRepositoryInt<Config> configRepository)
         {
-            Check.IsNotNull(unitOfWork, "unitOfWork may not be null");
-
-            _unitOfWork = unitOfWork;
-
-            _instanceValueRepository = unitOfWork.Repository<DatasetInstanceValue>();
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _instanceValueRepository = instanceValueRepository ?? throw new ArgumentNullException(nameof(instanceValueRepository));
+            _configRepository = configRepository ?? throw new ArgumentNullException(nameof(configRepository));
         }
 
         #region "Referential Checks"
@@ -52,7 +51,7 @@ namespace PVIMS.Services
                     },
                     ElementName = "TerminologyMedDra",
                     DefaultValue = string.Empty,
-                    OID = string.Empty,
+                    Oid = string.Empty,
                     System = true
                 };
                 var rule = meddraElement.GetRule(DatasetRuleType.ElementCanoOnlyLinkToSingleDataset);
@@ -81,7 +80,7 @@ namespace PVIMS.Services
             return config;
         }
 
-        public void SetConfigValue(ConfigType configType, string configValue)
+        public async Task SetConfigValueAsync(ConfigType configType, string configValue)
         {
             var config = _unitOfWork.Repository<Config>().Queryable().
                 FirstOrDefault(c => c.ConfigType == configType);
@@ -94,14 +93,14 @@ namespace PVIMS.Services
                     ConfigType = configType,
                     ConfigValue = configValue
                 };
-                _unitOfWork.Repository<Config>().Save(config);
+                await _configRepository.SaveAsync(config);
             }
             else
             {
                 config.ConfigValue = configValue;
-                _unitOfWork.Repository<Config>().Update(config);
+                _configRepository.Update(config);
             }
-            _unitOfWork.Complete();
+            await _unitOfWork.CompleteAsync();
         }
 
         #endregion

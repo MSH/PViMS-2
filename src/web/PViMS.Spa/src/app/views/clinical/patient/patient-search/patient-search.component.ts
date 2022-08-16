@@ -1,8 +1,9 @@
-import { Component, OnInit, ViewChild, OnDestroy, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { MatPaginator, MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventService } from 'app/shared/services/event.service';
 import { AccountService } from 'app/shared/services/account.service';
@@ -30,8 +31,10 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './patient-search.component.html',
-  styleUrls: ['./patient-search.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }  
+  `],   
   animations: egretAnimations
 })
 export class PatientSearchComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -68,7 +71,7 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
   facilityList: string[] = [];
   customAttributeList: CustomAttributeIdentifierModel[] = [];
 
-  @ViewChild('mainGridPaginator', { static: false }) mainGridPaginator: MatPaginator;
+  @ViewChild('mainGridPaginator') mainGridPaginator: MatPaginator;
 
   ngOnInit(): void {
     const self = this;
@@ -80,14 +83,14 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
       firstName: [this.viewModel.firstName, [Validators.maxLength(30), Validators.pattern("[-a-zA-Z ']*")]],
       lastName: [this.viewModel.lastName, [Validators.maxLength(30), Validators.pattern("[-a-zA-Z ']*")]], 
       dateOfBirth: [this.viewModel.dateOfBirth],
+      caseNumber: [this.viewModel.caseNumber, [Validators.maxLength(50), Validators.pattern("[-a-zA-Z0-9 .()]*")]],
       customAttributeId: [this.viewModel.customAttributeId],
-      customAttributeValue: [this.viewModel.customAttributeValue, [Validators.maxLength(150), Validators.pattern("[-a-zA-Z0-9 ']*")]]
+      customAttributeValue: [this.viewModel.customAttributeValue, [Validators.maxLength(150), Validators.pattern("[-a-zA-Z0-9/ ']*")]]
     });
   }
 
   ngAfterViewInit(): void {
     let self = this;
-    console.log('paginator was ' + self.mainGridPaginator);
     self.viewModel.mainGrid.setupAdvance(
        null, null, self.mainGridPaginator)
        .subscribe(() => { self.loadGrid(); });
@@ -116,13 +119,13 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
     let self = this;
     self.setBusy(true);
     self.patientService.searchPatient(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
-        .pipe(takeUntil(self._unsubscribeAll))
-        .pipe(finalize(() => self.setBusy(false)))
-        .subscribe(result => {
-            self.viewModel.mainGrid.updateAdvance(result);
-        }, error => {
-            self.throwError(error, error.statusText);
-        });
+      .pipe(takeUntil(self._unsubscribeAll))
+      .pipe(finalize(() => self.setBusy(false)))
+      .subscribe(result => {
+        self.viewModel.mainGrid.updateAdvance(result);
+      }, error => {
+        self.handleError(error, "Error fetching patients");
+      });
   }  
 
   loadDropDowns(): void {
@@ -178,13 +181,14 @@ export class PatientSearchComponent extends BaseComponent implements OnInit, Aft
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['id', 'first-name', 'last-name', 'facility', 'medical-record-number',
+          (['id', 'first-name', 'last-name', 'facility', 'case-number',
               'date-of-birth', 'last-encounter', 'actions']);
 
   facilityName: string;
   patientId: number;
   firstName: string;
   lastName: string;
+  caseNumber: string;
   dateOfBirth: Moment;
   customAttributeId: number;
   customAttributeValue: string;

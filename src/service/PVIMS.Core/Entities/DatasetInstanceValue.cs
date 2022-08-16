@@ -1,11 +1,9 @@
-﻿using System;
+﻿using PVIMS.Core.Aggregates.DatasetAggregate;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PVIMS.Core.Entities
 {
-    [Table(nameof(DatasetInstanceValue))]
     public class DatasetInstanceValue : EntityBase
     {
         protected DatasetInstanceValue()
@@ -20,13 +18,12 @@ namespace PVIMS.Core.Entities
             this.InstanceValue = instanceValue;
         }
 
-        [Required]
-        public virtual DatasetElement DatasetElement { get; set; }
-
-        public virtual DatasetInstance DatasetInstance { get; set; }
-
-        [Required]
         public string InstanceValue { get; set; }
+        public int DatasetElementId { get; set; }
+        public int DatasetInstanceId { get; set; }
+
+        public virtual DatasetElement DatasetElement { get; set; }
+        public virtual DatasetInstance DatasetInstance { get; set; }
 
         public virtual ICollection<DatasetInstanceSubValue> DatasetInstanceSubValues { get; set; }
 

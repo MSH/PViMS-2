@@ -1,31 +1,31 @@
 ﻿using AutoMapper;
-using LinqKit;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using PVIMS.API.Attributes;
+using PVIMS.API.Infrastructure.Attributes;
+using PVIMS.API.Infrastructure.Auth;
+using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Helpers;
 using PVIMS.API.Models;
 using PVIMS.API.Models.Parameters;
-using PVIMS.API.Services;
 using PVIMS.Core.Entities;
+using PVIMS.Core.Paging;
+using PVIMS.Core.Repositories;
+using Extensions = PVIMS.Core.Utilities.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using VPS.Common.Collections;
-using VPS.Common.Repositories;
-using Extensions = PVIMS.Core.Utilities.Extensions;
 
 namespace PVIMS.API.Controllers
 {
     [ApiController]
     [Route("api/encountertypes")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + "," + ApiKeyAuthenticationOptions.DefaultScheme)]
     public class EncounterTypesController : ControllerBase
     {
         private readonly IPropertyMappingService _propertyMappingService;
@@ -35,12 +35,12 @@ namespace PVIMS.API.Controllers
         private readonly IRepositoryInt<EncounterTypeWorkPlan> _encounterTypeWorkPlanRepository;
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IUrlHelper _urlHelper;
+        private readonly ILinkGeneratorService _linkGeneratorService;
 
         public EncounterTypesController(IPropertyMappingService propertyMappingService,
             ITypeHelperService typeHelperService,
             IMapper mapper,
-            IUrlHelper urlHelper,
+            ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<EncounterType> encounterTypeRepository,
             IRepositoryInt<WorkPlan> workPlanRepository,
             IRepositoryInt<EncounterTypeWorkPlan> encounterTypeWorkPlanRepository,
@@ -49,7 +49,7 @@ namespace PVIMS.API.Controllers
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _urlHelper = urlHelper ?? throw new ArgumentNullException(nameof(urlHelper));
+            _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _encounterTypeRepository = encounterTypeRepository ?? throw new ArgumentNullException(nameof(encounterTypeRepository));
             _workPlanRepository = workPlanRepository ?? throw new ArgumentNullException(nameof(workPlanRepository));
             _encounterTypeWorkPlanRepository = encounterTypeWorkPlanRepository ?? throw new ArgumentNullException(nameof(encounterTypeWorkPlanRepository));
@@ -63,7 +63,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetEncounterTypesByIdentifier")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public ActionResult<LinkedCollectionResourceWrapperDto<EncounterTypeIdentifierDto>> GetEncounterTypesByIdentifier(
             [FromQuery] IdResourceParameters encounterTypeResourceParameters)
@@ -90,7 +90,7 @@ namespace PVIMS.API.Controllers
         [HttpGet(Name = "GetEncounterTypesByDetail")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<LinkedCollectionResourceWrapperDto<EncounterTypeDetailDto>> GetEncounterTypesByDetail(
@@ -123,7 +123,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.identifier.v1+json", "application/vnd.pvims.identifier.v1+xml")]
         public async Task<ActionResult<EncounterTypeIdentifierDto>> GetEncounterTypeByIdentifier(long id)
         {
@@ -145,7 +145,7 @@ namespace PVIMS.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
-        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+        [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<ActionResult<EncounterTypeDetailDto>> GetEncounterTypeByDetail(long id)
@@ -228,7 +228,7 @@ namespace PVIMS.API.Controllers
                     return StatusCode(500, "Unable to locate newly added item");
                 }
 
-                return CreatedAtRoute("GetEncounterTypeByIdentifier",
+                return CreatedAtAction("GetEncounterTypeByIdentifier",
                     new
                     {
                         id = mappedEncounterType.Id
@@ -281,7 +281,7 @@ namespace PVIMS.API.Controllers
                 encounterTypeFromRepo.Help = encounterTypeForUpdate.Help;
 
                 _encounterTypeRepository.Update(encounterTypeFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
             }
 
             return Ok();
@@ -319,7 +319,7 @@ namespace PVIMS.API.Controllers
                 }
 
                 _encounterTypeRepository.Delete(encounterTypeFromRepo);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }
@@ -343,7 +343,7 @@ namespace PVIMS.API.Controllers
 
             var orderby = Extensions.GetOrderBy<EncounterType>(encounterTypeResourceParameters.OrderBy, "asc");
 
-            var pagedEncounterTypesFromRepo = _encounterTypeRepository.List(pagingInfo, null, orderby, "");
+            var pagedEncounterTypesFromRepo = _encounterTypeRepository.List(pagingInfo, null, orderby, new string[] { "EncounterTypeWorkPlans.WorkPlan" });
             if (pagedEncounterTypesFromRepo != null)
             {
                 // Map EF entity to Dto
@@ -403,7 +403,7 @@ namespace PVIMS.API.Controllers
         {
             EncounterTypeIdentifierDto identifier = (EncounterTypeIdentifierDto)(object)dto;
 
-            identifier.Links.Add(new LinkDto(CreateResourceUriHelper.CreateResourceUri(_urlHelper, "EncounterType", identifier.Id), "self", "GET"));
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("EncounterType", identifier.Id), "self", "GET"));
 
             return identifier;
         }
