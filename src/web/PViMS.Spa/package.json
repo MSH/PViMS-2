@@ -38,7 +38,7 @@
     "classlist.js": "1.1.20150312",
     "core-js": "2.4.1",
     "date-fns": "2.14.0",
-    "dexie": "^2.0.4",
+    "dexie": "^3.2.2",
     "exceljs": "^1.15.0",
     "file-saver": "^2.0.5",
     "flag-icon-css": "3.5.0",
