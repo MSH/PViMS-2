@@ -52,7 +52,7 @@
     "ngx-perfect-scrollbar": "^9.0.0",
     "ngx-quill": "^13.4.0",
     "ngx-webcam": "^0.2.6",
-    "node-sass": "^5.0.0",
+    "node-sass": "^7.0.0",
     "npm": "^6.14.13",
     "perfect-scrollbar": "1.5.0",
     "quill": "^1.3.7",
