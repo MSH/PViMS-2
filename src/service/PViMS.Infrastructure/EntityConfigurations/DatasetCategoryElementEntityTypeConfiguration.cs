@@ -34,16 +34,20 @@ namespace PVIMS.Infrastructure.EntityConfigurations
                 .IsRequired();
 
             configuration.Property(c => c.Acute)
-                .IsRequired();
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.Property(c => c.Chronic)
-                .IsRequired();
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.Property(c => c.System)
-                .IsRequired();
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.Property(c => c.Public)
-                .IsRequired();
+                .IsRequired()
+                .HasDefaultValue(false);
 
             configuration.HasOne(d => d.DatasetCategory)
                 .WithMany(p => p.DatasetCategoryElements)
