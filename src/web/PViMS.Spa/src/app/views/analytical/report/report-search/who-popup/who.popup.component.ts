@@ -269,6 +269,7 @@ export class WhoPopupComponent extends BasePopupComponent implements OnInit, Aft
     .pipe(finalize(() => self.setBusy(false)))
     .subscribe(result => {
       self.notify("Causality set successfully", "Activity");
+      self.initForm();
       self.loadData();
       self.selectedMedication = null;
     }, error => {
@@ -286,12 +287,40 @@ export class WhoPopupComponent extends BasePopupComponent implements OnInit, Aft
     .pipe(finalize(() => self.setBusy(false)))
     .subscribe(result => {
       self.notify("Causality set successfully", "Activity");
+      self.initForm();
       self.loadData();
       self.selectedMedication = null;
     }, error => {
       this.handleError(error, "Error updating causality");
     });
   }
+
+  private initForm(): void {
+    let self = this;
+
+    self.updateForm(self.viewModelForm, {question1: ''});
+    self.updateForm(self.viewModelForm, {question2: ''});
+    self.updateForm(self.viewModelForm, {question3: ''});
+    self.updateForm(self.viewModelForm, {question4: ''});
+    self.updateForm(self.viewModelForm, {question5: ''});
+    self.updateForm(self.viewModelForm, {question6: ''});
+    self.updateForm(self.viewModelForm, {question7: ''});
+    self.updateForm(self.viewModelForm, {question8: ''});
+    self.updateForm(self.viewModelForm, {question9: ''});
+    self.updateForm(self.viewModelForm, {question10: ''});
+    self.updateForm(self.viewModelForm, {question11: ''});
+    self.updateForm(self.viewModelForm, {question12: ''});
+    self.updateForm(self.viewModelForm, {question13: ''});
+    self.updateForm(self.viewModelForm, {question14: ''});
+    self.updateForm(self.viewModelForm, {question15: ''});
+    self.updateForm(self.viewModelForm, {question16: ''});
+    self.updateForm(self.viewModelForm, {question17: ''});
+    self.updateForm(self.viewModelForm, {question18: ''});
+    self.updateForm(self.viewModelForm, {causality: ''});
+
+    self.calculation = '';
+    self.selectedStatus = 'Certain'    
+  }  
 }
 
 export interface WhoPopupData {

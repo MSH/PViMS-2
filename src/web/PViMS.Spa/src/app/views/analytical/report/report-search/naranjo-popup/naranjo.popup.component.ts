@@ -62,6 +62,7 @@ export class NaranjoPopupComponent extends BasePopupComponent implements OnInit,
   }
 
   calculation: string = '';
+  score: number;
   legendDataSource = LEGEND_DATA;
   selectedMedication: ReportInstanceMedicationDetailModel = null;
 
@@ -83,7 +84,8 @@ export class NaranjoPopupComponent extends BasePopupComponent implements OnInit,
       question9: [''],
       question10: [''],
       causalityConfigType: ['2'],
-      causality: ['']
+      causality: [''],
+      score: ['']
     })
 
     this.calculation = '';
@@ -179,6 +181,7 @@ export class NaranjoPopupComponent extends BasePopupComponent implements OnInit,
     }
 
     var score = q1 + q2 + q3 + q4 + q5 + q6 + q7 + q8 + q9 + q10;
+    self.score = score;
     console.log(score);
 
     // Calculate causality
@@ -208,11 +211,13 @@ export class NaranjoPopupComponent extends BasePopupComponent implements OnInit,
     self.setBusy(true);
 
     self.updateForm(self.viewModelForm, {causality: self.calculation});
+    self.updateForm(self.viewModelForm, {score: self.score});
 
     self.reportInstanceService.updateReportInstanceMedicationCausality(self.data.workFlowId, self.data.reportInstanceId, self.selectedMedication.id, self.viewModelForm.value)
     .pipe(finalize(() => self.setBusy(false)))
     .subscribe(result => {
       self.notify("Causality set successfully", "Activity");
+      self.initForm();
       self.loadData();
       self.selectedMedication = null;
     }, error => {
@@ -230,11 +235,32 @@ export class NaranjoPopupComponent extends BasePopupComponent implements OnInit,
     .pipe(finalize(() => self.setBusy(false)))
     .subscribe(result => {
       self.notify("Causality set successfully", "Activity");
+      self.initForm();
       self.loadData();
       self.selectedMedication = null;
     }, error => {
       this.handleError(error, "Error updating causality");
     });
+  }
+
+  private initForm(): void {
+    let self = this;
+
+    self.updateForm(self.viewModelForm, {question1: ''});
+    self.updateForm(self.viewModelForm, {question2: ''});
+    self.updateForm(self.viewModelForm, {question3: ''});
+    self.updateForm(self.viewModelForm, {question4: ''});
+    self.updateForm(self.viewModelForm, {question5: ''});
+    self.updateForm(self.viewModelForm, {question6: ''});
+    self.updateForm(self.viewModelForm, {question7: ''});
+    self.updateForm(self.viewModelForm, {question8: ''});
+    self.updateForm(self.viewModelForm, {question9: ''});
+    self.updateForm(self.viewModelForm, {question10: ''});
+    self.updateForm(self.viewModelForm, {causality: ''});
+    self.updateForm(self.viewModelForm, {score: ''});
+
+    self.calculation = '';
+    self.score = null;
   }
 }
 
