@@ -241,7 +241,7 @@ namespace PVIMS.API.Infrastructure.Services
             foreach (PatientCondition patientCondition in patientClinicalEvent.Patient.PatientConditions.Where(pc => pc.OnsetDate <= patientClinicalEvent.OnsetDate).OrderByDescending(c => c.OnsetDate))
             {
                 i += 1;
-                rows.Add(new KeyValuePair<string, string>("Condition", patientCondition.TerminologyMedDra.MedDraTerm));
+                rows.Add(new KeyValuePair<string, string>("Condition", patientCondition.TerminologyMedDra != null ? patientCondition.TerminologyMedDra.MedDraTerm : patientCondition.ConditionSource));
                 rows.Add(new KeyValuePair<string, string>("Start Date (yyyy-mm-dd)", patientCondition.OnsetDate.ToString("yyyy-MM-dd")));
                 rows.Add(new KeyValuePair<string, string>("End Date (yyyy-mm-dd)", patientCondition.OutcomeDate.HasValue ? patientCondition.OutcomeDate.Value.ToString("yyyy-MM-dd") : ""));
             }
