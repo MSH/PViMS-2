@@ -40,6 +40,16 @@
 
       <div fxFlex="100" class="text-center">
         <button mat-button color="primary" (click)="openAboutPopUp()">{{'About PViMS' | translate}}</button>
+        <button mat-button [matMenuTriggerFor]="menu" matTooltip="{{'Select language' | translate }}">
+          <span class="flag-icon {{currentLang.flag}} mr-05"></span>
+          <span>{{currentLang.name}}</span>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item *ngFor="let lang of availableLangs" (click)="setLang(lang)">
+                <span class="flag-icon mr-05 {{lang.flag}}"></span>
+                <span>{{lang.name}}</span>
+          </button>
+        </mat-menu>    
       </div>
     </div>
   </div>

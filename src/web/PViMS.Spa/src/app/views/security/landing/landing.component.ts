@@ -4,6 +4,8 @@ import { _routes } from 'app/config/routes';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AboutPopupComponent } from 'app/shared/components/about/about.popup.component';
 import { environment } from 'environments/environment';
+import { LayoutService } from 'app/shared/services/layout.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-landing',
@@ -14,9 +16,28 @@ export class LandingComponent implements OnInit {
 
   logo = '';
 
+  public availableLangs = [{
+    name: 'EN',
+    code: 'en',
+    flag: 'flag-icon-us'
+  }, 
+  {
+    name: 'Mz',
+    code: 'mz',
+    flag: 'flag-icon-mz'
+  },
+  {
+    name: 'Fr',
+    code: 'fr',
+    flag: 'flag-icon-fr'
+  }]
+  currentLang = this.availableLangs[0];  
+
   constructor(
     protected _router: Router,
-    protected dialog: MatDialog
+    protected dialog: MatDialog,
+    protected layout: LayoutService,
+    public translate: TranslateService
   ) 
   { 
     let self = this;
@@ -49,5 +70,11 @@ export class LandingComponent implements OnInit {
           return;
         }
       })
+  } 
+  
+  setLang(lng) {
+    this.currentLang = lng;
+    this.translate.use(lng.code);
+    localStorage.setItem('locale', lng.code); 
   }  
 }
