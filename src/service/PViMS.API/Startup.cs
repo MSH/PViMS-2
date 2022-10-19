@@ -265,34 +265,34 @@ namespace PViMS.API
         {
             services.AddDbContext<PVIMSDbContext>(options =>
                    {
-                       options.UseSqlServer(configuration["ConnectionString"],
-                           sqlServerOptionsAction: sqlOptions =>
+                       options.UseMySQL(configuration["ConnectionString"],
+                           mySqlOptions =>
                            {
-                               sqlOptions.MigrationsAssembly(typeof(PVIMSDbContext).GetTypeInfo().Assembly.GetName().Name);
-                               sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                               mySqlOptions.MigrationsAssembly(typeof(PVIMSDbContext).GetTypeInfo().Assembly.GetName().Name);
+                               //mySqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                            });
                    },
                        ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
                    );
             services.AddDbContext<IdentityDbContext>(options =>
                    {
-                       options.UseSqlServer(configuration["ConnectionString"],
-                           sqlServerOptionsAction: sqlOptions =>
+                       options.UseMySQL(configuration["ConnectionString"],
+                           mySqlOptions =>
                            {
-                               sqlOptions.MigrationsAssembly(typeof(IdentityDbContext).GetTypeInfo().Assembly.GetName().Name);
-                               sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                               mySqlOptions.MigrationsAssembly(typeof(IdentityDbContext).GetTypeInfo().Assembly.GetName().Name);
+                               //mySqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                            });
                    },
                        ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
                    );
             services.AddDbContext<IntegrationEventLogContext>(options =>
-            {
-                options.UseSqlServer(configuration["ConnectionString"],
-                        sqlServerOptionsAction: sqlOptions =>
-                        {
-                            sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
-                            sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                        });
+                    {
+                        options.UseMySQL(configuration["ConnectionString"],
+                            mySqlOptions =>
+                            {
+                                mySqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                                //mySqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                            });
                     },
                        ServiceLifetime.Scoped  //Showing explicitly that the DbContext is shared across the HTTP request scope (graph of objects started in the HTTP request)
                     );
