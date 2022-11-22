@@ -66,7 +66,7 @@
     "zone.js": "~0.10.2"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.1102.11",
+    "@angular-devkit/build-angular": "~15.0.0",
     "@angular-devkit/core": "11.2.11",
     "@angular/cli": "11.2.11",
     "@angular/compiler-cli": "11.2.12",
@@ -75,7 +75,7 @@
     "@types/jasmine": "~3.6.0",
     "@types/node": "^12.11.1",
     "codelyzer": "^6.0.0",
-    "copy-webpack-plugin": "4.3.0",
+    "copy-webpack-plugin": "4.6.0",
     "enhanced-resolve": "3.3.0",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
