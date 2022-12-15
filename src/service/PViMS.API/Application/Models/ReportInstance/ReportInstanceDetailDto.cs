@@ -10,6 +10,12 @@ namespace PVIMS.API.Models
     public class ReportInstanceDetailDto : ReportInstanceIdentifierDto
     {
         /// <summary>
+        /// Name of the patient facility
+        /// </summary>
+        [DataMember]
+        public string FacilityIdentifier { get; set; }
+
+        /// <summary>
         /// Details of the source clinical event as described by the patient or reporter
         /// </summary>
         [DataMember]

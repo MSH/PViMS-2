@@ -54,14 +54,15 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 
         public async Task<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> Handle(ReportInstancesAnalysisQuery message, CancellationToken cancellationToken)
         {
-            return await GetReportInstancesAsync(message.WorkFlowGuid, message.PageNumber, message.PageSize, message.QualifiedName);
+            return await GetReportInstancesAsync(message.WorkFlowGuid, message.PageNumber, message.PageSize, message.QualifiedName, message.SearchTerm);
         }
 
         private async Task<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetReportInstancesAsync(
             Guid workFlowGuid, 
             int pageNumber, 
             int pageSize,
-            string qualifiedName)
+            string qualifiedName,
+            string searchTerm = "")
         {
             var pagingInfo = new PagingInfo()
             {
@@ -96,6 +97,16 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             {
                 (DateTime searchFrom, DateTime searchTo) = await PrepareComparisonDateRangeAsync();
                 predicate = predicate.And(f => f.Created >= searchFrom && f.Created <= searchTo);
+            }
+
+            if (!String.IsNullOrWhiteSpace(searchTerm))
+            {
+                predicate = predicate.And(f => f.PatientIdentifier.Contains(searchTerm)
+                                || f.FacilityIdentifier.Contains(searchTerm)
+                                || f.SourceIdentifier.Contains(searchTerm)
+                                || f.TerminologyMedDra.MedDraTerm.Contains(searchTerm)
+                                || f.Identifier.Contains(searchTerm)
+                                || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(searchTerm)));
             }
 
             var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "WorkFlow", "Medications", "TerminologyMedDra", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Activities.ExecutionEvents.Attachments", "Tasks" });

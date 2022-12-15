@@ -14,7 +14,11 @@ namespace PVIMS.API.Models.Parameters
         /// <summary>
         /// Filter reports by activity qualified name
         /// </summary>
-        [StringLength(50)]
         public string QualifiedName { get; set; } = "";
+
+        /// <summary>
+        /// Filter reports by a search term
+        /// </summary>
+        public string SearchTerm { get; set; } = "";
     }
 }

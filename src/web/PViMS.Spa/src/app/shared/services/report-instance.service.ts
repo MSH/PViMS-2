@@ -67,6 +67,7 @@ export class ReportInstanceService extends BaseService {
       parameters.push(<ParameterKeyValueModel> { key: 'qualifiedName', value: filterModel.qualifiedName });
       parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: filterModel.currentPage});
       parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: filterModel.recordsPerPage});
+      parameters.push(<ParameterKeyValueModel> { key: 'searchTerm', value: filterModel.analysisSearchTerm });
 
       return this.Get<ReportInstanceDetailWrapperModel>(`/workflow/${workFlowGuid}/reportinstances`, 'application/vnd.pvims.analysis.v1+json', parameters);
     }

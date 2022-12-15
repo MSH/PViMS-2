@@ -135,6 +135,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             if (!String.IsNullOrWhiteSpace(searchTerm))
             {
                 predicate = predicate.And(f => f.PatientIdentifier.Contains(searchTerm)
+                                || f.FacilityIdentifier.Contains(searchTerm)
                                 || f.SourceIdentifier.Contains(searchTerm)
                                 || f.TerminologyMedDra.MedDraTerm.Contains(searchTerm)
                                 || f.Identifier.Contains(searchTerm)

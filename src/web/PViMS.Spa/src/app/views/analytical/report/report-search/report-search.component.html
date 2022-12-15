@@ -14,12 +14,12 @@
       <div class="p-0 default-light-bg rounded">
         <mat-tab-group>
           <mat-tab label="{{'Active Work' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 130px;">
-              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="5.5%" fxLayoutAlign="start">
+            <mat-card-content class="m-1 p-5" style="height: 140px;">
+              <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start">
                 <div fxFlex="100" class="pr-1 p-12">
                   <mat-label>{{'Please select an activity below' | translate}}...</mat-label>
                 </div>
-                <div fxFlex="100" class="pr-1">
+                <div fxFlex="100" class="pr-1 mb-12">
                   <mat-chip-list #chipList>
                     <div>
                       <mat-chip color="primary" [selected]="viewModelForm.get('qualifiedName').value == 'New reports'" (click)="selectActivity('New reports')" *ngIf="workFlow?.newReportInstanceCount > 0" style="cursor: pointer;"> 
@@ -38,12 +38,24 @@
                     </mat-chip>
                   </mat-chip-list>
                 </div>
+                <div fxFlex="75" class="pr-1 pt-05" *ngIf="viewModelForm.get('qualifiedName').value != 'New reports' && viewModelForm.get('qualifiedName').value != ''">
+                  <mat-form-field class="pl-12 full-width">
+                    <mat-label>{{'Term' | translate}}</mat-label>
+                    <input matInput formControlName="analysisSearchTerm" >
+                    <mat-hint>{{'Please enter a term below to search by patient name, MedDra term as set by the clinician, the MedDra term as set by the PV specialist, the report identifier, the facility identifier or medications used in the analysis' | translate}}...</mat-hint>
+                  </mat-form-field>
+                </div>
+                <div fxLayoutAlign="start" class="ml-12 p-12" *ngIf="viewModelForm.get('qualifiedName').value != 'New reports' && viewModelForm.get('qualifiedName').value != ''">
+                  <button mat-mini-fab color="" *ngIf="viewModelForm.get('analysisSearchTerm').value != ''" (click)="searchByActivityTerm()">
+                    <mat-icon>search</mat-icon>
+                  </button>
+                </div>
               </div>
             </mat-card-content>
           </mat-tab>
 
           <mat-tab label="{{'Search by date' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 130px;">
+            <mat-card-content class="m-1 p-5" style="height: 140px;">
               <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start">
                 <div fxFlex="100" class="pr-1 p-12">
                   <mat-label>{{'Please select a date range to list all reports within that range, irrespective of status' | translate}}...</mat-label>
@@ -68,33 +80,41 @@
                   </mat-form-field>
                   <mat-datepicker #searchToDatepicker></mat-datepicker>
                 </div>
-              </div>
-              <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="end" class="p-8">
-                <button mat-raised-button color="primary" (click)="searchByDate()" [disabled]="viewModelForm.invalid">{{'Search' | translate}}</button>
+                <div fxLayoutAlign="start" class="ml-12 p-12">
+                  <button mat-mini-fab color="" (click)="searchByDate()">
+                    <mat-icon>search</mat-icon>
+                  </button>
+                </div>
               </div>
             </mat-card-content>
           </mat-tab>
 
           <mat-tab label="{{'Search by term' | translate}}">
-            <mat-card-content class="m-1 p-5" style="height: 130px;">
+            <mat-card-content class="m-1 p-5" style="height: 140px;">
               <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start">
                 <div fxFlex="100" class="pr-1 p-12">
-                  <mat-label>{{'Please enter a term below to search by patient name, MedDra term as set by the clinician, the MedDra term as set by the PV specialist, the report identifier or medications used in the analysis' | translate}}...</mat-label>
+                  <mat-label>{{'Please enter a term below to search by patient name, MedDra term as set by the clinician, the MedDra term as set by the PV specialist, the report identifier, the facility identifier or medications used in the analysis' | translate}}...</mat-label>
                 </div>
-                <div fxFlex="50" class="pr-1">
+                <div fxFlex="75" class="pr-1">
                   <mat-form-field class="p-8 full-width">
                     <input matInput formControlName="searchTerm" placeholder="{{'Term' | translate}}">
                   </mat-form-field>
                 </div>
-              </div>
-              <div fxLayout="row" fxLayout.xs="column" fxLayoutGap="10" fxLayoutAlign="end" class="p-8">
-                <button mat-raised-button color="primary" (click)="searchByTerm()" [disabled]="viewModelForm.invalid">{{'Search' | translate}}</button>
+                <div fxLayoutAlign="start" class="ml-12 p-12">
+                  <button mat-mini-fab color="" (click)="searchByTerm()">
+                    <mat-icon>search</mat-icon>
+                  </button>
+                </div>                
               </div>
             </mat-card-content>
           </mat-tab>
         </mat-tab-group>
       </div>
     </form>
+
+    <div fxLayoutAlign="end" class="p-8" *ngIf="viewModelForm.get('qualifiedName').value == 'Confirm Report Data'">
+      <button mat-raised-button color="accent" (click)="downloadDataset()">{{'Download Dataset' | translate}}</button>
+    </div>
 
     <div class="ml-05 mr-05 mt-05 pb-1" *ngIf="viewModelForm.get('qualifiedName').value == 'Summary'">
       <div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
@@ -181,7 +201,7 @@
           ></apx-chart>
         </div>
       </div>
-    </div>    
+    </div>
 
     <div class="ml-05 mr-05 mt-05 pb-1" *ngIf="viewModelForm.get('qualifiedName').value != 'Summary'">
       <div class="table-container">
@@ -212,7 +232,10 @@
             <ng-container matColumnDef="patient-identifier">
               <mat-header-cell *matHeaderCellDef>{{ 'Patient' | translate }}</mat-header-cell>
               <mat-cell *matCellDef="let record">
-                  <p>{{record.patientIdentifier}}</p>
+                <div class="pt-12 pb-12">
+                  <span class="font-weight-bold">{{record.patientIdentifier}}</span><br/>
+                  <span class="text-muted">{{record.facilityIdentifier}}</span>
+                </div>
               </mat-cell>
             </ng-container>
 

@@ -16,6 +16,9 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         public string QualifiedName { get; private set; }
 
         [DataMember]
+        public string SearchTerm { get; private set; }
+
+        [DataMember]
         public int PageNumber { get; private set; }
 
         [DataMember]
@@ -25,10 +28,11 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         {
         }
 
-        public ReportInstancesAnalysisQuery(Guid workFlowGuid, string qualifiedName, int pageNumber, int pageSize) : this()
+        public ReportInstancesAnalysisQuery(Guid workFlowGuid, string qualifiedName, string searchTerm, int pageNumber, int pageSize) : this()
         {
             WorkFlowGuid = workFlowGuid;
             QualifiedName = qualifiedName;
+            SearchTerm = searchTerm;
             PageNumber = pageNumber;
             PageSize = pageSize;
         }

@@ -285,7 +285,11 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var query = new ReportInstancesAnalysisQuery(workFlowGuid, "", reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
+            var query = new ReportInstancesAnalysisQuery(workFlowGuid,
+                string.Empty, 
+                string.Empty, 
+                reportInstanceResourceParameters.PageNumber, 
+                reportInstanceResourceParameters.PageSize);
 
             _logger.LogInformation(
                 "----- Sending query: ReportInstancesAnalysisQuery - {workFlowGuid}",
@@ -337,7 +341,11 @@ namespace PVIMS.API.Controllers
                 return BadRequest();
             }
 
-            var query = new ReportInstancesAnalysisQuery(workFlowGuid, reportInstanceResourceParameters.QualifiedName, reportInstanceResourceParameters.PageNumber, reportInstanceResourceParameters.PageSize);
+            var query = new ReportInstancesAnalysisQuery(workFlowGuid, 
+                reportInstanceResourceParameters.QualifiedName, 
+                reportInstanceResourceParameters.SearchTerm, 
+                reportInstanceResourceParameters.PageNumber, 
+                reportInstanceResourceParameters.PageSize);
 
             _logger.LogInformation(
                 "----- Sending query: ReportInstancesAnalysisQuery - {workFlowGuid}",
@@ -681,7 +689,13 @@ namespace PVIMS.API.Controllers
         public async Task<IActionResult> UpdateReportInstanceMedicationCausality(Guid workFlowGuid, int reportInstanceId, int id,
             [FromBody] ReportInstanceMedicationCausalityForUpdateDto causalityForUpdate)
         {
-            var command = new ChangeReportMedicationCausalityCommand(workFlowGuid, reportInstanceId, id, causalityForUpdate.CausalityConfigType, causalityForUpdate.Causality);
+            var command = new ChangeReportMedicationCausalityCommand(
+                workFlowGuid, 
+                reportInstanceId, 
+                reportInstanceMedicationId: id,
+                causalityForUpdate.CausalityConfigType, 
+                causalityForUpdate.Causality,
+                causalityForUpdate.Score);
 
             _logger.LogInformation(
                 "----- Sending command: ChangeReportMedicationCausalityCommand - {workFlowGuid}: {reportInstanceId}: {reportInstanceMedicationId}",

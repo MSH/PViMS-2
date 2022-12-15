@@ -146,6 +146,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
 
     self.viewModelForm = self._formBuilder.group({
       qualifiedName: [self.viewModel.qualifiedName || ''],
+      analysisSearchTerm: [self.viewModel.analysisSearchTerm || ''],
       searchFrom: [self.viewModel.searchFrom || moment().subtract(3, 'months'), Validators.required],
       searchTo: [self.viewModel.searchTo || moment(), Validators.required],
       searchTerm: [self.viewModel.searchTerm || '']
@@ -247,6 +248,41 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     );
   }
 
+  downloadDataset(): void {
+    let self = this;
+    this.downloadStatus( {status: ProgressStatusEnum.START});
+
+    this.workFlowService.downloadActiveReportsDataset(self.workflowId).subscribe(
+      data => {
+        switch (data.type) {
+          case HttpEventType.DownloadProgress:
+            this.downloadStatus( {status: ProgressStatusEnum.IN_PROGRESS, percentage: Math.round((data.loaded / data.total) * 100)});
+            break;
+
+          case HttpEventType.Response:
+            this.downloadStatus( {status: ProgressStatusEnum.COMPLETE});
+            
+            const downloadedFile = new Blob([data.body], { type: data.body.type });
+            const a = document.createElement('a');
+
+            a.setAttribute('style', 'display:none;');
+            document.body.appendChild(a);
+            a.download = '';
+            a.href = URL.createObjectURL(downloadedFile);
+            a.target = '_blank';
+            a.click();
+            document.body.removeChild(a);
+
+            this.notify("Dataset downloaded successfully!", "Success");            
+            break;
+        }
+      },
+      error => {
+        this.downloadStatus( {status: ProgressStatusEnum.ERROR} );
+      }
+    );
+  }  
+
   loadData(): void {
     let self = this;
     self.setBusy(true);
@@ -292,6 +328,11 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     }
 
     self.viewModel.searchContext = activity == "New reports" ? "New" : "Active";
+    self.loadGrid();
+  }
+
+  searchByActivityTerm(): void {
+    let self = this;
     self.loadGrid();
   }
 
@@ -525,7 +566,7 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     return data.links.find(l => l.rel == rel) != null;
   }
 
-  public downloadStatus(event: ProgressStatus) {
+  downloadStatus(event: ProgressStatus) {
     switch (event.status) {
       case ProgressStatusEnum.START:
         this.setBusy(true);
@@ -676,6 +717,7 @@ class ViewModel {
   workFlowSummary: WorkFlowSummaryModel;
 
   qualifiedName: string;
+  analysisSearchTerm: string;
   searchFrom: Moment;
   searchTo: Moment;
   searchTerm: string;
@@ -686,6 +728,7 @@ class ViewModel {
 class GridRecordModel {
   id: number;
   createdDetail: string;
+  facilityIdentifier: string;
   identifier: string;
   patientIdentifier: string;
   medications: ReportInstanceMedicationDetailModel[];
