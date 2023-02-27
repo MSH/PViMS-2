@@ -18,8 +18,8 @@
         <mat-divider></mat-divider>
         <button mat-list-item (click)="selectAction(2)" [ngClass]="{'selected-action': selectedOption == 2}" [disabled]="disableAnalysisResult()"> <mat-icon class="mr-24" [ngStyle]="{'color': disableAnalysisResult() ? 'lightgray' : 'black' }">send</mat-icon> <h5>{{'Analysis Results' | translate}}</h5> </button>
         <mat-divider></mat-divider>
-        <button mat-list-item (click)="selectAction(3)" [ngClass]="{'selected-action': selectedOption == 3}" [disabled]="disableAnalysisOther()"> <mat-icon class="mr-24" [ngStyle]="{'color': disableAnalysisOther() ? 'lightgray' : 'black' }">dashboard</mat-icon> <h5>{{'Dashboard' | translate}}</h5> </button>
-        <mat-divider></mat-divider>
+        <!--<button mat-list-item (click)="selectAction(3)" [ngClass]="{'selected-action': selectedOption == 3}" [disabled]="disableAnalysisOther()"> <mat-icon class="mr-24" [ngStyle]="{'color': disableAnalysisOther() ? 'lightgray' : 'black' }">dashboard</mat-icon> <h5>{{'Dashboard' | translate}}</h5> </button>
+        <mat-divider></mat-divider>-->
         <button mat-list-item (click)="selectAction(4)" [ngClass]="{'selected-action': selectedOption == 4}" [disabled]="disableAnalysisOther()"> <mat-icon class="mr-24" [ngStyle]="{'color': disableAnalysisOther() ? 'lightgray' : 'black' }">group</mat-icon> <h5>{{'Patients' | translate}}</h5> </button>
         <mat-divider></mat-divider>
         <button mat-list-item (click)="selectAction(5)" [ngClass]="{'selected-action': selectedOption == 5}"> <mat-icon class="mr-24">assistant</mat-icon> <h5>{{'Legend' | translate}}</h5> </button>
@@ -51,7 +51,7 @@
             <mat-tab label="{{'Patient Population' | translate}}">
               <mat-card-content class="m-1 p-5">
                 <mat-card-title class="text-center">
-                  <div class="card-title-text mat-bg-accent p-24">
+                  <div class="card-title-text light-gray p-24">
                     {{'L_TEXT_18' | translate}}
                   </div>
                 </mat-card-title>              
@@ -184,7 +184,7 @@
         <mat-card>
           <mat-card-content class="m-1 p-5">
               <mat-card-title class="text-center">
-                <div class="card-title-text mat-bg-accent p-24">
+                <div class="card-title-text light-gray p-24">
                   {{'L_TEXT_24' | translate}} <br/>
                   {{'L_TEXT_25' | translate}}
                 </div>
@@ -590,29 +590,38 @@
               </div>
             </mat-card-title>
             <mat-card-content class="p-2">
-              <p>
-                {{'L_TEXT_22' | translate}}
-              </p>
-              <form [formGroup]="viewDatasetModelForm">
-                <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start">
-                  <div fxFlex="50" class="pr-1">
-                    <mat-form-field class="p-8 full-width">
-                      <mat-select formControlName="datasetCohortGroupId" placeholder="{{'Cohort' | translate}}" (selectionChange)="changeCohort($event)">
-                        <mat-option value="0">{{'All cohorts' | translate}}</mat-option>
-                        <mat-option *ngFor="let cohort of cohortList" [value]="cohort.id">
-                          {{cohort.cohortName}}
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
+              <div fxFlex="100" class="p-12" *ngIf="cohortList?.length == 0">
+                <div class="light-gray p-12 text-center rounded">
+                  There are currently no cohorts configured in the system
                 </div>
-              </form>
+              </div>                
+              <div fxFlex="100" class="p-12">
+                <p>
+                  {{'L_TEXT_22' | translate}}
+                </p>
+                <form [formGroup]="viewDatasetModelForm">
+                  <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="0.1%" fxLayoutAlign="start">
+                    <div fxFlex="50" class="pr-1">
+                      <mat-form-field class="p-8 full-width">
+                        <mat-select formControlName="datasetCohortGroupId" placeholder="{{'Cohort' | translate}}" (selectionChange)="changeCohort($event)">
+                          <mat-option *ngFor="let cohort of cohortList" [value]="cohort.id">
+                            {{cohort.cohortName}}
+                          </mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="viewDatasetModelForm.get('datasetCohortGroupId').hasError('required')">
+                          {{'This is a required field' | translate}}
+                        </mat-error>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </form>
+              </div>
             </mat-card-content>
-            <div class="card-title-text mat-bg-warn p-12" *ngIf="!accountService.allowDatasetDownload">
+            <div class="card-title-text mat-bg-warn p-12 rounded" *ngIf="!accountService.allowDatasetDownload">
               {{'L_TEXT_21' | translate}}
             </div>
             <mat-card-actions fxLayoutAlign="end" class="p-8">
-              <button mat-raised-button color="accent" (click)="downloadDataset()" *ngIf="accountService.allowDatasetDownload">{{'Download Dataset' | translate}}</button>
+              <button mat-raised-button color="accent" (click)="downloadDataset()" [disabled]="viewDatasetModelForm.invalid" *ngIf="accountService.allowDatasetDownload">{{'Download Dataset' | translate}}</button>
             </mat-card-actions>
           </mat-card>
         </div>

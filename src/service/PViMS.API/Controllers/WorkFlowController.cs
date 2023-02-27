@@ -144,7 +144,7 @@ namespace PVIMS.API.Controllers
         /// Specify paging and filtering information (including requested page number and page size)
         /// </param>
         /// <returns>An ActionResult</returns>
-        [HttpGet("workflow/{id}", Name = "DownloadDataset")]
+        [HttpGet("workflow/{id}", Name = "DownloadActiveReportsDataset")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
@@ -152,13 +152,13 @@ namespace PVIMS.API.Controllers
             "application/vnd.pvims.dataset.v1+json")]
         [ApiExplorerSettings(IgnoreApi = true)]
         [Authorize(Roles = "Analyst")]
-        public async Task<ActionResult> DownloadDataset(Guid id,
+        public async Task<ActionResult> DownloadActiveReportsDataset(Guid id,
             [FromQuery] AnalyserDatasetResourceParameters analyserDatasetResourceParameters)
         {
             var workflowFromRepo = await _workFlowRepository.GetAsync(f => f.WorkFlowGuid == id);
             if (workflowFromRepo == null)
             {
-                return NotFound();  
+                return NotFound();
             }
 
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
@@ -170,11 +170,38 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var model = id == new Guid("4096D0A3-45F7-4702-BDA1-76AEDE41B986") 
-                ? _excelDocumentService.CreateSpontaneousDatasetForDownload() 
-                : _excelDocumentService.CreateActiveDatasetForDownload(new long[] { }, analyserDatasetResourceParameters?.CohortGroupId ?? 0);
+            if (id == new Guid("4096D0A3-45F7-4702-BDA1-76AEDE41B986"))
+            {
+                var spontaneousQuery = new WorkFlowDownloadActiveDatasetQuery(analyserDatasetResourceParameters.CohortGroupId);
 
-            return PhysicalFile(model.FullPath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                _logger.LogInformation(
+                    $"----- Sending query: WorkFlowDownloadActiveDatasetQuery - {spontaneousQuery}");
+
+                var spontaneousQueryResult = await _mediator.Send(spontaneousQuery);
+
+                if (spontaneousQueryResult == null)
+                {
+                    return BadRequest("WorkFlowDownloadActiveDatasetQuery query not created");
+                }
+
+                return PhysicalFile(spontaneousQueryResult.FullPath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            }
+            else 
+            {
+                var activeQuery = new WorkFlowDownloadActiveDatasetQuery(analyserDatasetResourceParameters.CohortGroupId);
+
+                _logger.LogInformation(
+                    $"----- Sending query: WorkFlowDownloadActiveDatasetQuery - {activeQuery}");
+
+                var activeQueryResult = await _mediator.Send(activeQuery);
+
+                if (activeQueryResult == null)
+                {
+                    return BadRequest("WorkFlowDownloadActiveDatasetQuery query not created");
+                }
+
+                return PhysicalFile(activeQueryResult.FullPath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            }
         }
     }
 }

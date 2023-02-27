@@ -140,7 +140,7 @@ export class ActiveAnalyserComponent extends BaseComponent implements OnInit, Af
 
     self.viewDatasetModelForm = self._formBuilder.group({
       workflowId: ['892F3305-7819-4F18-8A87-11CBA3AEE219'],
-      datasetCohortGroupId: [this.viewModel.datasetCohortGroupId || '0'],
+      datasetCohortGroupId: [null, Validators.required],
     });    
   }
 
@@ -348,7 +348,7 @@ export class ActiveAnalyserComponent extends BaseComponent implements OnInit, Af
     let self = this;
     this.downloadStatus( {status: ProgressStatusEnum.START});
 
-    this.workFlowService.downloadDataset(self.viewDatasetModelForm.value).subscribe(
+    this.workFlowService.downloadActiveReportsDataset('892F3305-7819-4F18-8A87-11CBA3AEE219', +self.viewDatasetModelForm.get('datasetCohortGroupId').value).subscribe(
       data => {
         switch (data.type) {
           case HttpEventType.DownloadProgress:

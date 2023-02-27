@@ -8,13 +8,14 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
     {
         public string MedicationIdentifier { get; private set; }
         public string NaranjoCausality { get; private set; }
+        //public int? NaranjoScore { get; private set; }
         public string WhoCausality { get; private set; }
         public Guid ReportInstanceMedicationGuid { get; set; }
         public int ReportInstanceId { get; private set; }
 
         public virtual ReportInstance ReportInstance { get; private set; }
 
-        protected ReportInstanceMedication()
+        public ReportInstanceMedication()
         {
         }
 
@@ -31,14 +32,15 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             MedicationIdentifier = medicationIdentifier;
         }
 
-        public void ChangeWhoCausality(string whoCausality)
+        public void ChangeWhoCausality(string causality)
         {
-            WhoCausality = whoCausality;
+            WhoCausality = causality;
         }
 
-        public void ChangeNaranjoCausality(string naranjoCausality)
+        public void ChangeNaranjoCausality(string causality, int? score)
         {
-            NaranjoCausality = naranjoCausality;
+            NaranjoCausality = score.HasValue ? $"{causality} ({score})" : causality;
+            //NaranjoScore = score;
         }
     }
 }

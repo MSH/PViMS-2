@@ -39,7 +39,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         private List<ReportInstanceTask> _tasks;
         public IEnumerable<ReportInstanceTask> Tasks => _tasks.AsReadOnly();
 
-        protected ReportInstance()
+        public ReportInstance()
         {
             _activities = new List<ActivityInstance>();
             _medications = new List<ReportInstanceMedication>();
@@ -144,7 +144,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             ReportClassificationId = reportClassification.Id;
         }
 
-        public void ChangeMedicationNaranjoCausality(int medicationId, string causality)
+        public void ChangeMedicationNaranjoCausality(int medicationId, string causality, int? score)
         {
             var medication = _medications.SingleOrDefault(m => m.Id == medicationId);
             if (medication == null)
@@ -152,7 +152,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
                 throw new KeyNotFoundException($"Unable to locate medication {medicationId}");
             }
 
-            medication.ChangeNaranjoCausality(causality);
+            medication.ChangeNaranjoCausality(causality, score);
         }
 
         public void ChangeMedicationWhoCausality(int medicationId, string causality)
@@ -329,7 +329,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         {
             get
             {
-                return Activities.Single(a => a.Current == true);
+                return Activities.SingleOrDefault(a => a.Current == true);
             }
         }
 
@@ -337,7 +337,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         {
             get
             {
-                return $"{CurrentActivity.QualifiedName} | {CurrentActivity.CurrentStatus.Description}";
+                return $"{CurrentActivity?.QualifiedName} | {CurrentActivity?.CurrentStatus?.Description}";
             }
         }
 

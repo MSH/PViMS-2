@@ -43,6 +43,7 @@ import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexLegend, A
 import { WorkFlowSummaryModel } from 'app/shared/models/work-flow/work-flow.summary.model';
 import { SeriesValueListModel } from 'app/shared/models/dataset/series-value-list.model';
 import { SeriesValueListItemModel } from 'app/shared/models/dataset/series-value-list-item.model';
+import { ActiveManagementPopupComponent } from './active-management/active-management.popup.component';
 
 const moment =  _moment;
 
@@ -248,41 +249,6 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     );
   }
 
-  downloadDataset(): void {
-    let self = this;
-    this.downloadStatus( {status: ProgressStatusEnum.START});
-
-    this.workFlowService.downloadActiveReportsDataset(self.workflowId).subscribe(
-      data => {
-        switch (data.type) {
-          case HttpEventType.DownloadProgress:
-            this.downloadStatus( {status: ProgressStatusEnum.IN_PROGRESS, percentage: Math.round((data.loaded / data.total) * 100)});
-            break;
-
-          case HttpEventType.Response:
-            this.downloadStatus( {status: ProgressStatusEnum.COMPLETE});
-            
-            const downloadedFile = new Blob([data.body], { type: data.body.type });
-            const a = document.createElement('a');
-
-            a.setAttribute('style', 'display:none;');
-            document.body.appendChild(a);
-            a.download = '';
-            a.href = URL.createObjectURL(downloadedFile);
-            a.target = '_blank';
-            a.click();
-            document.body.removeChild(a);
-
-            this.notify("Dataset downloaded successfully!", "Success");            
-            break;
-        }
-      },
-      error => {
-        this.downloadStatus( {status: ProgressStatusEnum.ERROR} );
-      }
-    );
-  }  
-
   loadData(): void {
     let self = this;
     self.setBusy(true);
@@ -403,7 +369,26 @@ export class ReportSearchComponent extends BaseComponent implements OnInit, Afte
     
         break;
     }    
-  }    
+  } 
+  
+  openActiveManagementPopUp() {
+    let self = this;
+    let title = 'Event Management';
+
+    let dialogRef: MatDialogRef<any> = self.dialog.open(ActiveManagementPopupComponent, {
+      width: '95%',
+      height: '90%',
+      disableClose: true,
+      data: { title: title }
+    })
+    dialogRef.afterClosed()
+      .subscribe(res => {
+        if(!res) {
+          // If user press cancel
+          return;
+        }
+      })
+  }  
 
   openMedicationPopUp(medications: ReportInstanceMedicationDetailModel[], data: any = {}) {
     let self = this;

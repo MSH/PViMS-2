@@ -112,10 +112,6 @@
       </div>
     </form>
 
-    <div fxLayoutAlign="end" class="p-8" *ngIf="viewModelForm.get('qualifiedName').value == 'Confirm Report Data'">
-      <button mat-raised-button color="accent" (click)="downloadDataset()">{{'Download Dataset' | translate}}</button>
-    </div>
-
     <div class="ml-05 mr-05 mt-05 pb-1" *ngIf="viewModelForm.get('qualifiedName').value == 'Summary'">
       <div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
         <div fxFlex.gt-sm="33" fxFlex.sm="75" fxFlex.xs="100">
@@ -290,6 +286,16 @@
                     <mat-icon>more_vert</mat-icon>
                   </button>
                   <mat-menu #menuMain="matMenu" [xPosition]="'before'">
+
+                    <button mat-menu-item (click)="openActiveManagementPopUp()">
+                      <mat-icon color="warn">lightbulb_outline</mat-icon>
+                      <span style="vertical-align: middle;">
+                          {{ 'Manage event' | translate }}
+                      </span>
+                    </button>
+
+                    <mat-divider></mat-divider>
+
                     <button mat-menu-item (click)="detailActivity(record)">
                       <mat-icon>history</mat-icon>
                       <span style="vertical-align: middle;">
