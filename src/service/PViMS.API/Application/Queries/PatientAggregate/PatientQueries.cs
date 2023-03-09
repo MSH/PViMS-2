@@ -878,7 +878,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 				                        inner join PatientFacility ipf on ip.Id = ipf.Patient_Id AND ipf.EnrolledDate = (select MAX(EnrolledDate) FROM PatientFacility iipf WHERE iipf.Patient_Id = ip.Id)
 				                        inner join Facility ifa on ipf.Facility_Id = ifa.Id
                                     where ip.Archived = 0 
-			                            and ip.Created between '{searchFrom.ToString("yyyy-MM-dd")}' and '{searchTo.ToString("yyyy-MM-dd")}'
+			                            and ipf.EnrolledDate between '{searchFrom.ToString("yyyy-MM-dd")}' and '{searchTo.ToString("yyyy-MM-dd")}'
 				                        and ifa.Id = {facilityId}
 		                        ) AS s");
             }
