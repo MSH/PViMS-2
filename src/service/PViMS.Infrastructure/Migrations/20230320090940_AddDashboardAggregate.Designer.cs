@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PVIMS.Infrastructure;
 
@@ -11,9 +12,10 @@ using PVIMS.Infrastructure;
 namespace PViMS.Infrastructure.Migrations
 {
     [DbContext(typeof(PVIMSDbContext))]
-    partial class PVIMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230320090940_AddDashboardAggregate")]
+    partial class AddDashboardAggregate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -351,6 +353,9 @@ namespace PViMS.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasColumnName("CreatedBy_Id");
 
+                    b.Property<int>("DashboardDatasetElementId")
+                        .HasColumnType("int");
+
                     b.Property<int>("DashboardElementId")
                         .HasColumnType("int");
 
@@ -362,11 +367,6 @@ namespace PViMS.Infrastructure.Migrations
 
                     b.Property<string>("ListSQL")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int?>("UpdatedById")
                         .HasColumnType("int")

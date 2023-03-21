@@ -20,6 +20,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using PVIMS.Core.Aggregates.DashboardAggregate;
 
 namespace PVIMS.Infrastructure
 {
@@ -51,6 +52,10 @@ namespace PVIMS.Infrastructure
         public virtual DbSet<Config> Configs { get; set; }
         public virtual DbSet<ContextType> ContextTypes { get; set; }
         public virtual DbSet<CustomAttributeConfiguration> CustomAttributeConfigurations { get; set; }
+        public virtual DbSet<Dashboard> Dashboards { get; set; }
+        public virtual DbSet<DashboardElement> DashboardElements { get; set; }
+        public virtual DbSet<DashboardSeries> DashboardSeries { get; set; }
+        public virtual DbSet<DashboardVisualisation> DashboardVisualisations { get; set; }
         public virtual DbSet<Dataset> Datasets { get; set; }
         public virtual DbSet<DatasetCategory> DatasetCategories { get; set; }
         public virtual DbSet<DatasetCategoryCondition> DatasetCategoryConditions { get; set; }
@@ -179,6 +184,10 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new ContingencyAnalysisListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ContingencyAnalysisPatientViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CustomAttributeConfigurationEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new DashboardElementEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new DashboardEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new DashboardSeriesEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new DashboardVisualisationEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DatasetEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DatasetCategoryEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DatasetCategoryConditionEntityTypeConfiguration());

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PVIMS.Infrastructure;
 
@@ -11,9 +12,10 @@ using PVIMS.Infrastructure;
 namespace PViMS.Infrastructure.Migrations
 {
     [DbContext(typeof(PVIMSDbContext))]
-    partial class PVIMSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230321091004_AddNameToDashboardSeries")]
+    partial class AddNameToDashboardSeries
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

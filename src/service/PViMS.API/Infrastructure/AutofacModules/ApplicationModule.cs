@@ -1,12 +1,15 @@
 ﻿using Autofac;
+using PVIMS.API.Application.Commands.AppointmentAggregate;
 using PVIMS.API.Application.Queries.AppointmentAggregate;
 using PVIMS.API.Application.Queries.PatientAggregate;
 using PVIMS.API.Application.Queries.ReportInstanceAggregate;
 using PVIMS.API.Application.Queries.WorkFlowAggregate;
+using PViMS.BuildingBlocks.EventBus.Abstractions;
 using PVIMS.Core.Repositories;
 using PVIMS.Infrastructure.Repositories;
 using PVIMS.Services;
 using System.Reflection;
+using PVIMS.API.Application.Queries.DashboardAggregate;
 
 namespace PVIMS.API.Infrastructure.AutofacModules
 {
@@ -29,6 +32,10 @@ namespace PVIMS.API.Infrastructure.AutofacModules
 
             builder.Register(c => new AppointmentQueries(QueriesConnectionString))
                 .As<IAppointmentQueries>()
+                .InstancePerLifetimeScope();
+
+            builder.Register(c => new DashboardQueries(QueriesConnectionString))
+                .As<IDashboardQueries>()
                 .InstancePerLifetimeScope();
 
             builder.Register(c => new PatientQueries(QueriesConnectionString))
@@ -55,6 +62,9 @@ namespace PVIMS.API.Infrastructure.AutofacModules
                 .OnActivating(u => u.Instance.Start());
 
             builder.RegisterGeneric(typeof(EntityFrameworkRepository<>)).As(typeof(IRepositoryInt<>));
+
+            builder.RegisterAssemblyTypes(typeof(AddAppointmentCommandHandler).GetTypeInfo().Assembly)
+                .AsClosedTypesOf(typeof(IIntegrationEventHandler<>));
         }
     }
 }
