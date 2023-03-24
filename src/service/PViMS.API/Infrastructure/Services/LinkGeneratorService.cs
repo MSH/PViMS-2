@@ -91,8 +91,9 @@ namespace PVIMS.API.Infrastructure.Services
 
         public string CreateResourceUri(string resourceName, long resourceId)
         {
-            return _linkGenerator.GetPathByName(_accessor.HttpContext, $"Get{resourceName}ByIdentifier",
-              new { id = resourceId });
+            return "";
+            //return _linkGenerator.GetPathByName(_accessor.HttpContext, $"Get{resourceName}ByIdentifier",
+            //  //new { id = resourceId });
         }
 
         public string CreateResourceUriForReportInstance(string actionName, Guid workFlowGuid, long reportInstanceId)
@@ -480,6 +481,41 @@ namespace PVIMS.API.Infrastructure.Services
                           isSearchable = customAttributeResourceParameters.IsSearchable,
                           pageNumber = customAttributeResourceParameters.PageNumber,
                           pageSize = customAttributeResourceParameters.PageSize
+                      });
+            }
+        }
+
+        public string CreateDashboardsResourceUri(ResourceUriType type,
+            string orderBy,
+            int pageNumber,
+            int pageSize)
+        {
+            switch (type)
+            {
+                case ResourceUriType.PreviousPage:
+                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetDashboardsByDetail",
+                      new
+                      {
+                          orderBy,
+                          pageNumber = pageNumber - 1,
+                          pageSize
+                      });
+                case ResourceUriType.NextPage:
+                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetDashboardsByDetail",
+                      new
+                      {
+                          orderBy,
+                          pageNumber = pageNumber + 1,
+                          pageSize
+                      });
+                case ResourceUriType.Current:
+                default:
+                    return _linkGenerator.GetPathByName(_accessor.HttpContext, "GetDashboardsByDetail",
+                      new
+                      {
+                          orderBy,
+                          pageNumber,
+                          pageSize
                       });
             }
         }

@@ -36,6 +36,8 @@ namespace PVIMS.API.Infrastructure.Services
 
         string CreateCustomAttributesResourceUri(ResourceUriType type, CustomAttributeResourceParameters customAttributeResourceParameters);
 
+        string CreateDashboardsResourceUri(ResourceUriType type, string orderBy,int pageNumber, int pageSize);
+
         string CreateDatasetCategoryResourceUri(long datasetid, long resourceId);
 
         string CreateDatasetCategoryElementResourceUri(long datasetid, long datasetCategoryId, long resourceId);

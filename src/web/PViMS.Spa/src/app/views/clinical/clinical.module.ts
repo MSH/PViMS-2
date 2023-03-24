@@ -52,6 +52,14 @@ import { ClinicalEventViewPopupComponent } from './shared/clinical-event-view-po
 import { AppointmentPopupComponent } from './patient/patient-view/appointment-popup/appointment.popup.component';
 import { FormGuidelinesPopupComponent } from './form/form-guidelines-popup/form-guidelines.popup.component';
 import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynamic.component';
+import { FormPXComponent } from './form/form-px/form-px.component';
+import { FormSelectComponent } from './form/form-select/form-select.component';
+import { FormATPTComponent } from './form/form-a-tpt/form-a-tpt.component';
+import { FormATPTConditionsPopupComponent } from './form/form-a-tpt/form-a-tpt-conditions-popup/form-a-tpt-conditions.popup.component';
+import { FormTPTMedicationsPopupComponent } from './shared/form-tpt-medications-popup/form-tpt-medications.popup.component';
+import { FormTPTLabsPopupComponent } from './shared/form-tpt-labs-popup/form-tpt-labs.popup.component';
+import { FormBTPTComponent } from './form/form-b-tpt/form-b-tpt.component';
+import { FormBTPTAdversePopupComponent } from './form/form-b-tpt/form-b-tpt-adverse-popup/form-b-tpt-adverse.popup.component';
 
 @NgModule({
   imports: [
@@ -90,14 +98,22 @@ import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynami
     EncounterViewComponent,
     FeedbackSearchComponent,
     FormAComponent,
+    FormATPTComponent,
+    FormATPTConditionsPopupComponent,
     FormADRComponent,
     FormADRDynamicComponent,
     FormADRMedicationPopupComponent,
     FormBComponent,
+    FormBTPTComponent,
+    FormBTPTAdversePopupComponent,
     FormCComponent,
     FormDeletePopupComponent,
     FormGuidelinesPopupComponent,
     FormListComponent,
+    FormPXComponent,
+    FormSelectComponent,
+    FormTPTLabsPopupComponent,
+    FormTPTMedicationsPopupComponent,
     GenericArchivePopupComponent,
     GenericDeletePopupComponent,
     LabTestPopupComponent,
@@ -121,8 +137,11 @@ import { FormADRDynamicComponent } from './form/form-adr-dynamic/form-adr-dynami
     ConditionPopupComponent,
     ConditionViewPopupComponent,
     FormADRMedicationPopupComponent,
+    FormBTPTAdversePopupComponent,
     FormDeletePopupComponent,
     FormGuidelinesPopupComponent,
+    FormTPTLabsPopupComponent,
+    FormTPTMedicationsPopupComponent,
     PatientAddPopupComponent,
     PatientUpdatePopupComponent,
     GenericDeletePopupComponent,

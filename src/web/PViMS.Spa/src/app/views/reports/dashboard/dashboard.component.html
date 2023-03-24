@@ -1,28 +1,5 @@
 <div fxLayout="row wrap" [@animate]="{ value: '*', params: { y: '50px', delay: '600ms' } }">
-  <div fxFlex="30">
-    <mat-card class="p-12 mat-elevation-z2 rounded" style="height: 150px;">
-      <mat-card-content>
-        <div class="p-12 rounded default-light-bg">
-          <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutGap="5.5%" fxLayoutAlign="start">
-            <div fxFlex="100" class="pr-1 p-12">
-              <mat-label>{{'Please select a cohort' | translate}}...</mat-label>
-            </div>
-            <div fxFlex="100" class="pr-1">
-              <mat-chip-list #chipList>
-                <div *ngFor="let cohort of viewModel?.cohortList">
-                  <mat-chip color="accent" [selected]="cohort.cohortName == viewModel?.selectedCohort?.cohortName" (click)="selectCohort(cohort)" style="cursor: pointer;"> 
-                    {{ cohort.cohortName }}
-                  </mat-chip>
-                  <span class="mr-24" matBadge="{{cohort.enrolmentCount}}" matBadgePosition="above after" matBadgeColor="accent" matBadgeOverlap="true"></span>
-                </div>
-              </mat-chip-list>
-            </div>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-  <div fxFlex="50" *ngIf="viewModel?.selectedCohort?.cohortName == 'ADSM TB National Cohort'">
+  <div fxFlex="50" fxFlex.gt-xs="50" fxFlex.xs="100">
     <mat-card class="p-12 mat-elevation-z2 rounded" style="height: 150px;">
       <mat-card-content>
         <div class="p-12 rounded default-light-bg">
@@ -32,20 +9,8 @@
             </div>
             <div fxFlex="100" class="pr-1">
               <mat-chip-list #chipList>
-                <mat-chip color="accent" [selected]="viewModel?.selectedDashboard == 'Demographics'" (click)="selectDashboard('Demographics')" style="cursor: pointer;"> 
-                  Demographics
-                </mat-chip>
-                <mat-chip color="accent" [selected]="viewModel?.selectedDashboard == 'Clinical'" (click)="selectDashboard('Clinical')" style="cursor: pointer;"> 
-                  Clinical
-                </mat-chip>
-                <mat-chip color="accent" [selected]="viewModel?.selectedDashboard == 'Facility Management'" (click)="selectDashboard('Facility Management')" style="cursor: pointer;"> 
-                  Facility Management
-                </mat-chip>
-                <mat-chip color="accent" [selected]="viewModel?.selectedDashboard == 'NPC Management'" (click)="selectDashboard('NPC Management')" style="cursor: pointer;"> 
-                  NPC Management
-                </mat-chip>
-                <mat-chip color="accent" [selected]="viewModel?.selectedDashboard == 'NPC Signals'" (click)="selectDashboard('NPC Signals')" style="cursor: pointer;"> 
-                  NPC Signals
+                <mat-chip color="accent" [selected]="viewModel?.selectedDashboard?.id == dashboard.id" (click)="selectDashboard(dashboard)" style="cursor: pointer;" *ngFor="let dashboard of viewModel.dashboards"> 
+                  {{ dashboard.name }}
                 </mat-chip>
               </mat-chip-list>
             </div>
