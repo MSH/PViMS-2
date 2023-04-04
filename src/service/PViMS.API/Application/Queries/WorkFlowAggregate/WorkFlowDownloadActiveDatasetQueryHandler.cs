@@ -269,7 +269,7 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
             var propertiesToIgnore = new List<string>() { 
                 "CustomAttributesXmlSerialised", 
                 "Archived", "ArchivedDate", "ArchivedReason", "AuditUser",
-                "Patient", "PatientGuid", "PatientMedicationGuid", "PatientClinicalEventGuid", "PatientConditionGuid", "PatientLabTestGuid"
+                "Patient"
             };
 
             foreach (PropertyInfo property in properties)
@@ -326,7 +326,7 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
             var propertiesToIgnore = new List<string>() {
                 "CustomAttributesXmlSerialised",
                 "Archived", "ArchivedDate", "ArchivedReason", "AuditUser",
-                "Patient", "PatientGuid", "PatientMedicationGuid", "PatientClinicalEventGuid", "PatientConditionGuid", "PatientLabTestGuid",
+                "Patient", 
                 "DomainEvents"
             };
 
