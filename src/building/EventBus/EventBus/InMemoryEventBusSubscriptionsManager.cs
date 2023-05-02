@@ -8,17 +8,15 @@ namespace PViMS.BuildingBlocks.EventBus
 {
     public partial class InMemoryEventBusSubscriptionsManager : IEventBusSubscriptionsManager
     {
-
-
         private readonly Dictionary<string, List<SubscriptionInfo>> _handlers;
-        private readonly List<Type> _eventTypes;
+        private readonly Dictionary<string, List<Type>> _eventTypes;
 
         public event EventHandler<string> OnEventRemoved;
 
         public InMemoryEventBusSubscriptionsManager()
         {
             _handlers = new Dictionary<string, List<SubscriptionInfo>>();
-            _eventTypes = new List<Type>();
+            _eventTypes = new Dictionary<string, List<Type>>();
         }
 
         public bool IsEmpty => _handlers is { Count: 0 };
@@ -38,9 +36,10 @@ namespace PViMS.BuildingBlocks.EventBus
 
             DoAddSubscription(typeof(TH), eventName, isDynamic: false);
 
-            if (!_eventTypes.Contains(typeof(T)))
+            if (!_eventTypes.ContainsKey(eventName))
             {
-                _eventTypes.Add(typeof(T));
+                _eventTypes.Add(eventName, new List<Type>());
+                _eventTypes[eventName].Add(typeof(T));
             }
         }
 
@@ -66,8 +65,8 @@ namespace PViMS.BuildingBlocks.EventBus
                 _handlers[eventName].Add(SubscriptionInfo.Typed(handlerType));
             }
         }
-
-
+ 
+        
         public void RemoveDynamicSubscription<TH>(string eventName)
             where TH : IDynamicIntegrationEventHandler
         {
@@ -94,10 +93,9 @@ namespace PViMS.BuildingBlocks.EventBus
                 if (!_handlers[eventName].Any())
                 {
                     _handlers.Remove(eventName);
-                    var eventType = _eventTypes.SingleOrDefault(e => e.Name == eventName);
-                    if (eventType != null)
+                    if (_eventTypes.ContainsKey(eventName))
                     {
-                        _eventTypes.Remove(eventType);
+                        _eventTypes.Remove(eventName);
                     }
                     RaiseOnEventRemoved(eventName);
                 }
@@ -152,12 +150,21 @@ namespace PViMS.BuildingBlocks.EventBus
         }
         public bool HasSubscriptionsForEvent(string eventName) => _handlers.ContainsKey(eventName);
 
-        public Type GetEventTypeByName(string eventName) => _eventTypes.SingleOrDefault(t => t.Name == eventName);
+        public Type GetEventTypeByName(string eventName) => _eventTypes[eventName][0];
 
         public string GetEventKey<T>()
         {
-            //            return typeof(T).Name;
-            return "pvims.patient.add";
+            switch (typeof(T).Name)
+            {
+                case "PatientAddedIntegrationEvent":
+                    return "patient.add";
+
+                case "PatientClinicalEventAddedIntegrationEvent":
+                    return "patient.clinicalevent.add";
+
+                default:
+                    return "";
+            }
         }
     }
 }

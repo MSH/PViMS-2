@@ -10,6 +10,8 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -19,8 +21,9 @@ namespace PViMS.BuildingBlocks.EventBusRabbitMQ
 {
     public class EventBusRabbitMQ : IEventBus, IDisposable
     {
-        const string BROKER_NAME = "pvims.topic";
-        const string AUTOFAC_SCOPE_NAME = "pvims.topic";
+        const string BROKER_NAME = "pvims.clinical.exchange";
+        const string ACK_BROKER_NAME = "client.clinical.ack.exchange";
+        const string AUTOFAC_SCOPE_NAME = "pvims.clinical.exchange";
 
         private readonly IRabbitMQPersistentConnection _persistentConnection;
         private readonly ILogger<EventBusRabbitMQ> _logger;
@@ -76,20 +79,22 @@ namespace PViMS.BuildingBlocks.EventBusRabbitMQ
                 .Or<SocketException>()
                 .WaitAndRetry(_retryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time) =>
                 {
-                    _logger.LogWarning(ex, "Could not publish event: {EventId} after {Timeout}s ({ExceptionMessage})", @event.TransactionId, $"{time.TotalSeconds:n1}", ex.Message);
+                    _logger.LogWarning(ex, "Could not publish event: {EventId} after {Timeout}s ({ExceptionMessage})", @event.Transaction_Id, $"{time.TotalSeconds:n1}", ex.Message);
                 });
 
             var eventName = @event.GetType().Name;
 
-            _logger.LogTrace("Creating RabbitMQ channel to publish event: {EventId} ({EventName})", @event.TransactionId, eventName);
+            _logger.LogTrace("Creating RabbitMQ channel to publish event: {EventId} ({EventName})", @event.Transaction_Id, eventName);
 
             using (var channel = _persistentConnection.CreateModel())
             {
-                _logger.LogTrace("Declaring RabbitMQ exchange to publish event: {EventId}", @event.TransactionId);
+                _logger.LogTrace("Declaring RabbitMQ exchange to publish event: {EventId}", @event.Transaction_Id);
 
-                channel.ExchangeDeclare(exchange: BROKER_NAME, type: "topic", durable: true);
+                channel.ExchangeDeclare(exchange: ACK_BROKER_NAME, type: "direct", durable: true);
 
-                var body = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), new JsonSerializerOptions
+                List<IntegrationEvent> events = new List<IntegrationEvent>();
+                events.Add(@event);
+                var body = JsonSerializer.SerializeToUtf8Bytes(events, events.GetType(), new JsonSerializerOptions
                 {
                     WriteIndented = true
                 });
@@ -99,17 +104,11 @@ namespace PViMS.BuildingBlocks.EventBusRabbitMQ
                     var properties = channel.CreateBasicProperties();
                     properties.DeliveryMode = 2; // persistent
 
-                    _logger.LogTrace("Publishing event to RabbitMQ: {EventId}", @event.TransactionId);
+                    _logger.LogTrace("Publishing event to RabbitMQ: {EventId}", @event.Transaction_Id);
 
-                    //channel.BasicPublish(
-                    //    exchange: BROKER_NAME,
-                    //    routingKey: eventName,
-                    //    mandatory: true,
-                    //    basicProperties: properties,
-                    //    body: body);
                     channel.BasicPublish(
-                        exchange: BROKER_NAME,
-                        routingKey: "pvims.patient.add.ack",
+                        exchange: ACK_BROKER_NAME,
+                        routingKey: "edrweb.clinical.ack.queue",
                         mandatory: true,
                         basicProperties: properties,
                         body: body);
@@ -122,47 +121,40 @@ namespace PViMS.BuildingBlocks.EventBusRabbitMQ
         {
             _logger.LogInformation("Subscribing to dynamic event {EventName} with {EventHandler}", eventName, typeof(TH).GetGenericTypeName());
 
-            DoInternalSubscription(eventName);
+            DoInternalSubscription();
             _subsManager.AddDynamicSubscription<TH>(eventName);
             StartBasicConsume();
         }
 
-        public void Subscribe<T, TH>()
+        public void Subscribe<T,TH>()
             where T : IntegrationEvent
             where TH : IIntegrationEventHandler<T>
         {
-            var eventName = _subsManager.GetEventKey<T>();
-            DoInternalSubscription(eventName);
+            DoInternalSubscription();
 
-            _logger.LogInformation("Subscribing to event {EventName} with {EventHandler}", eventName, typeof(TH).GetGenericTypeName());
+            _logger.LogInformation("Subscribing to queue {QueueName} with {EventHandler}", _queueName, typeof(TH).GetGenericTypeName());
 
             _subsManager.AddSubscription<T, TH>();
             StartBasicConsume();
         }
 
-        private void DoInternalSubscription(string eventName)
+        private void DoInternalSubscription()
         {
-            var containsKey = _subsManager.HasSubscriptionsForEvent(eventName);
-            if (!containsKey)
+            if (!_persistentConnection.IsConnected)
             {
-                if (!_persistentConnection.IsConnected)
-                {
-                    _persistentConnection.TryConnect();
-                }
-
-                _consumerChannel.QueueBind(queue: _queueName,
-                                    exchange: BROKER_NAME,
-                                    routingKey: eventName);
+                _persistentConnection.TryConnect();
             }
+
+            _consumerChannel.QueueBind(queue: _queueName,
+                                exchange: BROKER_NAME,
+                                routingKey: _queueName);
         }
 
         public void Unsubscribe<T, TH>()
             where T : IntegrationEvent
             where TH : IIntegrationEventHandler<T>
         {
-            var eventName = _subsManager.GetEventKey<T>();
-
-            _logger.LogInformation("Unsubscribing from event {EventName}", eventName);
+            _logger.LogInformation("Unsubscribing from queue {QueueName} with {EventHandler}", _queueName, typeof(TH).GetGenericTypeName());
 
             _subsManager.RemoveSubscription<T, TH>();
         }
@@ -206,7 +198,8 @@ namespace PViMS.BuildingBlocks.EventBusRabbitMQ
 
         private async Task Consumer_Received(object sender, BasicDeliverEventArgs eventArgs)
         {
-            var eventName = eventArgs.RoutingKey;
+            var routingKey = eventArgs.RoutingKey;
+            var eventName = Encoding.UTF8.GetString((byte[])eventArgs.BasicProperties.Headers["payload_type"]);
             var message = Encoding.UTF8.GetString(eventArgs.Body.Span);
 
             try
@@ -241,7 +234,7 @@ namespace PViMS.BuildingBlocks.EventBusRabbitMQ
             var channel = _persistentConnection.CreateModel();
 
             channel.ExchangeDeclare(exchange: BROKER_NAME,
-                                    type: "topic",
+                                    type: "direct",
                                     durable: true);
 
             channel.QueueDeclare(queue: _queueName,
@@ -285,11 +278,9 @@ namespace PViMS.BuildingBlocks.EventBusRabbitMQ
                         {
                             var handler = scope.ResolveOptional(subscription.HandlerType);
                             if (handler == null) continue;
-                            //var eventType = _subsManager.GetEventTypeByName(eventName);
-                            var eventType = _subsManager.GetEventTypeByName("PatientAddedIntegrationEvent");
-                            var integrationEvent = JsonSerializer.Deserialize(message, eventType, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+                            var eventType = _subsManager.GetEventTypeByName(eventName);
+                            var integrationEvent = JsonSerializer.Deserialize(message.Replace("[", "").Replace("]", ""), eventType, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
                             var concreteType = typeof(IIntegrationEventHandler<>).MakeGenericType(eventType);
-
                             await Task.Yield();
                             await (Task)concreteType.GetMethod("Handle").Invoke(handler, new object[] { integrationEvent });
                         }
@@ -300,6 +291,16 @@ namespace PViMS.BuildingBlocks.EventBusRabbitMQ
             {
                 _logger.LogWarning("No subscription for RabbitMQ event: {EventName}", eventName);
             }
+        }
+
+        public List<T> Deserialize<T>(string path)
+        {
+            return JsonSerializer.Deserialize<List<T>>(path);
+        }
+
+        public T ConvertObject<T>(object input)
+        {
+            return (T)Convert.ChangeType(input, typeof(T));
         }
     }
 }
