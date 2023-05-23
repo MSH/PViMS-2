@@ -11,6 +11,12 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         : IRequest<PatientIdentifierDto>
     {
         [DataMember]
+        public Guid? OriginatorGuid { get; set; }
+
+        [DataMember]
+        public Guid? OriginatorPatientGuid { get; set; }
+
+        [DataMember]
         public string FirstName { get; set; }
 
         [DataMember]
@@ -59,9 +65,12 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         public DateTime EncounterDate { get; set; }
 
         [DataMember]
+        public DateTime? Created { get; set; }
+
+        [DataMember]
         public IDictionary<int, string> Attributes { get; private set; }
 
-        public AddPatientCommand(string firstName, string lastName, string middleName, DateTime dateOfBirth, string facilityName, int conditionGroupId, int meddraTermId, int? cohortGroupId, DateTime? enroledDate, DateTime startDate, DateTime? outcomeDate, string caseNumber, string comments, int encounterTypeId, int priorityId, DateTime encounterDate, IDictionary<int, string> attributes)
+        public AddPatientCommand(string firstName, string lastName, string middleName, DateTime dateOfBirth, string facilityName, int conditionGroupId, int meddraTermId, int? cohortGroupId, DateTime? enroledDate, DateTime startDate, DateTime? outcomeDate, string caseNumber, string comments, int encounterTypeId, int priorityId, DateTime encounterDate, IDictionary<int, string> attributes, Guid? originatorGuid, Guid? originatorPatientGuid, DateTime? created)
         {
             FirstName = firstName;
             LastName = lastName;
@@ -80,6 +89,9 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             PriorityId = priorityId;
             EncounterDate = encounterDate;
             Attributes = attributes;
+            OriginatorGuid = originatorGuid;
+            OriginatorPatientGuid = originatorPatientGuid;
+            Created = created;
         }
     }
 }

@@ -8,7 +8,6 @@ using PVIMS.Core.Exceptions;
 using PVIMS.Core.Models;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,7 +59,11 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
         public async Task<PatientIdentifierDto> Handle(AddPatientCommand message, CancellationToken cancellationToken)
         {
-            await CheckIfPatientIsUniqueAsync(message.Attributes);
+            //await CheckIfPatientIsUniqueAsync(message.Attributes);
+            if(message.OriginatorPatientGuid.HasValue)
+            {
+                await CheckIfGuidIsUniqueAsync(message.OriginatorPatientGuid.Value);
+            }
             await ValidateCommandModelAsync(message.MeddraTermId, message.CohortGroupId, message.EncounterTypeId);
 
             var patientDetail = await PreparePatientDetailAsync(message);
@@ -113,6 +116,16 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             }
         }
 
+        private async Task CheckIfGuidIsUniqueAsync(Guid patientGuid)
+        {
+            var patientFromRepo = await _patientRepository.GetAsync(p => p.PatientGuid == patientGuid);
+
+            if (patientFromRepo != null)
+            {
+                throw new DomainException("Potential duplicate patient. Check patient GUID.");
+            }
+        }
+
         private async Task ValidateCommandModelAsync(int meddraTermId, int? cohortGroupId, int encounterTypeId)
         {
             var sourceTermFromRepo = await _terminologyMeddraRepository.GetAsync(tm => tm.Id == meddraTermId);
@@ -143,6 +156,8 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         private async Task<PatientDetailForCreation> PreparePatientDetailAsync(AddPatientCommand message)
         {
             var patientDetail = new PatientDetailForCreation(message.FirstName, message.LastName, message.MiddleName, message.FacilityName, string.Empty, message.DateOfBirth, message.CohortGroupId, message.EnroledDate, message.EncounterTypeId, message.PriorityId, message.EncounterDate);
+            patientDetail.OriginatorGuid = message.OriginatorGuid;
+            patientDetail.OriginatorPatientGuid = message.OriginatorPatientGuid;
             patientDetail.CustomAttributes = _modelExtensionBuilder.BuildModelExtension<Patient>();
 
             // Update patient custom attributes from source
@@ -199,9 +214,9 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
         private PatientIdentifierDto CreateLinks(PatientIdentifierDto dto)
         {
-            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Patient", dto.Id), "self", "GET"));
-            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateNewAppointmentForPatientResourceUri(dto.Id), "newAppointment", "POST"));
-            dto.Links.Add(new LinkDto(_linkGeneratorService.CreateNewEnrolmentForPatientResourceUri(dto.Id), "newEnrolment", "POST"));
+            //dto.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("Patient", dto.Id), "self", "GET"));
+            //dto.Links.Add(new LinkDto(_linkGeneratorService.CreateNewAppointmentForPatientResourceUri(dto.Id), "newAppointment", "POST"));
+            //dto.Links.Add(new LinkDto(_linkGeneratorService.CreateNewEnrolmentForPatientResourceUri(dto.Id), "newEnrolment", "POST"));
 
             return dto;
         }
