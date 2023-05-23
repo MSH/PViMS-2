@@ -27,6 +27,7 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
         private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
         private readonly IRepositoryInt<CohortGroupEnrolment> _cohortGroupEnrolmentRepository;
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeConfigurationRepository;
+        private readonly IRepositoryInt<Encounter> _encounterRepository;
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
@@ -42,6 +43,7 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
             IRepositoryInt<CohortGroup> cohortGroupRepository,
             IRepositoryInt<CohortGroupEnrolment> cohortGroupEnrolmentRepository,
             IRepositoryInt<CustomAttributeConfiguration> customAttributeConfigurationRepository,
+            IRepositoryInt<Encounter> encounterRepository,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<PatientCondition> patientConditionRepository,
@@ -56,6 +58,7 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
             _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
             _cohortGroupEnrolmentRepository = cohortGroupEnrolmentRepository ?? throw new ArgumentNullException(nameof(cohortGroupEnrolmentRepository));
             _customAttributeConfigurationRepository = customAttributeConfigurationRepository ?? throw new ArgumentNullException(nameof(customAttributeConfigurationRepository));
+            _encounterRepository = encounterRepository ?? throw new ArgumentNullException(nameof(encounterRepository));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
@@ -96,6 +99,7 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
             await PrepareDataForClinicalEventSheetAsync(patientIds.ToArray());
             await PrepareDataForConditionSheetAsync(patientIds.ToArray());
             await PrepareDataForLabTestSheetAsync(patientIds.ToArray());
+            await PrepareDataForEncounterSheetAsync(patientIds.ToArray());
 
             return model;
         }
@@ -247,6 +251,30 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
             }
 
             _excelDocumentService.AddSheet("Lab Tests", data);
+        }
+
+        private async Task PrepareDataForEncounterSheetAsync(int[] patientIds)
+        {
+            var data = new List<List<string>>();
+
+            var orderby = Extensions.GetOrderBy<Encounter>("Id", "asc");
+            var encountersFromRepo = await _encounterRepository.ListAsync(plt => patientIds.Contains(plt.Patient.Id) && plt.Archived == false, orderby, new string[] {
+                "EncounterType",
+                "Priority"
+            });
+            if (encountersFromRepo != null)
+            {
+                var headers = await PrepareEntityHeaderAsync(new Encounter(), "Encounter");
+                data.Add(headers);
+
+                foreach (var encounter in encountersFromRepo)
+                {
+                    var row = await PrepareEntityRowAsync(encounter, "Encounter");
+                    data.Add(row);
+                }
+            }
+
+            _excelDocumentService.AddSheet("Encounters", data);
         }
 
         private ArtifactDto PrepareFileModel()
