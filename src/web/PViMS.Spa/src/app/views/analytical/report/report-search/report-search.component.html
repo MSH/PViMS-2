@@ -33,9 +33,11 @@
                       </mat-chip>
                       <span class="mr-24" matBadge="{{activity.reportInstanceCount}}" matBadgePosition="above after" matBadgeColor="warn" matBadgeOverlap="true"></span>
                     </div>
-                    <mat-chip color="primary" [selected]="viewModelForm.get('qualifiedName').value == 'Summary'" (click)="selectActivity('Summary')" style="cursor: pointer;"> 
-                      Summary
-                    </mat-chip>
+                    <div>
+                      <mat-chip color="primary" [selected]="viewModelForm.get('qualifiedName').value == 'Summary'" (click)="selectActivity('Summary')" style="cursor: pointer;"> 
+                        Summary
+                      </mat-chip>
+                    </div>
                   </mat-chip-list>
                 </div>
                 <div fxFlex="75" class="pr-1 pt-05" *ngIf="viewModelForm.get('qualifiedName').value != 'New reports' && viewModelForm.get('qualifiedName').value != ''">
@@ -287,12 +289,12 @@
                   </button>
                   <mat-menu #menuMain="matMenu" [xPosition]="'before'">
 
-                    <button mat-menu-item (click)="openActiveManagementPopUp()">
+                    <!-- <button mat-menu-item (click)="openActiveManagementPopUp()">
                       <mat-icon color="warn">lightbulb_outline</mat-icon>
                       <span style="vertical-align: middle;">
                           {{ 'Manage event' | translate }}
                       </span>
-                    </button>
+                    </button> -->
 
                     <mat-divider></mat-divider>
 
