@@ -6,13 +6,14 @@ using PVIMS.API.Application.Models.Patient;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
-using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private readonly IPatientQueries _patientQueries;
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<Facility> _facilityRepository;
-        private readonly PVIMSDbContext _context;
+        private readonly IRepositoryInt<User> _userRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -34,7 +35,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             IPatientQueries patientQueries,
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<Facility> facilityRepository,
-            PVIMSDbContext dbContext,
+            IRepositoryInt<User> userRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
             IHttpContextAccessor httpContextAccessor,
@@ -43,7 +44,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _patientQueries = patientQueries ?? throw new ArgumentNullException(nameof(patientQueries));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
-            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));

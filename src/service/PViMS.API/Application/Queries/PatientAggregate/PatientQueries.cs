@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using MailKit.Search;
 using Microsoft.Data.SqlClient;
+using MySqlConnector;
 using PVIMS.API.Application.Models.Patient;
 using PVIMS.API.Models;
 using PVIMS.Core.ValueTypes;
@@ -31,7 +32,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string customAttributeKey, 
             string customAttributeValue)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -50,11 +51,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 				            p.FirstName, 
 				            p.Surname, 
 				            f.FacilityName, 
-				            ISNULL(CONVERT(VARCHAR(10), p.DateOfBirth, 101), '') AS DateOfBirth,
-				            CAST(ISNULL(FLOOR(DATEDIFF(DAY, p.DateofBirth, GETDATE()) / 365.25), 0) AS VARCHAR) AS Age,
-				            ISNULL(CONVERT(VARCHAR(10), (SELECT MAX(EncounterDate) FROM Encounter e WHERE e.Patient_Id = p.Id), 101), '') AS LatestEncounterDate
+				            DATE_FORMAT(p.DateOfBirth, '%Y-%m-%d %T.%f') AS DateOfBirth,
+				            IFNULL(FLOOR(DATEDIFF(p.DateofBirth, NOW()) / 365.25), 0) AS Age,
+				            IFNULL(DATE_FORMAT((SELECT MAX(EncounterDate) FROM Encounter e WHERE e.Patient_Id = p.Id), '%Y-%m-%d %T.%f'),'') AS LatestEncounterDate
 			            FROM Patient p
-				            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
+				            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC limit 0,10) 
 				            INNER JOIN Facility f ON pf.Facility_Id = f.Id
 			                {joinCustomAttribute} 
 			            WHERE p.Archived = 0 
@@ -654,6 +655,28 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 	                            ORDER BY mpce.[Classification], t.MedDraTerm";
 
                 return await connection.QueryAsync<AdverseEventReportDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<PatientListDto>> GetPatientListByConceptAsync(int conceptId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var sql = @$"SELECT s.Id AS PatientId, s.FirstName, s.Surname, s.FacilityName  FROM 
+	                            (
+			                        select ip.Id, ip.FirstName, ip.Surname, ifa.FacilityName
+			                        from Patient ip 
+				                        inner join PatientMedication ipm on ip.Id = ipm.Patient_Id 
+				                        inner join PatientFacility ipf on ip.Id = ipf.Patient_Id AND ipf.EnrolledDate = (select MAX(EnrolledDate) FROM PatientFacility iipf WHERE iipf.Patient_Id = ip.Id)
+				                        inner join Facility ifa on ipf.Facility_Id = ifa.Id
+				                        inner join Concept ic on ipm.Concept_Id = ic.Id
+			                        where ic.Id = {conceptId} and ip.Archived = 0 and ipm.Archived = 0 
+			                        group by ip.Id, ip.FirstName, ip.Surname, ifa.FacilityName
+		                        ) AS s";
+
+                return await connection.QueryAsync<PatientListDto>(sql);
             }
         }
 
