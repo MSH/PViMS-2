@@ -1,5 +1,7 @@
 ﻿using Dapper;
+using MailKit.Search;
 using Microsoft.Data.SqlClient;
+using PVIMS.API.Application.Models.Patient;
 using PVIMS.API.Models;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -16,6 +18,48 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         public PatientQueries(string connectionString)
         {
             _connectionString = !string.IsNullOrWhiteSpace(connectionString) ? connectionString : throw new ArgumentNullException(nameof(connectionString));
+        }
+
+        public async Task<IEnumerable<SearchPatientDto>> SearchPatientsAsync(int currentUserId, int? searchFacilityId, int? searchPatientId, string searchFirstName, string searchLastName, string caseNumber, DateTime? dateOfBirth, string customAttributeKey, string customAttributeValue)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var joinCustomAttribute = !String.IsNullOrWhiteSpace(customAttributeKey) && !String.IsNullOrWhiteSpace(customAttributeValue) ? $"CROSS APPLY p.CustomAttributesXmlSerialised.nodes('CustomAttributeSet/CustomStringAttribute') as X(Y)" : "";
+
+                var whereFacility = searchFacilityId.HasValue ? $"AND pf.Facility_Id = {searchFacilityId}" : $"AND pf.Facility_Id IN (SELECT f.Id FROM UserFacility uf INNER JOIN Facility f ON uf.Facility_Id = f.Id WHERE uf.User_Id = {currentUserId})";
+                var wherePatient = searchPatientId.HasValue ? $"AND p.Id = {searchPatientId}" : "";
+                var whereFirstName = !String.IsNullOrWhiteSpace(searchFirstName) ? $"AND p.FirstName LIKE '%{searchFirstName}%'" : "";
+                var whereLastName = !String.IsNullOrWhiteSpace(searchLastName) ? $"AND p.Surname LIKE '%{searchLastName}%'" : "";
+                var whereCaseNumber = !String.IsNullOrWhiteSpace(caseNumber) ? $"AND EXISTS(SELECT Id FROM PatientCondition pc WHERE pc.Patient_Id = p.id AND pc.CaseNumber LIKE '%{caseNumber}%')" : "";
+                var whereDateOfBirth = dateOfBirth.HasValue ? $"AND p.DateOfBirth = '%{dateOfBirth.Value.ToString("yyyy-MM-dd")}%'" : "";
+                var whereCustomAttribute = !String.IsNullOrWhiteSpace(customAttributeKey) && !String.IsNullOrWhiteSpace(customAttributeValue) ? $"AND X.Y.value('(Key)[1]', 'VARCHAR(MAX)') = '%{customAttributeKey}%' AND X.Y.value('(Value)[1]', 'VARCHAR(MAX)')  LIKE '%{customAttributeValue}%'" : "";
+
+                var sql = $@"
+		            SELECT	p.Id AS PatientId, 
+				            p.FirstName, 
+				            p.Surname, 
+				            f.FacilityName, 
+				            ISNULL(CONVERT(VARCHAR(10), p.DateOfBirth, 101), '') AS DateOfBirth,
+				            CAST(ISNULL(FLOOR(DATEDIFF(DAY, p.DateofBirth, GETDATE()) / 365.25), 0) AS VARCHAR) AS Age,
+				            ISNULL(CONVERT(VARCHAR(10), (SELECT MAX(EncounterDate) FROM Encounter e WHERE e.Patient_Id = p.Id), 101), '') AS LatestEncounterDate
+			            FROM Patient p
+				            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC)
+				            INNER JOIN Facility f ON pf.Facility_Id = f.Id
+			                {joinCustomAttribute} 
+			            WHERE p.Archived = 0 
+                            {whereFacility} 
+                            {wherePatient} 
+                            {whereFirstName} 
+                            {whereLastName} 
+                            {whereCaseNumber} 
+                            {whereDateOfBirth} 
+				            {whereCustomAttribute} 
+		            ORDER BY p.Id desc";
+
+                return await connection.QueryAsync<SearchPatientDto>(sql);
+            }
         }
 
         public async Task<IEnumerable<AdverseEventFrequencyReportDto>> GetAdverseEventsByAnnualAsync(DateTime searchFrom, DateTime searchTo)

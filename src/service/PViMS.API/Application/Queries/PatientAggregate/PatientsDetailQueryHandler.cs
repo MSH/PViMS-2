@@ -1,20 +1,18 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using PVIMS.API.Application.Models.Patient;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +25,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
     public class PatientsDetailQueryHandler
         : IRequestHandler<PatientsDetailQuery, LinkedCollectionResourceWrapperDto<PatientDetailDto>>
     {
+        private readonly IPatientQueries _patientQueries;
         private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<Facility> _facilityRepository;
@@ -34,7 +33,6 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
         private readonly IRepositoryInt<User> _userRepository;
-        private readonly PVIMSDbContext _context;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
@@ -42,6 +40,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private readonly ILogger<PatientsDetailQueryHandler> _logger;
 
         public PatientsDetailQueryHandler(
+            IPatientQueries patientQueries,
             IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<Facility> facilityRepository,
@@ -49,13 +48,13 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             IRepositoryInt<PatientCondition> patientConditionRepository,
             IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
             IRepositoryInt<User> userRepository,
-            PVIMSDbContext dbContext,
             ITypeExtensionHandler modelExtensionBuilder,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
             IHttpContextAccessor httpContextAccessor,
             ILogger<PatientsDetailQueryHandler> logger)
         {
+            _patientQueries = patientQueries ?? throw new ArgumentNullException(nameof(patientQueries));
             _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
@@ -63,7 +62,6 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -79,56 +77,43 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                 PageSize = message.PageSize
             };
 
-            var userId = await GetUserIdAsync();
-            var facilityId = await GetFacilityIdAsync(message.FacilityName);
+            var currentUserId = await GetUserIdAsync();
+            var searchFacilityId = await GetFacilityIdAsync(message.FacilityName);
             var custom = await GetCustomAsync(message.CustomAttributeId);
 
-            var userIdParm = new SqlParameter("@UserID", userId.ToString());
-            var facilityIdParm = new SqlParameter("@FacilityID", facilityId.ToString());
-            var patientIdParm = new SqlParameter("@PatientID", message.PatientId.ToString());
-            var firstNameParm = new SqlParameter("@FirstName", !String.IsNullOrWhiteSpace(message.FirstName) ? (Object)message.FirstName : DBNull.Value);
-            var lastNameParm = new SqlParameter("@LastName", !String.IsNullOrWhiteSpace(message.LastName) ? (Object)message.LastName : DBNull.Value);
-            var dateOfBirthParm = new SqlParameter("@DateOfBirth", message.DateOfBirth > DateTime.MinValue ? (Object)message.DateOfBirth : DBNull.Value);
-            var caseNumberParm = new SqlParameter("@CaseNumber", !String.IsNullOrWhiteSpace(message.CaseNumber) ? (Object)message.CaseNumber : DBNull.Value);
-            var customAttributeKeyParm = new SqlParameter("@CustomAttributeKey", !String.IsNullOrWhiteSpace(message.CustomAttributeValue) ? (Object)custom.attributeKey : DBNull.Value);
-            var customPathParm = new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(message.CustomAttributeValue) ? (Object)custom.path : DBNull.Value);
-            var customValueParm = new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(message.CustomAttributeValue) ? (Object)message.CustomAttributeValue : DBNull.Value);
+            var results = await _patientQueries.SearchPatientsAsync(
+                currentUserId,
+                searchFacilityId, 
+                message.PatientId == 0 ? null : message.PatientId,
+                message.FirstName,
+                message.LastName,
+                message.CaseNumber,
+                message.DateOfBirth == DateTime.MinValue ? null : message.DateOfBirth,
+                custom.attributeKey,
+                message.CustomAttributeValue);
 
-            var patientsFromRepo = _context.PatientLists
-                .FromSqlRaw<PatientList>($"EXECUTE spSearchPatients @UserID, @FacilityID, @PatientId, @FirstName, @LastName, @CaseNumber, @DateOfBirth, @CustomAttributeKey, @CustomPath, @CustomValue"
-                    , userIdParm
-                    , facilityIdParm
-                    , patientIdParm
-                    , firstNameParm
-                    , lastNameParm
-                    , caseNumberParm
-                    , dateOfBirthParm
-                    , customAttributeKeyParm
-                    , customPathParm
-                    , customValueParm)
-                .AsEnumerable();
+            var pagedResults = PagedCollection<SearchPatientDto>.Create(results, pagingInfo.PageNumber, pagingInfo.PageSize);
 
-            var pagedPatientsFromRepo = PagedCollection<PatientList>.Create(patientsFromRepo, pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (pagedPatientsFromRepo != null)
+            if (pagedResults != null)
             {
                 var mappedPatientsWithLinks = new List<PatientDetailDto>();
 
-                foreach (var pagedPatient in pagedPatientsFromRepo)
+                foreach (var pagedPatient in pagedResults)
                 {
                     var mappedPatient = _mapper.Map<PatientDetailDto>(pagedPatient);
 
                     await CustomMapAsync(pagedPatient, mappedPatient);
                     await MapCaseNumberAsync(mappedPatient);
+
                     CreateLinks(mappedPatient);
 
                     mappedPatientsWithLinks.Add(mappedPatient);
                 }
 
-                var wrapper = new LinkedCollectionResourceWrapperDto<PatientDetailDto>(pagedPatientsFromRepo.TotalCount, mappedPatientsWithLinks, pagedPatientsFromRepo.TotalPages);
+                var wrapper = new LinkedCollectionResourceWrapperDto<PatientDetailDto>(pagedResults.TotalCount, mappedPatientsWithLinks, pagedResults.TotalPages);
 
                 CreateLinksForPatients(wrapper, message.OrderBy, message.FacilityName, message.PageNumber, message.PageSize,
-                    pagedPatientsFromRepo.HasNext, pagedPatientsFromRepo.HasPrevious);
+                    pagedResults.HasNext, pagedResults.HasPrevious);
 
                 return wrapper;
             }
@@ -139,7 +124,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private async Task<int> GetUserIdAsync()
         {
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == userName, new string[] { "Facilities.Facility" });
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == userName, new string[] { });
             if (userFromRepo == null)
             {
                 throw new KeyNotFoundException("Unable to locate user");
@@ -147,7 +132,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             return userFromRepo.Id;
         }
 
-        private async Task<int> GetFacilityIdAsync(string facilityName)
+        private async Task<int?> GetFacilityIdAsync(string facilityName)
         {
             if (!String.IsNullOrWhiteSpace(facilityName))
             {
@@ -157,7 +142,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                     return facility.Id;
                 }
             }
-            return 0;
+            return null;
         }
 
         private async Task<(string path, string attributeKey)> GetCustomAsync(int customAttributeId)
@@ -174,7 +159,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             return (string.Empty, string.Empty);
         }
 
-        private async Task CustomMapAsync(PatientList patientListFromRepo, PatientDetailDto mappedPatient)
+        private async Task CustomMapAsync(SearchPatientDto patientListFromRepo, PatientDetailDto mappedPatient)
         {
             if (patientListFromRepo == null)
             {

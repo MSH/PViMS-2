@@ -1,4 +1,5 @@
-﻿using PVIMS.API.Models;
+﻿using PVIMS.API.Application.Models.Patient;
+using PVIMS.API.Models;
 using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,16 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 {
     public interface IPatientQueries
     {
+        Task<IEnumerable<SearchPatientDto>> SearchPatientsAsync(int currentUserId,
+            int? searchFacilityId,
+            int? searchPatientId,
+            string searchFirstName,
+            string searchLastName,
+            string caseNumber,
+            DateTime? dateOfBirth,
+            string customAttributeKey,
+            string customAttributeValue);
+
         Task<IEnumerable<AdverseEventFrequencyReportDto>> GetAdverseEventsByAnnualAsync(DateTime searchFrom, DateTime searchTo);
 
         Task<IEnumerable<AdverseEventFrequencyReportDto>> GetAdverseEventsByQuarterAsync(DateTime searchFrom, DateTime searchTo);
