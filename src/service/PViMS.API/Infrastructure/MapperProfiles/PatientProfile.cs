@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using PVIMS.API.Application.Models.Patient;
 using PVIMS.API.Models;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Entities.Keyless;
@@ -44,15 +45,15 @@ namespace PVIMS.API.MapperProfiles
             CreateMap<PatientForCreationDto, ConditionDetail>()
                 .ForMember(dest => dest.OnsetDate, opt => opt.MapFrom(src => src.StartDate));
 
-            CreateMap<PatientList, PatientIdentifierDto>()
+            CreateMap<SearchPatientDto, PatientIdentifierDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PatientId))
                 .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.FacilityName));
-            CreateMap<PatientList, PatientDetailDto>()
+            CreateMap<SearchPatientDto, PatientDetailDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PatientId))
                 .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.FacilityName))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Surname))
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth));
-            CreateMap<PatientList, PatientListDto>()
+            CreateMap<SearchPatientDto, PatientListDto>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.Surname}" ));
 
             CreateMap<PatientClinicalEvent, PatientClinicalEventIdentifierDto>();

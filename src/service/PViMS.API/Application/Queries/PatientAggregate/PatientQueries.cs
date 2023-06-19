@@ -20,7 +20,16 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _connectionString = !string.IsNullOrWhiteSpace(connectionString) ? connectionString : throw new ArgumentNullException(nameof(connectionString));
         }
 
-        public async Task<IEnumerable<SearchPatientDto>> SearchPatientsAsync(int currentUserId, int? searchFacilityId, int? searchPatientId, string searchFirstName, string searchLastName, string caseNumber, DateTime? dateOfBirth, string customAttributeKey, string customAttributeValue)
+        public async Task<IEnumerable<SearchPatientDto>> SearchPatientsAsync(
+            int currentUserId, 
+            int? searchFacilityId, 
+            int? searchPatientId, 
+            string searchFirstName, 
+            string searchLastName, 
+            string caseNumber, 
+            DateTime? dateOfBirth, 
+            string customAttributeKey, 
+            string customAttributeValue)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -56,6 +65,31 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                             {whereCaseNumber} 
                             {whereDateOfBirth} 
 				            {whereCustomAttribute} 
+		            ORDER BY p.Id desc";
+
+                return await connection.QueryAsync<SearchPatientDto>(sql);
+            }
+        }
+
+        public async Task<IEnumerable<SearchPatientDto>> SearchPatientsByConditionCaseNumberAsync(string caseNumber)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var sql = $@"
+		            SELECT	p.Id AS PatientId, 
+				            p.FirstName, 
+				            p.Surname, 
+				            f.FacilityName, 
+				            ISNULL(CONVERT(VARCHAR(10), p.DateOfBirth, 101), '') AS DateOfBirth,
+				            CAST(ISNULL(FLOOR(DATEDIFF(DAY, p.DateofBirth, GETDATE()) / 365.25), 0) AS VARCHAR) AS Age,
+				            ISNULL(CONVERT(VARCHAR(10), (SELECT MAX(EncounterDate) FROM Encounter e WHERE e.Patient_Id = p.Id), 101), '') AS LatestEncounterDate
+			            FROM Patient p 
+                            INNER JOIN PatientCondition pc ON p.Id = pc.Patient_Id 
+				            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC) 
+				            INNER JOIN Facility f ON pf.Facility_Id = f.Id 
+			            WHERE p.Archived = 0 AND pc.CaseNumber = '%{caseNumber}%' 
 		            ORDER BY p.Id desc";
 
                 return await connection.QueryAsync<SearchPatientDto>(sql);

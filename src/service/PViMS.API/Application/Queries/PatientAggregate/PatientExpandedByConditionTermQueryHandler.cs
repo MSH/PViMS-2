@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PVIMS.API.Application.Queries.ReportInstanceAggregate;
@@ -8,10 +7,8 @@ using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
-using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +20,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
     public class PatientExpandedByConditionTermQueryHandler
         : IRequestHandler<PatientExpandedByConditionTermQuery, PatientExpandedDto>
     {
+        private readonly IPatientQueries _patientQueries;
         private readonly IRepositoryInt<CohortGroup> _cohortGroupRepository;
         private readonly IRepositoryInt<CohortGroupEnrolment> _cohortGroupEnrolmentRepository;
         private readonly IRepositoryInt<ConditionMedDra> _conditionMeddraRepository;
@@ -31,7 +29,6 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
         private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
         private readonly IRepositoryInt<SelectionDataItem> _selectionDataItemRepository;
-        private readonly PVIMSDbContext _context;
         private readonly IReportInstanceQueries _reportInstanceQueries;
         private readonly ITypeExtensionHandler _modelExtensionBuilder;
         private readonly ILinkGeneratorService _linkGeneratorService;
@@ -40,6 +37,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         private readonly ICustomAttributeService _customAttributeService;
 
         public PatientExpandedByConditionTermQueryHandler(
+            IPatientQueries patientQueries,
             IRepositoryInt<CohortGroup> cohortGroupRepository,
             IRepositoryInt<CohortGroupEnrolment> cohortGroupEnrolmentRepository,
             IRepositoryInt<ConditionMedDra> conditionMeddraRepository,
@@ -48,7 +46,6 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             IRepositoryInt<PatientCondition> patientConditionRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository,
             IRepositoryInt<SelectionDataItem> selectionDataItemRepository,
-            PVIMSDbContext dbContext,
             IReportInstanceQueries reportInstanceQueries,
             ITypeExtensionHandler modelExtensionBuilder,
             ILinkGeneratorService linkGeneratorService,
@@ -56,6 +53,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             ILogger<PatientExpandedByConditionTermQueryHandler> logger,
             ICustomAttributeService customAttributeService)
         {
+            _patientQueries = patientQueries ?? throw new ArgumentNullException(nameof(patientQueries));
             _cohortGroupRepository = cohortGroupRepository ?? throw new ArgumentNullException(nameof(cohortGroupRepository));
             _cohortGroupEnrolmentRepository = cohortGroupEnrolmentRepository ?? throw new ArgumentNullException(nameof(cohortGroupEnrolmentRepository));
             _conditionMeddraRepository = conditionMeddraRepository ?? throw new ArgumentNullException(nameof(conditionMeddraRepository));
@@ -64,7 +62,6 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
             _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
             _selectionDataItemRepository = selectionDataItemRepository ?? throw new ArgumentNullException(nameof(selectionDataItemRepository));
-            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _reportInstanceQueries = reportInstanceQueries ?? throw new ArgumentNullException(nameof(reportInstanceQueries));
             _modelExtensionBuilder = modelExtensionBuilder ?? throw new ArgumentNullException(nameof(modelExtensionBuilder));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
@@ -75,19 +72,14 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
         public async Task<PatientExpandedDto> Handle(PatientExpandedByConditionTermQuery message, CancellationToken cancellationToken)
         {
-            var caseNumberParm = new SqlParameter("@CaseNumber", !String.IsNullOrWhiteSpace(message.CaseNumber) ? (Object)message.CaseNumber : DBNull.Value);
+            var results = await _patientQueries.SearchPatientsByConditionCaseNumberAsync(message.CaseNumber);
 
-            var patientsFromRepo = _context.PatientLists
-                .FromSqlRaw<PatientList>($"EXECUTE spSearchPatientsByConditionCaseNumber @CaseNumber"
-                    , caseNumberParm)
-                .AsEnumerable();
-
-            if(patientsFromRepo.Count() != 1)
+            if (results.Count() != 1)
             {
                 return null;
             }
 
-            var patientFromRepo = await _patientRepository.GetAsync(p => p.Id == patientsFromRepo.First().PatientId, new string[] {
+            var patientFromRepo = await _patientRepository.GetAsync(p => p.Id == results.First().PatientId, new string[] {
                 "PatientFacilities.Facility.OrgUnit", 
                 "PatientClinicalEvents.SourceTerminologyMedDra", 
                 "PatientConditions.TerminologyMedDra", 

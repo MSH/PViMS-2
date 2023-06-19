@@ -19,6 +19,8 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string customAttributeKey,
             string customAttributeValue);
 
+        Task<IEnumerable<SearchPatientDto>> SearchPatientsByConditionCaseNumberAsync(string caseNumber);
+
         Task<IEnumerable<AdverseEventFrequencyReportDto>> GetAdverseEventsByAnnualAsync(DateTime searchFrom, DateTime searchTo);
 
         Task<IEnumerable<AdverseEventFrequencyReportDto>> GetAdverseEventsByQuarterAsync(DateTime searchFrom, DateTime searchTo);
