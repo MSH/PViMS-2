@@ -7,7 +7,7 @@ namespace PVIMS.API.Application.Models.Patient
     /// A dto representing the output of a patient search query
     /// </summary>
     [DataContract()]
-    public class SearchPatientDto : LinkedResourceBaseDto
+    public class PatientSearchDto : LinkedResourceBaseDto
     {
         /// <summary>
         /// The unique id of the patient

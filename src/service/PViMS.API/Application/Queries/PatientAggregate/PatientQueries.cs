@@ -21,7 +21,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             _connectionString = !string.IsNullOrWhiteSpace(connectionString) ? connectionString : throw new ArgumentNullException(nameof(connectionString));
         }
 
-        public async Task<IEnumerable<SearchPatientDto>> SearchPatientsAsync(
+        public async Task<IEnumerable<PatientSearchDto>> SearchPatientsAsync(
             int currentUserId, 
             int? searchFacilityId, 
             int? searchPatientId, 
@@ -68,11 +68,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 				            {whereCustomAttribute} 
 		            ORDER BY p.Id desc";
 
-                return await connection.QueryAsync<SearchPatientDto>(sql);
+                return await connection.QueryAsync<PatientSearchDto>(sql);
             }
         }
 
-        public async Task<IEnumerable<SearchPatientDto>> SearchPatientsByConditionCaseNumberAsync(string caseNumber)
+        public async Task<IEnumerable<PatientSearchDto>> SearchPatientsByConditionCaseNumberAsync(string caseNumber)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -93,7 +93,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 			            WHERE p.Archived = 0 AND pc.CaseNumber = '%{caseNumber}%' 
 		            ORDER BY p.Id desc";
 
-                return await connection.QueryAsync<SearchPatientDto>(sql);
+                return await connection.QueryAsync<PatientSearchDto>(sql);
             }
         }
 

@@ -9,7 +9,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 {
     public interface IPatientQueries
     {
-        Task<IEnumerable<SearchPatientDto>> SearchPatientsAsync(int currentUserId,
+        Task<IEnumerable<PatientSearchDto>> SearchPatientsAsync(int currentUserId,
             int? searchFacilityId,
             int? searchPatientId,
             string searchFirstName,
@@ -19,7 +19,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string customAttributeKey,
             string customAttributeValue);
 
-        Task<IEnumerable<SearchPatientDto>> SearchPatientsByConditionCaseNumberAsync(string caseNumber);
+        Task<IEnumerable<PatientSearchDto>> SearchPatientsByConditionCaseNumberAsync(string caseNumber);
 
         Task<IEnumerable<AdverseEventFrequencyReportDto>> GetAdverseEventsByAnnualAsync(DateTime searchFrom, DateTime searchTo);
 
@@ -114,5 +114,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
         Task<IEnumerable<PatientsOnTreatmentDto>> GetPatientsOnTreatmentByFacilityAsync(DateTime searchFrom, DateTime searchTo);
 
         Task<IEnumerable<PatientListDto>> GetPatientOnTreatmentListByFacilityAsync(DateTime searchFrom, DateTime searchTo, int facilityId);
+
+        Task<IEnumerable<PatientListDto>> GetPatientListByConceptAsync(int conceptId);
     }
 }

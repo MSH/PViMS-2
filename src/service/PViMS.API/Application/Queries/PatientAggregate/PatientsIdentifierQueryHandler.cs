@@ -74,7 +74,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                 custom.attributeKey,
                 message.CustomAttributeValue);
 
-            var pagedResults = PagedCollection<SearchPatientDto>.Create(results, pagingInfo.PageNumber, pagingInfo.PageSize);
+            var pagedResults = PagedCollection<PatientSearchDto>.Create(results, pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (pagedResults != null)
             {

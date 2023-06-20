@@ -92,7 +92,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                 custom.attributeKey,
                 message.CustomAttributeValue);
 
-            var pagedResults = PagedCollection<SearchPatientDto>.Create(results, pagingInfo.PageNumber, pagingInfo.PageSize);
+            var pagedResults = PagedCollection<PatientSearchDto>.Create(results, pagingInfo.PageNumber, pagingInfo.PageSize);
 
             if (pagedResults != null)
             {
@@ -159,7 +159,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             return (string.Empty, string.Empty);
         }
 
-        private async Task CustomMapAsync(SearchPatientDto patientListFromRepo, PatientDetailDto mappedPatient)
+        private async Task CustomMapAsync(PatientSearchDto patientListFromRepo, PatientDetailDto mappedPatient)
         {
             if (patientListFromRepo == null)
             {

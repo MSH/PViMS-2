@@ -44,37 +44,40 @@ namespace PVIMS.API.Application.Queries.AppointmentAggregate
                 PageSize = message.PageSize
             };
 
-            Facility facility = null;
-            if (!String.IsNullOrWhiteSpace(message.FacilityName))
+            var searchFacilityId = await GetFacilityIdAsync(message.FacilityName);
+            var customAttribute = await _customAttributeRepository.GetAsync(ca => ca.Id == message.CustomAttributeId);
+
+            var results = await _appointmentQueries.SearchAppointmentsAsync(
+                (int)message.CriteriaId,
+                searchFacilityId,
+                message.PatientId == 0 ? null : message.PatientId,
+                message.FirstName,
+                message.LastName,
+                message.SearchFrom == DateTime.MinValue ? null : message.SearchFrom,
+                message.SearchTo == DateTime.MinValue ? null : message.SearchTo,
+                customAttribute?.AttributeKey,
+                message.CustomAttributeValue);
+            var pagedResults = PagedCollection<AppointmentSearchDto>.Create(results, pagingInfo.PageNumber, pagingInfo.PageSize);
+
+            var wrapper = new LinkedCollectionResourceWrapperDto<AppointmentSearchDto>(pagedResults.TotalCount, pagedResults);
+
+            CreateLinksForAppointments(wrapper, message.PageNumber, message.PageSize, pagedResults.HasNext, pagedResults.HasPrevious);
+
+            return wrapper;
+
+            return null;
+        }
+
+        private async Task<int?> GetFacilityIdAsync(string facilityName)
+        {
+            if (!String.IsNullOrWhiteSpace(facilityName))
             {
-                facility = await _facilityRepository.GetAsync(f => f.FacilityName == message.FacilityName);
+                var facility = await _facilityRepository.GetAsync(f => f.FacilityName == facilityName);
+                if (facility != null)
+                {
+                    return facility.Id;
+                }
             }
-
-            if (String.IsNullOrWhiteSpace(message.CustomAttributeValue))
-            {
-                var customAttribute = await _customAttributeRepository.GetAsync(ca => ca.Id == message.CustomAttributeId);
-                var path = customAttribute?.CustomAttributeType == CustomAttributeType.Selection ? "CustomSelectionAttribute" : "CustomStringAttribute";
-
-                var results = await _appointmentQueries.GetAppointmentsUsingPatientAttributeAsync(
-                    (int)message.CriteriaId,
-                    message.SearchFrom,
-                    message.SearchTo,
-                    facility != null ? facility.Id : 0,
-                    message.PatientId,
-                    message.FirstName,
-                    message.LastName,
-                    customAttribute?.AttributeKey,
-                    path,
-                    message.CustomAttributeValue);
-                var pagedResults = PagedCollection<AppointmentSearchDto>.Create(results, pagingInfo.PageNumber, pagingInfo.PageSize);
-
-                var wrapper = new LinkedCollectionResourceWrapperDto<AppointmentSearchDto>(pagedResults.TotalCount, pagedResults);
-
-                CreateLinksForAppointments(wrapper, message.PageNumber, message.PageSize, pagedResults.HasNext, pagedResults.HasPrevious);
-
-                return wrapper;
-            }
-
             return null;
         }
 

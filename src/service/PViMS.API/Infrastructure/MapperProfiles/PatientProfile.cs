@@ -45,15 +45,15 @@ namespace PVIMS.API.MapperProfiles
             CreateMap<PatientForCreationDto, ConditionDetail>()
                 .ForMember(dest => dest.OnsetDate, opt => opt.MapFrom(src => src.StartDate));
 
-            CreateMap<SearchPatientDto, PatientIdentifierDto>()
+            CreateMap<PatientSearchDto, PatientIdentifierDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PatientId))
                 .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.FacilityName));
-            CreateMap<SearchPatientDto, PatientDetailDto>()
+            CreateMap<PatientSearchDto, PatientDetailDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PatientId))
                 .ForMember(dest => dest.FacilityName, opt => opt.MapFrom(src => src.FacilityName))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Surname))
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth));
-            CreateMap<SearchPatientDto, PatientListDto>()
+            CreateMap<PatientSearchDto, PatientListDto>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.Surname}" ));
 
             CreateMap<PatientClinicalEvent, PatientClinicalEventIdentifierDto>();
