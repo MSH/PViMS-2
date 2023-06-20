@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
+using PVIMS.API.Application.Models.Encounter;
 using PVIMS.API.Models;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Models;
 using System.Linq;
 
@@ -31,9 +31,9 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.PatientMedications, opt => opt.MapFrom(src => src.Patient.PatientMedications.Where(a => a.Archived == false)))
                 .ForMember(dest => dest.PatientLabTests, opt => opt.MapFrom(src => src.Patient.PatientLabTests.Where(a => a.Archived == false)));
 
-            CreateMap<EncounterList, EncounterIdentifierDto>()
+            CreateMap<SearchEncounterDto, EncounterIdentifierDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.EncounterId));
-            CreateMap<EncounterList, EncounterDetailDto>()
+            CreateMap<SearchEncounterDto, EncounterDetailDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.EncounterId));
 
             CreateMap<Priority, PriorityIdentifierDto>()

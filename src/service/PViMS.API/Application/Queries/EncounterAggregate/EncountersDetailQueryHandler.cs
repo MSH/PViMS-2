@@ -1,22 +1,22 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using PVIMS.API.Application.Models.Encounter;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
 using PVIMS.Core.Aggregates.DatasetAggregate;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
-using PVIMS.Core.Entities.Keyless;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.ValueTypes;
-using PVIMS.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,32 +25,38 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
     public class EncountersDetailQueryHandler
         : IRequestHandler<EncountersDetailQuery, LinkedCollectionResourceWrapperDto<EncounterDetailDto>>
     {
+        private readonly IEncounterQueries _encounterQueries;
         private readonly IRepositoryInt<CustomAttributeConfiguration> _customAttributeRepository;
         private readonly IRepositoryInt<DatasetInstance> _datasetInstanceRepository;
         private readonly IRepositoryInt<Encounter> _encounterRepository;
         private readonly IRepositoryInt<Facility> _facilityRepository;
-        private readonly PVIMSDbContext _context;
+        private readonly IRepositoryInt<User> _userRepository;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<EncountersDetailQueryHandler> _logger;
 
         public EncountersDetailQueryHandler(
+            IEncounterQueries encounterQueries,
             IRepositoryInt<CustomAttributeConfiguration> customAttributeRepository,
             IRepositoryInt<DatasetInstance> datasetInstanceRepository,
             IRepositoryInt<Encounter> encounterRepository,
             IRepositoryInt<Facility> facilityRepository,
-            PVIMSDbContext dbContext,
+            IRepositoryInt<User> userRepository,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
+            IHttpContextAccessor httpContextAccessor,
             ILogger<EncountersDetailQueryHandler> logger)
         {
+            _encounterQueries = encounterQueries ?? throw new ArgumentNullException(nameof(encounterQueries));
             _customAttributeRepository = customAttributeRepository ?? throw new ArgumentNullException(nameof(customAttributeRepository));
             _datasetInstanceRepository = datasetInstanceRepository ?? throw new ArgumentNullException(nameof(datasetInstanceRepository));
             _encounterRepository = encounterRepository ?? throw new ArgumentNullException(nameof(encounterRepository));
             _facilityRepository = facilityRepository ?? throw new ArgumentNullException(nameof(facilityRepository));
-            _context = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -78,57 +84,58 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
                 PageSize = pageSize
             };
 
-            var facilityId = await GetFacilityIdAsync(facilityName);
+            var currentUserId = await GetUserIdAsync();
+            var searchFacilityId = await GetFacilityIdAsync(facilityName);
             var custom = await GetCustomAsync(customAttributeId);
 
-            var facilityIdParm = new SqlParameter("@FacilityID", facilityId.ToString());
-            var patientIdParm = new SqlParameter("@PatientID", patientId.ToString());
-            var firstNameParm = new SqlParameter("@FirstName", !String.IsNullOrWhiteSpace(firstName) ? (Object)firstName : DBNull.Value);
-            var lastNameParm = new SqlParameter("@LastName", !String.IsNullOrWhiteSpace(lastName) ? (Object)lastName : DBNull.Value);
-            var searchFromParm = new SqlParameter("@SearchFrom", searchFrom > DateTime.MinValue ? (Object)searchFrom : DBNull.Value);
-            var searchToParm = new SqlParameter("@SearchTo", searchTo < DateTime.MaxValue ? (Object)searchTo : DBNull.Value);
-            var customAttributeKeyParm = new SqlParameter("@CustomAttributeKey", !String.IsNullOrWhiteSpace(customAttributeValue) ? (Object)custom.attributeKey : DBNull.Value);
-            var customPathParm = new SqlParameter("@CustomPath", !String.IsNullOrWhiteSpace(customAttributeValue) ? (Object)custom.path : DBNull.Value);
-            var customValueParm = new SqlParameter("@CustomValue", !String.IsNullOrWhiteSpace(customAttributeValue) ? (Object)customAttributeValue : DBNull.Value);
+            var results = await _encounterQueries.SearchEncountersAsync(
+                currentUserId,
+                searchFacilityId,
+                patientId == 0 ? null : patientId,
+                firstName,
+                lastName,
+                searchFrom == DateTime.MinValue ? null : searchFrom,
+                searchTo == DateTime.MinValue ? null : searchTo,
+                custom.attributeKey,
+                customAttributeValue);
 
-            var encountersFromRepo = _context.EncounterLists
-                .FromSqlRaw<EncounterList>($"EXECUTE spSearchEncounters @FacilityID, @PatientId, @FirstName, @LastName, @SearchFrom, @SearchTo, @CustomAttributeKey, @CustomPath, @CustomValue"
-                    , facilityIdParm
-                    , patientIdParm
-                    , firstNameParm
-                    , lastNameParm
-                    , searchFromParm
-                    , searchToParm
-                    , customAttributeKeyParm
-                    , customPathParm
-                    , customValueParm)
-                .AsEnumerable();
+            var pagedResults = PagedCollection<SearchEncounterDto>.Create(results, pagingInfo.PageNumber, pagingInfo.PageSize);
 
-            var pagedEncountersFromRepo = PagedCollection<EncounterList>.Create(encountersFromRepo, pagingInfo.PageNumber, pagingInfo.PageSize);
-
-            if (pagedEncountersFromRepo != null)
+            if (pagedResults != null)
             {
                 var mappedEncountersWithLinks = new List<EncounterDetailDto>();
 
-                foreach (var pagedEncounter in pagedEncountersFromRepo)
+                foreach (var pagedEncounter in pagedResults)
                 {
                     var mappedEncounter = _mapper.Map<EncounterDetailDto>(pagedEncounter);
 
                     await CustomMapAsync(pagedEncounter, mappedEncounter);
+
                     CreateLinks(pagedEncounter.PatientId, pagedEncounter.EncounterId, mappedEncounter);
 
                     mappedEncountersWithLinks.Add(mappedEncounter);
                 }
 
-                var wrapper = new LinkedCollectionResourceWrapperDto<EncounterDetailDto>(pagedEncountersFromRepo.TotalCount, mappedEncountersWithLinks, pagedEncountersFromRepo.TotalPages);
+                var wrapper = new LinkedCollectionResourceWrapperDto<EncounterDetailDto>(pagedResults.TotalCount, mappedEncountersWithLinks, pagedResults.TotalPages);
 
                 CreateLinksForEncounters(wrapper, orderBy, facilityName, searchFrom, searchTo, pageNumber, pageSize,
-                    pagedEncountersFromRepo.HasNext, pagedEncountersFromRepo.HasPrevious);
+                    pagedResults.HasNext, pagedResults.HasPrevious);
 
                 return wrapper;
             }
 
             return null;
+        }
+
+        private async Task<int> GetUserIdAsync()
+        {
+            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userFromRepo = await _userRepository.GetAsync(u => u.UserName == userName, new string[] { });
+            if (userFromRepo == null)
+            {
+                throw new KeyNotFoundException("Unable to locate user");
+            }
+            return userFromRepo.Id;
         }
 
         private async Task<int> GetFacilityIdAsync(string facilityName)
@@ -158,7 +165,7 @@ namespace PVIMS.API.Application.Queries.EncounterAggregate
             return (string.Empty, string.Empty);
         }
 
-        private async Task CustomMapAsync(EncounterList encounterListFromRepo, EncounterDetailDto mappedEncounterDto)
+        private async Task CustomMapAsync(SearchEncounterDto encounterListFromRepo, EncounterDetailDto mappedEncounterDto)
         {
             if (encounterListFromRepo == null)
             {
