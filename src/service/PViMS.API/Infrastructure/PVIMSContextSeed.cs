@@ -601,12 +601,6 @@ namespace PVIMS.API.Infrastructure
             if (!context.LabTestUnits.Any(ce => ce.Description == "X 10 9 /L"))
                 labTestUnits.Add(new LabTestUnit { Description = "X 10 9 /L" });
 
-            if (!context.LabTestUnits.Any(ce => ce.Description == "μg/dL"))
-                labTestUnits.Add(new LabTestUnit { Description = "μg/dL" });
-
-            if (!context.LabTestUnits.Any(ce => ce.Description == "μg/L"))
-                labTestUnits.Add(new LabTestUnit { Description = "μg/L" });
-
             if (!context.LabTestUnits.Any(ce => ce.Description == "μmol/L"))
                 labTestUnits.Add(new LabTestUnit { Description = "μmol/L" });
 
