@@ -279,10 +279,16 @@ namespace PViMS.BuildingBlocks.EventBusRabbitMQ
                             var handler = scope.ResolveOptional(subscription.HandlerType);
                             if (handler == null) continue;
                             var eventType = _subsManager.GetEventTypeByName(eventName);
-                            var integrationEvent = JsonSerializer.Deserialize(message.Replace("[", "").Replace("]", ""), eventType, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
                             var concreteType = typeof(IIntegrationEventHandler<>).MakeGenericType(eventType);
-                            await Task.Yield();
-                            await (Task)concreteType.GetMethod("Handle").Invoke(handler, new object[] { integrationEvent });
+
+                            var integrationEvents = Deserialize<dynamic>(message);
+                            foreach (var integrationEvent in integrationEvents)
+                            {
+                                var concreteEvent = JsonSerializer.Deserialize(integrationEvent, eventType, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+
+                                await Task.Yield();
+                                await (Task)concreteType.GetMethod("Handle").Invoke(handler, new object[] { concreteEvent });
+                            }
                         }
                     }
                 }
@@ -290,6 +296,7 @@ namespace PViMS.BuildingBlocks.EventBusRabbitMQ
             else
             {
                 _logger.LogWarning("No subscription for RabbitMQ event: {EventName}", eventName);
+                _logger.LogTrace("No subscription for RabbitMQ message: {Message}", message);
             }
         }
 
