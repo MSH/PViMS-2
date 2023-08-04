@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace PVIMS.API.Application.IntegrationEvents.Events
 {
-    public record PatientAddedIntegrationEvent : IntegrationEvent
+    public record PatientAddedIntegrationEvent 
+        : IntegrationEvent
     {
         [JsonInclude]
         public int Id { get; private init; }
