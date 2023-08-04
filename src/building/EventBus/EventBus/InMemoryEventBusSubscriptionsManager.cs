@@ -160,7 +160,7 @@ namespace PViMS.BuildingBlocks.EventBus
                     return "patient.add";
 
                 case "PatientClinicalEventAddedIntegrationEvent":
-                    return "patient.clinicalevent.add";
+                    return "clinicalevent.add";
 
                 default:
                     return "";
