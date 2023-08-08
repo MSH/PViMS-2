@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from "@angular/core";
+import { Component, OnInit, OnDestroy, AfterViewInit, Inject } from "@angular/core";
 import { NavigationService } from "../../../shared/services/navigation.service";
 import { ThemeService } from "../../services/theme.service";
 import { Subscription } from "rxjs";
 import { ILayoutConf, LayoutService } from "app/shared/services/layout.service";
 import { environment } from "environments/environment";
+import { APP_CONFIG, AppConfig } from "app/app.config";
 
 @Component({
   selector: "app-sidebar-side",
@@ -22,12 +23,13 @@ export class SidebarSideComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private navService: NavigationService,
     public themeService: ThemeService,
-    private layout: LayoutService
+    private layout: LayoutService,
+    @Inject(APP_CONFIG) config: AppConfig
   ) 
   {
     let self = this;
     self.version = environment.appVersion;
-    self.appName = environment.appName;
+    self.appName = config.appName;
   }
 
   ngOnInit() {

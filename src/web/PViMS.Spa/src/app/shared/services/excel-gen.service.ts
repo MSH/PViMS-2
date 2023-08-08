@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
-import { BaseService } from '../base/base.service';
-import { EventService } from './event.service';
 
 import * as ExcelJS from 'exceljs/dist/exceljs.min.js';
 import * as FileSaver from 'file-saver';
@@ -14,20 +12,15 @@ const EXCEL_EXTENSION = '.xlsx';
 declare const ExcelJS: any;
 
 @Injectable({ providedIn: 'root' })
-export class ExcelGenService extends BaseService {
+export class ExcelGenService {
 
   workbook: ExcelJS.Workbook;
   worksheet: any;
 
   constructor(
       protected httpClient: HttpClient, 
-      protected eventService: EventService,
       protected translateService: TranslateService,
-      protected datePipe: DatePipe) 
-  {
-      super(httpClient, eventService);
-      this.apiController = "";
-  }
+      protected datePipe: DatePipe) { }
 
   public generateExcelForGrid(title: string, headers: string[], mappedResults: any[]) {
     let self = this;

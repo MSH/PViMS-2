@@ -15,7 +15,7 @@ import { NavigationService } from './shared/services/navigation.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit, AfterViewInit {
-  appTitle = 'PViMS';
+  appTitle = 'OpenRIMS-PVM';
   pageTitle = '';
 
   constructor(

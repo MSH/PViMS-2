@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { BaseService } from '../base/base.service';
 import { EventService } from './event.service';
@@ -8,13 +8,14 @@ import { DatasetCategoryDetailWrapperModel } from '../models/work/dataset-catego
 import { DatasetInstanceDetailWrapperModel } from '../models/dataset/dataset-instance.detail.model';
 import { DatasetCategoryElementDetailWrapperModel } from '../models/work/dataset-category-element.detail.model';
 import { DatasetCategoryIdentifierModel } from '../models/work/dataset-category.identifier.model';
+import { APP_CONFIG, AppConfig } from 'app/app.config';
 
 @Injectable({ providedIn: 'root' })
 export class DatasetService extends BaseService {
 
   constructor(
-      protected httpClient: HttpClient, protected eventService: EventService) {
-      super(httpClient, eventService);
+      protected httpClient: HttpClient, protected eventService: EventService, @Inject(APP_CONFIG) config: AppConfig) {
+      super(httpClient, eventService, config);
       this.apiController = "";
   }
 

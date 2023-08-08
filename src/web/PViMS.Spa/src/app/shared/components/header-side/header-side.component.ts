@@ -175,7 +175,7 @@ export class HeaderSideComponent implements OnInit, AfterViewInit {
   }
 
   navigateToPharmadex(): void {
-    window.location.href = this.pharmadexLink;
+    window.location.href = "https://www.openrims.org";
   }
 
   openProfilePopup() {

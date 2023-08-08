@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpEvent, HttpHeaders } from "@angular/common/http";
 import { BaseService } from '../base/base.service';
 import { EventService } from './event.service';
@@ -7,18 +7,19 @@ import { UserIdentifierWrapperModel } from '../models/user/user.identifier.model
 import { RoleIdentifierWrapperModel } from '../models/user/role.identifier.model';
 import { UserDetailModel } from '../models/user/user.detail.model';
 import { AuditLogDetailWrapperModel } from '../models/user/audit-log.detail.model';
-import { Observable, EMPTY } from 'rxjs';
+import { EMPTY } from 'rxjs';
 import { FilterModel } from '../models/grid.model';
 import { expand, map, reduce } from 'rxjs/operators';
 import { UserRoleForUpdateModel } from '../models/user/user-role-for-update.model';
 import { UserFacilityForUpdateModel } from '../models/user/user-facility-for-update.model';
+import { APP_CONFIG, AppConfig } from 'app/app.config';
 
 @Injectable({ providedIn: 'root' })
 export class UserService extends BaseService {
 
   constructor(
-      protected httpClient: HttpClient, protected eventService: EventService) {
-      super(httpClient, eventService);
+      protected httpClient: HttpClient, protected eventService: EventService, @Inject(APP_CONFIG) config: AppConfig) {
+      super(httpClient, eventService, config);
       this.apiController = "";
   }
 

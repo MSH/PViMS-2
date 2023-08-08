@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { BaseService } from '../base/base.service';
 import { EventService } from './event.service';
@@ -9,13 +9,14 @@ import { MetaPageDetailWrapperModel } from '../models/meta/meta-page.detail.mode
 import { EMPTY } from 'rxjs';
 import { MetaPageExpandedModel } from '../models/meta/meta-page.expanded.model';
 import { WidgetListItemModel } from '../models/meta/widget-list-item.model';
+import { APP_CONFIG, AppConfig } from 'app/app.config';
 
 @Injectable({ providedIn: 'root' })
 export class MetaPageService extends BaseService {
 
   constructor(
-      protected httpClient: HttpClient, protected eventService: EventService) {
-      super(httpClient, eventService);
+      protected httpClient: HttpClient, protected eventService: EventService, @Inject(APP_CONFIG) config: AppConfig) {
+      super(httpClient, eventService, config);
       this.apiController = "";
   }
 

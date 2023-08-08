@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { BaseService } from '../base/base.service';
 import { EventService } from './event.service';
@@ -12,6 +12,7 @@ import { FilterModel } from '../models/grid.model';
 import { expand, map, reduce } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import { FormAttachmentModel } from '../models/form/form-attachment.model';
+import { APP_CONFIG, AppConfig } from 'app/app.config';
 
 @Injectable({ providedIn: 'root' })
 export class MetaFormService extends BaseService {
@@ -19,9 +20,10 @@ export class MetaFormService extends BaseService {
     constructor(
         protected httpClient: HttpClient, 
         protected eventService: EventService,
-        protected indexdbService: IndexedDBService) 
+        protected indexdbService: IndexedDBService, 
+        @Inject(APP_CONFIG) config: AppConfig) 
     {
-        super(httpClient, eventService);
+        super(httpClient, eventService, config);
         this.apiController = "";
     }
 

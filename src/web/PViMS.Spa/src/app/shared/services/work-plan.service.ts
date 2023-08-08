@@ -1,17 +1,18 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { BaseService } from '../base/base.service';
 import { EventService } from './event.service';
 import { ParameterKeyValueModel } from '../models/parameter.keyvalue.model';
 import { WorkPlanIdentifierWrapperModel } from '../models/work/work-plan.identifier.model';
 import { WorkPlanDetailWrapperModel } from '../models/work/work-plan.detail.model';
+import { APP_CONFIG, AppConfig } from 'app/app.config';
 
 @Injectable({ providedIn: 'root' })
 export class WorkPlanService extends BaseService {
 
   constructor(
-      protected httpClient: HttpClient, protected eventService: EventService) {
-      super(httpClient, eventService);
+      protected httpClient: HttpClient, protected eventService: EventService, @Inject(APP_CONFIG) config: AppConfig) {
+      super(httpClient, eventService, config);
       this.apiController = "";
   }
 

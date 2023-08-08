@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { BaseService } from '../base/base.service';
 import { EventService } from './event.service';
@@ -8,13 +8,14 @@ import { expand, map, reduce } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import { MeddraTermIdentifierWrapperModel } from '../models/terminology/meddra-term.identifier.model';
 import { MeddraTermDetailWrapperModel, MeddraTermDetailModel } from '../models/terminology/meddra-term.detail.model';
+import { APP_CONFIG, AppConfig } from 'app/app.config';
 
 @Injectable({ providedIn: 'root' })
 export class MeddraTermService extends BaseService {
 
     constructor(
-        protected httpClient: HttpClient, protected eventService: EventService) {
-        super(httpClient, eventService);
+        protected httpClient: HttpClient, protected eventService: EventService, @Inject(APP_CONFIG) config: AppConfig) {
+        super(httpClient, eventService, config);
         this.apiController = "/meddraterms";
     }
 
