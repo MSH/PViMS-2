@@ -75,6 +75,9 @@ namespace PVIMS.API.MapperProfiles
                 .ForMember(dest => dest.Anonymise, opt => opt.MapFrom(src => src.Field.Anonymise ? "Yes" : "No"))
                 .ForMember(dest => dest.FieldTypeName, opt => opt.MapFrom(src => src.Field.FieldType.Description));
 
+            CreateMap<DatasetElementSub, DatasetElementSubDto>()
+                .ForMember(dest => dest.FieldTypeName, opt => opt.MapFrom(src => src.Field.FieldType.Description));
+
             CreateMap<EncounterType, EncounterTypeIdentifierDto>()
                 .ForMember(dest => dest.EncounterTypeName, opt => opt.MapFrom(src => src.Description));
             CreateMap<EncounterType, EncounterTypeDetailDto>()

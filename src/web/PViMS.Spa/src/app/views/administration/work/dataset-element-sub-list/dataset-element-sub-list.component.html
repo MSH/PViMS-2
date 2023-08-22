@@ -3,26 +3,23 @@
 </div>
 
 <mat-card class="p-0">
-  
+
   <mat-card-title class="">
     <div class="card-title-text">
-      {{'Dataset Elements' | translate}}
+      <button mat-raised-button (click)="goBack()" color="accent" class="mr-48">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      {{'Table Dataset Elements' | translate}}
     </div>
   </mat-card-title>
 
   <mat-card-content>
     <form [formGroup]="viewModelForm">
-      <div fxLayout="column" fxLayoutWrap fxLayoutGap="0.1%" fxLayoutAlign="start" class="p-0">
+      <!-- <div fxLayout="column" fxLayoutWrap fxLayoutGap="0.1%" fxLayoutAlign="start" class="p-0">
         <div fxFlex="100" fxLayoutAlign="end">
           <button mat-raised-button class="mr-05" color="accent" (click)="openPopUp({}, true)">{{'Add Element' | translate}}</button>
-        </div>
-        <div fxFlex="100">
-          <mat-form-field class="p-8 full-width" fxFlex="33">
-            <input matInput formControlName="elementName" placeholder="{{'Search' | translate}}">
-          </mat-form-field>
-          <button mat-icon-button (click)="loadGrid()" class="mt-8"><mat-icon class="mt-8">search</mat-icon></button>
-        </div>
-      </div>
+        </div>        
+      </div> -->
     </form> 
 
     <div class="ml-05 mr-05 mt-05 pb-1">
@@ -52,6 +49,13 @@
               </mat-cell>
             </ng-container>
 
+            <ng-container matColumnDef="friendly-name">
+              <mat-header-cell *matHeaderCellDef>{{'Friendly Name' | translate }}</mat-header-cell>
+              <mat-cell *matCellDef="let record">
+                  <p>{{record.friendlyName}}</p>
+              </mat-cell>
+            </ng-container>
+
             <ng-container matColumnDef="actions">
                 <mat-header-cell *matHeaderCellDef>
                     {{"Actions" | translate }}
@@ -65,11 +69,6 @@
                             (click)="openDeletePopUp(record)">
                         <mat-icon>delete</mat-icon>
                     </button>
-                    <button mat-icon-button color="primary" matTooltip="{{'Manage Table' | translate }}"
-                            (click)="navigateToSub(record)"
-                            *ngIf="record.fieldTypeName == 'Table'">
-                        <mat-icon>apps</mat-icon>
-                    </button>                    
                 </mat-cell>
             </ng-container>
 

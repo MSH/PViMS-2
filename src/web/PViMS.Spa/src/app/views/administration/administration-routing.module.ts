@@ -23,6 +23,7 @@ import { DatasetCategoryListComponent } from './work/dataset-list/dataset-catego
 import { DatasetCategoryElementListComponent } from './work/dataset-list/dataset-category-element-list/dataset-category-element-list.component';
 import { ConceptListComponent } from './reference/concept-list/concept-list.component';
 import { CustomAttributeListComponent } from './work/custom-attribute-list/custom-attribute-list.component';
+import { DatasetElementSubListComponent } from './work/dataset-element-sub-list/dataset-element-sub-list.component';
 
 export const ReportRoutes: Routes = [
   {
@@ -129,6 +130,11 @@ export const ReportRoutes: Routes = [
     path: 'work/datasetelement',
     component: DatasetElementListComponent,
     data: { title: 'Dataset Element Management', breadcrumb: 'Dataset Element Management' }
+  },
+  {
+    path: 'work/datasetelement/:datasetelementid/datasetelementsub',
+    component: DatasetElementSubListComponent,
+    data: { title: 'Dataset Element Sub Management', breadcrumb: 'Dataset Element Sub Management' }
   },
   {
     path: 'work/encountertype',

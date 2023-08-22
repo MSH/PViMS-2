@@ -36,11 +36,16 @@ export const _paths = {
       forms: {
           list: `form-list/:type`,
           synchronise: `synchronise/:type`,
+          formselect: `form-select/:cohortGroupId`,
+          cohortselect: `cohort-select`,
           landing: `form-landing`,
           forma: `forma/:formId`,
           formb: `formb/:formId`,
           formc: `formc/:formId`,
           formadr: `formadr/:formId`,
+          formpx: `formpx/:formId`,
+          formatpt: `formatpt/:formId`,
+          formbtpt: `formbtpt/:formId`,
       }
   },
   analytical: `analytical`,
@@ -56,6 +61,7 @@ export const _paths = {
   },
   reports: `reports`,
   reportPath: {
+    dashboard: `dashboard`,
     patienttreatment: `system/patienttreatment`
   },
   information: `information`,
@@ -67,6 +73,7 @@ export const _paths = {
     landing: `landing`,
     work: {
         dataset: `work/dataset`,
+        datasetelementsub: `work/datasetelement/:datasetelementid/datasetelementsub`,
         datasetcategory: `work/datasetcategory/:datasetid`,
         datasetcategoryelement: `work/datasetcategoryelement/:datasetid/:datasetcategoryid`
     }
