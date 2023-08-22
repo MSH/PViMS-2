@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PVIMS.Core.Aggregates.ConceptAggregate;
 using PVIMS.Core.Aggregates.DatasetAggregate;
@@ -402,18 +403,19 @@ namespace PVIMS.Services
                 throw new ArgumentOutOfRangeException(nameof(parameters));
             }
 
-            string sql = "SELECT Id FROM Patient p CROSS APPLY p.CustomAttributesXmlSerialised.nodes('CustomAttributeSet/CustomStringAttribute') as X(Y) WHERE ";
+            //string sql = "SELECT Id FROM Patient p CROSS APPLY p.CustomAttributesXmlSerialised.nodes('CustomAttributeSet/CustomStringAttribute') as X(Y) WHERE ";
 
-            foreach (var parameter in parameters)
-            {
-                sql += $"X.Y.value('(Key)[1]', 'VARCHAR(MAX)') = '{parameter.AttributeKey.Trim()}' AND X.Y.value('(Value)[1]', 'VARCHAR(MAX)') = '{parameter.AttributeValue.Trim()}' ";
-                sql += "OR ";
-            }
-            sql = sql.Substring(0, sql.Length - 3);
+            //foreach (var parameter in parameters)
+            //{
+            //    sql += $"X.Y.value('(Key)[1]', 'VARCHAR(MAX)') = '{parameter.AttributeKey.Trim()}' AND X.Y.value('(Value)[1]', 'VARCHAR(MAX)') = '{parameter.AttributeValue.Trim()}' ";
+            //    sql += "OR ";
+            //}
+            //sql = sql.Substring(0, sql.Length - 3);
 
-            var result = _context.PatientLists
-                .FromSqlInterpolated($"Exec spPatientExists {parameters}").ToList();
-            return result.Count > 0;
+            //var result = _context.PatientLists
+            //    .FromSqlInterpolated($"Exec spPatientExists {parameters}").ToList();
+            //return result.Count > 0;
+            return false;
         }
 
         /// <summary>
@@ -440,14 +442,15 @@ namespace PVIMS.Services
             }
             sql = sql.Substring(0, sql.Length - 3);
 
-            var result = _context.PatientLists
-                .FromSqlInterpolated($"Exec spPatients {parameters}").ToList();
+            //var result = _context.PatientLists
+            //    .FromSqlInterpolated($"Exec spPatients {parameters}").ToList();
 
-            if(result.Count == 0)
-            {
-                return null;
-            }
-            return _patientRepository.Get(p => p.Id == result.First().PatientId);
+            //if(result.Count == 0)
+            //{
+            //    return null;
+            //}
+            //return _patientRepository.Get(p => p.Id == result.First().PatientId);
+            return _patientRepository.Get(p => p.Id == 1);
         }
 
         /// <summary>

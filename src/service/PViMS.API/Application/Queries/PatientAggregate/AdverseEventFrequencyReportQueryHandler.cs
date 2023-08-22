@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
+using PVIMS.API.Application.Models.Patient;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;

@@ -6,25 +6,23 @@
 ***************************************************************************************************************************/
 
 -- ***************** METAPAGES
-SET IDENTITY_INSERT [dbo].[MetaPage] ON
-INSERT [dbo].[MetaPage] ([Id], [metapage_guid], [PageName], [PageDefinition], [MetaDefinition], [Breadcrumb], [IsSystem], [IsVisible]) 
-	VALUES (1, N'a63e9f29-a22f-43df-87a0-d0c8dec50548', N'Home', N'Home', N'*** NOT DEFINED ***', N'Home', 1, 1)
-INSERT [dbo].[MetaPage] ([Id], [metapage_guid], [PageName], [PageDefinition], [MetaDefinition], [Breadcrumb], [IsSystem], [IsVisible]) 
-	VALUES (2, N'cde6d1b5-6a09-47b2-a304-abbcc2c94dac', N'Reference Page 1', N'Reference Page 1', N'*** NOT DEFINED ***', N'Reference/FDA Drug Safety Communication', 1, 0)
-INSERT [dbo].[MetaPage] ([Id], [metapage_guid], [PageName], [PageDefinition], [MetaDefinition], [Breadcrumb], [IsSystem], [IsVisible]) 
-	VALUES (3, N'8d62faa0-6fcd-4f1f-8714-924afdc5b03d', N'Reference Page 2', N'Reference Page 2', N'*** NOT DEFINED ***', N'Reference/Standards', 1, 0)
-INSERT [dbo].[MetaPage] ([Id], [metapage_guid], [PageName], [PageDefinition], [MetaDefinition], [Breadcrumb], [IsSystem], [IsVisible]) 
-	VALUES (4, N'14589ffb-506a-4299-9e1a-fef1c88ae881', N'Reference Page 3', N'Reference Page 3', N'*** NOT DEFINED ***', N'Reference/Causality Scales', 1, 0)
-INSERT [dbo].[MetaPage] ([Id], [metapage_guid], [PageName], [PageDefinition], [MetaDefinition], [Breadcrumb], [IsSystem], [IsVisible]) 
-	VALUES (5, N'1e7fb80d-2ce2-4481-a9ba-d0538d425a5d', N'Reference Page 4', N'Reference Page 4', N'*** NOT DEFINED ***', N'Reference/Grading Scales', 1, 0)
-INSERT [dbo].[MetaPage] ([Id], [metapage_guid], [PageName], [PageDefinition], [MetaDefinition], [Breadcrumb], [IsSystem], [IsVisible]) 
-	VALUES (6, N'89cadd84-eb24-4c70-b769-9183a5a7405a', N'Reference', N'Reference', N'*** NOT DEFINED ***', N'Reference', 1, 1)
-INSERT [dbo].[MetaPage] ([Id], [metapage_guid], [PageName], [PageDefinition], [MetaDefinition], [Breadcrumb], [IsSystem], [IsVisible]) 
-	VALUES (7, N'942f501a-1f47-49a3-9f60-6814ea46c482', N'FAQ', N'FAQ', N'*** NOT DEFINED ***', N'FAQ', 1, 1)
-SET IDENTITY_INSERT [dbo].[MetaPage] OFF
+INSERT MetaPage (Id, metapage_guid, PageName, PageDefinition, MetaDefinition, Breadcrumb, IsSystem, IsVisible) 
+	VALUES (1, N'a63e9f29-a22f-43df-87a0-d0c8dec50548', N'Home', N'Home', N'*** NOT DEFINED ***', N'Home', 1, 1);
+INSERT MetaPage (Id, metapage_guid, PageName, PageDefinition, MetaDefinition, Breadcrumb, IsSystem, IsVisible) 
+	VALUES (2, N'cde6d1b5-6a09-47b2-a304-abbcc2c94dac', N'Reference Page 1', N'Reference Page 1', N'*** NOT DEFINED ***', N'Reference/FDA Drug Safety Communication', 1, 0);
+INSERT MetaPage (Id, metapage_guid, PageName, PageDefinition, MetaDefinition, Breadcrumb, IsSystem, IsVisible)
+	VALUES (3, N'8d62faa0-6fcd-4f1f-8714-924afdc5b03d', N'Reference Page 2', N'Reference Page 2', N'*** NOT DEFINED ***', N'Reference/Standards', 1, 0);
+INSERT MetaPage (Id, metapage_guid, PageName, PageDefinition, MetaDefinition, Breadcrumb, IsSystem, IsVisible) 
+	VALUES (4, N'14589ffb-506a-4299-9e1a-fef1c88ae881', N'Reference Page 3', N'Reference Page 3', N'*** NOT DEFINED ***', N'Reference/Causality Scales', 1, 0);
+INSERT MetaPage (Id, metapage_guid, PageName, PageDefinition, MetaDefinition, Breadcrumb, IsSystem, IsVisible)
+	VALUES (5, N'1e7fb80d-2ce2-4481-a9ba-d0538d425a5d', N'Reference Page 4', N'Reference Page 4', N'*** NOT DEFINED ***', N'Reference/Grading Scales', 1, 0);
+INSERT MetaPage (Id, metapage_guid, PageName, PageDefinition, MetaDefinition, Breadcrumb, IsSystem, IsVisible) 
+	VALUES (6, N'89cadd84-eb24-4c70-b769-9183a5a7405a', N'Reference', N'Reference', N'*** NOT DEFINED ***', N'Reference', 1, 1);
+INSERT MetaPage (Id, metapage_guid, PageName, PageDefinition, MetaDefinition, Breadcrumb, IsSystem, IsVisible) 
+	VALUES (7, N'942f501a-1f47-49a3-9f60-6814ea46c482', N'FAQ', N'FAQ', N'*** NOT DEFINED ***', N'FAQ', 1, 1);
 
 -- ***************** METAWIDGETS
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget (metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'283ff0bf-cf13-4200-8f32-1ead616409a2', N'National Guidelines', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -47,9 +45,9 @@ SELECT N'283ff0bf-cf13-4200-8f32-1ead616409a2', N'National Guidelines', N'', N'
 		</ListItem> 
 	</WidgetList>
 	', 3, Id, 1, 1, 'library_books'
-	FROM MetaPage WHERE [metapage_guid] = 'a63e9f29-a22f-43df-87a0-d0c8dec50548'
+	FROM MetaPage WHERE metapage_guid = 'a63e9f29-a22f-43df-87a0-d0c8dec50548';
 
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget (metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'5b19c085-af51-4e6b-934d-1a1ea5049803', N'Pharmacovigilance Study', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -60,9 +58,9 @@ SELECT N'5b19c085-af51-4e6b-934d-1a1ea5049803', N'Pharmacovigilance Study', N'',
 		</ListItem> 
 	</WidgetList>
 	', 3, Id, 2, 1, 'domain'
-	FROM MetaPage WHERE [metapage_guid] = 'a63e9f29-a22f-43df-87a0-d0c8dec50548'
+	FROM MetaPage WHERE metapage_guid = 'a63e9f29-a22f-43df-87a0-d0c8dec50548';
 
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget (metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'd1cacd7a-b5a3-46f7-bf90-76768f5617a9', N'FDA Drug Safety Communication', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -134,9 +132,9 @@ SELECT N'd1cacd7a-b5a3-46f7-bf90-76768f5617a9', N'FDA Drug Safety Communication'
 		</ListItem> 
 	</WidgetList>
 	', 3, Id, 1, 1, 'contact_phone'
-	FROM MetaPage WHERE [metapage_guid] = 'cde6d1b5-6a09-47b2-a304-abbcc2c94dac'
+	FROM MetaPage WHERE metapage_guid = 'cde6d1b5-6a09-47b2-a304-abbcc2c94dac';
 
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget (metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'ada3fb30-d74f-44d9-8275-8752ab926e0b', N'PViMS Standards Used', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -186,9 +184,9 @@ SELECT N'ada3fb30-d74f-44d9-8275-8752ab926e0b', N'PViMS Standards Used', N'', N'
 		</ListItem> 		
 	</WidgetList>
 	', 3, Id, 1, 1, 'stay_primary_portrait'
-	FROM MetaPage WHERE [metapage_guid] = '8d62faa0-6fcd-4f1f-8714-924afdc5b03d'
+	FROM MetaPage WHERE metapage_guid = '8d62faa0-6fcd-4f1f-8714-924afdc5b03d';
 
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget (metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'34115e68-44e5-4ace-8d6c-0d4679f911b0', N'Causality Scales Used', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -215,9 +213,9 @@ SELECT N'34115e68-44e5-4ace-8d6c-0d4679f911b0', N'Causality Scales Used', N'', N
 		</ListItem> 		
 	</WidgetList>
 	', 3, Id, 1, 1, 'linear_scale'
-	FROM MetaPage WHERE [metapage_guid] = '14589FFB-506A-4299-9E1A-FEF1C88AE881'
+	FROM MetaPage WHERE metapage_guid = '14589FFB-506A-4299-9E1A-FEF1C88AE881';
 
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget (metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'61a3be10-0ed0-462e-b7db-ead7561502e0', N'Grading Scales Used', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -257,9 +255,9 @@ SELECT N'61a3be10-0ed0-462e-b7db-ead7561502e0', N'Grading Scales Used', N'', N'
 		</ListItem> 					
 	</WidgetList>
 	', 3, Id, 1, 1, 'linear_scale'
-	FROM MetaPage WHERE [metapage_guid] = '1E7FB80D-2CE2-4481-A9BA-D0538D425A5D'
+	FROM MetaPage WHERE metapage_guid = '1E7FB80D-2CE2-4481-A9BA-D0538D425A5D';
 
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget (metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'936f01d6-f341-4802-9243-7c7ae9de66f2', N'Drug Safety', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -269,9 +267,9 @@ SELECT N'936f01d6-f341-4802-9243-7c7ae9de66f2', N'Drug Safety', N'', N'
 		</ListItem> 
 	</WidgetList>
 	', 2, Id, 1, 1, 'local_hospital'
-	FROM MetaPage WHERE [metapage_guid] = '89CADD84-EB24-4C70-B769-9183A5A7405A'
+	FROM MetaPage WHERE metapage_guid = '89CADD84-EB24-4C70-B769-9183A5A7405A';
 
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget (metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'f0805a0f-3977-4ae9-b27b-bcfd7618edec', N'Standards', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -296,9 +294,9 @@ SELECT N'f0805a0f-3977-4ae9-b27b-bcfd7618edec', N'Standards', N'', N'
 		</ListItem> 
 	</WidgetList>
 	', 2, Id, 3, 1, 'stay_primary_portrait'
-	FROM MetaPage WHERE [metapage_guid] = '89CADD84-EB24-4C70-B769-9183A5A7405A'
+	FROM MetaPage WHERE metapage_guid = '89CADD84-EB24-4C70-B769-9183A5A7405A';
 
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget (metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'f7315d56-43f6-49c9-88d4-3902eef95ccf', N'Causality Scales', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -313,9 +311,9 @@ SELECT N'f7315d56-43f6-49c9-88d4-3902eef95ccf', N'Causality Scales', N'', N'
 		</ListItem> 
 	</WidgetList>
 	', 2, Id, 5, 1, 'linear_scale'
-	FROM MetaPage WHERE [metapage_guid] = '89CADD84-EB24-4C70-B769-9183A5A7405A'
+	FROM MetaPage WHERE metapage_guid = '89CADD84-EB24-4C70-B769-9183A5A7405A';
 
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget (metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'75e26026-4ad1-41bc-b96e-aadc3ab9c005', N'Grading Scales', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -335,9 +333,9 @@ SELECT N'75e26026-4ad1-41bc-b96e-aadc3ab9c005', N'Grading Scales', N'', N'
 		</ListItem> 
 	</WidgetList>
 	', 2, Id, 2, 1, 'linear_scale'
-	FROM MetaPage WHERE [metapage_guid] = '89CADD84-EB24-4C70-B769-9183A5A7405A'
+	FROM MetaPage WHERE metapage_guid = '89CADD84-EB24-4C70-B769-9183A5A7405A';
 
-INSERT [dbo].[MetaWidget] ([metawidget_guid], [WidgetName], [WidgetDefinition], [Content], [WidgetType_Id], [MetaPage_Id], [WidgetLocation], [WidgetStatus], [Icon]) 
+INSERT MetaWidget(metawidget_guid, WidgetName, WidgetDefinition, Content, WidgetType_Id, MetaPage_Id, WidgetLocation, WidgetStatus, Icon) 
 SELECT N'1a50686f-ebbd-40d7-a9ba-99741660d2c4', N'Frequently Asked Questions on Bedaquiline', N'', N'
 	<WidgetList>
 		<ListItem>
@@ -396,4 +394,4 @@ SELECT N'1a50686f-ebbd-40d7-a9ba-99741660d2c4', N'Frequently Asked Questions on 
 		</ListItem> 
 	</WidgetList>
 	', 3, Id, 1, 1, 'question_answer'
-	FROM MetaPage WHERE [metapage_guid] = '942F501A-1F47-49A3-9F60-6814EA46C482'
+	FROM MetaPage WHERE metapage_guid = '942F501A-1F47-49A3-9F60-6814EA46C482';

@@ -79,7 +79,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="PVIMS.API.xml">
+    <None Update="PViMS.API.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StaticFiles\SIAPS_USAID_Small.jpg">

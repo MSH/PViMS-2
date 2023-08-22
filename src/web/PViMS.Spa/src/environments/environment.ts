@@ -5,13 +5,13 @@
 
 export const environment = {
   production: false,
-  apiURL: 'http://localhost:5000/api',
+  //apiURL: 'http://localhost:5000/api',
   //apiURL: 'https://localhost:44380/api',
   //apiURL: 'https://pvims-training-api.doh.gov.ph/api',
-  apiURLBase: 'http://localhost:5000',
+  //apiURLBase: 'http://localhost:5000',
   //apiURLBase: 'https://pvims-training-api.doh.gov.ph',
-  appVersion: '2.1.0',
-  appName: 'PViMS Training',
+  appVersion: '2.5.9 | 202306061238',
+  //appName: 'OPENRIMS-PVM',
   installationDate: '2020-06-24',
-  countryISOCode: 'za'
+  //countryISOCode: 'rw'
 };

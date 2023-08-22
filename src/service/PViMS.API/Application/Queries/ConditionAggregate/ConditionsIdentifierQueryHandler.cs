@@ -46,9 +46,9 @@ namespace PVIMS.API.Application.Queries.ConditionAggregate
             var orderby = Extensions.GetOrderBy<Condition>(message.OrderBy, "asc");
 
             var predicate = PredicateBuilder.New<Condition>(true);
-            if (message.Active != Models.ValueTypes.YesNoBothValueType.Both)
+            if (message.Active != API.Models.ValueTypes.YesNoBothValueType.Both)
             {
-                predicate = predicate.And(f => f.Active == (message.Active == Models.ValueTypes.YesNoBothValueType.Yes));
+                predicate = predicate.And(f => f.Active == (message.Active == API.Models.ValueTypes.YesNoBothValueType.Yes));
             }
 
             var pagedConditionsFromRepo = await _conditionRepository.ListAsync(pagingInfo, null, orderby);

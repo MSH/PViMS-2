@@ -4,15 +4,85 @@
         <name>PViMS.API</name>
     </assembly>
     <members>
-        <member name="M:PVIMS.API.Application.IntegrationEvents.EventHandling.PatientAddedIntegrationEventHandler.Handle(PVIMS.API.Application.IntegrationEvents.Events.PatientAddedIntegrationEvent)">
+        <member name="T:PVIMS.API.Application.Models.Encounter.SearchEncounterDto">
             <summary>
-            Event handler which confirms that the grace period
-            has been completed and order will not initially be cancelled.
-            Therefore, the order process continues for validation. 
+            A dto representing the output of an encounter search query
             </summary>
-            <param name="event">       
-            </param>
-            <returns></returns>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Encounter.SearchEncounterDto.EncounterId">
+            <summary>
+            The unique id of the encounter
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Encounter.SearchEncounterDto.PatientId">
+            <summary>
+            The unique id of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Encounter.SearchEncounterDto.FirstName">
+            <summary>
+            The first name of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Encounter.SearchEncounterDto.Surname">
+            <summary>
+            The surname of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Encounter.SearchEncounterDto.FacilityName">
+            <summary>
+            The currrent facility of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Encounter.SearchEncounterDto.EncounterType">
+            <summary>
+            The type of encounter
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Encounter.SearchEncounterDto.EncounterDate">
+            <summary>
+            The date of the encounter
+            </summary>
+        </member>
+        <member name="T:PVIMS.API.Application.Models.Patient.PatientSearchDto">
+            <summary>
+            A dto representing the output of a patient search query
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Patient.PatientSearchDto.PatientId">
+            <summary>
+            The unique id of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Patient.PatientSearchDto.FirstName">
+            <summary>
+            The first name of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Patient.PatientSearchDto.Surname">
+            <summary>
+            The surname of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Patient.PatientSearchDto.FacilityName">
+            <summary>
+            The currrent facility of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Patient.PatientSearchDto.DateOfBirth">
+            <summary>
+            The date of birth of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Patient.PatientSearchDto.Age">
+            <summary>
+            The total number of patients for grade 3
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Application.Models.Patient.PatientSearchDto.LatestEncounterDate">
+            <summary>
+            The total number of patients for grade 4
+            </summary>
         </member>
         <member name="P:PVIMS.API.Models.LoginRequestDto.UserName">
             <summary>
@@ -4497,9 +4567,19 @@
             A patient representation DTO - FULL DETAILS
             </summary>
         </member>
+        <member name="P:PVIMS.API.Models.PatientDetailDto.FirstName">
+            <summary>
+            The first name of the patient
+            </summary>
+        </member>
         <member name="P:PVIMS.API.Models.PatientDetailDto.MiddleName">
             <summary>
             The middle name of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientDetailDto.LastName">
+            <summary>
+            The last name of the patient
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.PatientDetailDto.DateOfBirth">
@@ -4757,16 +4837,6 @@
             The globally unique identifier for the patient
             </summary>
         </member>
-        <member name="P:PVIMS.API.Models.PatientIdentifierDto.FirstName">
-            <summary>
-            The first name of the patient
-            </summary>
-        </member>
-        <member name="P:PVIMS.API.Models.PatientIdentifierDto.LastName">
-            <summary>
-            The last name of the patient
-            </summary>
-        </member>
         <member name="P:PVIMS.API.Models.PatientIdentifierDto.FacilityName">
             <summary>
             The current facility of the patient
@@ -4785,6 +4855,16 @@
         <member name="P:PVIMS.API.Models.PatientListDto.PatientId">
             <summary>
             Unique identifier for the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientListDto.FirstName">
+            <summary>
+            The first name of the patient
+            </summary>
+        </member>
+        <member name="P:PVIMS.API.Models.PatientListDto.Surname">
+            <summary>
+            The surname of the patient
             </summary>
         </member>
         <member name="P:PVIMS.API.Models.PatientListDto.FullName">
@@ -8120,7 +8200,7 @@
             </summary>
             <param name="patientId">The unique identifier of the patient</param>
             <param name="id">The unique id of the clinical event</param>
-            <param name="clinicalEventForDelete">The deletion payload</param>
+            <param name="conditionForDelete">The deletion payload</param>
             <returns></returns>
         </member>
         <member name="M:PVIMS.API.Controllers.PatientConditionsController.GetPatientConditionByIdentifier(System.Int64,System.Int64)">
@@ -8481,7 +8561,7 @@
             <param name="dto">The dto that the link has been added to</param>
             <returns></returns>
         </member>
-        <member name="M:PVIMS.API.Controllers.PatientsController.CustomPatientMedicationReportMap(PVIMS.API.Models.PatientMedicationReportDto)">
+        <member name="M:PVIMS.API.Controllers.PatientsController.CustomPatientMedicationReportMapAsync(PVIMS.API.Models.PatientMedicationReportDto)">
             <summary>
              Map additional dto detail elements not handled through automapper
             </summary>

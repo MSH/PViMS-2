@@ -110,7 +110,7 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
         {
             List<ActivitySummaryDto> analysisActivity = new List<ActivitySummaryDto>();
 
-            foreach (var activity in workFlowFromRepo.Activities)
+            foreach (var activity in workFlowFromRepo.Activities.OrderBy(a => a.Id))
             {
                 analysisActivity.Add(new ActivitySummaryDto()
                 {

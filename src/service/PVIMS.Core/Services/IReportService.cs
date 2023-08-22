@@ -9,6 +9,6 @@ namespace PVIMS.Core.Services
     {
         ICollection<AdverseEventList> GetAdverseEventItems(DateTime searchFrom, DateTime searchTo, AdverseEventCriteria adverseEventCriteria, AdverseEventStratifyCriteria adverseEventStratifyCriteria);
         ICollection<DrugList> GetPatientsByDrugItems(string searchTerm);
-        ICollection<PatientList> GetPatientListByDrugItems(int conceptId);
+        //ICollection<PatientList> GetPatientListByDrugItems(int conceptId);
     }
 }

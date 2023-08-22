@@ -3,7 +3,7 @@ import { EventService } from '../services/event.service';
 import { _events } from '../../config/events';
 import { ParameterKeyValueModel } from '../models/parameter.keyvalue.model';
 import { HttpClient, HttpRequest, HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 import { Moment } from 'moment';
@@ -13,6 +13,7 @@ import { Moment } from 'moment';
 // syntax. However, rollup creates a synthetic default module and we thus need to import it using
 // the `default as` syntax.
 import * as _moment from 'moment';
+import { APP_CONFIG, AppConfig } from 'app/app.config';
 
 const moment =  _moment;
 
@@ -35,12 +36,13 @@ export class BaseService {
 
     constructor(
         protected httpClient: HttpClient,
-        protected eventService: EventService) {
+        protected eventService: EventService,
+        @Inject(APP_CONFIG) config: AppConfig) {
         let self = this;
+        console.log('got config' + config);
         self.JwtObject = new JwtModel();
-        self._baseUrl = getBaseUrl();
-        self._baseUrl = environment.apiURL;
-        self._baseUrlBase = environment.apiURLBase;
+        self._baseUrl = config.apiURL;
+        self._baseUrlBase = config.apiURLBase;
         self.loadToken();
         self.lastAction = new Date();
     }

@@ -1,6 +1,4 @@
 ﻿using Dapper;
-using MailKit.Search;
-using Microsoft.Data.SqlClient;
 using MySqlConnector;
 using PVIMS.API.Application.Models.Patient;
 using PVIMS.API.Models;
@@ -74,7 +72,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
         public async Task<IEnumerable<PatientSearchDto>> SearchPatientsByConditionCaseNumberAsync(string caseNumber)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -99,7 +97,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
         public async Task<IEnumerable<AdverseEventFrequencyReportDto>> GetAdverseEventsByAnnualAsync(DateTime searchFrom, DateTime searchTo)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -139,7 +137,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
         public async Task<IEnumerable<AdverseEventFrequencyReportDto>> GetAdverseEventsByQuarterAsync(DateTime searchFrom, DateTime searchTo)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -179,7 +177,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
         public async Task<IEnumerable<AdverseEventFrequencyReportDto>> GetAdverseEventsByMonthAsync(DateTime searchFrom, DateTime searchTo)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -228,7 +226,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string seriousnessId,
             string classificationId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -298,7 +296,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string seriousnessId, 
             string classificationId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -351,7 +349,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string seriousnessId,
             string classificationId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -404,7 +402,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string seriousnessId,
             string classificationId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -457,7 +455,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string seriousnessId,
             string classificationId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -510,7 +508,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string seriousnessId,
             string classificationId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -563,7 +561,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string seriousnessId,
             string classificationId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -616,7 +614,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
             string seriousnessId,
             string classificationId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -660,7 +658,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
         public async Task<IEnumerable<PatientListDto>> GetPatientListByConceptAsync(int conceptId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -829,11 +827,11 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 
         public async Task<IEnumerable<PatientsOnTreatmentDto>> GetPatientsOnTreatmentByEncounterAsync(DateTime searchFrom, DateTime searchTo)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
-                return await connection.QueryAsync<PatientsOnTreatmentDto>(
+                var sql =
                     @$"SELECT f.FacilityName, f.Id as FacilityId
                             ,	(
                                     select count(distinct(ip.Id))
@@ -856,7 +854,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                                     where ie.Archived = 0 and ip.Archived = 0 and ipce.Archived = 0
                                         and ie.EncounterDate between '{searchFrom.ToString("yyyy-MM-dd")}' and '{searchTo.ToString("yyyy-MM-dd")}'
                                         and ifa.Id = f.Id
-                                        and (impce.[Istheadverseeventserious?] <> 'Yes' or impce.[Istheadverseeventserious?] is null)
+                                        and (impce.`Istheadverseeventserious?` <> 'Yes' or impce.`Istheadverseeventserious?` is null)
                                 ) AS PatientWithNonSeriousEventCount
                             ,	(
                                     select count(distinct(ip.Id))
@@ -869,7 +867,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                                     where ie.Archived = 0 and ip.Archived = 0 and ipce.Archived = 0
                                         and ie.EncounterDate between '{searchFrom.ToString("yyyy-MM-dd")}' and '{searchTo.ToString("yyyy-MM-dd")}'
                                         and ifa.Id = f.Id
-                                        and impce.[Istheadverseeventserious?] = 'Yes'
+                                        and impce.`Istheadverseeventserious?` = 'Yes'
                                 ) AS PatientWithSeriousEventCount
                             ,	(
                                     select count(distinct(ip.Id))
@@ -883,17 +881,20 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                                         and ifa.Id = f.Id
                                 ) AS PatientWithEventCount        
                         FROM Facility f
-                        ORDER BY f.FacilityName");
+                        ORDER BY f.FacilityName";
+
+                return await connection.QueryAsync<PatientsOnTreatmentDto>(sql);
+
             }
         }
 
         public async Task<IEnumerable<PatientListDto>> GetPatientOnTreatmentListByEncounterAsync(DateTime searchFrom, DateTime searchTo, int facilityId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
-                return await connection.QueryAsync<PatientListDto>(
+                var sql =
                     @$"SELECT s.Id AS PatientId, s.FirstName + ' ' + s.Surname AS FullName, s.FacilityName  FROM 
 	                        	(
 			                        select ip.Id, ip.FirstName, ip.Surname, ifa.FacilityName
@@ -905,17 +906,19 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                                         and ie.EncounterDate between '{searchFrom.ToString("yyyy-MM-dd")}' and '{searchTo.ToString("yyyy-MM-dd")}'
 				                        and ifa.Id = {facilityId}
 				                    group by ip.Id, ip.FirstName, ip.Surname, ifa.FacilityName 
-		                        ) AS s");
+		                        ) AS s";
+
+                return await connection.QueryAsync<PatientListDto>(sql);
             }
         }
 
         public async Task<IEnumerable<PatientsOnTreatmentDto>> GetPatientsOnTreatmentByFacilityAsync(DateTime searchFrom, DateTime searchTo)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
-                return await connection.QueryAsync<PatientsOnTreatmentDto>(
+                var sql =
                     @$"SELECT f.FacilityName, f.Id as FacilityId
                             ,	(
                                     select count(distinct(ip.Id))
@@ -936,7 +939,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                                     where ip.Archived = 0 and ipf.Archived = 0 and ipce.Archived = 0
                                         and ipf.EnrolledDate between '{searchFrom.ToString("yyyy-MM-dd")}' and '{searchTo.ToString("yyyy-MM-dd")}'
                                         and ifa.Id = f.Id
-                                        and (impce.[Istheadverseeventserious?] <> 'Yes' or impce.[Istheadverseeventserious?] is null)
+                                        and (impce.`Istheadverseeventserious?` <> 'Yes' or impce.`Istheadverseeventserious?` is null)
                                 ) AS PatientWithNonSeriousEventCount
                             ,	(
                                     select count(distinct(ip.Id))
@@ -948,7 +951,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                                     where ip.Archived = 0 and ipf.Archived = 0 and ipce.Archived = 0
                                         and ipf.EnrolledDate between '{searchFrom.ToString("yyyy-MM-dd")}' and '{searchTo.ToString("yyyy-MM-dd")}'
                                         and ifa.Id = f.Id
-                                        and impce.[Istheadverseeventserious?] = 'Yes'
+                                        and impce.`Istheadverseeventserious?` = 'Yes'
                                 ) AS PatientWithSeriousEventCount
                             ,	(
                                     select count(distinct(ip.Id))
@@ -961,13 +964,16 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
                                         and ifa.Id = f.Id
                                 ) AS PatientWithEventCount
                         FROM Facility f
-                        ORDER BY f.FacilityName ");
+                        ORDER BY f.FacilityName ";
+
+                return await connection.QueryAsync<PatientsOnTreatmentDto>(sql);
+
             }
         }
 
         public async Task<IEnumerable<PatientListDto>> GetPatientOnTreatmentListByFacilityAsync(DateTime searchFrom, DateTime searchTo, int facilityId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 

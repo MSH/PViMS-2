@@ -14,11 +14,11 @@ namespace PViMS.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DestinationUser_Id = table.Column<int>(type: "int", nullable: false),
-                    ValidUntilDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ValidUntilDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Summary = table.Column<string>(type: "nvarchar(75)", maxLength: 75, nullable: false),
                     Detail = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },

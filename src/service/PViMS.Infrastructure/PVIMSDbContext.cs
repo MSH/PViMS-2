@@ -134,10 +134,8 @@ namespace PVIMS.Infrastructure
         public DbSet<ContingencyAnalysisList> ContingencyAnalysisLists { get; set; }
         public DbSet<ContingencyAnalysisPatient> ContingencyAnalysisPatients { get; set; }
         public DbSet<DrugList> DrugLists { get; set; }
-        public DbSet<EncounterList> EncounterLists { get; set; }
         public DbSet<MetaPatientList> MetaPatientLists { get; set; }
         public DbSet<PatientIdList> PatientIdLists { get; set; }
-        public DbSet<PatientList> PatientLists { get; set; }
         public DbSet<PatientOnStudyList> PatientOnStudyLists { get; set; }
 
         public PVIMSDbContext(DbContextOptions<PVIMSDbContext> options) : base(options) { }
@@ -199,7 +197,6 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new DatasetXmlNodeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DrugListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new EncounterEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new EncounterListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new EncounterTypeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new EncounterTypeWorkPlanEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new FacilityEntityTypeConfiguration());
@@ -236,7 +233,6 @@ namespace PVIMS.Infrastructure
             modelBuilder.ApplyConfiguration(new PatientFacilityEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientLabTestEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientIdListViewTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new PatientListViewTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientLanguageEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientMedicationEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PatientOnStudyListViewTypeConfiguration());

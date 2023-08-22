@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PViMS.Infrastructure.Migrations
@@ -12,7 +13,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Key = table.Column<string>(type: "nvarchar(4)", maxLength: 4, nullable: false)
                 },
@@ -26,7 +27,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -39,7 +40,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Chronic = table.Column<bool>(type: "bit", nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false)
@@ -54,7 +55,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -67,10 +68,10 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ExtendableTypeName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CustomAttributeType = table.Column<int>(type: "int", nullable: false),
-                    Category = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Category = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     AttributeKey = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     AttributeDetail = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
                     IsRequired = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
@@ -91,7 +92,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -104,7 +105,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Help = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     Chronic = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
@@ -119,7 +120,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -132,7 +133,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -145,8 +146,8 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    HolidayDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    HolidayDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
@@ -159,7 +160,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -173,7 +174,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Active = table.Column<bool>(type: "bit", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
@@ -187,7 +188,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -200,7 +201,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
@@ -213,7 +214,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -226,8 +227,8 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    metacolumntype_guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    metacolumntype_guid = table.Column<Guid>(type: "char(36)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -240,10 +241,10 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    metaform_guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    metaform_guid = table.Column<Guid>(type: "char(36)", nullable: false),
                     FormName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    MetaDefinition = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MetaDefinition = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     IsSystem = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     ActionName = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
                 },
@@ -257,11 +258,11 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    metapage_guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    metapage_guid = table.Column<Guid>(type: "char(36)", nullable: false),
                     PageName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     PageDefinition = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    MetaDefinition = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MetaDefinition = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     Breadcrumb = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     IsSystem = table.Column<bool>(type: "bit", nullable: false),
                     IsVisible = table.Column<bool>(type: "bit", nullable: false)
@@ -276,13 +277,13 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    metareport_guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    metareport_guid = table.Column<Guid>(type: "char(36)", nullable: false),
                     ReportName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ReportDefinition = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    MetaDefinition = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MetaDefinition = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     Breadcrumb = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    SQLDefinition = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SQLDefinition = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     IsSystem = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     ReportStatus = table.Column<int>(type: "int", nullable: false)
                 },
@@ -296,8 +297,8 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    metatabletype_guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    metatabletype_guid = table.Column<Guid>(type: "char(36)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -310,8 +311,8 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    metawidgettype_guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    metawidgettype_guid = table.Column<Guid>(type: "char(36)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -324,7 +325,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Parent_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -344,7 +345,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -357,7 +358,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -370,13 +371,13 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ScriptGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    ScriptGuid = table.Column<Guid>(type: "char(36)", nullable: false),
                     ScriptFileName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     ScriptDescription = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    RunDate = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
+                    RunDate = table.Column<DateTime>(type: "datetime(0)", precision: 0, nullable: true),
                     StatusCode = table.Column<int>(type: "int", nullable: true),
-                    StatusMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    StatusMessage = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     RunRank = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -389,7 +390,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -402,9 +403,9 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FactorName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Criteria = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Criteria = table.Column<string>(type: "nvarchar(1000)", nullable: false),
                     Display = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     IsSystem = table.Column<bool>(type: "bit", nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false)
@@ -419,10 +420,10 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     AttributeKey = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     SelectionKey = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Value = table.Column<string>(type: "nvarchar(1000)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -434,7 +435,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
@@ -448,7 +449,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     MedDraTerm = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     MedDraCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     MedDraTermType = table.Column<string>(type: "nvarchar(4)", maxLength: 4, nullable: false),
@@ -472,7 +473,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
@@ -485,14 +486,14 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    FirstName = table.Column<string>(type: "nvarchar(1000)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(1000)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EulaAcceptanceDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    EulaAcceptanceDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     AllowDatasetDownload = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    IdentityId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IdentityId = table.Column<Guid>(type: "char(36)", nullable: false),
                     UserType = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -505,9 +506,9 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    WorkFlowGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    WorkFlowGuid = table.Column<Guid>(type: "char(36)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -519,7 +520,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     CohortName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CohortCode = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
                     LastPatientNo = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
@@ -545,7 +546,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Mandatory = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     MaxLength = table.Column<short>(type: "smallint", nullable: true),
                     RegEx = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
@@ -553,7 +554,7 @@ namespace PViMS.Infrastructure.Migrations
                     MaxSize = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     MinSize = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Calculation = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Image = table.Column<byte[]>(type: "image", nullable: true),
+                    Image = table.Column<byte[]>(type: "blob", nullable: true),
                     FileSize = table.Column<short>(type: "smallint", nullable: true),
                     FileExt = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Anonymise = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
@@ -575,7 +576,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Condition_Id = table.Column<int>(type: "int", nullable: false),
                     LabTest_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -601,7 +602,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ConceptName = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false),
                     MedicationForm_Id = table.Column<int>(type: "int", nullable: false)
@@ -622,8 +623,8 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    metatable_guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    metatable_guid = table.Column<Guid>(type: "char(36)", nullable: false),
                     TableName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     FriendlyName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     FriendlyDescription = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
@@ -645,16 +646,16 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    metawidget_guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    metawidget_guid = table.Column<Guid>(type: "char(36)", nullable: false),
                     WidgetName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     WidgetDefinition = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     WidgetType_Id = table.Column<int>(type: "int", nullable: false),
                     MetaPage_Id = table.Column<int>(type: "int", nullable: false),
                     WidgetLocation = table.Column<int>(type: "int", nullable: false),
                     WidgetStatus = table.Column<int>(type: "int", nullable: false),
-                    Icon = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Icon = table.Column<string>(type: "nvarchar(1000)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -678,7 +679,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Parent_Id = table.Column<int>(type: "int", nullable: true),
                     OrgUnitType_Id = table.Column<int>(type: "int", nullable: false)
@@ -705,7 +706,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     OptionName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Criteria = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     Display = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
@@ -727,7 +728,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Condition_Id = table.Column<int>(type: "int", nullable: false),
                     TerminologyMedDra_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -753,7 +754,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     GradingScale_Id = table.Column<int>(type: "int", nullable: false),
                     TerminologyMedDra_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -779,11 +780,11 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ActionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Details = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    ActionDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    Details = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     User_Id = table.Column<int>(type: "int", nullable: false),
-                    Log = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Log = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     AuditType = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -802,11 +803,11 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ConfigValue = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     ConfigType = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -832,10 +833,10 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -861,20 +862,20 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     DateOfBirth = table.Column<DateTime>(type: "date", nullable: true),
                     FirstName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Surname = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PatientGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newid()"),
-                    MiddleName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    PatientGuid = table.Column<Guid>(type: "char(36)", nullable: false),
+                    MiddleName = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "xml", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -906,10 +907,10 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    RemoteIpAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Token = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    Expires = table.Column<DateTime>(type: "datetime", nullable: false),
+                    RemoteIpAddress = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     User_Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -928,7 +929,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ContactType = table.Column<int>(type: "int", nullable: false),
                     ContactFirstName = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
                     ContactSurname = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
@@ -940,8 +941,8 @@ namespace PViMS.Infrastructure.Migrations
                     ContactEmail = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CountryCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     OrganisationName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -967,17 +968,17 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Sender = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    EventType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExceptionCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExceptionMessage = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExceptionStackTrace = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    InnerExceptionMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    InnerExceptionStackTrace = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RemoteIpAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Sender = table.Column<string>(type: "nvarchar(1000)", nullable: false),
+                    EventType = table.Column<string>(type: "nvarchar(1000)", nullable: false),
+                    ExceptionCode = table.Column<string>(type: "nvarchar(1000)", nullable: false),
+                    ExceptionMessage = table.Column<string>(type: "nvarchar(1000)", nullable: false),
+                    ExceptionStackTrace = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    InnerExceptionMessage = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    InnerExceptionStackTrace = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    RemoteIpAddress = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1003,7 +1004,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     QualifiedName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     WorkFlow_Id = table.Column<int>(type: "int", nullable: false),
                     ActivityType = table.Column<int>(type: "int", nullable: false)
@@ -1024,17 +1025,17 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ReportInstanceGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FinishedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    ReportInstanceGuid = table.Column<Guid>(type: "char(36)", nullable: false),
+                    FinishedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     WorkFlow_Id = table.Column<int>(type: "int", nullable: false),
-                    ContextGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Identifier = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PatientIdentifier = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ContextGuid = table.Column<Guid>(type: "char(36)", nullable: false),
+                    Identifier = table.Column<string>(type: "nvarchar(1000)", nullable: false),
+                    PatientIdentifier = table.Column<string>(type: "nvarchar(1000)", nullable: false),
                     TerminologyMedDra_Id = table.Column<int>(type: "int", nullable: true),
-                    SourceIdentifier = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    SourceIdentifier = table.Column<string>(type: "nvarchar(1000)", nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1072,15 +1073,15 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ElementName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Field_Id = table.Column<int>(type: "int", nullable: false),
                     DatasetElementType_Id = table.Column<int>(type: "int", nullable: false),
                     OID = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    DefaultValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DefaultValue = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     System = table.Column<bool>(type: "bit", nullable: false),
                     UID = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
-                    DatasetElementGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newid()")
+                    DatasetElementGuid = table.Column<Guid>(type: "char(36)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -1104,7 +1105,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Value = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Default = table.Column<bool>(type: "bit", nullable: false),
                     Other = table.Column<bool>(type: "bit", nullable: false),
@@ -1127,7 +1128,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Ingredient = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Strength = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false),
@@ -1149,7 +1150,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ProductName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Manufacturer = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
@@ -1172,14 +1173,14 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    metacolumn_guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    metacolumn_guid = table.Column<Guid>(type: "char(36)", nullable: false),
                     ColumnName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsIdentity = table.Column<bool>(type: "bit", nullable: false),
                     IsNullable = table.Column<bool>(type: "bit", nullable: false),
                     ColumnType_Id = table.Column<int>(type: "int", nullable: false),
                     Table_Id = table.Column<int>(type: "int", nullable: false),
-                    Range = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Range = table.Column<string>(type: "nvarchar(1000)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1203,8 +1204,8 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    metadependency_guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    metadependency_guid = table.Column<Guid>(type: "char(36)", nullable: false),
                     ParentColumnName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ReferenceColumnName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ParentTable_Id = table.Column<int>(type: "int", nullable: false),
@@ -1230,7 +1231,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FacilityCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     FacilityName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     FacilityType_Id = table.Column<int>(type: "int", nullable: false),
@@ -1261,7 +1262,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Grade = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Scale_Id = table.Column<int>(type: "int", nullable: false)
@@ -1282,19 +1283,19 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    AppointmentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    AppointmentDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     DNA = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     Cancelled = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CancellationReason = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1330,13 +1331,13 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EnroledDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    EnroledDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     CohortGroup_Id = table.Column<int>(type: "int", nullable: false),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
-                    DeenroledDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeenroledDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1368,21 +1369,21 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     EncounterDate = table.Column<DateTime>(type: "date", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EncounterGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newid()"),
+                    Notes = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    EncounterGuid = table.Column<Guid>(type: "char(36)", nullable: false),
                     Discharged = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     EncounterType_Id = table.Column<int>(type: "int", nullable: false),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     Priority_Id = table.Column<int>(type: "int", nullable: false),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1430,22 +1431,22 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     OnsetDate = table.Column<DateTime>(type: "date", nullable: false),
                     OutcomeDate = table.Column<DateTime>(type: "date", nullable: true),
                     Comments = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Condition_Id = table.Column<int>(type: "int", nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
-                    PatientConditionGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
+                    PatientConditionGuid = table.Column<Guid>(type: "char(36)", nullable: false),
                     TerminologyMedDra_Id = table.Column<int>(type: "int", nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     Outcome_Id = table.Column<int>(type: "int", nullable: true),
                     TreatmentOutcome_Id = table.Column<int>(type: "int", nullable: true),
                     ConditionSource = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "xml", nullable: true)
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1493,22 +1494,22 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     TestDate = table.Column<DateTime>(type: "date", nullable: false),
                     TestResult = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     LabTest_Id = table.Column<int>(type: "int", nullable: false),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
-                    PatientLabTestGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
+                    PatientLabTestGuid = table.Column<Guid>(type: "char(36)", nullable: false),
                     TestUnit_Id = table.Column<int>(type: "int", nullable: true),
                     LabValue = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     ReferenceLower = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     ReferenceUpper = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     LabTestSource = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "xml", nullable: true)
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1544,7 +1545,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Preferred = table.Column<bool>(type: "bit", nullable: false),
                     Language_Id = table.Column<int>(type: "int", nullable: false),
                     Patient_Id = table.Column<int>(type: "int", nullable: false)
@@ -1571,17 +1572,17 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EffectiveDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    EffectiveDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     Comments = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     PatientStatus_Id = table.Column<int>(type: "int", nullable: false),
                     Archived = table.Column<bool>(type: "bit", nullable: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1623,7 +1624,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Activity_Id = table.Column<int>(type: "int", nullable: false),
                     FriendlyDescription = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
@@ -1644,11 +1645,11 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    MedicationIdentifier = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    MedicationIdentifier = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     NaranjoCausality = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
                     WhoCausality = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
-                    ReportInstanceMedicationGuid = table.Column<Guid>(type: "uniqueidentifier", maxLength: 30, nullable: false),
+                    ReportInstanceMedicationGuid = table.Column<Guid>(type: "char(36)", maxLength: 30, nullable: false),
                     ReportInstance_Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -1667,14 +1668,14 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ReportInstanceId = table.Column<int>(type: "int", nullable: false),
-                    TaskDetail_Source = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TaskDetail_Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TaskDetail_Source = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    TaskDetail_Description = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     TaskTypeId = table.Column<int>(type: "int", nullable: false),
                     TaskStatusId = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1704,13 +1705,13 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ElementName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     FieldOrder = table.Column<short>(type: "smallint", nullable: false),
                     DatasetElement_Id = table.Column<int>(type: "int", nullable: false),
                     Field_Id = table.Column<int>(type: "int", nullable: false),
                     OID = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    DefaultValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DefaultValue = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     System = table.Column<bool>(type: "bit", nullable: false),
                     FriendlyName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
                     Help = table.Column<string>(type: "nvarchar(350)", maxLength: 350, nullable: true)
@@ -1737,7 +1738,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Condition_Id = table.Column<int>(type: "int", nullable: false),
                     Concept_Id = table.Column<int>(type: "int", nullable: false),
                     Product_Id = table.Column<int>(type: "int", nullable: true)
@@ -1769,22 +1770,22 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     StartDate = table.Column<DateTime>(type: "date", nullable: false),
                     EndDate = table.Column<DateTime>(type: "date", nullable: true),
                     Dose = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
                     DoseFrequency = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
                     DoseUnit = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
-                    PatientMedicationGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
+                    PatientMedicationGuid = table.Column<Guid>(type: "char(36)", nullable: false),
                     Archived = table.Column<bool>(type: "bit", nullable: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     MedicationSource = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     Concept_Id = table.Column<int>(type: "int", nullable: false),
                     Product_Id = table.Column<int>(type: "int", nullable: true),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "xml", nullable: true)
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1819,12 +1820,12 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EnrolledDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    EnrolledDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     Facility_Id = table.Column<int>(type: "int", nullable: false),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1856,7 +1857,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Facility_Id = table.Column<int>(type: "int", nullable: false),
                     User_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -1882,20 +1883,20 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     OnsetDate = table.Column<DateTime>(type: "date", nullable: true),
                     ResolutionDate = table.Column<DateTime>(type: "date", nullable: true),
                     Encounter_Id = table.Column<int>(type: "int", nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
-                    PatientClinicalEventGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
+                    PatientClinicalEventGuid = table.Column<Guid>(type: "char(36)", nullable: false),
                     SourceTerminologyMedDra_Id = table.Column<int>(type: "int", nullable: true),
                     TerminologyMedDra_Id1 = table.Column<int>(type: "int", nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     SourceDescription = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "xml", nullable: true)
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1931,13 +1932,13 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     QualifiedName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CurrentStatus_Id = table.Column<int>(type: "int", nullable: false),
                     Current = table.Column<bool>(type: "bit", nullable: false),
                     ReportInstance_Id = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -1974,11 +1975,11 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     ReportInstanceTaskId = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2008,16 +2009,16 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     NodeName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     NodeType = table.Column<int>(type: "int", nullable: false),
-                    NodeValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NodeValue = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     ParentNode_Id = table.Column<int>(type: "int", nullable: true),
                     DatasetElement_Id = table.Column<int>(type: "int", nullable: true),
                     DatasetXml_Id = table.Column<int>(type: "int", nullable: false),
                     DatasetElementSub_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2063,12 +2064,12 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EventDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Comments = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    EventDateTime = table.Column<DateTime>(type: "datetime", nullable: false),
+                    Comments = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     EventCreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     ExecutionStatus_Id = table.Column<int>(type: "int", nullable: false),
-                    ContextDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ContextDateTime = table.Column<DateTime>(type: "datetime", nullable: true),
                     ContextCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     ActivityInstance_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -2099,13 +2100,13 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     AttributeName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    AttributeValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AttributeValue = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     DatasetElement_Id = table.Column<int>(type: "int", nullable: true),
                     ParentNode_Id = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2142,8 +2143,8 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Content = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Content = table.Column<byte[]>(type: "blob", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     FileName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Size = table.Column<long>(type: "bigint", nullable: false),
@@ -2151,12 +2152,12 @@ namespace PViMS.Infrastructure.Migrations
                     Encounter_Id = table.Column<int>(type: "int", nullable: true),
                     Patient_Id = table.Column<int>(type: "int", nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    ArchivedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     ActivityExecutionStatusEvent_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2208,7 +2209,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Order = table.Column<short>(type: "smallint", nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false),
                     CareEvent_Id = table.Column<int>(type: "int", nullable: false),
@@ -2230,7 +2231,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     CohortGroup_Id = table.Column<int>(type: "int", nullable: true),
                     EncounterType_Id = table.Column<int>(type: "int", nullable: false),
                     WorkPlan_Id = table.Column<int>(type: "int", nullable: false)
@@ -2257,7 +2258,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     DatasetName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false),
                     InitialiseProcess = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
@@ -2268,8 +2269,8 @@ namespace PViMS.Infrastructure.Migrations
                     UID = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     IsSystem = table.Column<bool>(type: "bit", nullable: false),
                     DatasetXml_Id = table.Column<int>(type: "int", nullable: true),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2313,7 +2314,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     DatasetCategoryName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CategoryOrder = table.Column<short>(type: "smallint", nullable: false),
                     Dataset_Id = table.Column<int>(type: "int", nullable: false),
@@ -2341,15 +2342,15 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ContextID = table.Column<int>(type: "int", nullable: false),
                     Dataset_Id = table.Column<int>(type: "int", nullable: false),
                     EncounterTypeWorkPlan_Id = table.Column<int>(type: "int", nullable: true),
-                    Tag = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DatasetInstanceGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newid()"),
+                    Tag = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    DatasetInstanceGuid = table.Column<Guid>(type: "char(36)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
                     UpdatedBy_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2385,7 +2386,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     RuleType = table.Column<int>(type: "int", nullable: false),
                     RuleActive = table.Column<bool>(type: "bit", nullable: false),
                     Dataset_Id = table.Column<int>(type: "int", nullable: true),
@@ -2413,7 +2414,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Description = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Dataset_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -2433,7 +2434,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Condition_Id = table.Column<int>(type: "int", nullable: false),
                     DatasetCategory_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -2459,7 +2460,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FieldOrder = table.Column<short>(type: "smallint", nullable: false),
                     DatasetCategory_Id = table.Column<int>(type: "int", nullable: false),
                     DatasetElement_Id = table.Column<int>(type: "int", nullable: false),
@@ -2493,7 +2494,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     DatasetCategory_Id = table.Column<int>(type: "int", nullable: false),
                     WorkPlanCareEvent_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -2519,8 +2520,8 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    InstanceValue = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    InstanceValue = table.Column<string>(type: "nvarchar(1000)", nullable: false),
                     DatasetElement_Id = table.Column<int>(type: "int", nullable: false),
                     DatasetInstance_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -2546,7 +2547,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Condition_Id = table.Column<int>(type: "int", nullable: false),
                     DatasetCategoryElement_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -2572,14 +2573,14 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Tag = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Tag = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     MappingType = table.Column<int>(type: "int", nullable: false),
-                    MappingOption = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MappingOption = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     DestinationElement_Id = table.Column<int>(type: "int", nullable: false),
                     SourceElement_Id = table.Column<int>(type: "int", nullable: true),
-                    PropertyPath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Property = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    PropertyPath = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    Property = table.Column<string>(type: "nvarchar(1000)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -2602,9 +2603,9 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ContextValue = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    InstanceValue = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    ContextValue = table.Column<Guid>(type: "char(36)", nullable: false),
+                    InstanceValue = table.Column<string>(type: "nvarchar(1000)", nullable: false),
                     DatasetElementSub_Id = table.Column<int>(type: "int", nullable: false),
                     DatasetInstanceValue_Id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -2629,11 +2630,11 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PropertyPath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Property = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    PropertyPath = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    Property = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     MappingType = table.Column<int>(type: "int", nullable: false),
-                    MappingOption = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MappingOption = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     DestinationElement_Id = table.Column<int>(type: "int", nullable: false),
                     Mapping_Id = table.Column<int>(type: "int", nullable: false),
                     SourceElement_Id = table.Column<int>(type: "int", nullable: true)
@@ -2664,7 +2665,7 @@ namespace PViMS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     SourceValue = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     DestinationValue = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false),

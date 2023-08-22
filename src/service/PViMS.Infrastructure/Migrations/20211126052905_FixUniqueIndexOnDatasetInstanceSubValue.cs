@@ -6,15 +6,15 @@ namespace PViMS.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_DatasetInstanceSubValue_DatasetInstanceValue_Id_DatasetElementSub_Id",
-                table: "DatasetInstanceSubValue");
+            //migrationBuilder.DropIndex(
+            //    name: "IX_DatasetInstanceSubValue_DatasetInstanceValue_Id_DatasetElementSub_Id",
+            //    table: "DatasetInstanceSubValue");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_DatasetInstanceSubValue_ContextValue_DatasetInstanceValue_Id_DatasetElementSub_Id",
-                table: "DatasetInstanceSubValue",
-                columns: new[] { "ContextValue", "DatasetInstanceValue_Id", "DatasetElementSub_Id" },
-                unique: true);
+            //migrationBuilder.CreateIndex(
+            //    name: "IX_DatasetInstanceSubValue_ContextValue_DatasetInstanceValue_Id_DatasetElementSub_Id",
+            //    table: "DatasetInstanceSubValue",
+            //    columns: new[] { "ContextValue", "DatasetInstanceValue_Id", "DatasetElementSub_Id" },
+            //    unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

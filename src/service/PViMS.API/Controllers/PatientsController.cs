@@ -40,6 +40,7 @@ namespace PVIMS.API.Controllers
         private readonly IMediator _mediator;
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
+        private readonly IPatientQueries _patientQueries;
         private readonly IRepositoryInt<Patient> _patientRepository;
         private readonly IRepositoryInt<Encounter> _encounterRepository;
         private readonly IRepositoryInt<PatientCondition> _patientConditionRepository;
@@ -64,6 +65,7 @@ namespace PVIMS.API.Controllers
             ITypeHelperService typeHelperService,
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
+            IPatientQueries patientQueries,
             IRepositoryInt<Patient> patientRepository,
             IRepositoryInt<Encounter> encounterRepository,
             IRepositoryInt<PatientCondition> patientConditionRepository,
@@ -86,6 +88,7 @@ namespace PVIMS.API.Controllers
             _typeHelperService = typeHelperService ?? throw new ArgumentNullException(nameof(typeHelperService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
+            _patientQueries = patientQueries ?? throw new ArgumentNullException(nameof(patientQueries));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _encounterRepository = encounterRepository ?? throw new ArgumentNullException(nameof(encounterRepository));
             _patientConditionRepository = patientConditionRepository ?? throw new ArgumentNullException(nameof(patientConditionRepository));
@@ -517,7 +520,7 @@ namespace PVIMS.API.Controllers
         [RequestHeaderMatchesMediaType("Accept",
             "application/vnd.pvims.patientmedicationreport.v1+json", "application/vnd.pvims.patientmedicationreport.v1+xml")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<LinkedCollectionResourceWrapperDto<PatientMedicationReportDto>> GetPatientByMedicationReport(
+        public async Task<ActionResult<LinkedCollectionResourceWrapperDto<PatientMedicationReportDto>>> GetPatientByMedicationReport(
                         [FromQuery] PatientMedicationReportResourceParameters patientMedicationReportResourceParameters)
         {
             if (patientMedicationReportResourceParameters == null)
@@ -529,7 +532,10 @@ namespace PVIMS.API.Controllers
             var mappedResults = GetPatientMedicationResults<PatientMedicationReportDto>(patientMedicationReportResourceParameters);
 
             // Add custom mappings to patients
-            mappedResults.ForEach(dto => CustomPatientMedicationReportMap(dto));
+            foreach(var mappedResult in mappedResults)
+            {
+                await CustomPatientMedicationReportMapAsync(mappedResult);
+            }
 
             var wrapper = new LinkedCollectionResourceWrapperDto<PatientMedicationReportDto>(mappedResults.TotalCount, mappedResults);
             var wrapperWithLinks = CreateLinksForPatientMedicationReport(wrapper, patientMedicationReportResourceParameters,
@@ -1164,11 +1170,9 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
         /// <returns></returns>
-        private PatientMedicationReportDto CustomPatientMedicationReportMap(PatientMedicationReportDto dto)
+        private async Task CustomPatientMedicationReportMapAsync(PatientMedicationReportDto dto)
         {
-            dto.Patients = _mapper.Map<List<PatientListDto>>(_reportService.GetPatientListByDrugItems(dto.ConceptId));
-
-            return dto;
+            dto.Patients = (List<PatientListDto>) await _patientQueries.GetPatientListByConceptAsync(dto.ConceptId);
         }
 
         /// <summary>

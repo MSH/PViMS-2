@@ -15,6 +15,18 @@ namespace PVIMS.API.Models
         public int PatientId { get; set; }
 
         /// <summary>
+        /// The first name of the patient
+        /// </summary>
+        [DataMember]
+        public string FirstName { get; set; }
+
+        /// <summary>
+        /// The surname of the patient
+        /// </summary>
+        [DataMember]
+        public string Surname { get; set; }
+
+        /// <summary>
         /// full name of the patient
         /// </summary>
         [DataMember]

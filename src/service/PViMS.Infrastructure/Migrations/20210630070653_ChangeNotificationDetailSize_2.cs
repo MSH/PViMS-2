@@ -9,7 +9,7 @@ namespace PViMS.Infrastructure.Migrations
             migrationBuilder.AlterColumn<string>(
                 name: "Detail",
                 table: "Notification",
-                type: "nvarchar(max)",
+                type: "nvarchar(1000)",
                 nullable: true,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(1000)",
@@ -26,7 +26,7 @@ namespace PViMS.Infrastructure.Migrations
                 maxLength: 1000,
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "nvarchar(max)",
+                oldType: "nvarchar(1000)",
                 oldNullable: true);
         }
     }

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using PVIMS.API.Application.Models.Patient;
 using PVIMS.API.Models;
 using PVIMS.Core.ValueTypes;
 using System;

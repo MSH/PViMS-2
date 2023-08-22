@@ -219,27 +219,5 @@ namespace PVIMS.Services
                 .FromSqlInterpolated($"Exec spDrugList {searchTerm}")
                 .ToList();
         }
-
-        public ICollection<PatientList> GetPatientListByDrugItems(int conceptId)
-        {
-            string sql = "";
-
-            sql = string.Format(@"
-                SELECT s.Id AS PatientId, s.FirstName, s.Surname, s.FacilityName  FROM 
-	                (
-			            select ip.Id, ip.FirstName, ip.Surname, ifa.FacilityName
-			            from Patient ip 
-				            inner join PatientMedication ipm on ip.Id = ipm.Patient_Id 
-				            inner join PatientFacility ipf on ip.Id = ipf.Patient_Id AND ipf.EnrolledDate = (select MAX(EnrolledDate) FROM PatientFacility iipf WHERE iipf.Patient_Id = ip.Id)
-				            inner join Facility ifa on ipf.Facility_Id = ifa.Id
-				            inner join Concept ic on ipm.Concept_Id = ic.Id
-			            where ic.Id = {0} and ip.Archived = 0 and ipm.Archived = 0 
-			            group by ip.Id, ip.FirstName, ip.Surname, ifa.FacilityName
-		            ) AS s", conceptId);
-
-            return _context.PatientLists
-                .FromSqlInterpolated($"Exec spPatientList {conceptId}")
-                .ToList();
-        }
     }
 }

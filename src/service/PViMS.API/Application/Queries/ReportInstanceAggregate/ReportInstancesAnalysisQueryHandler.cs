@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using LinqKit;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using PVIMS.API.Helpers;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
+using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
+using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Paging;
 using PVIMS.Core.Repositories;
@@ -14,9 +17,9 @@ using PVIMS.Core.ValueTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using PVIMS.Core.Aggregates.DatasetAggregate;
 
 namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 {
@@ -28,6 +31,8 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         private readonly IRepositoryInt<PatientClinicalEvent> _patientClinicalEventRepository;
         private readonly IRepositoryInt<PatientMedication> _patientMedicationRepository;
         private readonly IRepositoryInt<ReportInstance> _reportInstanceRepository;
+        private readonly IRepositoryInt<User> _userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IMapper _mapper;
         private readonly ILogger<ReportInstancesAnalysisQueryHandler> _logger;
@@ -38,6 +43,8 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             IRepositoryInt<ReportInstance> reportInstanceRepository,
             IRepositoryInt<PatientClinicalEvent> patientClinicalEventRepository,
             IRepositoryInt<PatientMedication> patientMedicationRepository,
+            IRepositoryInt<User> userRepository,
+            IHttpContextAccessor httpContextAccessor,
             ILinkGeneratorService linkGeneratorService,
             IMapper mapper,
             ILogger<ReportInstancesAnalysisQueryHandler> logger)
@@ -47,6 +54,8 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             _patientClinicalEventRepository = patientClinicalEventRepository ?? throw new ArgumentNullException(nameof(patientClinicalEventRepository));
             _patientMedicationRepository = patientMedicationRepository ?? throw new ArgumentNullException(nameof(patientMedicationRepository));
             _reportInstanceRepository = reportInstanceRepository ?? throw new ArgumentNullException(nameof(reportInstanceRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -54,14 +63,15 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 
         public async Task<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> Handle(ReportInstancesAnalysisQuery message, CancellationToken cancellationToken)
         {
-            return await GetReportInstancesAsync(message.WorkFlowGuid, message.PageNumber, message.PageSize, message.QualifiedName);
+            return await GetReportInstancesAsync(message.WorkFlowGuid, message.PageNumber, message.PageSize, message.QualifiedName, message.SearchTerm);
         }
 
         private async Task<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetReportInstancesAsync(
-            Guid workFlowGuid, 
-            int pageNumber, 
+            Guid workFlowGuid,
+            int pageNumber,
             int pageSize,
-            string qualifiedName)
+            string qualifiedName,
+            string searchTerm = "")
         {
             var pagingInfo = new PagingInfo()
             {
@@ -75,6 +85,67 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             var predicate = PredicateBuilder.New<ReportInstance>(true);
             predicate = predicate.And(r => r.WorkFlow.WorkFlowGuid == workFlowGuid);
 
+            predicate = await PrepareQualifiedNameAndDateRangePredicate(qualifiedName, predicate);
+            predicate = PrepareSearchTermPredicate(searchTerm, predicate);
+            predicate = await PrepareUserFacilitiesPredicateForActiveReportsOnly(workFlowGuid, predicate);
+
+            var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "WorkFlow", "Medications", "TerminologyMedDra", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Activities.ExecutionEvents.Attachments", "Tasks" });
+            if (pagedReportsFromRepo != null)
+            {
+                // Map EF entity to Dto
+                var mappedReportsWithLinks = new List<ReportInstanceDetailDto>();
+
+                foreach (var pagedReport in pagedReportsFromRepo)
+                {
+                    var mappedReport = _mapper.Map<ReportInstanceDetailDto>(pagedReport);
+
+                    await CustomMapAsync(pagedReport, mappedReport);
+                    await CreateLinksAsync(pagedReport, mappedReport);
+
+                    mappedReportsWithLinks.Add(mappedReport);
+                }
+
+                var wrapper = new LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>(pagedReportsFromRepo.TotalCount, mappedReportsWithLinks, pagedReportsFromRepo.TotalPages);
+
+                CreateLinksForReportInstances(workFlowGuid, wrapper, "Created", "", DateTime.MinValue, DateTime.MaxValue, pageNumber, pageSize,
+                    pagedReportsFromRepo.HasNext, pagedReportsFromRepo.HasPrevious);
+
+                return wrapper;
+            }
+
+            return null;
+        }
+
+        private async Task<ExpressionStarter<ReportInstance>> PrepareUserFacilitiesPredicateForActiveReportsOnly(Guid workFlowGuid, ExpressionStarter<ReportInstance> predicate)
+        {
+            if (workFlowGuid == new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219"))
+            {
+                var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                var user = await _userRepository.GetAsync(u => u.UserName == userName, new string[] { "Facilities.Facility" });
+
+                var userFacilities = user.Facilities.Select(uf => uf.Facility.FacilityName).ToList();
+                predicate = predicate.And(f => userFacilities.Contains(f.FacilityIdentifier));
+            }
+            return predicate;
+        }
+
+        private ExpressionStarter<ReportInstance> PrepareSearchTermPredicate(string searchTerm, ExpressionStarter<ReportInstance> predicate)
+        {
+            if (!String.IsNullOrWhiteSpace(searchTerm))
+            {
+                predicate = predicate.And(f => f.PatientIdentifier.Contains(searchTerm)
+                                || f.FacilityIdentifier.Contains(searchTerm)
+                                || f.SourceIdentifier.Contains(searchTerm)
+                                || f.TerminologyMedDra.MedDraTerm.Contains(searchTerm)
+                                || f.Identifier.Contains(searchTerm)
+                                || f.Medications.Any(fm => fm.MedicationIdentifier.Contains(searchTerm)));
+            }
+
+            return predicate;
+        }
+
+        private async Task<ExpressionStarter<ReportInstance>> PrepareQualifiedNameAndDateRangePredicate(string qualifiedName, ExpressionStarter<ReportInstance> predicate)
+        {
             if (!String.IsNullOrWhiteSpace(qualifiedName))
             {
                 switch (qualifiedName)
@@ -98,31 +169,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
                 predicate = predicate.And(f => f.Created >= searchFrom && f.Created <= searchTo);
             }
 
-            var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "WorkFlow", "Medications", "TerminologyMedDra", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Activities.ExecutionEvents.Attachments", "Tasks" });
-            if (pagedReportsFromRepo != null)
-            {
-                // Map EF entity to Dto
-                var mappedReportsWithLinks = new List<ReportInstanceDetailDto>();
-
-                foreach (var pagedReport in pagedReportsFromRepo)
-                {
-                    var mappedReport = _mapper.Map<ReportInstanceDetailDto>(pagedReport);
-
-                    await CustomMapAsync(pagedReport, mappedReport);
-                    await CreateLinksAsync(pagedReport, mappedReport);
-
-                    mappedReportsWithLinks.Add(mappedReport);
-                }
-
-                var wrapper = new LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>(pagedReportsFromRepo.TotalCount, mappedReportsWithLinks, pagedReportsFromRepo.TotalPages);
-
-                CreateLinksForReportInstances(workFlowGuid, wrapper, "Created", "", DateTime.MinValue, DateTime.MaxValue, pageNumber, pageSize,
-                    pagedReportsFromRepo.HasNext, pagedReportsFromRepo.HasPrevious);
-                
-                return wrapper;
-            }
-
-            return null;
+            return predicate;
         }
 
         private async Task<(DateTime searchFrom, DateTime searchTo)> PrepareComparisonDateRangeAsync()
@@ -188,7 +235,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             }
         }
 
-        private async Task MapE2BInstanceForReportInstanceAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto) 
+        private async Task MapE2BInstanceForReportInstanceAsync(ReportInstance reportInstanceFromRepo, ReportInstanceDetailDto dto)
         {
             var latestExecutionEvent = reportInstanceFromRepo.CurrentActivity.GetLatestEvent();
             if (latestExecutionEvent != null)
@@ -312,7 +359,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         {
             if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "UNCONFIRMED")
             {
-                if(!reportInstanceFromRepo.HasActiveTasks())
+                if (!reportInstanceFromRepo.HasActiveTasks())
                 {
                     mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceStatus",
                         reportInstanceFromRepo.WorkFlow.WorkFlowGuid, mappedReportInstance.Id), "confirm", "PUT"));
@@ -333,7 +380,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             mappedReportInstance.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUriForReportInstance("UpdateReportInstanceTerminology",
                 reportInstanceFromRepo.WorkFlow.WorkFlowGuid, mappedReportInstance.Id), "setmeddra", "PUT"));
 
-            if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "MEDDRASET" 
+            if (reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "MEDDRASET"
                 || reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CLASSIFICATIONSET"
                 || reportInstanceFromRepo.CurrentActivity.CurrentStatus.Description == "CAUSALITYSET")
             {

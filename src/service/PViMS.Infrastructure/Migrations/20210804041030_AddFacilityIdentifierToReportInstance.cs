@@ -9,7 +9,7 @@ namespace PViMS.Infrastructure.Migrations
             migrationBuilder.AddColumn<string>(
                 name: "FacilityIdentifier",
                 table: "ReportInstance",
-                type: "nvarchar(max)",
+                type: "nvarchar(1000)",
                 nullable: true);
         }
 
