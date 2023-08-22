@@ -63,6 +63,9 @@ import { CustomAttributeAddPopupComponent } from './work/custom-attribute-list/c
 import { CustomAttributeDeletePopupComponent } from './work/custom-attribute-list/custom-attribute-delete-popup/custom-attribute-delete.popup.component';
 import { CustomAttributeEditPopupComponent } from './work/custom-attribute-list/custom-attribute-edit-popup/custom-attribute-edit.popup.component';
 import { SelectionItemPopupComponent } from './work/custom-attribute-list/selection-item-popup/selection-item.popup.component';
+import { DatasetElementSubListComponent } from './work/dataset-element-sub-list/dataset-element-sub-list.component';
+import { DatasetElementSubDeletePopupComponent } from './work/dataset-element-sub-list/dataset-element-sub-delete-popup/dataset-element-sub-delete.popup.component';
+import { DatasetElementSubPopupComponent } from './work/dataset-element-sub-list/dataset-element-sub-popup/dataset-element-sub.popup.component';
 
 @NgModule({
   declarations: [
@@ -90,6 +93,9 @@ import { SelectionItemPopupComponent } from './work/custom-attribute-list/select
     DatasetElementDeletePopupComponent,
     DatasetElementListComponent,
     DatasetElementSelectPopupComponent,
+    DatasetElementSubDeletePopupComponent,
+    DatasetElementSubListComponent,
+    DatasetElementSubPopupComponent,    
     EncounterTypeListComponent,
     FacilityListComponent, 
     FacilityPopupComponent,
@@ -144,8 +150,10 @@ import { SelectionItemPopupComponent } from './work/custom-attribute-list/select
     DatasetCategoryDeletePopupComponent,
     DatasetCategoryElementPopupComponent,
     DatasetCategoryElementDeletePopupComponent,
-    DatasetElementSelectPopupComponent,
     DatasetElementDeletePopupComponent,
+    DatasetElementSelectPopupComponent,
+    DatasetElementSubDeletePopupComponent,
+    DatasetElementSubPopupComponent,    
     FacilityPopupComponent,
     FacilityDeletePopupComponent,
     GenericDeletePopupComponent,

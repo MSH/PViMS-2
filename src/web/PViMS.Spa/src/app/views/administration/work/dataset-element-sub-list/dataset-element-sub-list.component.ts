@@ -13,19 +13,18 @@ import { MatPaginator } from '@angular/material/paginator';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { egretAnimations } from 'app/shared/animations/egret-animations';
 import { DatasetElementService } from 'app/shared/services/dataset-element.service';
-import { DatasetElementPopupComponent } from './dataset-element-popup/dataset-element.popup.component';
-import { DatasetElementDeletePopupComponent } from './dataset-element-delete-popup/dataset-element-delete.popup.component';
-import { _routes } from 'app/config/routes';
+import { DatasetElementSubDeletePopupComponent } from './dataset-element-sub-delete-popup/dataset-element-sub-delete.popup.component';
+import { DatasetElementSubPopupComponent } from './dataset-element-sub-popup/dataset-element-sub.popup.component';
 
 @Component({
-  templateUrl: './dataset-element-list.component.html',
+  templateUrl: './dataset-element-sub-list.component.html',
   styles: [`
     .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
     .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }  
-  `], 
+  `],  
   animations: egretAnimations
 })
-export class DatasetElementListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DatasetElementSubListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     protected _activatedRoute: ActivatedRoute,
@@ -42,6 +41,8 @@ export class DatasetElementListComponent extends BaseComponent implements OnInit
     super(_router, _location, popupService, accountService, eventService);
   }
 
+  id: number;
+
   formControl: FormControl = new FormControl();
   viewModel: ViewModel = new ViewModel();
   viewModelForm: FormGroup;
@@ -50,6 +51,7 @@ export class DatasetElementListComponent extends BaseComponent implements OnInit
 
   ngOnInit(): void {
     const self = this;
+    self.id = +self._activatedRoute.snapshot.paramMap.get('datasetelementid');
 
     self.viewModelForm = self._formBuilder.group({
       elementName: [this.viewModel.elementName || ''],
@@ -73,24 +75,24 @@ export class DatasetElementListComponent extends BaseComponent implements OnInit
     let self = this;
     self.setBusy(true);
 
-    self.datasetElementService.getDatasetElements(self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
+    self.datasetElementService.getDatasetElementSubs(self.id, self.viewModel.mainGrid.customFilterModel(self.viewModelForm.value))
         .pipe(takeUntil(self._unsubscribeAll))
         .pipe(finalize(() => self.setBusy(false)))
         .subscribe(result => {
             self.viewModel.mainGrid.updateAdvance(result);
         }, error => {
-            self.handleError(error, "Error fetching dataset elements");
+            self.handleError(error, "Error fetching dataset element subs");
         });
   }
 
   openPopUp(data: any = {}, isNew?) {
     let self = this;
-    let title = isNew ? 'Add Element' : 'Update Element';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(DatasetElementPopupComponent, {
+    let title = isNew ? 'Add Element Sub' : 'Update Element Sub';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(DatasetElementSubPopupComponent, {
       width: '920px',
       minHeight: '530px',
       disableClose: true,
-      data: { datasetElementId: isNew ? 0: data.id, title: title, payload: data }
+      data: { datasetElementId: self.id, datasetElementSubId: isNew ? 0: data.id, title: title, payload: data }
     })
     dialogRef.afterClosed()
       .subscribe(res => {
@@ -104,11 +106,11 @@ export class DatasetElementListComponent extends BaseComponent implements OnInit
 
   openDeletePopUp(data: any = {}) {
     let self = this;
-    let title = 'Delete Element';
-    let dialogRef: MatDialogRef<any> = self.dialog.open(DatasetElementDeletePopupComponent, {
+    let title = 'Delete Element Sub';
+    let dialogRef: MatDialogRef<any> = self.dialog.open(DatasetElementSubDeletePopupComponent, {
       width: '720px',
       disableClose: true,
-      data: { datasetElementId: data.id, title: title, payload: data }
+      data: { datasetElementId: self.id, datasetElementSubId: data.id, title: title, payload: data }
     })
     dialogRef.afterClosed()
       .subscribe(res => {
@@ -120,17 +122,12 @@ export class DatasetElementListComponent extends BaseComponent implements OnInit
       })
   }
 
-  navigateToSub(data: GridRecordModel): void {
-    let self = this;
-    self._router.navigate([_routes.administration.work.datasetelementsub(data.id)]);
-  }  
-
 }
 
 class ViewModel {
   mainGrid: GridModel<GridRecordModel> =
       new GridModel<GridRecordModel>
-          (['id', 'element', 'field-type', 'actions']);
+          (['id', 'element', 'field-type', 'friendly-name', 'actions']);
   
   elementName: string;
 }

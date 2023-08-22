@@ -67,6 +67,7 @@ export const _paths = {
     landing: `landing`,
     work: {
         dataset: `work/dataset`,
+        datasetelementsub: `work/datasetelement/:datasetelementid/datasetelementsub`,
         datasetcategory: `work/datasetcategory/:datasetid`,
         datasetcategoryelement: `work/datasetcategoryelement/:datasetid/:datasetcategoryid`
     }

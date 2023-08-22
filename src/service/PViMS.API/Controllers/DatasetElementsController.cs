@@ -33,6 +33,7 @@ namespace PVIMS.API.Controllers
         private readonly IPropertyMappingService _propertyMappingService;
         private readonly ITypeHelperService _typeHelperService;
         private readonly IRepositoryInt<DatasetElement> _datasetElementRepository;
+        private readonly IRepositoryInt<DatasetElementSub> _datasetElementSubRepository;
         private readonly IRepositoryInt<FieldType> _fieldTypeRepository;
         private readonly IRepositoryInt<DatasetElementType> _datasetElementTypeRepository;
         private readonly IRepositoryInt<DatasetRule> _datasetRuleRepository;
@@ -47,6 +48,7 @@ namespace PVIMS.API.Controllers
             IMapper mapper,
             ILinkGeneratorService linkGeneratorService,
             IRepositoryInt<DatasetElement> datasetElementRepository,
+            IRepositoryInt<DatasetElementSub> datasetElementSubRepository,
             IRepositoryInt<FieldType> fieldTypeRepository,
             IRepositoryInt<DatasetElementType> datasetElementTypeRepository,
             IRepositoryInt<DatasetRule> datasetRuleRepository,
@@ -59,6 +61,7 @@ namespace PVIMS.API.Controllers
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _datasetElementRepository = datasetElementRepository ?? throw new ArgumentNullException(nameof(datasetElementRepository));
+            _datasetElementSubRepository = datasetElementSubRepository ?? throw new ArgumentNullException(nameof(datasetElementSubRepository));
             _datasetRuleRepository = datasetRuleRepository ?? throw new ArgumentNullException(nameof(datasetRuleRepository));
             _fieldTypeRepository = fieldTypeRepository ?? throw new ArgumentNullException(nameof(fieldTypeRepository));
             _datasetElementTypeRepository = datasetElementTypeRepository ?? throw new ArgumentNullException(nameof(datasetElementTypeRepository));
@@ -153,6 +156,34 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Get all dataset element subs using a valid media type 
+        /// </summary>
+        /// <returns>An ActionResult of type LinkedCollectionResourceWrapperDto of DatasetElementSubDto</returns>
+        [HttpGet("{id}/elementsubs", Name = "GetDatasetElementSubs")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public ActionResult<LinkedCollectionResourceWrapperDto<DatasetElementSubDto>> GetDatasetElementSubs(long id,
+            [FromQuery] DatasetElementSubResourceParameters datasetElementSubResourceParameters)
+        {
+            if (!_typeHelperService.TypeHasProperties<DatasetElementSubDto>
+                (datasetElementSubResourceParameters.OrderBy))
+            {
+                return BadRequest();
+            }
+
+            var mappedDatasetElementSubsWithLinks = GetDatasetElementSubs<DatasetElementSubDto>(id, datasetElementSubResourceParameters);
+
+            var wrapper = new LinkedCollectionResourceWrapperDto<DatasetElementSubDto>(mappedDatasetElementSubsWithLinks.TotalCount, mappedDatasetElementSubsWithLinks);
+            //var wrapperWithLinks = CreateLinksForFacilities(wrapper, datasetElementResourceParameters,
+            //    mappedDatasetElementsWithLinks.HasNext, mappedDatasetElementsWithLinks.HasPrevious);
+
+            return Ok(wrapper);
+        }
+
+        /// <summary>
         /// Get a single dataset element using it's unique id and valid media type 
         /// </summary>
         /// <param name="id">The unique identifier for the dataset element</param>
@@ -218,6 +249,30 @@ namespace PVIMS.API.Controllers
             }
 
             return Ok(CreateLinksForDatasetElement<DatasetElementExpandedDto>(CustomElementMap(mappedDatasetElement)));
+        }
+
+        /// <summary>
+        /// Get a single dataset element sub using it's unique id and valid media type 
+        /// </summary>
+        /// <param name="datasetElementId">The unique id of the dataset element</param>
+        /// <param name="id">The unique id of the dataset element sub to be deleted</param>
+        /// <returns>An ActionResult of type DatasetElementDetailDto</returns>
+        [HttpGet("{datasetElementId}/elementsubs/{id}", Name = "GetDatasetElementSubByDetail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Produces("application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.detail.v1+json", "application/vnd.pvims.detail.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult<DatasetElementSubDto>> GetDatasetElementSubByDetail(long datasetElementId, long id)
+        {
+            var mappedDatasetElementSub = await GetDatasetElementSubAsync<DatasetElementSubDto>(datasetElementId, id);
+            if (mappedDatasetElementSub == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(CreateLinksForDatasetElementSub<DatasetElementSubDto>(mappedDatasetElementSub));
         }
 
         /// <summary>
@@ -338,7 +393,7 @@ namespace PVIMS.API.Controllers
             }
 
 
-            if(!String.IsNullOrWhiteSpace(datasetElementForUpdate.OID))
+            if (!String.IsNullOrWhiteSpace(datasetElementForUpdate.OID))
             {
                 if (Regex.Matches(datasetElementForUpdate.OID, @"[-a-zA-Z0-9 ']").Count < datasetElementForUpdate.OID.Length)
                 {
@@ -401,6 +456,92 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Update an existing dataset element sub
+        /// </summary>
+        /// <param name="datasetElementId">The unique id of the dataset element</param>
+        /// <param name="id">The unique id of the dataset element sub to be deleted</param>
+        /// <param name="datasetElementSubForUpdate">The dataset element payload</param>
+        /// <returns></returns>
+        [HttpPut("{datasetElementId}/elementsubs/{id}", Name = "UpdateDatasetElementSub")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> UpdateDatasetElementSub(long datasetElementId, long id,
+            [FromBody] DatasetElementSubForUpdateDto datasetElementSubForUpdate)
+        {
+            if (datasetElementSubForUpdate == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate payload for new request");
+                return BadRequest(ModelState);
+            }
+
+            if (Regex.Matches(datasetElementSubForUpdate.ElementName, @"[a-zA-Z() ']").Count < datasetElementSubForUpdate.ElementName.Length)
+            {
+                ModelState.AddModelError("Message", "Element contains invalid characters (Enter A-Z, a-z, open and Close brackets)");
+                return BadRequest(ModelState);
+            }
+
+
+            if (!String.IsNullOrWhiteSpace(datasetElementSubForUpdate.OID))
+            {
+                if (Regex.Matches(datasetElementSubForUpdate.OID, @"[-a-zA-Z0-9 ']").Count < datasetElementSubForUpdate.OID.Length)
+                {
+                    ModelState.AddModelError("Message", "OID contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
+                    return BadRequest(ModelState);
+                }
+            }
+
+            if (!String.IsNullOrWhiteSpace(datasetElementSubForUpdate.DefaultValue))
+            {
+                if (Regex.Matches(datasetElementSubForUpdate.DefaultValue, @"[-a-zA-Z0-9 ']").Count < datasetElementSubForUpdate.DefaultValue.Length)
+                {
+                    ModelState.AddModelError("Message", "Default value contains invalid characters (Enter A-Z, a-z, 0-9, hyphen)");
+                    return BadRequest(ModelState);
+                }
+            }
+
+            if (_unitOfWork.Repository<DatasetElementSub>().Queryable().
+                Where(l => l.DatasetElementId == datasetElementId && l.ElementName == datasetElementSubForUpdate.ElementName && l.Id != id)
+                .Count() > 0)
+            {
+                ModelState.AddModelError("Message", "Item with same name already exists");
+                return BadRequest(ModelState);
+            }
+
+            var fieldType = await _fieldTypeRepository.GetAsync(ft => ft.Description == datasetElementSubForUpdate.FieldTypeName.ToString());
+            if (fieldType == null)
+            {
+                ModelState.AddModelError("Message", "Unable to locate field type");
+                return BadRequest(ModelState);
+            }
+
+            var datasetElementSubFromRepo = await _datasetElementSubRepository.GetAsync(f => f.Id == id, new string[] { "Field.FieldType" });
+            if (datasetElementSubFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                datasetElementSubFromRepo.ElementName = datasetElementSubForUpdate.ElementName;
+                datasetElementSubFromRepo.FriendlyName = datasetElementSubForUpdate.FriendlyName;
+                datasetElementSubFromRepo.Help = datasetElementSubForUpdate.Help;
+                datasetElementSubFromRepo.Oid = datasetElementSubForUpdate.OID;
+                datasetElementSubFromRepo.DefaultValue = datasetElementSubForUpdate.DefaultValue;
+                datasetElementSubFromRepo.System = (datasetElementSubForUpdate.System == Models.ValueTypes.YesNoValueType.Yes);
+                datasetElementSubFromRepo.Field.Mandatory = (datasetElementSubForUpdate.Mandatory == Models.ValueTypes.YesNoValueType.Yes);
+                datasetElementSubFromRepo.Field.Anonymise = (datasetElementSubForUpdate.Anonymise == Models.ValueTypes.YesNoValueType.Yes);
+                datasetElementSubFromRepo.Field.MaxLength = datasetElementSubForUpdate.FieldTypeName == FieldTypes.AlphaNumericTextbox ? datasetElementSubForUpdate.MaxLength : (short?)null;
+                datasetElementSubFromRepo.Field.Decimals = datasetElementSubForUpdate.FieldTypeName == FieldTypes.NumericTextbox ? datasetElementSubForUpdate.Decimals : (short?)null;
+                datasetElementSubFromRepo.Field.MinSize = datasetElementSubForUpdate.FieldTypeName == FieldTypes.NumericTextbox ? datasetElementSubForUpdate.MinSize : (decimal?)null;
+                datasetElementSubFromRepo.Field.MaxSize = datasetElementSubForUpdate.FieldTypeName == FieldTypes.NumericTextbox ? datasetElementSubForUpdate.MaxSize : (decimal?)null;
+
+                _datasetElementSubRepository.Update(datasetElementSubFromRepo);
+                await _unitOfWork.CompleteAsync();
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
         /// Delete an existing dataset element
         /// </summary>
         /// <param name="id">The unique id of the dataset element</param>
@@ -408,10 +549,10 @@ namespace PVIMS.API.Controllers
         [HttpDelete("{id}", Name = "DeleteDatasetElement")]
         public async Task<IActionResult> DeleteDatasetElement(long id)
         {
-            var datasetElementFromRepo = await _datasetElementRepository.GetAsync(f => f.Id == id, new string[] { 
-                "DatasetCategoryElements", 
-                "DatasetElementSubs", 
-                "Field.FieldValues" 
+            var datasetElementFromRepo = await _datasetElementRepository.GetAsync(f => f.Id == id, new string[] {
+                "DatasetCategoryElements",
+                "DatasetElementSubs",
+                "Field.FieldValues"
             });
             if (datasetElementFromRepo == null)
             {
@@ -432,7 +573,7 @@ namespace PVIMS.API.Controllers
             if (ModelState.IsValid)
             {
                 ICollection<FieldValue> deleteFieldValues = new Collection<FieldValue>();
-                foreach(var fieldValue in datasetElementFromRepo.Field.FieldValues)
+                foreach (var fieldValue in datasetElementFromRepo.Field.FieldValues)
                 {
                     deleteFieldValues.Add(fieldValue);
                 }
@@ -453,6 +594,45 @@ namespace PVIMS.API.Controllers
 
                 _datasetElementRepository.Delete(datasetElementFromRepo);
                 _fieldRepository.Delete(datasetElementFromRepo.Field);
+
+                await _unitOfWork.CompleteAsync();
+            }
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Delete an existing dataset element sub
+        /// </summary>
+        /// <param name="datasetElementId">The unique id of the dataset element</param>
+        /// <param name="id">The unique id of the dataset element sub to be deleted</param>
+        /// <returns></returns>
+        [HttpDelete("{datasetElementId}/elementsubs/{id}", Name = "DeleteDatasetElementSub")]
+        public async Task<IActionResult> DeleteDatasetElementSub(long datasetElementId, long id)
+        {
+            var datasetElementSubFromRepo = await _datasetElementSubRepository.GetAsync(des => des.DatasetElementId == datasetElementId
+                && des.Id == id, new string[] {
+                "Field.FieldValues"
+            });
+            if (datasetElementSubFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                ICollection<FieldValue> deleteFieldValues = new Collection<FieldValue>();
+                foreach (var fieldValue in datasetElementSubFromRepo.Field.FieldValues)
+                {
+                    deleteFieldValues.Add(fieldValue);
+                }
+                foreach (var fieldValue in deleteFieldValues)
+                {
+                    _fieldValueRepository.Delete(fieldValue);
+                }
+
+                _datasetElementSubRepository.Delete(datasetElementSubFromRepo);
+                _fieldRepository.Delete(datasetElementSubFromRepo.Field);
 
                 await _unitOfWork.CompleteAsync();
             }
@@ -483,7 +663,7 @@ namespace PVIMS.API.Controllers
                 predicate = predicate.And(f => f.ElementName.Contains(datasetElementResourceParameters.ElementName));
             }
 
-            var pagedDatasetElementsFromRepo = _datasetElementRepository.List(pagingInfo, predicate, orderby, new string[] { 
+            var pagedDatasetElementsFromRepo = _datasetElementRepository.List(pagingInfo, predicate, orderby, new string[] {
                 "Field.FieldType"
             });
             if (pagedDatasetElementsFromRepo != null)
@@ -516,6 +696,63 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Get dataset element subs from repository and auto map to Dto
+        /// </summary>
+        /// <typeparam name="T">Identifier or detail Dto</typeparam>
+        /// <param name="datasetElementId">The unique id of the dataset element</param>
+        /// <param name="datasetElementSubResourceParameters">Standard parameters for representing resource</param>
+        /// <returns></returns>
+        private PagedCollection<T> GetDatasetElementSubs<T>(long datasetElementId, DatasetElementSubResourceParameters datasetElementSubResourceParameters) where T : class
+        {
+            var pagingInfo = new PagingInfo()
+            {
+                PageNumber = datasetElementSubResourceParameters.PageNumber,
+                PageSize = datasetElementSubResourceParameters.PageSize
+            };
+
+            var orderby = Extensions.GetOrderBy<DatasetElementSub>(datasetElementSubResourceParameters.OrderBy, "asc");
+
+            var predicate = PredicateBuilder.New<DatasetElementSub>(true);
+            predicate = predicate.And(f => f.DatasetElementId == datasetElementId);
+
+            if (!String.IsNullOrWhiteSpace(datasetElementSubResourceParameters.ElementName))
+            {
+                predicate = predicate.And(f => f.ElementName.Contains(datasetElementSubResourceParameters.ElementName));
+            }
+
+            var pagedDatasetElementSubsFromRepo = _datasetElementSubRepository.List(pagingInfo, predicate, orderby, new string[] {
+                "Field.FieldType"
+            });
+            if (pagedDatasetElementSubsFromRepo != null)
+            {
+                // Map EF entity to Dto
+                var mappedDatasetElementSubs = PagedCollection<T>.Create(_mapper.Map<PagedCollection<T>>(pagedDatasetElementSubsFromRepo),
+                    pagingInfo.PageNumber,
+                    pagingInfo.PageSize,
+                    pagedDatasetElementSubsFromRepo.TotalCount);
+
+                // Prepare pagination data for response
+                var paginationMetadata = new
+                {
+                    totalCount = mappedDatasetElementSubs.TotalCount,
+                    pageSize = mappedDatasetElementSubs.PageSize,
+                    currentPage = mappedDatasetElementSubs.CurrentPage,
+                    totalPages = mappedDatasetElementSubs.TotalPages,
+                };
+
+                Response.Headers.Add("X-Pagination",
+                    JsonConvert.SerializeObject(paginationMetadata));
+
+                // Add HATEOAS links to each individual resource
+                mappedDatasetElementSubs.ForEach(dto => CreateLinksForDatasetElementSub(dto));
+
+                return mappedDatasetElementSubs;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Get single dataset element from repository and auto map to Dto
         /// </summary>
         /// <typeparam name="T">Identifier or detail Dto</typeparam>
@@ -537,6 +774,29 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Get single dataset element sub from repository and auto map to Dto
+        /// </summary>
+        /// <typeparam name="T">Identifier or detail Dto</typeparam>
+        /// <param name="datasetElementId">The unique id of the dataset element</param>
+        /// <param name="id">Resource id to search by</param>
+        /// <returns></returns>
+        private async Task<T> GetDatasetElementSubAsync<T>(long datasetElementId, long id) where T : class
+        {
+            var datasetElementSubFromRepo = await _datasetElementSubRepository.GetAsync(des => des.DatasetElementId == datasetElementId
+                && des.Id == id, new string[] { "Field.FieldType" });
+
+            if (datasetElementSubFromRepo != null)
+            {
+                // Map EF entity to Dto
+                var mappedDatasetElementSub = _mapper.Map<T>(datasetElementSubFromRepo);
+
+                return mappedDatasetElementSub;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         ///  Prepare HATEOAS links for a single resource
         /// </summary>
         /// <param name="dto">The dto that the link has been added to</param>
@@ -546,6 +806,20 @@ namespace PVIMS.API.Controllers
             DatasetElementIdentifierDto identifier = (DatasetElementIdentifierDto)(object)dto;
 
             identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("DatasetElement", identifier.Id), "self", "GET"));
+
+            return identifier;
+        }
+
+        /// <summary>
+        ///  Prepare HATEOAS links for a single resource
+        /// </summary>
+        /// <param name="dto">The dto that the link has been added to</param>
+        /// <returns></returns>
+        private DatasetElementSubDto CreateLinksForDatasetElementSub<T>(T dto)
+        {
+            DatasetElementSubDto identifier = (DatasetElementSubDto)(object)dto;
+
+            identifier.Links.Add(new LinkDto(_linkGeneratorService.CreateResourceUri("DatasetElementSub", identifier.Id), "self", "GET"));
 
             return identifier;
         }

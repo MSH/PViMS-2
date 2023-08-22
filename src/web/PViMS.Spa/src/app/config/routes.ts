@@ -91,6 +91,9 @@ export const _routes = {
       landing: `${_paths.administration}/${_paths.administrationPath.landing}`,
       work: {
         dataset: `${_paths.administration}/${_paths.administrationPath.work.dataset}`,
+        datasetelementsub(datasetElementId: number): string {
+          return `${_paths.administration}/${_paths.administrationPath.work.datasetelementsub.replace(':datasetelementid', datasetElementId.toString())}`;
+        },         
         datasetcategoryView(datasetId: number): string {
             return `${_paths.administration}/${_paths.administrationPath.work.datasetcategory.replace(':datasetid', datasetId.toString())}`;
         },
