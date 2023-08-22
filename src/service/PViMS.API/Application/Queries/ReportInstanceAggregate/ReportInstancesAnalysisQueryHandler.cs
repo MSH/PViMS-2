@@ -87,7 +87,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 
             predicate = await PrepareQualifiedNameAndDateRangePredicate(qualifiedName, predicate);
             predicate = PrepareSearchTermPredicate(searchTerm, predicate);
-            predicate = await PrepareUserFacilitiesPredicate(predicate);
+            predicate = await PrepareUserFacilitiesPredicateForActiveReportsOnly(workFlowGuid, predicate);
 
             var pagedReportsFromRepo = _reportInstanceRepository.List(pagingInfo, predicate, orderby, new string[] { "WorkFlow", "Medications", "TerminologyMedDra", "Activities.CurrentStatus", "Activities.ExecutionEvents.ExecutionStatus", "Activities.ExecutionEvents.Attachments", "Tasks" });
             if (pagedReportsFromRepo != null)
@@ -116,13 +116,16 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
             return null;
         }
 
-        private async Task<ExpressionStarter<ReportInstance>> PrepareUserFacilitiesPredicate(ExpressionStarter<ReportInstance> predicate)
+        private async Task<ExpressionStarter<ReportInstance>> PrepareUserFacilitiesPredicateForActiveReportsOnly(Guid workFlowGuid, ExpressionStarter<ReportInstance> predicate)
         {
-            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var user = await _userRepository.GetAsync(u => u.UserName == userName, new string[] { "Facilities.Facility" });
+            if (workFlowGuid == new Guid("892F3305-7819-4F18-8A87-11CBA3AEE219"))
+            {
+                var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                var user = await _userRepository.GetAsync(u => u.UserName == userName, new string[] { "Facilities.Facility" });
 
-            var userFacilities = user.Facilities.Select(uf => uf.Facility.FacilityName).ToList();
-            predicate = predicate.And(f => userFacilities.Contains(f.FacilityIdentifier));
+                var userFacilities = user.Facilities.Select(uf => uf.Facility.FacilityName).ToList();
+                predicate = predicate.And(f => userFacilities.Contains(f.FacilityIdentifier));
+           }
             return predicate;
         }
 
