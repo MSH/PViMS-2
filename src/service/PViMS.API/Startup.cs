@@ -104,7 +104,7 @@ namespace PViMS.API
                 });
             });
 
-            app.UseMiddleware<ExceptionMiddleware>();
+            //app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -263,9 +263,13 @@ namespace PViMS.API
 
         public static IServiceCollection AddCustomDbContext(this IServiceCollection services, IConfiguration configuration)
         {
+            var serverVersion = new MySqlServerVersion(new Version(5, 7, 29));
+
             services.AddDbContext<PVIMSDbContext>(options =>
                    {
-                       options.UseMySQL(configuration["ConnectionString"],
+                       options.UseMySql(
+                           configuration["ConnectionString"],
+                           serverVersion,
                            mySqlOptions =>
                            {
                                mySqlOptions.MigrationsAssembly(typeof(PVIMSDbContext).GetTypeInfo().Assembly.GetName().Name);
@@ -276,7 +280,9 @@ namespace PViMS.API
                    );
             services.AddDbContext<IdentityDbContext>(options =>
                    {
-                       options.UseMySQL(configuration["ConnectionString"],
+                       options.UseMySql(
+                           configuration["ConnectionString"],
+                           serverVersion,
                            mySqlOptions =>
                            {
                                mySqlOptions.MigrationsAssembly(typeof(IdentityDbContext).GetTypeInfo().Assembly.GetName().Name);
@@ -287,7 +293,9 @@ namespace PViMS.API
                    );
             services.AddDbContext<IntegrationEventLogContext>(options =>
                     {
-                        options.UseMySQL(configuration["ConnectionString"],
+                        options.UseMySql(
+                            configuration["ConnectionString"],
+                            serverVersion,
                             mySqlOptions =>
                             {
                                 mySqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
@@ -541,12 +549,13 @@ namespace PViMS.API
 
             IConfigurationSection smtpSettings = configuration.GetSection(nameof(SMTPSettings));
             services.AddTransient<ISMTPMailService, SMTPMailService>(s => new SMTPMailService(
-                smtpSettings[nameof(SMTPSettings.SmtpHost)], 
-                Convert.ToInt32(smtpSettings[nameof(SMTPSettings.Port)]), 
-                Convert.ToBoolean(smtpSettings[nameof(SMTPSettings.UseSSL)]), 
-                smtpSettings[nameof(SMTPSettings.MailboxUserName)], 
-                smtpSettings[nameof(SMTPSettings.MailboxPassword)], 
-                smtpSettings[nameof(SMTPSettings.MailboxAddress)]));
+                smtpSettings[nameof(SMTPSettings.SmtpHost)],
+                Convert.ToInt32(smtpSettings[nameof(SMTPSettings.Port)]),
+                Convert.ToBoolean(smtpSettings[nameof(SMTPSettings.UseSSL)]),
+                smtpSettings[nameof(SMTPSettings.MailboxUserName)],
+                smtpSettings[nameof(SMTPSettings.MailboxPassword)],
+                smtpSettings[nameof(SMTPSettings.MailboxAddress)],
+                configuration.GetValue<bool>("SMTPEnabled")));
 
             return services;
         }
