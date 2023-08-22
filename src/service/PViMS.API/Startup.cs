@@ -153,6 +153,7 @@ namespace PViMS.API
             }
 
             eventBus.Subscribe<PatientAddedIntegrationEvent, IIntegrationEventHandler<PatientAddedIntegrationEvent>>();
+            eventBus.Subscribe<PatientClinicalEventAddedIntegrationEvent, IIntegrationEventHandler<PatientClinicalEventAddedIntegrationEvent>>();
         }
     }
 
@@ -191,6 +192,7 @@ namespace PViMS.API
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.detail.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.summary.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.expanded.v1+json");
+                    jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.expandedbyattribute.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.search.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.groupvalue.v1+json");
                     jsonOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.commonmeddra.v1+json");
@@ -221,6 +223,7 @@ namespace PViMS.API
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.detail.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.summary.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.expanded.v1+xml");
+                    xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.expandedbyattribute.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.search.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.groupvalue.v1+xml");
                     xmlOutputFormatter.SupportedMediaTypes.Add("application/vnd.pvims.commonmeddra.v1+xml");
@@ -546,7 +549,8 @@ namespace PViMS.API
                 Convert.ToBoolean(smtpSettings[nameof(SMTPSettings.UseSSL)]), 
                 smtpSettings[nameof(SMTPSettings.MailboxUserName)], 
                 smtpSettings[nameof(SMTPSettings.MailboxPassword)], 
-                smtpSettings[nameof(SMTPSettings.MailboxAddress)]));
+                smtpSettings[nameof(SMTPSettings.MailboxAddress)],
+                configuration.GetValue<bool>("SMTPEnabled")));
 
             return services;
         }

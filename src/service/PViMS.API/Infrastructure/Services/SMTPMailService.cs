@@ -15,8 +15,9 @@ namespace PVIMS.API.Infrastructure.Services
         private readonly string _mailboxUserName;
         private readonly string _mailboxPassword;
         private readonly string _mailboxAddress;
+        private readonly bool _enabled;
 
-        public SMTPMailService(string smtpHost, int port, bool useSSL, string mailboxUserName, string mailboxPassword, string mailboxAddress)
+        public SMTPMailService(string smtpHost, int port, bool useSSL, string mailboxUserName, string mailboxPassword, string mailboxAddress, bool enabled)
         {
             if (string.IsNullOrEmpty(smtpHost))
             {
@@ -44,33 +45,39 @@ namespace PVIMS.API.Infrastructure.Services
             _mailboxUserName = mailboxUserName;
             _mailboxPassword = mailboxPassword;
             _mailboxAddress = mailboxAddress;
+            _enabled = enabled;
         }
 
         public async Task SendEmailAsync(string subject, string body, List<MailboxAddress> destinationAddresses)
         {
-            ValidateSendDetails(subject, body, destinationAddresses);
-
-            var mailMessage = new MimeMessage();
-
-            mailMessage.From.Add(new MailboxAddress(_mailboxAddress, _mailboxAddress));
-            mailMessage.To.AddRange(destinationAddresses);
-            mailMessage.Subject = subject;
-            mailMessage.Body = new TextPart("html")
+            if(_enabled)
             {
-                Text = body
-            };
+                ValidateSendDetails(subject, body, destinationAddresses);
 
-            using (var smtpClient = new SmtpClient())
-            {
-                //smtpClient.ServerCertificateValidationCallback = MySslCertificateValidationCallback;
-                smtpClient.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                var mailMessage = new MimeMessage();
 
-                //await smtpClient.ConnectAsync(_smtpHost, _port, _useSSL);
-                //await smtpClient.AuthenticateAsync(_mailboxUserName, _mailboxPassword);
-                //await smtpClient.SendAsync(mailMessage);
-                //await smtpClient.DisconnectAsync(true);
+                mailMessage.From.Add(new MailboxAddress(_mailboxAddress, _mailboxAddress));
+                mailMessage.To.AddRange(destinationAddresses);
+                mailMessage.Subject = subject;
+                mailMessage.Body = new TextPart("html")
+                {
+                    Text = body
+                };
+
+                using (var smtpClient = new SmtpClient())
+                {
+                    //smtpClient.ServerCertificateValidationCallback = MySslCertificateValidationCallback;
+                    smtpClient.ServerCertificateValidationCallback = (s, c, h, e) => true;
+
+                    await smtpClient.ConnectAsync(_smtpHost, _port, _useSSL);
+                    await smtpClient.AuthenticateAsync(_mailboxUserName, _mailboxPassword);
+                    await smtpClient.SendAsync(mailMessage);
+                    await smtpClient.DisconnectAsync(true);
+                }
             }
         }
+
+        public bool CheckIfEnabled() => _enabled;
 
         private void ValidateSendDetails(string subject, string body, List<MailboxAddress> destinationAddresses)
         {

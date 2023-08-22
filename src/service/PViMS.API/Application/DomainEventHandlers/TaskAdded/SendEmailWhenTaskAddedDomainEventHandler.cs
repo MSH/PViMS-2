@@ -33,26 +33,29 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAdded
 
         public async Task Handle(TaskAddedDomainEvent domainEvent, CancellationToken cancellationToken)
         {
-            var subject = $"Report task: {domainEvent.Task.ReportInstance.Identifier}";
+            if (_smtpMailService.CheckIfEnabled())
+            {
+                var subject = $"Report task: {domainEvent.Task.ReportInstance.Identifier}";
 
-            var sb = new StringBuilder();
-            sb.Append($"A new task {TaskType.From(domainEvent.Task.TaskTypeId).Name} has been added that requires your attention. Please note the following details pertaining to the task: ");
-            sb.Append("<p><b><u>Adverse Event Details</u></b></p>");
-            sb.Append("<table>");
-            sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Identifier</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.ReportInstance.Identifier}</td></tr>");
-            sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Patient</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.ReportInstance.PatientIdentifier}</td></tr>");
-            sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Created</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.ReportInstance.Created}</td></tr>");
-            sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Description</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.ReportInstance.SourceIdentifier}</td></tr>");
-            sb.Append("</table>");
-            sb.Append("<p><b><u>Task Details</u></b></p>");
-            sb.Append("<table>");
-            sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Source</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.TaskDetail.Source}</td></tr>");
-            sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Description</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.TaskDetail.Description}</td></tr>");
-            sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Status</b></td><td style='padding: 10px; border: 1px solid black;'>{Core.Aggregates.ReportInstanceAggregate.TaskStatus.From(domainEvent.Task.TaskStatusId).Name}</td></tr>");
-            sb.Append("</table>");
-            sb.Append("<p><b>*** This is system generated. Please do not reply to this message ***</b></p>");
+                var sb = new StringBuilder();
+                sb.Append($"A new task {TaskType.From(domainEvent.Task.TaskTypeId).Name} has been added that requires your attention. Please note the following details pertaining to the task: ");
+                sb.Append("<p><b><u>Adverse Event Details</u></b></p>");
+                sb.Append("<table>");
+                sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Identifier</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.ReportInstance.Identifier}</td></tr>");
+                sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Patient</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.ReportInstance.PatientIdentifier}</td></tr>");
+                sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Created</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.ReportInstance.Created}</td></tr>");
+                sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Description</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.ReportInstance.SourceIdentifier}</td></tr>");
+                sb.Append("</table>");
+                sb.Append("<p><b><u>Task Details</u></b></p>");
+                sb.Append("<table>");
+                sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Source</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.TaskDetail.Source}</td></tr>");
+                sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Description</b></td><td style='padding: 10px; border: 1px solid black;'>{domainEvent.Task.TaskDetail.Description}</td></tr>");
+                sb.Append($"<tr><td style='padding: 10px; border: 1px solid black;'><b>Status</b></td><td style='padding: 10px; border: 1px solid black;'>{Core.Aggregates.ReportInstanceAggregate.TaskStatus.From(domainEvent.Task.TaskStatusId).Name}</td></tr>");
+                sb.Append("</table>");
+                sb.Append("<p><b>*** This is system generated. Please do not reply to this message ***</b></p>");
 
-            await _smtpMailService.SendEmailAsync(subject, sb.ToString(), await PrepareDestinationMailBoxesAsync(domainEvent) );
+                await _smtpMailService.SendEmailAsync(subject, sb.ToString(), await PrepareDestinationMailBoxesAsync(domainEvent));
+            }
         }
 
         private async Task<List<MailboxAddress>> PrepareDestinationMailBoxesAsync(TaskAddedDomainEvent domainEvent)
