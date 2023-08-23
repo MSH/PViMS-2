@@ -111,21 +111,24 @@ namespace PVIMS.Core.Aggregates.DatasetAggregate
                 else
                 {
                     // we need to process mapping using sub elements
-                    var sourceContexts = sourceInstance.GetInstanceSubValuesContext(mapping.SourceElement.DatasetElement.ElementName);
-                    foreach (Guid sourceContext in sourceContexts)
+                    if(mapping.SourceElement != null)
                     {
-                        var newContext = Guid.NewGuid();
-                        var subItemValues = sourceInstance.GetInstanceSubValues(mapping.SourceElement.DatasetElement.ElementName, sourceContext);
-                        foreach(DatasetMappingSub subMapping in mapping.SubMappings)
+                        var sourceContexts = sourceInstance.GetInstanceSubValuesContext(mapping.SourceElement.DatasetElement.ElementName);
+                        foreach (Guid sourceContext in sourceContexts)
                         {
-                            var sourceSubValue = subMapping.SourceElement != null ? subItemValues.SingleOrDefault(siv => siv.DatasetElementSub.Id == subMapping.SourceElement.Id) : null;
-                            if (sourceSubValue != null)
+                            var newContext = Guid.NewGuid();
+                            var subItemValues = sourceInstance.GetInstanceSubValues(mapping.SourceElement.DatasetElement.ElementName, sourceContext);
+                            foreach (DatasetMappingSub subMapping in mapping.SubMappings)
                             {
-                                var formattedValue = TranslateSourceValueForSubElement(subMapping, sourceSubValue.InstanceValue);
-
-                                if (!String.IsNullOrWhiteSpace(formattedValue))
+                                var sourceSubValue = subMapping.SourceElement != null ? subItemValues.SingleOrDefault(siv => siv.DatasetElementSub.Id == subMapping.SourceElement.Id) : null;
+                                if (sourceSubValue != null)
                                 {
-                                    SetInstanceSubValue(subMapping.DestinationElement, formattedValue, newContext);
+                                    var formattedValue = TranslateSourceValueForSubElement(subMapping, sourceSubValue.InstanceValue);
+
+                                    if (!String.IsNullOrWhiteSpace(formattedValue))
+                                    {
+                                        SetInstanceSubValue(subMapping.DestinationElement, formattedValue, newContext);
+                                    }
                                 }
                             }
                         }
