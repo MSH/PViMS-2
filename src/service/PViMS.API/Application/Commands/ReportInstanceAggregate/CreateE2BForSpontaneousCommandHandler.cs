@@ -69,8 +69,16 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 throw new KeyNotFoundException("Unable to locate report instance");
             }
 
-            var spontaneousReport = await _datasetInstanceRepository.GetAsync(ds => ds.DatasetInstanceGuid == reportInstanceFromRepo.ContextGuid, new string[] { "Dataset" });
-
+            var spontaneousReport = await _datasetInstanceRepository.GetAsync(ds => ds.DatasetInstanceGuid == reportInstanceFromRepo.ContextGuid,
+                new string[] { "Dataset.DatasetCategories.DatasetCategoryElements"
+                    , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldValues"
+                    , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType"
+                    , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldValues"
+                    , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType"
+                    , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategoryElementConditions"
+                    , "DatasetInstanceValues.DatasetElement"
+                    , "DatasetInstanceValues.DatasetInstanceSubValues.DatasetElementSub"
+                });
             if (spontaneousReport == null)
             {
                 throw new KeyNotFoundException("Unable to locate spontaneous report");
@@ -120,8 +128,14 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 throw new KeyNotFoundException("Unable to locate E2BVersion configuration");
             }
             var datasetName = config.ConfigValue;
-            return await _datasetRepository.GetAsync(d => d.DatasetName == datasetName, 
-                new string[] { "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType", "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType" });
+            return await _datasetRepository.GetAsync(d => d.DatasetName == datasetName,
+                new string[] {
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.DatasetMappingValues",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.SubMappings.DestinationElement.Field.FieldType",
+                    "DatasetCategories.DatasetCategoryElements.DestinationMappings.SubMappings.SourceElement.Field.FieldType"
+                });
         }
 
         private void SetInstanceValuesForSpontaneousRelease2(DatasetInstance e2bInstance, DatasetInstance spontaneousReport, User currentUser)
@@ -131,7 +145,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Message Header").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Message Date").DatasetElement, DateTime.Today.ToString("yyyyMMddhhmmss"));
 
             // ************************************* safetyreport
-            e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Safety Report").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Safety Report ID").DatasetElement, string.Format("PH-FDA-{0}", spontaneousReport.Id.ToString("D5")));
+            e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Safety Report").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Safety Report ID").DatasetElement, string.Format("RW-FDA-{0}", spontaneousReport.Id.ToString("D5")));
             e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Safety Report").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Transmission Date").DatasetElement, DateTime.Today.ToString("yyyyMMdd"));
             e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Safety Report").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Report Type").DatasetElement, "1");
 
@@ -209,6 +223,9 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             MapSenderAndReceivedRelatedFields(e2bInstance);
 
             // ************************************* patient
+            var init = spontaneousReport.GetInstanceValue("Initials");
+            if (!String.IsNullOrWhiteSpace(init)) { e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "A0BEAB3A-0B0A-457E-B190-1B66FE60CA73"), init); }; //Patient Initial
+
             var dob = spontaneousReport.GetInstanceValue("Date of Birth");
             var onset = spontaneousReport.GetInstanceValue("Reaction known start date");
             var recovery = spontaneousReport.GetInstanceValue("Reaction date of recovery");
