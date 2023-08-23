@@ -286,7 +286,7 @@ namespace PVIMS.Infrastructure.Repositories
                 query = query.Include(include);
             }
 
-            return await query.SingleOrDefaultAsync(filter);
+            return await query.AsSplitQuery().SingleOrDefaultAsync(filter);
         }
 
         public void Save(TEntity entityToSave)
