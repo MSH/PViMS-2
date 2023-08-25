@@ -98,7 +98,12 @@ namespace PVIMS.Services
                 throw new KeyNotFoundException($"{nameof(workFlowName)} Unable to locate work flow");
             }
 
-            var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userName = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (String.IsNullOrWhiteSpace(userName))
+            {
+                userName = "Admin";
+            }
+
             var currentUser = await _userRepository.GetAsync(u => u.UserName == userName);
             if (currentUser == null)
             {
