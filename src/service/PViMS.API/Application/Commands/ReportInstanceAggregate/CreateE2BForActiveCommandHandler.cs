@@ -246,7 +246,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "A10C704D-BC1D-445E-B084-9426A91DB63B"), DateTime.Today.ToString("yyyyMMdd")); //Date of most recent info
         }
 
-        private object MapPrimarySourceRelatedFields(DatasetInstance e2bInstance, PatientClinicalEvent activeReport)
+        private void MapPrimarySourceRelatedFields(DatasetInstance e2bInstance, PatientClinicalEvent activeReport)
         {
             IExtendable activeReportExtended = activeReport;
 
@@ -302,8 +302,6 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                         break;
                 }
             }
-
-            return objectValue;
         }
 
         private void MapSenderAndReceivedRelatedFields(DatasetInstance e2bInstance)
