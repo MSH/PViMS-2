@@ -1,10 +1,13 @@
-﻿using MediatR;
+﻿using DocumentFormat.OpenXml.Vml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using PVIMS.Core.Aggregates.ContactAggregate;
 using PVIMS.Core.Aggregates.DatasetAggregate;
 using PVIMS.Core.Aggregates.ReportInstanceAggregate;
 using PVIMS.Core.Aggregates.UserAggregate;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Repositories;
 using PVIMS.Core.Services;
@@ -70,14 +73,8 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             }
 
             var spontaneousReport = await _datasetInstanceRepository.GetAsync(ds => ds.DatasetInstanceGuid == reportInstanceFromRepo.ContextGuid,
-                new string[] { "Dataset.DatasetCategories.DatasetCategoryElements"
-                    , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldValues"
-                    , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.Field.FieldType"
-                    , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldValues"
-                    , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetElement.DatasetElementSubs.Field.FieldType"
-                    , "Dataset.DatasetCategories.DatasetCategoryElements.DatasetCategoryElementConditions"
-                    , "DatasetInstanceValues.DatasetElement"
-                    , "DatasetInstanceValues.DatasetInstanceSubValues.DatasetElementSub"
+                new string[] { "DatasetInstanceValues.DatasetElement.Field.FieldType"
+                    , "DatasetInstanceValues.DatasetInstanceSubValues.DatasetElementSub.Field.FieldType"
                 });
             if (spontaneousReport == null)
             {
@@ -85,7 +82,6 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             }
 
             var dataset = await GetDatasetForInstance();
-
             if (dataset == null)
             {
                 throw new KeyNotFoundException("Unable to locate E2B dataset");
@@ -96,7 +92,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             var e2bInstance = dataset.CreateInstance(newActivityExecutionStatusEvent.Id, "Spontaneous", null, spontaneousReport, null);
             await _datasetInstanceRepository.SaveAsync(e2bInstance);
 
-            UpdateValuesUsingSource(e2bInstance, spontaneousReport, dataset);
+            await UpdateValuesUsingSourceAsync(e2bInstance, spontaneousReport, dataset);
 
             await _unitOfWork.CompleteAsync();
 
@@ -105,14 +101,14 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             return true;
         }
 
-        private void UpdateValuesUsingSource(DatasetInstance e2bInstance, DatasetInstance spontaneousReport, Dataset dataset)
+        private async Task UpdateValuesUsingSourceAsync(DatasetInstance e2bInstance, DatasetInstance spontaneousReport, Dataset dataset)
         {
             var userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var user = _userRepository.Get(u => u.UserName == userName);
 
             if (dataset.DatasetName.Contains("(R2)"))
             {
-                SetInstanceValuesForSpontaneousRelease2(e2bInstance, spontaneousReport, user);
+                await SetInstanceValuesForSpontaneousRelease2Async(e2bInstance, spontaneousReport, user);
             }
             if (dataset.DatasetName.Contains("(R3)"))
             {
@@ -138,14 +134,29 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 });
         }
 
-        private void SetInstanceValuesForSpontaneousRelease2(DatasetInstance e2bInstance, DatasetInstance spontaneousReport, User currentUser)
+        private async Task SetInstanceValuesForSpontaneousRelease2Async(DatasetInstance e2bInstance, DatasetInstance spontaneousReport, User currentUser)
         {
+            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == spontaneousReport.DatasetInstanceGuid, new string[] { "Medications", "TerminologyMedDra" });
+
             // ************************************* ichicsrmessageheader
             e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Message Header").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Message Number").DatasetElement, e2bInstance.Id.ToString("D8"));
             e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Message Header").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Message Date").DatasetElement, DateTime.Today.ToString("yyyyMMddhhmmss"));
 
-            // ************************************* safetyreport
-            e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Safety Report").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Safety Report ID").DatasetElement, string.Format("RW-FDA-{0}", spontaneousReport.Id.ToString("D5")));
+            MapSafetyReportRelatedFields(e2bInstance, spontaneousReport, reportInstance);
+            MapPrimarySourceRelatedFields(e2bInstance, spontaneousReport);
+            MapSenderAndReceivedRelatedFields(e2bInstance);
+
+            DateTime? onset, recovery;
+            MapPatientRelatedFields(e2bInstance, spontaneousReport, out onset, out recovery);
+
+            await MapReactionRelatedFieldsAsync(e2bInstance, reportInstance, onset, recovery);
+            MapTestRelatedFields(e2bInstance, spontaneousReport);
+            await MapDrugRelatedFieldsAsync(e2bInstance, spontaneousReport, reportInstance);
+        }
+
+        private void MapSafetyReportRelatedFields(DatasetInstance e2bInstance, DatasetInstance spontaneousReport, ReportInstance reportInstance)
+        {
+            e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Safety Report").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Safety Report ID").DatasetElement, string.Format("RW.FDA.{0}", reportInstance.Id.ToString("D6")));
             e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Safety Report").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Transmission Date").DatasetElement, DateTime.Today.ToString("yyyyMMdd"));
             e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Safety Report").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Report Type").DatasetElement, "1");
 
@@ -204,8 +215,10 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
 
             e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Safety Report").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Date report was first received").DatasetElement, spontaneousReport.Created.ToString("yyyyMMdd"));
             e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Safety Report").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Date of most recent info").DatasetElement, spontaneousReport.Created.ToString("yyyyMMdd"));
+        }
 
-            // ************************************* primarysource
+        private void MapPrimarySourceRelatedFields(DatasetInstance e2bInstance, DatasetInstance spontaneousReport)
+        {
             var fullName = spontaneousReport.GetInstanceValue("Reporter Name");
             if (!String.IsNullOrWhiteSpace(fullName))
             {
@@ -220,97 +233,32 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 }
             }
 
-            MapSenderAndReceivedRelatedFields(e2bInstance);
-
-            // ************************************* patient
-            var init = spontaneousReport.GetInstanceValue("Initials");
-            if (!String.IsNullOrWhiteSpace(init)) { e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "A0BEAB3A-0B0A-457E-B190-1B66FE60CA73"), init); }; //Patient Initial
-
-            var dob = spontaneousReport.GetInstanceValue("Date of Birth");
-            var onset = spontaneousReport.GetInstanceValue("Reaction known start date");
-            var recovery = spontaneousReport.GetInstanceValue("Reaction date of recovery");
-            if (!String.IsNullOrWhiteSpace(dob))
+            var profession = spontaneousReport.GetInstanceValue("Profession");
+            switch (profession)
             {
-                e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Patient").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Patient Birthdate").DatasetElement, Convert.ToDateTime(dob).ToString("yyyyMMdd"));
+                case "Other health professional":
+                    e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Primary Source").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Qualification").DatasetElement, "3=Other Health Professional");
+                    break;
 
-                if (!String.IsNullOrWhiteSpace(onset))
-                {
-                    var age = (Convert.ToDateTime(onset) - Convert.ToDateTime(dob)).Days;
-                    e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Patient").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Patient Onset Age").DatasetElement, age.ToString());
-                    e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Patient").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Patient Onset Age Unit").DatasetElement, "804=Day");
-                }
-            }
+                case "Physician":
+                    e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Primary Source").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Qualification").DatasetElement, "1=Physician");
+                    break;
 
-            // ************************************* reaction
-            var term = spontaneousReport.GetInstanceValue("TerminologyMedDra");
-            var termOut = "NOT SET";
-            if (!String.IsNullOrWhiteSpace(term))
-            {
-                var termid = Convert.ToInt32(term);
-                termOut = _unitOfWork.Repository<TerminologyMedDra>().Queryable().Single(u => u.Id == termid).DisplayName;
-            };
-            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.ElementName == "Reaction MedDRA LLT"), termOut);
-            if (!String.IsNullOrWhiteSpace(onset)) { e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Reaction").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Reaction Start Date").DatasetElement, Convert.ToDateTime(onset).ToString("yyyyMMdd")); };
-            if (!String.IsNullOrWhiteSpace(onset) && !String.IsNullOrWhiteSpace(recovery))
-            {
-                var rduration = (Convert.ToDateTime(recovery) - Convert.ToDateTime(onset)).Days;
-                e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Reaction").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Reaction Duration").DatasetElement, rduration.ToString());
-                e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Reaction").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Reaction Duration Unit").DatasetElement, "804=Day");
-            }
+                case "Consumer or other non-health professional":
+                    e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Primary Source").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Qualification").DatasetElement, "5=Consumer or other non health professional");
+                    break;
 
-            // ************************************* drug
-            var destinationProductElement = _unitOfWork.Repository<DatasetElement>().Queryable().SingleOrDefault(u => u.ElementName == "Medicinal Products");
-            var sourceContexts = spontaneousReport.GetInstanceSubValuesContext("Product Information");
-            foreach (Guid sourceContext in sourceContexts)
-            {
-                var drugItemValues = spontaneousReport.GetInstanceSubValues("Product Information", sourceContext);
-                var drugName = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product").InstanceValue;
+                case "Pharmacist":
+                    e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Primary Source").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Qualification").DatasetElement, "2=Pharmacist");
+                    break;
 
-                if (drugName != string.Empty)
-                {
-                    Guid? newContext = e2bInstance.GetContextForInstanceSubValue(destinationProductElement, destinationProductElement.DatasetElementSubs.SingleOrDefault(des => des.ElementName == "Medicinal Product"), drugName);
-                    if (newContext != null)
-                    {
-                        var reportInstanceMedication = _unitOfWork.Repository<ReportInstanceMedication>().Queryable().Single(x => x.ReportInstanceMedicationGuid == sourceContext);
+                case "Lawyer":
+                    e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Primary Source").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Qualification").DatasetElement, "4=Lawyer");
+                    break;
 
-                        // Causality
-                        if (reportInstanceMedication.WhoCausality != null)
-                        {
-                            e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), spontaneousReport.GetInstanceValue("Description of reaction"), (Guid)newContext);
-                            e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Method of Assessment"), "WHO Causality Scale", (Guid)newContext);
-                            e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), reportInstanceMedication.WhoCausality.ToLowerInvariant() == "ignored" ? "" : reportInstanceMedication.WhoCausality, (Guid)newContext);
-                        }
-                        else
-                        {
-                            if (reportInstanceMedication.NaranjoCausality != null)
-                            {
-                                e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), spontaneousReport.GetInstanceValue("Description of reaction"), (Guid)newContext);
-                                e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Method of Assessment"), "Naranjo Causality Scale", (Guid)newContext);
-                                e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), reportInstanceMedication.NaranjoCausality.ToLowerInvariant() == "ignored" ? "" : reportInstanceMedication.NaranjoCausality, (Guid)newContext);
-                            }
-                        }
-
-                        // Treatment Duration
-                        var startValue = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Start Date");
-                        var endValue = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug End Date");
-                        if (startValue != null && endValue != null)
-                        {
-                            var rduration = (Convert.ToDateTime(endValue.InstanceValue) - Convert.ToDateTime(startValue.InstanceValue)).Days;
-                            e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Treatment Duration"), rduration.ToString(), (Guid)newContext);
-                            e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Treatment Duration Unit"), "804=Day", (Guid)newContext);
-                        }
-
-                        // Dosage
-                        if (drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Strength") != null && drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Dose Number") != null)
-                        {
-                            decimal strength = ConvertValueToDecimal(drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Strength").InstanceValue);
-                            decimal dosage = ConvertValueToDecimal(drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Dose Number").InstanceValue);
-
-                            decimal dosageCalc = strength * dosage;
-                            e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Structured Dosage"), dosageCalc.ToString(), (Guid)newContext);
-                        }
-                    }
-                }
+                default:
+                    e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Primary Source").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Qualification").DatasetElement, "5=Consumer or other non health professional");
+                    break;
             }
         }
 
@@ -349,6 +297,173 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Tel Country Code"), receivingAuthority.CountryCode);
                 e2bInstance.SetInstanceValue(_datasetElementRepository.Get(dse => dse.ElementName == "Receiver Email Address"), receivingAuthority.ContactEmail);
             }
+        }
+
+        private void MapPatientRelatedFields(DatasetInstance e2bInstance, DatasetInstance spontaneousReport, out DateTime? onset, out DateTime? recovery)
+        {
+            var init = spontaneousReport.GetInstanceValue("Initials");
+            if (!String.IsNullOrWhiteSpace(init)) { e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "A0BEAB3A-0B0A-457E-B190-1B66FE60CA73"), init); }; //Patient Initial
+
+            DateTime? dob = null;
+            if (!String.IsNullOrWhiteSpace(spontaneousReport.GetInstanceValue("Date of Birth")))
+            {
+                dob = Convert.ToDateTime(spontaneousReport.GetInstanceValue("Date of Birth"));
+            }
+            onset = null;
+            if (!String.IsNullOrWhiteSpace(spontaneousReport.GetInstanceValue("Reaction known start date")))
+            {
+                onset = Convert.ToDateTime(spontaneousReport.GetInstanceValue("Reaction known start date"));
+            }
+            recovery = null;
+            if (!String.IsNullOrWhiteSpace(spontaneousReport.GetInstanceValue("Reaction date of recovery")))
+            {
+                recovery = Convert.ToDateTime(spontaneousReport.GetInstanceValue("Reaction date of recovery"));
+            }
+
+            if (dob.HasValue)
+            {
+                e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Patient").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Patient Birthdate").DatasetElement, dob.Value.ToString("yyyyMMdd"));
+
+                if (onset.HasValue)
+                {
+                    var age = onset.Value.Year - dob.Value.Year;
+                    if (dob.Value > onset.Value.AddYears(-age)) age--;
+                    if (age < 1) { age = 1; };
+
+                    e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Patient").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Patient Onset Age").DatasetElement, age.ToString());
+                    e2bInstance.SetInstanceValue(e2bInstance.Dataset.DatasetCategories.Single(dc => dc.DatasetCategoryName == "Patient").DatasetCategoryElements.Single(dce => dce.DatasetElement.ElementName == "Patient Onset Age Unit").DatasetElement, "801=Year");
+                }
+            }
+        }
+
+        private async Task MapReactionRelatedFieldsAsync(DatasetInstance e2bInstance, ReportInstance reportInstance, DateTime? onset, DateTime? recovery)
+        {
+            var terminologyMedDra = reportInstance.TerminologyMedDra;
+            var term = terminologyMedDra != null ? terminologyMedDra.DisplayName : "";
+            if (!String.IsNullOrWhiteSpace(term))
+            {
+                var datasetElement = await _datasetElementRepository.GetAsync(dse => dse.DatasetElementGuid.ToString() == "C8DD9A5E-BD9A-488D-8ABF-171271F5D370");
+                e2bInstance.SetInstanceValue(datasetElement, term);
+            }; //Reaction MedDRA LLT
+
+            if (onset.HasValue)
+            {
+                var datasetElement = await _datasetElementRepository.GetAsync(dse => dse.DatasetElementGuid.ToString() == "1EAD9E11-60E6-4B27-9A4D-4B296B169E90");
+                e2bInstance.SetInstanceValue(datasetElement, onset.Value.ToString("yyyyMMdd"));
+            }; //Reaction Start Date
+
+            if (recovery.HasValue)
+            {
+                var datasetElement = await _datasetElementRepository.GetAsync(dse => dse.DatasetElementGuid.ToString() == "3A0F240E-8B36-48F6-9527-77E55F6E7CF1");
+                e2bInstance.SetInstanceValue(datasetElement, recovery.Value.ToString("yyyyMMdd"));
+            }; // Reaction End Date
+
+            if (onset.HasValue && recovery.HasValue)
+            {
+                var rduration = (recovery.Value - onset.Value).Days;
+                var datasetElement = await _datasetElementRepository.GetAsync(dse => dse.DatasetElementGuid.ToString() == "0712C664-2ADD-44C0-B8D5-B6E83FB01F42");
+                e2bInstance.SetInstanceValue(datasetElement, rduration.ToString()); //Reaction Duration
+
+                datasetElement = await _datasetElementRepository.GetAsync(dse => dse.DatasetElementGuid.ToString() == "F96E702D-DCC5-455A-AB45-CAEFF25BF82A");
+                e2bInstance.SetInstanceValue(datasetElement, "804=Day"); //Reaction Duration Unit
+            }
+        }
+
+        private void MapTestRelatedFields(DatasetInstance e2bInstance, DatasetInstance spontaneousReport)
+        {
+            //var destinationTestElement = _unitOfWork.Repository<DatasetElement>().Queryable().SingleOrDefault(u => u.DatasetElementGuid.ToString() == "693A2E8C-B041-46E7-8687-0A42E6B3C82E"); // Test History
+            //foreach (PatientLabTest labTest in activeReport.Patient.PatientLabTests.Where(lt => lt.TestDate >= activeReport.OnsetDate).OrderByDescending(lt => lt.TestDate))
+            //{
+            //    var newContext = Guid.NewGuid();
+
+            //    e2bInstance.SetInstanceSubValue(destinationTestElement.DatasetElementSubs.Single(des => des.ElementName == "Test Date"), labTest.TestDate.ToString("yyyyMMdd"), (Guid)newContext);
+            //    e2bInstance.SetInstanceSubValue(destinationTestElement.DatasetElementSubs.Single(des => des.ElementName == "Test Name"), labTest.LabTest.Description, (Guid)newContext);
+
+            //    var testResult = !String.IsNullOrWhiteSpace(labTest.LabValue) ? labTest.LabValue : !String.IsNullOrWhiteSpace(labTest.TestResult) ? labTest.TestResult : "";
+            //    e2bInstance.SetInstanceSubValue(destinationTestElement.DatasetElementSubs.Single(des => des.ElementName == "Test Result"), testResult, (Guid)newContext);
+
+            //    var testUnit = labTest.TestUnit != null ? labTest.TestUnit.Description : "";
+            //    if (!String.IsNullOrWhiteSpace(testUnit)) { e2bInstance.SetInstanceSubValue(destinationTestElement.DatasetElementSubs.Single(des => des.ElementName == "Test Unit"), testUnit, (Guid)newContext); };
+
+            //    var lowRange = labTest.ReferenceLower;
+            //    if (!String.IsNullOrWhiteSpace(lowRange)) { e2bInstance.SetInstanceSubValue(destinationTestElement.DatasetElementSubs.Single(des => des.ElementName == "Low Test Range"), lowRange, (Guid)newContext); };
+
+            //    var highRange = labTest.ReferenceUpper;
+            //    if (!String.IsNullOrWhiteSpace(highRange)) { e2bInstance.SetInstanceSubValue(destinationTestElement.DatasetElementSubs.Single(des => des.ElementName == "High Test Range"), highRange, (Guid)newContext); };
+            //}
+        }
+
+        private async Task MapDrugRelatedFieldsAsync(DatasetInstance e2bInstance, DatasetInstance spontaneousReport, ReportInstance reportInstance)
+        {
+            string[] validNaranjoCriteria = { "Possible", "Probable", "Definite" };
+            string[] validWHOCriteria = { "Possible", "Probable", "Certain" };
+
+            var destinationProductElement = await _datasetElementRepository.GetAsync(de => de.DatasetElementGuid.ToString() == "E033BDE8-EDC8-43FF-A6B0-DEA6D6FA581C", new string[] { "DatasetElementSubs" }); // Medicinal Products
+            var sourceContexts = spontaneousReport.GetInstanceSubValuesContext("Product Information");
+            foreach (ReportInstanceMedication med in reportInstance.Medications)
+            {
+                var newContext = Guid.NewGuid();
+
+                var drugItemValues = spontaneousReport.GetInstanceSubValues("Product Information", med.ReportInstanceMedicationGuid);
+                var drugName = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product").InstanceValue;
+
+                var character = "";
+                character = (validNaranjoCriteria.Contains(med.NaranjoCausality) || validWHOCriteria.Contains(med.WhoCausality)) ? "1=Suspect" : "2=Concomitant";
+                e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Characterization"), character, (Guid)newContext);
+
+                e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Medicinal Product"), drugName, (Guid)newContext);
+
+                var batchNumber = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product Batch Number")?.InstanceValue;
+                e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Batch Number"), batchNumber, (Guid)newContext);
+
+                var doseFrequency = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product Frequency")?.InstanceValue;
+                e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Dosage Text"), doseFrequency, (Guid)newContext);
+
+                var startdate = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Start Date");
+                if (startdate != null)
+                {
+                    e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Start Date"), Convert.ToDateTime(startdate.InstanceValue).ToString("yyyyMMdd"), (Guid)newContext);
+                }
+
+                var enddate = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug End Date");
+                if (enddate != null)
+                {
+                    e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug End Date"), Convert.ToDateTime(enddate.InstanceValue).ToString("yyyyMMdd"), (Guid)newContext);
+                }
+
+                if (startdate != null && enddate != null)
+                {
+                    var rduration = (Convert.ToDateTime(enddate.InstanceValue) - Convert.ToDateTime(startdate.InstanceValue)).Days;
+                    e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Treatment Duration"), rduration.ToString(), (Guid)newContext);
+                    e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Treatment Duration Unit"), "804=Day", (Guid)newContext);
+                }
+
+                // Dosage
+                if (drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Strength") != null && drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Dose Number") != null)
+                {
+                    decimal strength = ConvertValueToDecimal(drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Drug Strength").InstanceValue);
+                    decimal dosage = ConvertValueToDecimal(drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Dose Number").InstanceValue);
+
+                    decimal dosageCalc = strength * dosage;
+                    e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Structured Dosage"), dosageCalc.ToString(), (Guid)newContext);
+                }
+
+                if (med.WhoCausality != null)
+                {
+                    e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), reportInstance.TerminologyMedDra.DisplayName, (Guid)newContext);
+                    e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Method of Assessment"), "WHO Causality Scale", (Guid)newContext);
+                    e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), med.WhoCausality.ToLowerInvariant() == "ignored" ? "" : med.WhoCausality, (Guid)newContext);
+                }
+                else
+                {
+                    if (med.NaranjoCausality != null)
+                    {
+                        e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Drug Reaction Assessment"), reportInstance.TerminologyMedDra.DisplayName, (Guid)newContext);
+                        e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Method of Assessment"), "Naranjo Causality Scale", (Guid)newContext);
+                        e2bInstance.SetInstanceSubValue(destinationProductElement.DatasetElementSubs.Single(des => des.ElementName == "Assessment Result"), med.NaranjoCausality.ToLowerInvariant() == "ignored" ? "" : med.NaranjoCausality, (Guid)newContext);
+                    }
+                }
+            } // foreach (ReportInstanceMedication med in reportInstance.Medications)
         }
 
         private void SetInstanceValuesForSpontaneousRelease3(DatasetInstance e2bInstance, DatasetInstance spontaneousReport, User currentUser)

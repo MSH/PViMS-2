@@ -179,7 +179,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             activeReportExtended = activeReport;
             var objectValue = activeReportExtended.GetAttributeValue("Is the adverse event serious?");
             var serious = objectValue != null ? objectValue.ToString() : "";
-            if (!String.IsNullOrWhiteSpace(serious))
+            if (!String.IsNullOrWhiteSpace(serious) && serious != "0")
             {
                 var selectionValue = _unitOfWork.Repository<SelectionDataItem>().Queryable().Single(sdi => sdi.AttributeKey == "Is the adverse event serious?" && sdi.SelectionKey == serious).Value;
                 e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "510EB752-2D75-4DC3-8502-A4FCDC8A621A"), selectionValue == "Yes" ? "1=Yes" : "2=No"); //Serious
@@ -246,7 +246,7 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
             e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "A10C704D-BC1D-445E-B084-9426A91DB63B"), DateTime.Today.ToString("yyyyMMdd")); //Date of most recent info
         }
 
-        private object MapPrimarySourceRelatedFields(DatasetInstance e2bInstance, PatientClinicalEvent activeReport)
+        private void MapPrimarySourceRelatedFields(DatasetInstance e2bInstance, PatientClinicalEvent activeReport)
         {
             IExtendable activeReportExtended = activeReport;
 
@@ -302,8 +302,6 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                         break;
                 }
             }
-
-            return objectValue;
         }
 
         private void MapSenderAndReceivedRelatedFields(DatasetInstance e2bInstance)
@@ -498,44 +496,44 @@ namespace PVIMS.API.Application.Commands.ReportInstanceAggregate
                 }
             }
 
-            var encounter = _unitOfWork.Repository<Encounter>().Queryable().OrderByDescending(e => e.EncounterDate).FirstOrDefault(e => e.Patient.Id == activeReport.Patient.Id && e.Archived == false & e.EncounterDate <= activeReport.OnsetDate);
-            if (encounter != null)
-            {
-                var encounterInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().SingleOrDefault(ds => ds.Dataset.DatasetName == "Chronic Treatment" && ds.ContextId == encounter.Id);
-                if (encounterInstance != null)
-                {
-                    var weight = encounterInstance.GetInstanceValue("Weight (kg)");
-                    if (!String.IsNullOrWhiteSpace(weight)) { e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "89A6E687-A220-4319-AAC1-AFBB55C81873"), weight); }; //Patient Weight
+            //var encounter = _unitOfWork.Repository<Encounter>().Queryable().OrderByDescending(e => e.EncounterDate).FirstOrDefault(e => e.Patient.Id == activeReport.Patient.Id && e.Archived == false & e.EncounterDate <= activeReport.OnsetDate);
+            //if (encounter != null)
+            //{
+            //    var encounterInstance = _unitOfWork.Repository<DatasetInstance>().Queryable().SingleOrDefault(ds => ds.Dataset.DatasetName == "Chronic Treatment" && ds.ContextId == encounter.Id);
+            //    if (encounterInstance != null)
+            //    {
+            //        var weight = encounterInstance.GetInstanceValue("Weight (kg)");
+            //        if (!String.IsNullOrWhiteSpace(weight)) { e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "89A6E687-A220-4319-AAC1-AFBB55C81873"), weight); }; //Patient Weight
 
-                    var height = encounterInstance.GetInstanceValue("Height (cm)");
-                    if (!String.IsNullOrWhiteSpace(height)) { e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "40DAD435-8282-4B3E-B65E-3478FF55D028"), height); }; //Patient Height
+            //        var height = encounterInstance.GetInstanceValue("Height (cm)");
+            //        if (!String.IsNullOrWhiteSpace(height)) { e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "40DAD435-8282-4B3E-B65E-3478FF55D028"), height); }; //Patient Height
 
-                    var lmp = encounterInstance.GetInstanceValue("Date of last menstrual period");
-                    if (!String.IsNullOrWhiteSpace(lmp)) { e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "93253F91-60D1-4161-AF1A-F3ABDD140CB9"), Convert.ToDateTime(lmp).ToString("yyyyMMdd")); }; //Patient Last Menstrual Date
+            //        var lmp = encounterInstance.GetInstanceValue("Date of last menstrual period");
+            //        if (!String.IsNullOrWhiteSpace(lmp)) { e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "93253F91-60D1-4161-AF1A-F3ABDD140CB9"), Convert.ToDateTime(lmp).ToString("yyyyMMdd")); }; //Patient Last Menstrual Date
 
-                    var gest = encounterInstance.GetInstanceValue("Estimated gestation (weeks)");
-                    if (!String.IsNullOrWhiteSpace(gest))
-                    {
-                        e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "B6BE9689-B6B2-4FCF-8918-664AFC91A4E0"), gest); //Gestation Period
-                        e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "1F174413-2A1E-45BD-B5C4-0C8F5DFFBFF4"), "803=Week");  //Gestation Period Unit
-                    };
-                }
-            }
+            //        var gest = encounterInstance.GetInstanceValue("Estimated gestation (weeks)");
+            //        if (!String.IsNullOrWhiteSpace(gest))
+            //        {
+            //            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "B6BE9689-B6B2-4FCF-8918-664AFC91A4E0"), gest); //Gestation Period
+            //            e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "1F174413-2A1E-45BD-B5C4-0C8F5DFFBFF4"), "803=Week");  //Gestation Period Unit
+            //        };
+            //    }
+            //}
 
-            var objectValue = activeReportExtended.GetAttributeValue("Weight (kg)");
-            var weightKg = objectValue != null ? objectValue.ToString() : "";
-            if (!String.IsNullOrWhiteSpace(weightKg)) { 
-                e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "89A6E687-A220-4319-AAC1-AFBB55C81873"), weightKg); 
-            };
+            //var objectValue = activeReportExtended.GetAttributeValue("Weight (kg)");
+            //var weightKg = objectValue != null ? objectValue.ToString() : "";
+            //if (!String.IsNullOrWhiteSpace(weightKg)) { 
+            //    e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "89A6E687-A220-4319-AAC1-AFBB55C81873"), weightKg); 
+            //};
 
-            objectValue = activeReportExtended.GetAttributeValue("Height (cm)");
-            var heightCm = objectValue != null ? objectValue.ToString() : "";
-            if (!String.IsNullOrWhiteSpace(heightCm))
-            {
-                e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "40DAD435-8282-4B3E-B65E-3478FF55D028"), heightCm);
-            };
+            //objectValue = activeReportExtended.GetAttributeValue("Height (cm)");
+            //var heightCm = objectValue != null ? objectValue.ToString() : "";
+            //if (!String.IsNullOrWhiteSpace(heightCm))
+            //{
+            //    e2bInstance.SetInstanceValue(_unitOfWork.Repository<DatasetElement>().Queryable().Single(dse => dse.DatasetElementGuid.ToString() == "40DAD435-8282-4B3E-B65E-3478FF55D028"), heightCm);
+            //};
 
-            objectValue = patientExtended.GetAttributeValue("Gender");
+            var objectValue = patientExtended.GetAttributeValue("Gender");
             var patientSex = objectValue != null ? objectValue.ToString() : "";
             if (!String.IsNullOrWhiteSpace(patientSex))
             {
