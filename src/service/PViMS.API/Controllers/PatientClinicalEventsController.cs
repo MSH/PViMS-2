@@ -145,11 +145,13 @@ namespace PVIMS.API.Controllers
 
             var command = new AddClinicalEventToPatientCommand(patientId,
                 clinicalEventForUpdate.PatientIdentifier,
-                clinicalEventForUpdate.SourceDescription, 
-                clinicalEventForUpdate.SourceTerminologyMedDraId, 
-                clinicalEventForUpdate.OnsetDate, 
-                clinicalEventForUpdate.ResolutionDate, 
-                clinicalEventForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
+                clinicalEventForUpdate.SourceDescription,
+                clinicalEventForUpdate.SourceTerminologyMedDraId,
+                clinicalEventForUpdate.OnsetDate,
+                clinicalEventForUpdate.ResolutionDate,
+                clinicalEventForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value),
+                originatorGuid: null,
+                originatorPatientClinicalEventGuid: null);
 
             _logger.LogInformation(
                 "----- Sending command: AddClinicalEventToPatientCommand - {sourceDescription}",
@@ -210,7 +212,7 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="patientId">The unique identifier of the patient</param>
         /// <param name="id">The unique id of the clinical event</param>
-        /// <param name="conditionForDelete">The deletion payload</param>
+        /// <param name="clinicalEventForDelete">The deletion payload</param>
         /// <returns></returns>
         [HttpPut("{patientId}/clinicalevents/{id}/archive", Name = "ArchivePatientClinicalEvent")]
         [Consumes("application/json")]

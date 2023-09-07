@@ -111,9 +111,18 @@ namespace PVIMS.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var command = new AddMedicationToPatientCommand(patientId, 
-                medicationForUpdate.SourceDescription, medicationForUpdate.ConceptId, medicationForUpdate.ProductId, medicationForUpdate.StartDate, medicationForUpdate.EndDate, medicationForUpdate.Dose,
-                medicationForUpdate.DoseFrequency, medicationForUpdate.DoseUnit, medicationForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value));
+            var command = new AddMedicationToPatientCommand(patientId,
+                medicationForUpdate.SourceDescription,
+                medicationForUpdate.ConceptId,
+                medicationForUpdate.ProductId,
+                medicationForUpdate.StartDate,
+                medicationForUpdate.EndDate,
+                medicationForUpdate.Dose,
+                medicationForUpdate.DoseFrequency,
+                medicationForUpdate.DoseUnit,
+                medicationForUpdate.Attributes.ToDictionary(x => x.Id, x => x.Value),
+                originatorGuid: null,
+                originatorPatientMedicationGuid: null);
 
             _logger.LogInformation(
                 "----- Sending command: AddMedicationToPatientCommand - {conceptId}",
