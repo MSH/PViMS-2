@@ -1,6 +1,7 @@
 ﻿using LinqKit;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using PViMS.Core.Aggregates.EncounterAggregate;
 using PVIMS.API.Application.Models;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.Core.Aggregates.ConceptAggregate;
@@ -533,6 +534,10 @@ namespace PVIMS.API.Application.Queries.WorkFlowAggregate
 
                 case "PatientLabTest":
                     extended = (PatientLabTest)obj;
+                    break;
+
+                case "Encounter":
+                    extended = (Encounter)obj;
                     break;
 
                 default:
