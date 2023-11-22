@@ -1,5 +1,6 @@
 ﻿using MailKit.Net.Smtp;
 using MimeKit;
+using PVIMS.Core.Models;
 using System.Collections.Generic;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -49,7 +50,7 @@ namespace PVIMS.API.Infrastructure.Services
         }
 
 
-        public async Task SendEmailAsync(string subject, string body, List<MailboxAddress> destinationAddresses)
+        public async Task SendEmailAsync(string subject, string body, List<MailboxAddress> destinationAddresses, List<ArtefactInfoModel> attachments)
         {
             if (_enabled)
             {
@@ -60,10 +61,18 @@ namespace PVIMS.API.Infrastructure.Services
                 mailMessage.From.Add(new MailboxAddress(_mailboxAddress, _mailboxAddress));
                 mailMessage.To.AddRange(destinationAddresses);
                 mailMessage.Subject = subject;
-                mailMessage.Body = new TextPart("html")
+
+                var builder = new BodyBuilder();
+                builder.HtmlBody = body;
+
+                if(attachments != null)
                 {
-                    Text = body
-                };
+                    foreach (var attachment in attachments)
+                    {
+                        builder.Attachments.Add(attachment.FullPath);
+                    }
+                }
+                mailMessage.Body = builder.ToMessageBody();
 
                 using (var smtpClient = new SmtpClient())
                 {

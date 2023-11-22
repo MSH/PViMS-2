@@ -93,13 +93,15 @@ namespace PVIMS.API.Infrastructure.Services
             _wordDocumentService.AddTableHeader("B. ADVERSE EVENT INFORMATION");
             _wordDocumentService.AddFourColumnTable(await PrepareAdverseEventForSpontaneousReportAsync(datasetInstance, isSerious));
             _wordDocumentService.AddTwoColumnTable(PrepareNotes(""));
-            _wordDocumentService.AddTableHeader("C. MEDICATIONS");
 
+            _wordDocumentService.AddTableHeader("C. MEDICATIONS");
             await PrepareMedicationsForSpontaneousReportAsync(datasetInstance);
 
             _wordDocumentService.AddTableHeader("D. CLINICAL EVALUATIONS");
-
             await PrepareEvaluationsForSpontaneousReport(datasetInstance);
+
+            _wordDocumentService.AddTableHeader("E. REPORTER INFORMATION");
+            _wordDocumentService.AddFourColumnTable(await PrepareReporterInformationForSpontaneousReportAsync(datasetInstance));
 
             _wordDocumentService.AddTwoColumnTable(PrepareNotes(""));
 
@@ -313,6 +315,22 @@ namespace PVIMS.API.Infrastructure.Services
                 rows.Add(new KeyValuePair<string, string>("Severity Grade", string.Empty));
                 rows.Add(new KeyValuePair<string, string>("SAE Number", string.Empty));
             }
+
+            return rows;
+        }
+
+        private async Task<List<KeyValuePair<string, string>>> PrepareReporterInformationForSpontaneousReportAsync(DatasetInstance datasetInstance)
+        {
+            List<KeyValuePair<string, string>> rows = new();
+
+            var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == datasetInstance.DatasetInstanceGuid, new string[] { "TerminologyMedDra" });
+
+            rows.Add(new KeyValuePair<string, string>("Name", datasetInstance.GetInstanceValue("Reporter Name")));
+            rows.Add(new KeyValuePair<string, string>("Telephone Number", datasetInstance.GetInstanceValue("Reporter Telephone Number")));
+            rows.Add(new KeyValuePair<string, string>("E-mail Address", datasetInstance.GetInstanceValue("Reporter E-mail Address")));
+            rows.Add(new KeyValuePair<string, string>("Profession", datasetInstance.GetInstanceValue("Profession of reporter")));
+            rows.Add(new KeyValuePair<string, string>("Reference Number", datasetInstance.GetInstanceValue("Report Reference Number")));
+            rows.Add(new KeyValuePair<string, string>("Place of Practice", datasetInstance.GetInstanceValue("Reporter Place of Practice")));
 
             return rows;
         }
