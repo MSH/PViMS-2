@@ -74,7 +74,7 @@ namespace PVIMS.Services
             await _unitOfWork.CompleteAsync();
         }
 
-        public async Task CreateWorkFlowInstanceAsync(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier, string facilityIdentifier)
+        public async Task CreateWorkFlowInstanceAsync(string workFlowName, Guid contextGuid, string patientIdentifier, string sourceIdentifier, string facilityIdentifier, string reporterFullName, string reporterEmail)
         {
             if (string.IsNullOrWhiteSpace(workFlowName))
             {
@@ -113,7 +113,7 @@ namespace PVIMS.Services
             var reportInstance = await _reportInstanceRepository.GetAsync(ri => ri.ContextGuid == contextGuid);
             if (reportInstance == null)
             {
-                reportInstance = new ReportInstance(workFlow, currentUser, contextGuid, patientIdentifier, sourceIdentifier, facilityIdentifier);
+                reportInstance = new ReportInstance(workFlow, currentUser, contextGuid, patientIdentifier, sourceIdentifier, facilityIdentifier, reporterFullName, reporterEmail);
                 await _reportInstanceRepository.SaveAsync(reportInstance);
 
                 reportInstance.SetSystemIdentifier();

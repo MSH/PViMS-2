@@ -25,6 +25,9 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
         public string PatientIdentifier { get; private set; }
         public string FacilityIdentifier { get; private set; }
 
+        public string ReporterFullName { get; private set; }
+        public string ReporterEmail { get; private set; }
+
         public int? TerminologyMedDraId { get; private set; }
         public virtual TerminologyMedDra TerminologyMedDra { get; private set; }
 
@@ -46,8 +49,8 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             _tasks = new List<ReportInstanceTask>();
         }
 
-        public ReportInstance(WorkFlow workFlow, User currentUser, Guid contextGuid, string patientIdentifier, string sourceIdentifier, string facilityIdentifier)
-		{
+        public ReportInstance(WorkFlow workFlow, User currentUser, Guid contextGuid, string patientIdentifier, string sourceIdentifier, string facilityIdentifier, string reporterFullName, string reporterEmail)
+        {
             _activities = new List<ActivityInstance>();
             _medications = new List<ReportInstanceMedication>();
             _tasks = new List<ReportInstanceTask>();
@@ -57,13 +60,16 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             ReportClassificationId = ReportClassification.Unclassified.Id;
 
             ContextGuid = contextGuid;
-            
+
             PatientIdentifier = patientIdentifier;
             SourceIdentifier = sourceIdentifier;
             FacilityIdentifier = facilityIdentifier;
 
             WorkFlowId = workFlow.Id;
             WorkFlow = workFlow;
+
+            ReporterFullName = reporterFullName;
+            ReporterEmail = reporterEmail;
 
             InitialiseWithFirstActivity(workFlow, currentUser);
         }
@@ -323,6 +329,7 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             {
                 Identifier = $"{WorkFlowId}/{Created.Year.ToString("D4")}/{Id.ToString("D5")}";
             }
+            AddReportInstanceAddedDomainEvent(this);
         }
 
         public ActivityInstance CurrentActivity
@@ -387,6 +394,13 @@ namespace PVIMS.Core.Aggregates.ReportInstanceAggregate
             {
                 throw new DomainException($"Unable to change activity from CONFIRMED as there are active tasks");
             }
+        }
+
+        private void AddReportInstanceAddedDomainEvent(ReportInstance newReportInstance)
+        {
+            var domainEvent = new ReportInstanceAddedDomainEvent(newReportInstance);
+
+            this.AddDomainEvent(domainEvent);
         }
 
         private void AddTaskAddedDomainEvent(ReportInstanceTask newTask)

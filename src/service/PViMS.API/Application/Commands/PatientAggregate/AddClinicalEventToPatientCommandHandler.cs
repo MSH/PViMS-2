@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
+using PVIMS.Core.CustomAttributes;
 using PVIMS.Core.Entities;
 using PVIMS.Core.Exceptions;
 using PVIMS.Core.Models;
@@ -28,6 +29,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
         private readonly IUnitOfWorkInt _unitOfWork;
         private readonly ILinkGeneratorService _linkGeneratorService;
         private readonly IWorkFlowService _workFlowService;
+        private readonly ICustomAttributeService _attributeService;
         private readonly IMapper _mapper;
         private readonly ILogger<AddMedicationToPatientCommandHandler> _logger;
 
@@ -40,6 +42,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             IUnitOfWorkInt unitOfWork,
             ILinkGeneratorService linkGeneratorService,
             IWorkFlowService workFlowService,
+            ICustomAttributeService attributeService,
             IMapper mapper,
             ILogger<AddMedicationToPatientCommandHandler> logger)
         {
@@ -51,6 +54,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _linkGeneratorService = linkGeneratorService ?? throw new ArgumentNullException(nameof(linkGeneratorService));
             _workFlowService = workFlowService ?? throw new ArgumentNullException(nameof(workFlowService));
+            _attributeService = attributeService ?? throw new ArgumentNullException(nameof(attributeService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -69,7 +73,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             TerminologyMedDra sourceTermFromRepo = null;
             if (message.SourceTerminologyMedDraId.HasValue)
             {
-                if(message.SourceTerminologyMedDraId > 0)
+                if (message.SourceTerminologyMedDraId > 0)
                 {
                     sourceTermFromRepo = await _terminologyMeddraRepository.GetAsync(message.SourceTerminologyMedDraId); ;
                     if (sourceTermFromRepo == null)
@@ -90,15 +94,7 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
             _patientRepository.Update(patientFromRepo);
 
-            // TODO Move to domain event
-            await _workFlowService.CreateWorkFlowInstanceAsync(
-                workFlowName: "New Active Surveilliance Report",
-                contextGuid: newPatientClinicalEvent.PatientClinicalEventGuid,
-                patientIdentifier: String.IsNullOrWhiteSpace(message.PatientIdentifier) ? patientFromRepo.FullName : $"{patientFromRepo.FullName} ({message.PatientIdentifier})",
-                sourceIdentifier: newPatientClinicalEvent.SourceTerminologyMedDra?.DisplayName ?? newPatientClinicalEvent.SourceDescription,
-                facilityIdentifier: patientFromRepo.CurrentFacilityCode);
-
-            await LinkMedicationsToClinicalEvent(patientFromRepo, newPatientClinicalEvent.OnsetDate, newPatientClinicalEvent.PatientClinicalEventGuid);
+            await CreateWorkFlowInstance(message, patientFromRepo, newPatientClinicalEvent);
 
             await _unitOfWork.CompleteAsync();
 
@@ -107,6 +103,25 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
             var mappedPatientClinicalEvent = _mapper.Map<PatientClinicalEventIdentifierDto>(newPatientClinicalEvent);
 
             return CreateLinks(mappedPatientClinicalEvent);
+        }
+
+        private async Task CreateWorkFlowInstance(AddClinicalEventToPatientCommand message, Patient patientFromRepo, PatientClinicalEvent newPatientClinicalEvent)
+        {
+            var extendable = (IExtendable)newPatientClinicalEvent;
+            var reporterName = await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Name of reporter", extendable);
+            var reporterEmail = await _attributeService.GetCustomAttributeValueAsync("PatientClinicalEvent", "Email address", extendable);
+
+            // TODO Move to domain event
+            await _workFlowService.CreateWorkFlowInstanceAsync(
+                workFlowName: "New Active Surveilliance Report",
+                contextGuid: newPatientClinicalEvent.PatientClinicalEventGuid,
+                patientIdentifier: String.IsNullOrWhiteSpace(message.PatientIdentifier) ? patientFromRepo.FullName : $"{patientFromRepo.FullName} ({message.PatientIdentifier})",
+                sourceIdentifier: newPatientClinicalEvent.SourceTerminologyMedDra?.DisplayName ?? newPatientClinicalEvent.SourceDescription,
+                facilityIdentifier: patientFromRepo.CurrentFacilityCode,
+                reporterFullName: reporterName,
+                reporterEmail: reporterEmail);
+
+            await LinkMedicationsToClinicalEvent(patientFromRepo, newPatientClinicalEvent.OnsetDate, newPatientClinicalEvent.PatientClinicalEventGuid);
         }
 
         private async Task<ClinicalEventDetail> PrepareClinicalEventDetailAsync(IDictionary<int, string> attributes)

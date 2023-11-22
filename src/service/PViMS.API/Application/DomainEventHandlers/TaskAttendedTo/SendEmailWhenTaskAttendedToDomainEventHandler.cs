@@ -43,7 +43,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskAttendedTo
                 sb.Append("</table>");
                 sb.Append("<p><b>*** This is system generated. Please do not reply to this message ***</b></p>");
 
-                await _smtpMailService.SendEmailAsync(subject, sb.ToString(), PrepareDestinationMailBoxes(domainEvent));
+                await _smtpMailService.SendEmailAsync(subject, sb.ToString(), PrepareDestinationMailBoxes(domainEvent), null);
             }
         }
 

@@ -210,7 +210,7 @@ namespace PVIMS.API.Controllers
         /// </summary>
         /// <param name="patientId">The unique identifier of the patient</param>
         /// <param name="id">The unique id of the clinical event</param>
-        /// <param name="conditionForDelete">The deletion payload</param>
+        /// <param name="clinicalEventForDelete">The deletion payload</param>
         /// <returns></returns>
         [HttpPut("{patientId}/clinicalevents/{id}/archive", Name = "ArchivePatientClinicalEvent")]
         [Consumes("application/json")]

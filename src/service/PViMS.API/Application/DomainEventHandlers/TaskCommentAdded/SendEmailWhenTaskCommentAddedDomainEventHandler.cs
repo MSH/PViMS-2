@@ -50,7 +50,7 @@ namespace PVIMS.API.Application.DomainEventHandlers.TaskCommentAdded
 
                 var destinationUser = GetDestinationUser(domainEvent);
 
-                await _smtpMailService.SendEmailAsync(subject, sb.ToString(), PrepareDestinationMailBoxes(destinationUser));
+                await _smtpMailService.SendEmailAsync(subject, sb.ToString(), PrepareDestinationMailBoxes(destinationUser), null);
             }
         }
 

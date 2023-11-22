@@ -1014,36 +1014,7 @@ namespace PVIMS.API.Controllers
                 {
                     await _unitOfWork.Repository<DatasetInstance>().SaveAsync(datasetInstance);
 
-                    // Instantiate new instance of work flow
-                    var patientIdentifier = datasetInstance.GetInstanceValue("Initials");
-                    if (String.IsNullOrWhiteSpace(patientIdentifier))
-                    {
-                        patientIdentifier = datasetInstance.GetInstanceValue("Identification Number");
-                    }
-                    var sourceIdentifier = datasetInstance.GetInstanceValue("Description of reaction");
-                    await _workflowService.CreateWorkFlowInstanceAsync("New Spontaneous Surveilliance Report", datasetInstance.DatasetInstanceGuid, patientIdentifier, sourceIdentifier, "PUBLIC");
-
-                    // Prepare medications
-                    List<ReportInstanceMedicationListItem> medications = new List<ReportInstanceMedicationListItem>();
-                    var sourceProductElement = _datasetElementRepository.Get(u => u.ElementName == "Product Information");
-                    var destinationProductElement = _datasetElementRepository.Get(u => u.ElementName == "Medicinal Products");
-                    var sourceContexts = datasetInstance.GetInstanceSubValuesContext("Product Information");
-                    foreach (Guid sourceContext in sourceContexts)
-                    {
-                        var drugItemValues = datasetInstance.GetInstanceSubValues("Product Information", sourceContext);
-                        var drugName = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product").InstanceValue;
-
-                        if (drugName != string.Empty)
-                        {
-                            var item = new ReportInstanceMedicationListItem()
-                            {
-                                MedicationIdentifier = drugName,
-                                ReportInstanceMedicationGuid = sourceContext
-                            };
-                            medications.Add(item);
-                        }
-                    }
-                    await _workflowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(datasetInstance.DatasetInstanceGuid, medications);
+                    await CreateWorkFlowInstance(datasetInstance);
 
                     await _unitOfWork.CompleteAsync();
 
@@ -1054,6 +1025,52 @@ namespace PVIMS.API.Controllers
             }
 
             return BadRequest(ModelState);
+        }
+
+        private async Task CreateWorkFlowInstance(DatasetInstance datasetInstance)
+        {
+            // Instantiate new instance of work flow
+            var patientIdentifier = datasetInstance.GetInstanceValue("Initials");
+            if (String.IsNullOrWhiteSpace(patientIdentifier))
+            {
+                patientIdentifier = datasetInstance.GetInstanceValue("Identification Number");
+            }
+            var sourceIdentifier = datasetInstance.GetInstanceValue("Description of reaction");
+
+            var reporterFullName = datasetInstance.GetInstanceValue("Reporter Name");
+            var reporterEmail = datasetInstance.GetInstanceValue("Reporter E-mail Address");
+
+            await _workflowService.CreateWorkFlowInstanceAsync(
+                workFlowName: "New Spontaneous Surveilliance Report",
+                contextGuid: datasetInstance.DatasetInstanceGuid,
+                patientIdentifier: patientIdentifier,
+                sourceIdentifier: sourceIdentifier,
+                facilityIdentifier: "PUBLIC",
+                reporterFullName: reporterFullName,
+                reporterEmail: reporterEmail);
+
+            // Prepare medications
+            List<ReportInstanceMedicationListItem> medications = new List<ReportInstanceMedicationListItem>();
+            var sourceProductElement = _datasetElementRepository.Get(u => u.ElementName == "Product Information");
+            var destinationProductElement = _datasetElementRepository.Get(u => u.ElementName == "Medicinal Products");
+            var sourceContexts = datasetInstance.GetInstanceSubValuesContext("Product Information");
+            foreach (Guid sourceContext in sourceContexts)
+            {
+                var drugItemValues = datasetInstance.GetInstanceSubValues("Product Information", sourceContext);
+                var drugName = drugItemValues.SingleOrDefault(div => div.DatasetElementSub.ElementName == "Product").InstanceValue;
+
+                if (drugName != string.Empty)
+                {
+                    var item = new ReportInstanceMedicationListItem()
+                    {
+                        MedicationIdentifier = drugName,
+                        ReportInstanceMedicationGuid = sourceContext
+                    };
+                    medications.Add(item);
+                }
+            }
+
+            await _workflowService.AddOrUpdateMedicationsForWorkFlowInstanceAsync(datasetInstance.DatasetInstanceGuid, medications);
         }
 
         /// <summary>
