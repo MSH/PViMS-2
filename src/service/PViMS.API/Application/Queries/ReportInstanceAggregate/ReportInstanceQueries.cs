@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
+using MySqlConnector;
 using PVIMS.API.Models;
 using PVIMS.Core.ValueTypes;
 using System;
@@ -21,7 +22,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         public async Task<IEnumerable<ReportInstanceEventDto>> GetExecutionStatusEventsForPatientViewAsync(
             int patientId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -29,7 +30,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
                     @$"SELECT	evt.Id,
 		                        pce.Id AS PatientClinicalEventId,
 		                        pce.SourceDescription AS AdverseEvent,
-		                        convert(varchar(20), evt.EventDateTime , 120) AS ExecutedDate,
+                                DATE_FORMAT(evt.EventDateTime, '%Y-%m-%d %T.%f') AS ExecutedDate,
 		                        u.FirstName + ' ' + u.LastName AS ExecutedBy,
 		                        ai.QualifiedName AS Activity,
 		                        stat.FriendlyDescription AS ExecutionEvent,
@@ -39,7 +40,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 	                        INNER JOIN ActivityInstance ai ON ri.Id = ai.ReportInstance_Id
 	                        INNER JOIN ActivityExecutionStatusEvent evt ON ai.Id = evt.ActivityInstance_Id
 	                        INNER JOIN ActivityExecutionStatus stat ON evt.ExecutionStatus_Id = stat.Id
-	                        INNER JOIN [User] u ON evt.EventCreatedBy_Id = u.Id
+	                        INNER JOIN `User` u ON evt.EventCreatedBy_Id = u.Id
                         WHERE pce.Patient_Id = {patientId}
                         ORDER BY evt.EventDateTime desc");
             }
@@ -48,7 +49,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         public async Task<IEnumerable<ReportInstanceEventDto>> GetExecutionStatusEventsForEventViewAsync(
             int patientClinicalEventId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
@@ -56,7 +57,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
                     @$"SELECT	evt.Id,
 		                        pce.Id AS PatientClinicalEventId,
 		                        pce.SourceDescription AS AdverseEvent,
-		                        convert(varchar(20), evt.EventDateTime , 120) AS ExecutedDate,
+                                DATE_FORMAT(evt.EventDateTime, '%Y-%m-%d %T.%f') AS ExecutedDate,
 		                        u.FirstName + ' ' + u.LastName AS ExecutedBy,
 		                        ai.QualifiedName AS Activity,
 		                        stat.FriendlyDescription AS ExecutionEvent,
@@ -66,7 +67,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 	                        INNER JOIN ActivityInstance ai ON ri.Id = ai.ReportInstance_Id
 	                        INNER JOIN ActivityExecutionStatusEvent evt ON ai.Id = evt.ActivityInstance_Id
 	                        INNER JOIN ActivityExecutionStatus stat ON evt.ExecutionStatus_Id = stat.Id
-	                        INNER JOIN [User] u ON evt.EventCreatedBy_Id = u.Id
+	                        INNER JOIN `User` u ON evt.EventCreatedBy_Id = u.Id
                         WHERE pce.Id = {patientClinicalEventId}
                         ORDER BY evt.EventDateTime desc");
             }
@@ -75,7 +76,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
         public async Task<IEnumerable<CausalityReportDto>> GetCausalityNotSetAsync(
             DateTime searchFrom, DateTime searchTo, CausalityConfigType causalityConfig, int facilityId, CausalityCriteria causalityCriteria)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
 
