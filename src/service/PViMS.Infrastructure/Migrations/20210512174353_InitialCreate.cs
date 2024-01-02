@@ -873,7 +873,7 @@ namespace PViMS.Infrastructure.Migrations
                     ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "text", nullable: true),
                     Created = table.Column<DateTime>(type: "datetime", nullable: false),
                     LastUpdated = table.Column<DateTime>(type: "datetime", nullable: true),
                     CreatedBy_Id = table.Column<int>(type: "int", nullable: false),
@@ -1374,7 +1374,7 @@ namespace PViMS.Infrastructure.Migrations
                     Notes = table.Column<string>(type: "nvarchar(1000)", nullable: true),
                     EncounterGuid = table.Column<Guid>(type: "char(36)", nullable: false),
                     Discharged = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true),
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "text", nullable: true),
                     EncounterType_Id = table.Column<int>(type: "int", nullable: false),
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     Priority_Id = table.Column<int>(type: "int", nullable: false),
@@ -1446,7 +1446,7 @@ namespace PViMS.Infrastructure.Migrations
                     Outcome_Id = table.Column<int>(type: "int", nullable: true),
                     TreatmentOutcome_Id = table.Column<int>(type: "int", nullable: true),
                     ConditionSource = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true)
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1501,7 +1501,7 @@ namespace PViMS.Infrastructure.Migrations
                     Patient_Id = table.Column<int>(type: "int", nullable: false),
                     PatientLabTestGuid = table.Column<Guid>(type: "char(36)", nullable: false),
                     TestUnit_Id = table.Column<int>(type: "int", nullable: true),
-                    LabValue = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    LabValue = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     Archived = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     ArchivedDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
@@ -1509,7 +1509,7 @@ namespace PViMS.Infrastructure.Migrations
                     ReferenceLower = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     ReferenceUpper = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     LabTestSource = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true)
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1785,7 +1785,7 @@ namespace PViMS.Infrastructure.Migrations
                     MedicationSource = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     Concept_Id = table.Column<int>(type: "int", nullable: false),
                     Product_Id = table.Column<int>(type: "int", nullable: true),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true)
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1896,7 +1896,7 @@ namespace PViMS.Infrastructure.Migrations
                     ArchivedReason = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     AuditUser_Id = table.Column<int>(type: "int", nullable: true),
                     SourceDescription = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    CustomAttributesXmlSerialised = table.Column<string>(type: "nvarchar(1000)", nullable: true)
+                    CustomAttributesXmlSerialised = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
