@@ -81,14 +81,14 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 				            p.FirstName, 
 				            p.Surname, 
 				            f.FacilityName, 
-				            ISNULL(CONVERT(VARCHAR(10), p.DateOfBirth, 101), '') AS DateOfBirth,
-				            CAST(ISNULL(FLOOR(DATEDIFF(DAY, p.DateofBirth, GETDATE()) / 365.25), 0) AS VARCHAR) AS Age,
-				            ISNULL(CONVERT(VARCHAR(10), (SELECT MAX(EncounterDate) FROM Encounter e WHERE e.Patient_Id = p.Id), 101), '') AS LatestEncounterDate
+	                        DATE_FORMAT(p.DateOfBirth, '%Y-%m-%d %T.%f') AS DateOfBirth,
+	                        IFNULL(FLOOR(DATEDIFF(NOW(), p.DateofBirth) / 365.25), 0) AS Age,
+	                        DATE_FORMAT((SELECT MAX(EncounterDate) FROM Encounter e WHERE e.Patient_Id = p.Id), '%Y-%m-%d %T.%f') AS LatestEncounterDate
 			            FROM Patient p 
                             INNER JOIN PatientCondition pc ON p.Id = pc.Patient_Id 
-				            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT TOP 1 Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC) 
+                            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC limit 0,10) 
 				            INNER JOIN Facility f ON pf.Facility_Id = f.Id 
-			            WHERE p.Archived = 0 AND pc.CaseNumber = '%{caseNumber}%' 
+			            WHERE p.Archived = 0 AND pc.CaseNumber = '{caseNumber}' 
 		            ORDER BY p.Id desc";
 
                 return await connection.QueryAsync<PatientSearchDto>(sql);
