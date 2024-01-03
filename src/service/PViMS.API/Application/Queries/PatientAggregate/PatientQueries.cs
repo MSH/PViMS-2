@@ -50,7 +50,7 @@ namespace PVIMS.API.Application.Queries.PatientAggregate
 				            p.Surname, 
 				            f.FacilityName, 
 				            DATE_FORMAT(p.DateOfBirth, '%Y-%m-%d %T.%f') AS DateOfBirth,
-				            IFNULL(FLOOR(DATEDIFF(p.DateofBirth, NOW()) / 365.25), 0) AS Age,
+				            IFNULL(FLOOR(DATEDIFF(NOW(), p.DateofBirth) / 365.25), 0) AS Age,
 				            IFNULL(DATE_FORMAT((SELECT MAX(EncounterDate) FROM Encounter e WHERE e.Patient_Id = p.Id), '%Y-%m-%d %T.%f'),'') AS LatestEncounterDate
 			            FROM Patient p
 				            INNER JOIN PatientFacility pf ON p.Id = pf.Patient_Id AND pf.Id = (SELECT Id FROM PatientFacility ipf WHERE Patient_Id = p.Id ORDER BY EnrolledDate DESC limit 0,10) 
