@@ -476,16 +476,7 @@ namespace PVIMS.Services
                 var treatmentOutcome = !String.IsNullOrWhiteSpace(condition.TreatmentOutcome) ? _unitOfWork.Repository<TreatmentOutcome>().Get(to => to.Description == condition.TreatmentOutcome) : null;
                 var terminologyMedDra = condition.MeddraTermId != null ? _unitOfWork.Repository<TerminologyMedDra>().Get(tm => tm.Id == condition.MeddraTermId) : null;
 
-                var patientCondition = new PatientCondition
-                {
-                    Patient = patient,
-                    ConditionSource = condition.ConditionSource,
-                    TerminologyMedDra = terminologyMedDra,
-                    OnsetDate = Convert.ToDateTime(condition.OnsetDate),
-                    TreatmentOutcome = treatmentOutcome,
-                    CaseNumber = condition.CaseNumber,
-                    Comments = condition.Comments
-                };
+                var patientCondition = new PatientCondition(Convert.ToDateTime(condition.OnsetDate), null, terminologyMedDra, null, treatmentOutcome, condition.CaseNumber, condition.Comments, condition.ConditionSource);
 
                 // Custom Property handling
                 _typeExtensionHandler.UpdateExtendable(patientCondition, condition.CustomAttributes, "Admin");

@@ -1,3 +1,5 @@
+using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Wordprocessing;
 using PVIMS.Core.Aggregates.ConceptAggregate;
 using PVIMS.Core.Aggregates.UserAggregate;
 using PVIMS.Core.CustomAttributes;
@@ -211,20 +213,25 @@ namespace PVIMS.Core.Entities
         {
             PatientCondition patientCondition = null;
 
-            if(id == 0)
+            if (DateOfBirth.HasValue)
             {
-                patientCondition = new PatientCondition
+                if (onsetDate.Date < DateOfBirth.Value.Date)
                 {
-                    ConditionSource = conditionSource,
-                    TerminologyMedDra = sourceTerm,
-                    OnsetDate = onsetDate,
-                    OutcomeDate = outComeDate,
-                    Outcome = outcome,
-                    TreatmentOutcome = treatmentOutcome,
-                    CaseNumber = caseNumber,
-                    Comments = comments
-                };
+                    throw new DomainException("Onset Date should be after patient Date Of Birth");
+                }
+            }
 
+            if (DateOfBirth.HasValue && outComeDate.HasValue)
+            {
+                if (outComeDate.Value.Date < DateOfBirth.Value.Date)
+                {
+                    throw new DomainException("Outcome Date should be after patient Date Of Birth");
+                }
+            }
+
+            if (id == 0)
+            {
+                patientCondition = new PatientCondition(onsetDate, outComeDate, sourceTerm, outcome, treatmentOutcome, caseNumber, comments, conditionSource);
                 PatientConditions.Add(patientCondition);
             }
 
@@ -731,6 +738,17 @@ namespace PVIMS.Core.Entities
             }
 
             patientClinicalEvent.Archive(user, reason);
+        }
+
+        public void ArchiveCondition(int patientConditionId, string reason, User user)
+        {
+            var patientCondition = PatientConditions.SingleOrDefault(t => t.Id == patientConditionId);
+            if (patientCondition == null)
+            {
+                throw new KeyNotFoundException($"Unable to locate condition {patientConditionId} for patient {Id}");
+            }
+
+            patientCondition.Archive(user, reason);
         }
 
         public void ArchiveLabTest(int patientLabTestId, string reason, User user)

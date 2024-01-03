@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
@@ -8,11 +7,7 @@ using Microsoft.Extensions.Logging;
 using PVIMS.API.Application.Commands.PatientAggregate;
 using PVIMS.API.Infrastructure.Attributes;
 using PVIMS.API.Infrastructure.Auth;
-using PVIMS.API.Infrastructure.Services;
 using PVIMS.API.Models;
-using PVIMS.Core.Entities;
-using PVIMS.Core.Repositories;
-using PVIMS.Core.Services;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

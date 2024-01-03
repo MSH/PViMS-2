@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace PVIMS.API.Models
 {
@@ -9,8 +8,6 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The description of the source condition
         /// </summary>
-        [Required]
-        [StringLength(200)]
         public string SourceDescription { get; set; }
 
         /// <summary>
@@ -31,13 +28,11 @@ namespace PVIMS.API.Models
         /// <summary>
         /// The look up value for the condition outcome
         /// </summary>
-        [StringLength(50)]
         public string Outcome { get; set; }
 
         /// <summary>
         /// The look up value for the treatment outcome
         /// </summary>
-        [StringLength(50)]
         public string TreatmentOutcome { get; set; }
 
         /// <summary>
@@ -48,12 +43,11 @@ namespace PVIMS.API.Models
         /// <summary>
         /// Comments associated to the condition
         /// </summary>
-        [StringLength(500)]
         public string Comments { get; set; }
 
         /// <summary>
         /// Condition custom attributes
         /// </summary>
-        public IDictionary<int, string> Attributes { get; set; }
+        public ICollection<AttributeValueForPostDto> Attributes { get; set; }
     }
 }
