@@ -744,6 +744,30 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Import baseline forms
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("baseline", Name = "ImportBaselineForms")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [Consumes("application/json")]
+        public async Task<IActionResult> Import()
+        {
+            var command = new ProcessBaselineFormCommand(0, "");
+
+            _logger.LogInformation(
+                "----- Sending command: ProcessBaselineFormCommand");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
         /// Update the custom attributes of the patient
         /// </summary>
         /// <param name="id">The unique id of the patient</param>
@@ -981,10 +1005,7 @@ namespace PVIMS.API.Controllers
 
                 foreach (var patientCondition in patientFromRepo.PatientConditions.Where(x => !x.Archived))
                 {
-                    patientCondition.Archived = true;
-                    patientCondition.ArchivedDate = DateTime.Now;
-                    patientCondition.ArchivedReason = patientForDelete.Reason;
-                    patientCondition.AuditUser = user;
+                    patientCondition.Archive(user, patientForDelete.Reason);
                     _patientConditionRepository.Update(patientCondition);
                 }
 

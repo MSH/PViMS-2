@@ -106,10 +106,10 @@ namespace PVIMS.API.Application.Commands.PatientAggregate
 
             if (parameters.Count > 0)
             {
-                if (!_patientService.isUnique(parameters))
-                {
-                    throw new DomainException("Potential duplicate patient. Check medical record number and patient identity number.");
-                }
+                //if (!_patientService.isUnique(parameters))
+                //{
+                //    throw new DomainException("Potential duplicate patient. Check medical record number and patient identity number.");
+                //}
             }
         }
 
