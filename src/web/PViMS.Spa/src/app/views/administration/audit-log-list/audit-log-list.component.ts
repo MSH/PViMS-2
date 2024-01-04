@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, OnDestroy, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { GridModel } from 'app/shared/models/grid.model';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
@@ -31,8 +31,10 @@ const moment =  _moment;
 
 @Component({
   templateUrl: './audit-log-list.component.html',
-  styleUrls: ['./audit-log-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .mat-column-id { flex: 0 0 5% !important; width: 5% !important; }
+    .mat-column-actions { flex: 0 0 10% !important; width: 10% !important; }  
+  `],    
   animations: egretAnimations
 })
 export class AuditLogListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
