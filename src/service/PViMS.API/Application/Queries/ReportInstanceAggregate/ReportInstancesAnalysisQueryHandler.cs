@@ -63,7 +63,7 @@ namespace PVIMS.API.Application.Queries.ReportInstanceAggregate
 
         public async Task<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> Handle(ReportInstancesAnalysisQuery message, CancellationToken cancellationToken)
         {
-            return await GetReportInstancesAsync(message.WorkFlowGuid, message.PageNumber, message.PageSize, message.QualifiedName, message.SearchTerm);
+            return await GetReportInstancesAsync(message.WorkFlowGuid, message.PageNumber, message.PageSize, message.QualifiedName, "");
         }
 
         private async Task<LinkedCollectionResourceWrapperDto<ReportInstanceDetailDto>> GetReportInstancesAsync(

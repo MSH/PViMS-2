@@ -66,6 +66,17 @@ export class PatientService extends BaseService {
       parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: '10'});
 
       return this.Get<PatientExpandedModel>('', 'application/vnd.pvims.expanded.v1+json', parameters);
+    }  
+    
+    getPatientByCustomAttribute(filterModel: any): any {
+      let parameters: ParameterKeyValueModel[] = [];
+
+      parameters.push(<ParameterKeyValueModel> { key: 'cohortGroupId', value: filterModel.cohortGroupId.toString() });
+      parameters.push(<ParameterKeyValueModel> { key: 'medicalRecordNumber', value: filterModel.medicalRecordNumber });
+      parameters.push(<ParameterKeyValueModel> { key: 'pageNumber', value: '1'});
+      parameters.push(<ParameterKeyValueModel> { key: 'pageSize', value: '1'});
+
+      return this.Get<PatientExpandedModel>('', 'application/vnd.pvims.expandedbyattribute.v1+json', parameters);
     }    
 
     getPatientExpanded(id: number): any {
@@ -187,6 +198,14 @@ export class PatientService extends BaseService {
     savePatient(model: PatientForCreationModel): any {
       let shallowModel = this.transformModelForDate(model);
       return this.Post('', shallowModel);
+    }
+
+    importBaselineForms(): any {
+      return this.Post('baseline', null);
+    }
+
+    importFollowUpForms(): any {
+      return this.Post('followup', null);
     }
 
     updatePatientCustomAttributes(id: number, model: PatientCustomAttributesForUpdateModel): any {

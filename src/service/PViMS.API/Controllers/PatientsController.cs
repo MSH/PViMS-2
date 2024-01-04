@@ -251,6 +251,34 @@ namespace PVIMS.API.Controllers
         }
 
         /// <summary>
+        /// Get a single patient by searching for a matching custom attribute value
+        /// </summary>
+        /// <param name="patientByCustomAttributeResourceParameters">
+        /// Specify condition search term
+        /// </param>
+        /// <returns>An ActionResult of type PatientExpandedDto</returns>
+        [HttpGet(Name = "GetPatientByCustomAttribute")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces("application/vnd.pvims.expandedbyattribute.v1+json", "application/vnd.pvims.expandedbyattribute.v1+xml")]
+        [RequestHeaderMatchesMediaType("Accept",
+            "application/vnd.pvims.expandedbyattribute.v1+json", "application/vnd.pvims.expandedbyattribute.v1+xml")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult<PatientExpandedDto>> GetPatientByCustomAttribute(
+            [FromQuery] PatientByCustomAttributeResourceParameters patientByCustomAttributeResourceParameters)
+        {
+            var query = new PatientExpandedByCustomAttributeQuery(
+                patientByCustomAttributeResourceParameters.CohortGroupId,
+                patientByCustomAttributeResourceParameters.MedicalRecordNumber);
+
+            _logger.LogInformation(
+                "----- Sending query: PatientExpandedByCustomAttributeQuery");
+
+            var queryResult = await _mediator.Send(query);
+
+            return Ok(queryResult);
+        }
+
+        /// <summary>
         /// Get a single Patient using it's unique id and valid media type 
         /// </summary>
         /// <param name="id">The unique identifier for the Patient</param>
@@ -750,12 +778,36 @@ namespace PVIMS.API.Controllers
         [HttpPost("baseline", Name = "ImportBaselineForms")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [Consumes("application/json")]
-        public async Task<IActionResult> Import()
+        public async Task<IActionResult> ImportBaselineForms()
         {
             var command = new ProcessBaselineFormCommand(0, "");
 
             _logger.LogInformation(
                 "----- Sending command: ProcessBaselineFormCommand");
+
+            var commandResult = await _mediator.Send(command);
+
+            if (!commandResult)
+            {
+                return BadRequest("Command not created");
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Import follow up forms
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("followup", Name = "ImportFollowUpForms")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [Consumes("application/json")]
+        public async Task<IActionResult> ImportFollowUpForms()
+        {
+            var command = new ProcessFollowUpFormCommand(0, "");
+
+            _logger.LogInformation(
+                "----- Sending command: ProcessFollowUpFormCommand");
 
             var commandResult = await _mediator.Send(command);
 
